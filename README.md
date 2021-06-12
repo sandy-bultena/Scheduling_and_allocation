@@ -50,6 +50,22 @@ A X-windows emulator must be installed on your system.
 
 Recommended: XQuartz
 
-## WINDOWS 10
-... tbd
+## MS Windows (Tested on Windows 10)
 
+### Install Strawberry Perl 
+
+(version used .0.1-64bit - Newer versions available but have issues with Tk Package)
+http://strawberryperl.com/release-notes/5.30.0.1-64bit.html
+
+ 
+### Install required Perl Packages
+
+Run Command Prompt as Administrator
+
+```bash
+cpan YAML
+cpanm --Force Tk         # must force install Tk
+cpan Text::CSV
+cpan Excel::Writer::XLSX
+cpan PDF::API2
+```
