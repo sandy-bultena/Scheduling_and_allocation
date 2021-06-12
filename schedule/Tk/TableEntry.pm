@@ -16,7 +16,7 @@ my $image_dir = Tk::FindImages::get_image_dir();
 =cut
 
 # ===================================================================
-# Create a tool for Entering text (excel style?)
+# Create a tool for Entering text (spreadsheet style?)
 # ===================================================================
 use Carp;
 our $VERSION = 2.01;

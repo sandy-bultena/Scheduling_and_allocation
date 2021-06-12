@@ -33,4 +33,9 @@ inc/
 /MANIFEST.bak
 /pm_to_blib
 /*.zip
+
+# Eclipse
 .project
+
+# MAC
+.DS_Store

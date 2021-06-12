@@ -25,8 +25,6 @@ Version 1.00
 
 =head1 SYNOPSIS
 
-    my $excel = Export::Excel->new();
-    $excel->export();
 
 
 =head1 DESCRIPTION
@@ -43,20 +41,16 @@ Version 1.00
 
 =head2 new ()
 
-creates a Excel export object
+creates a CSV export object
 
 B<Parameters>
 
 TODO
--mw => MainWindow to create new Views from
 
--dirtyFlag => Flag to know when the GuiSchedule has changed since last save
-
--schedule => where course-sections/teachers/labs/streams are defined 
+- fill this out properly
 
 B<Returns>
 
-GuiSchedule object
 
 =cut
 
