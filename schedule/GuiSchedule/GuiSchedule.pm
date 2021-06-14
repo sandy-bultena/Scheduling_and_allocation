@@ -79,9 +79,10 @@ GuiSchedule object
 #--------------------------------------------------------------------
 sub new {
     my $this      = shift;
-    my $mw        = shift;
+    my $gui        = shift;
     my $dirtyFlag = shift;
     my $schedule  = shift;
+    my $mw = $gui->{-mw};
 
     my $self = {};
 
@@ -708,14 +709,16 @@ sub determine_button_colours {
         my $btn         = $button_ptrs->{$obj};
 
         # set button colour to conflict colour if there is a conflict
-        my $colour = $Scheduler::Colours->{ButtonBackground};
+        my $colour = $SchedulerManagerTk::Colours->{ButtonBackground};
         if ($view_conflict) {
             $colour = Conflict->Colours->{$view_conflict} || 'red';
         }
         my $active = Colour->darken(10,$colour);
+        if ($btn && $$btn) {
             $$btn->configure(
                        -background =>$colour,
-                       -activebackground => $active) if $btn;
+                       -activebackground => $active);
+        }
     }
 }
 
@@ -733,48 +736,25 @@ sub create_frame {
     
     my $self        = shift;
     my $frame       = shift;
-    my $type        = shift;
-    my $command_sub = shift || \&create_new_view;
-    my @array;
-    my @ordered;
+    my $info        = shift;
+     my $command_sub = shift || \&create_new_view;
+    my $ordered = $info->[3];
+    my $names = $info->[2];
+    my $type = $info->[0];
 
     my $row = 0;
     my $col = 0;
 
-    # get schedule object from reference
-    my $schedule_ptr = $self->schedule_ptr;
-    my $schedule     = $$schedule_ptr;
-
-    # get all teachers/labs/streams and sort in alphabetical,
-    # order depending on type
-    if ( $type eq "teacher" ) {
-        @array = $schedule->all_teachers;
-        @ordered = sort { $a->lastname cmp $b->lastname } @array;
-    }
-    elsif ( $type eq "lab" ) {
-        @array = $schedule->all_labs;
-        @ordered = sort { $a->number cmp $b->number } @array;
-    }
-    else {
-        @array = $schedule->all_streams;
-        @ordered = sort { $a->number cmp $b->number } @array;
-    }
-
     # determine how many buttons should be on one row
-    my $arr_size = scalar @ordered;
+    my $arr_size = scalar @{$ordered};
     my $divisor  = 2;
     if ( $arr_size > 10 ) { $divisor = 4; }
 
-    # for every teacher/lab/stream in alphabetical order
-    foreach my $obj (@ordered) {
-        my $name;
-
-        # determine name/number to show on button
-        if ( $type eq "teacher" ) {
-            $name =
-              uc( substr( $obj->firstname, 0, 1 ) ) . " " . $obj->lastname;
-        }
-        else { $name = $obj->number; }
+    # for every object
+    my $i = 0;
+    foreach my $obj (@$ordered) {
+        my $name = $names->[$i];
+        $i++;
 
         # create the command array reference including the GuiSchedule,
         # the Teacher/Lab/Stream, it's type
@@ -805,7 +785,7 @@ sub create_frame {
     # determine the colour of the buttons for
     # every teacher/lab/stream in the frame
     
-    $self->determine_button_colours( \@ordered, $type );
+    $self->determine_button_colours( \@$ordered, $type );
 }
 
 =head2 _create_view ( Array Pointer, Type )

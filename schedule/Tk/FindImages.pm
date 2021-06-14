@@ -14,8 +14,8 @@ sub get_image_dir {
     
     return $image_dir if $image_dir;
 
-    if ($Scheduler::BinDir) {
-        return "$Scheduler::BinDir/Tk/Images";
+    if ($SchedulerManagerTk::BinDir) {
+        return "$SchedulerManagerTk::BinDir/Tk/Images";
     }
     if ($Allocation::BinDir) {
         return "$Allocation::BinDir/Tk/Images";
@@ -65,7 +65,7 @@ sub get_allocation_logo {
 
 sub get_logo {
 	
-	return "$Scheduler::BinDir/ScheduleLogo.gif";
+	return "$SchedulerManagerTk::BinDir/ScheduleLogo.gif";
     return $logo_file if $logo_file;
 
     my $pwd = cwd;
