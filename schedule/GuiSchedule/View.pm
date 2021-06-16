@@ -647,11 +647,11 @@ sub _double_open_view {
 
         my @teachers = $guiblock->block->teachers;
         if (@teachers) {
-            $self->guiSchedule->_create_view( \@teachers, $self->type );
+            $self->guiSchedule->create_view( \@teachers, $self->type );
         }
         else {
             my @labs = $guiblock->block->labs;
-            $self->guiSchedule->_create_view( \@labs, 'teacher', $self->obj )
+            $self->guiSchedule->create_view( \@labs, 'teacher', $self->obj )
               if @labs;
         }
     }
@@ -664,11 +664,11 @@ sub _double_open_view {
 
         my @labs = $guiblock->block->labs;
         if (@labs) {
-            $self->guiSchedule->_create_view( \@labs, $self->type );
+            $self->guiSchedule->create_view( \@labs, $self->type );
         }
         else {
             my @teachers = $guiblock->block->teachers;
-            $self->guiSchedule->_create_view( \@teachers, 'lab', $self->obj )
+            $self->guiSchedule->create_view( \@teachers, 'lab', $self->obj )
               if @teachers;
         }
     }

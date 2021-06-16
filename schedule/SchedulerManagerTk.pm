@@ -25,7 +25,6 @@ use Tk::InitGui;
 use Tk::ToolBar;
 use PerlLib::Colours;
 use GuiSchedule::View;
-use GuiSchedule::GuiSchedule;
 use GuiSchedule::DataEntry;
 use GuiSchedule::EditCourses;
 
@@ -82,9 +81,6 @@ sub create_main_window {
     # Gets and sets the colours and fonts
     ( $Colours, $Fonts ) = InitGui->set($mw);
 
-    use Data::Dumper;
-    print Dumper $Colours;
-
     # Hard code the colours
     $Colours = {
                  WorkspaceColour           => "#eeeeee",
@@ -104,6 +100,10 @@ sub create_main_window {
     SetSystemColours( $mw, $Colours );
     $mw->configure( -bg => $Colours->{WorkspaceColour} );
     $self->{-mw} = $mw;
+}
+sub mw {
+    my $self = shift;
+    return $self->{-mw};
 }
 
 # ============================================================================
@@ -604,26 +604,27 @@ sub set_gui_schedule {
     sub draw_view_choices {
         my $self        = shift;
         my $default_tab = shift;
-        my $info_ptr    = shift;
+        my $all_view_choices   = shift;
 
         my $f = $Pages{ lc($default_tab) };
 
-        $guiSchedule->reset_button_refs();
+        $guiSchedule->gui->reset_button_refs();
 
         $frame->destroy if $frame;
 
         $frame = $f->Frame->pack( -expand => 1, -fill => 'both' );
 
-        foreach my $frame_info (@$info_ptr) {
-            my $view =
-              $frame->LabFrame( -label => $frame_info->[1], )
+        foreach my $view_choices (@$all_view_choices) {
+            my $view_choices_frame =
+              $frame->LabFrame( -label => $view_choices->title, )
               ->pack( -expand => 1, -fill => 'both' );
 
-            my $view2 =
-              $view->Scrolled( 'Frame', -scrollbars => "osoe" )
+            my $view_choices_scrolled_frame =
+              $view_choices_frame->Scrolled( 'Frame', -scrollbars => "osoe" )
               ->pack( -expand => 1, -fill => 'both' );
 
-            $guiSchedule->create_frame( $view2, $frame_info );
+            $guiSchedule->gui->create_buttons_for_frame(
+             $view_choices_scrolled_frame, $view_choices );
         }
 
     }

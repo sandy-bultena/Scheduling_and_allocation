@@ -7,7 +7,8 @@ use FindBin;
 use lib "$FindBin::Bin/..";
 use GuiSchedule::GuiBlocks;
 use GuiSchedule::View;
-use Schedule::Undo; 
+use Schedule::Undo;
+use GuiSchedule::GuiScheduleTk;
 
 =head1 NAME
 
@@ -15,7 +16,7 @@ GuiSchedule -
 
 =head1 VERSION
 
-Version 1.00
+Version 2.00
 
 =head1 SYNOPSIS
 
@@ -77,22 +78,28 @@ GuiSchedule object
 # -------------------------------------------------------------------
 # new
 #--------------------------------------------------------------------
+my $gui;
+
 sub new {
-    my $this      = shift;
-    my $gui        = shift;
+    my $class      = shift;
+    my $gui_main  = shift;
     my $dirtyFlag = shift;
     my $schedule  = shift;
-    my $mw = $gui->{-mw};
 
-    my $self = {};
+    $gui = GuiScheduleTk->new($gui_main);
+
+    my $self = {-gui=>$gui,-gui_main=>$gui_main};
 
     bless $self;
     $self->{-id} = $Max_id++;
-    $self->main_window($mw);
     $self->dirty_flag($dirtyFlag);
     $self->schedule_ptr($schedule);
 
     return $self;
+}
+sub gui {
+    my $self = shift;
+    return $self->{-gui};
 }
 
 # =================================================================
@@ -108,18 +115,6 @@ Returns the unique id for this GuiSchedule object.
 sub id {
     my $self = shift;
     return $self->{-id};
-}
-
-=head2 main_window ( [MainWindow] )
-
-Get/sets the MainWindow for this GuiSchedule object.
-
-=cut
-
-sub main_window {
-    my $self = shift;
-    $self->{-mainWindow} = shift if @_;
-    return $self->{-mainWindow};
 }
 
 =head2 schedule_ptr ( [Schedule] )
@@ -226,97 +221,115 @@ sub undo {
     my $self = shift;
     my $type = shift;
 
-    # stores current undo/redo
+    # ------------------------------------------------------------------------
+    # get the undo/redo
+    # ------------------------------------------------------------------------
     my $action;
-
-    # get first undo from stack
     if ( $type eq 'undo' ) {
-        my @undoes = $self->undoes;
-        my $size   = $self->undoes;
-        if ( $size <= 0 ) { return; }
-        $action = pop @undoes;
+        $action = pop $self->undoes;
     }
     else {
-
-        # get first redo from stack
-        my @redoes = $self->redoes;
-        my $size   = $self->redoes;
-        if ( $size <= 0 ) { return; }
-        $action = pop @redoes;
+        $action = pop $self->redoes;
     }
+    return unless defined $action;
 
-    my @blocks;
+    # ------------------------------------------------------------------------
+    # process action
+    # ------------------------------------------------------------------------
     my $schedule_ptr = $self->schedule_ptr;
     my $schedule     = $$schedule_ptr;
 
-    my $block;
-    my $obj = $action->origin_obj;
-
-    #-------- Code for undo/redo moving block in same schedule --------#
+    # ------------------------------------------------------------------------
+    # Processing a simply change in either date/time within a single view
+    # (no switching labs or teachers)
+    # ------------------------------------------------------------------------
 
     if ( $action->move_type eq "Day/Time" ) {
-        if ( $obj->isa("Teacher") ) {
-            @blocks = $schedule->blocks_for_teacher($obj);
-        }
-        elsif ( $obj->isa("Lab") ) {
-            @blocks = $schedule->blocks_in_lab($obj);
-        }
-        else {
-            @blocks = $schedule->blocks_for_stream($obj);
-        }
 
-        # find block to undo/redo
-        foreach my $b (@blocks) {
-            if ( $b->id == $action->block_id ) {
-                $block = $b;
-                last;
-            }
-        }
+        my $obj = $action->origin_obj;
+        my $block = _find_block_to_apply_undo_redo( $action, $obj );
+
+        # --------------------------------------------------------------------
+        # make new undo/redo object as necessary
+        # --------------------------------------------------------------------
+        my $redo_or_undo = Undo->new(
+                                      $block->id,  $block->start,
+                                      $block->day, $action->origin_obj,
+                                      $action->move_type
+        );
 
         if ( $type eq 'undo' ) {
-
-            # performing undo, store current block time/day for redo
-            my $redo = Undo->new( $block->id, $block->start, $block->day,
-                                  $action->origin_obj, $action->move_type );
-            $self->add_redo($redo);
+            $self->add_redo($redo_or_undo);
             $self->remove_last_undo;
-            $View::Undo_left = scalar $self->undoes . " undoes left";
-            $View::Redo_left = scalar $self->redoes . " redoes left";
         }
         else {
-
-            # performing redo, store current block time/day for undoobj          my $undo = Undo->new( $block->id, $block->start, $block->day,
-            my $undo = Undo->new ( $block->id, $block->start, $block->day, 
-                                $action->origin_obj, $action->move_type);
-            $self->add_undo($undo);
+            $self->add_undo($redo_or_undo);
             $self->remove_last_redo;
-            $View::Undo_left = scalar $self->undoes . " undoes left";
-            $View::Redo_left = scalar $self->redoes . " redoes left";
         }
 
+        # --------------------------------------------------------------------
         # perform local undo/redo
+        # --------------------------------------------------------------------
         $block->start( $action->origin_start );
         $block->day( $action->origin_day );
 
         # update all views to re-place blocks
         $self->redraw_all_views;
-        return;
     }
 
-    #-------- Code for undo/redo moving block across schedules --------#
-
-    my $new_obj = $action->new_obj;
-
-    if ( $new_obj->isa("Teacher") ) {
-        @blocks = $schedule->blocks_for_teacher($new_obj);
-    }
-    elsif ( $new_obj->isa("Lab") ) {
-        @blocks = $schedule->blocks_in_lab($new_obj);
-    }
+    # ------------------------------------------------------------------------
+    # moved a teacher from one course to another, or moved block from
+    # one lab to a different lab
+    # ------------------------------------------------------------------------
     else {
-        @blocks = $schedule->blocks_for_stream($new_obj);
-    }
 
+        my $original_obj = $action->origin_obj;
+        my $target_obj   = $action->new_obj;
+        my $block = _find_block_to_apply_undo_redo( $action, $target_obj );
+
+        # --------------------------------------------------------------------
+        # make new undo/redo object as necessary
+        # --------------------------------------------------------------------
+        my $redo_or_undo = Undo->new(
+                                      $action->block_id,  $block->start,
+                                      $block->day,        $action->new_obj,
+                                      $action->move_type, $action->origin_obj
+        );
+        if ( $type eq 'undo' ) {
+            $self->add_redo($redo_or_undo);
+            $self->remove_last_undo;
+        }
+        else {
+            $self->add_undo($redo_or_undo);
+            $self->remove_last_redo;
+        }
+
+        # reassign teacher/lab to block
+        if ( $action->move_type eq 'teacher' ) {
+            $block->remove_teacher($target_obj);
+            $block->assign_teacher($original_obj);
+            $block->section->remove_teacher($target_obj);
+            $block->section->assign_teacher($original_obj);
+        }
+        elsif ( $action->move_type eq 'lab' ) {
+            $block->remove_lab($target_obj);
+            $block->assign_lab($original_obj);
+        }
+
+        # update all views to re-place blocks
+        $self->redraw_all_views;
+    }
+}
+
+sub _find_block_to_apply_undo_redo {
+    my $self         = shift;
+    my $action       = shift;
+    my $obj          = shift;
+    my $schedule_ptr = $self->schedule_ptr;
+    my $schedule     = $$schedule_ptr;
+
+    my $block;
+    my @blocks = $schedule->get_blocks_for_obj($obj);
     foreach my $b (@blocks) {
         if ( $b->id == $action->block_id ) {
             $block = $b;
@@ -324,47 +337,7 @@ sub undo {
         }
     }
 
-    if ( $type eq 'undo' ) {
-
-        # performing undo, setup redo
-        my $redo = Undo->new(
-                              $action->block_id,  $block->start,
-                              $block->day,        $action->new_obj,
-                              $action->move_type, $action->origin_obj
-                            );
-        $self->add_redo($redo);
-        $self->remove_last_undo;
-        $View::Undo_left = scalar $self->undoes . " undoes left";
-        $View::Redo_left = scalar $self->redoes . " redoes left";
-    }
-    else {
-
-        # performing redo, setup undo
-        my $undo = Undo->new(
-                              $action->block_id,  $block->start,
-                              $block->day,        $action->new_obj,
-                              $action->move_type, $action->origin_obj
-                            );
-        $self->add_undo($undo);
-        $self->remove_last_redo;
-        $View::Undo_left = scalar $self->undoes . " undoes left";
-        $View::Redo_left = scalar $self->redoes . " redoes left";
-    }
-
-    # reassign teacher/lab to block
-    if ( $action->move_type eq 'teacher' ) {
-        $block->remove_teacher($new_obj);
-        $block->assign_teacher($obj);
-        $block->section->remove_teacher($new_obj);
-        $block->section->assign_teacher($obj);
-    }
-    elsif ( $action->move_type eq 'lab' ) {
-        $block->remove_lab($new_obj);
-        $block->assign_lab($obj);
-    }
-
-    # update all views to re-place blocks
-    $self->redraw_all_views;
+    return $block;
 }
 
 =head2 add_undo ( Undo )
@@ -395,35 +368,6 @@ sub add_redo {
     $self->{-redoes} = [] unless $self->{-redoes};
     push @{ $self->{-redoes} }, $redo;
     return $self;
-}
-
-=head2 add_button_refs ( \button, Teacher/Lab/Stream Object )
-
-Adds a button reference to the hash of all button references and the 
-Object it is associated to.
-
-=cut
-
-sub add_button_refs {
-    my $self = shift;
-    my $btn  = shift;
-    my $obj  = shift;
-    $self->{-buttonRefs} = {} unless $self->{-buttonRefs};
-
-    # save
-    $self->{-buttonRefs}->{$obj} = $btn;
-    return $self;
-}
-
-=head2 _button_refs 
-
-Returns a hash of all button hashes for this GuiSchedule object
-
-=cut
-
-sub _button_refs {
-    my $self = shift;
-    return $self->{-buttonRefs};
 }
 
 =head2 add_guischedule_to_views ( )
@@ -469,26 +413,6 @@ sub remove_all_views {
     return $self;
 }
 
-=head2 remove_undo ( Undo )
-
-Remove a Undo from the list of Undoes for this GuiSchedule object
-
-=cut
-
-sub remove_undo {
-    my $self = shift;
-    my $undo = shift;
-
-    for ( my $i = 0 ; $i < scalar @{ $self->{-undoes} } ; $i++ ) {
-        if ( @{ $self->{-undoes} }[$i]->id == $undo->id ) {
-            delete @{ $self->{-undoes} }[$i];
-            last;
-        }
-    }
-
-    return $self;
-}
-
 =head2 remove_last_undo ( )
 
 Remove last undo
@@ -510,25 +434,6 @@ Remove last redo
 sub remove_last_redo {
     my $self = shift;
     pop @{ $self->{-redoes} };
-    return $self;
-}
-
-=head2 remove_redo ( Undo )
-
-Remove a Redo from the list of Redoes for this GuiSchedule object
-
-=cut
-
-sub remove_redo {
-    my $self = shift;
-    my $redo = shift;
-
-    for ( my $i = 0 ; $i < scalar @{ $self->{-redoes} } ; $i++ ) {
-        if ( @{ $self->{-redoes} }[$i]->id == $redo->id ) {
-            delete @{ $self->{-redoes} }[$i];
-            last;
-        }
-    }
     return $self;
 }
 
@@ -572,19 +477,6 @@ sub destroy_all {
     }
     $self->remove_all_undoes;
     $self->remove_all_redoes;
-    $View::Undo_left = scalar $self->undoes . " undoes left";
-    $View::Redo_left = scalar $self->redoes . " redoes left";
-}
-
-=head2 reset_button_refs 
-
-Resets the hash of button references for this GuiSchedule object.
-
-=cut
-
-sub reset_button_refs {
-    my $self = shift;
-    $self->{-buttonRefs} = {};
 }
 
 =head2 _close_view ( View )
@@ -653,7 +545,7 @@ sub update_for_conflicts {
     my $openViews = $self->views;
 
     foreach my $view ( values %$openViews ) {
-        $view->update_for_conflicts($view->type);
+        $view->update_for_conflicts( $view->type );
     }
 }
 
@@ -666,58 +558,39 @@ the colour of the button accordingly.
 
 sub determine_button_colours {
 
-    my $self  = shift;
-    my $array = shift;
-    my $type  = shift;
-    
+    my $self         = shift;
+    my $view_choices = shift;
 
-    # get schedule object from reference
-    my $schedule_ptr = $self->schedule_ptr;
-    my $schedule     = $$schedule_ptr;
+    foreach my $view_choice (@$view_choices) {
+        my $individual_schedules = $view_choices->schedule_objects;
+        my $type                 = $view_choice->type;
 
-    # calculate conflicts
-    $schedule->calculate_conflicts;
+        # get schedule object from reference
+        my $schedule_ptr = $self->schedule_ptr;
+        my $schedule     = $$schedule_ptr;
 
-    my @blocks;
+        # calculate conflicts
+        $schedule->calculate_conflicts;
 
-    # for every teacher/lab/stream
-    foreach my $obj (@$array) {
+        my @blocks;
 
-        # get the blocks for the current teacher/lab/stream
-        if ( $type eq "teacher" ) {
-            @blocks = $schedule->blocks_for_teacher($obj);
-        }
-        elsif ( $type eq "lab" ) {
-            @blocks = $schedule->blocks_in_lab($obj);
-        }
-        else {
-            @blocks = $schedule->blocks_for_stream($obj);
-        }
+        # for every teacher, lab, stream schedule
+        foreach my $individual_schedule (@$individual_schedules) {
+            @blocks = $schedule->get_blocks_for_obj($individual_schedule);
 
-        # what is this view's conflict? start with 0
-        my $view_conflict = 0;
+            # what is this view's conflict? start with 0
+            my $view_conflict = 0;
 
-        # for every block
-        foreach my $block (@blocks) {
-            $view_conflict =
-              Conflict->most_severe( $view_conflict | $block->is_conflicted, $type );
-            last if $view_conflict == $Conflict::Sorted_Conflicts[0];
-        }
+            # for every block
+            foreach my $block (@blocks) {
+                $view_conflict =
+                  Conflict->most_severe( $view_conflict | $block->is_conflicted,
+                                         $type );
+                last if $view_conflict == $Conflict::Sorted_Conflicts[0];
+            }
 
-        # get the button associated to the current teacher/lab/stream
-        my $button_ptrs = $self->_button_refs;
-        my $btn         = $button_ptrs->{$obj};
+            $gui->set_button_colour( $individual_schedule, $view_conflict );
 
-        # set button colour to conflict colour if there is a conflict
-        my $colour = $SchedulerManagerTk::Colours->{ButtonBackground};
-        if ($view_conflict) {
-            $colour = Conflict->Colours->{$view_conflict} || 'red';
-        }
-        my $active = Colour->darken(10,$colour);
-        if ($btn && $$btn) {
-            $$btn->configure(
-                       -background =>$colour,
-                       -activebackground => $active);
         }
     }
 }
@@ -726,91 +599,26 @@ sub determine_button_colours {
 # creators
 # =================================================================
 
-=head2 create_frame ( Frame, Type )
-
-Populates frame with buttons for all Teachers, Labs or Streams depending on Type in alphabetical order.
-
-=cut
-
-sub create_frame {
-    
-    my $self        = shift;
-    my $frame       = shift;
-    my $info        = shift;
-     my $command_sub = shift || \&create_new_view;
-    my $ordered = $info->[3];
-    my $names = $info->[2];
-    my $type = $info->[0];
-
-    my $row = 0;
-    my $col = 0;
-
-    # determine how many buttons should be on one row
-    my $arr_size = scalar @{$ordered};
-    my $divisor  = 2;
-    if ( $arr_size > 10 ) { $divisor = 4; }
-
-    # for every object
-    my $i = 0;
-    foreach my $obj (@$ordered) {
-        my $name = $names->[$i];
-        $i++;
-
-        # create the command array reference including the GuiSchedule,
-        # the Teacher/Lab/Stream, it's type
-        my $command = [ $command_sub, $self, $obj, $type ];
-
-        # create the button on the frame
-        my $btn = $frame->Button( -text => $name, -command => $command )->grid(
-                                                              -row    => $row,
-                                                              -column => $col,
-                                                              -sticky => "nsew",
-                                                              -ipadx  => 30,
-                                                              -ipady  => 10
-        );
-
-        # pass the button reference the the event handler.
-        push( @{$command}, \$btn );
-
-        # add it to hash of button references
-        $self->add_button_refs( \$btn, $obj );
-
-        my $openView = $self->is_open( $obj->id, $type );
-        $col++;
-
-        # reset to next row
-        if ( $col >= ( $arr_size / $divisor ) ) { $row++; $col = 0; }
-    }
-
-    # determine the colour of the buttons for
-    # every teacher/lab/stream in the frame
-    
-    $self->determine_button_colours( \@$ordered, $type );
-}
-
-=head2 _create_view ( Array Pointer, Type )
+=head2 create_view ( Array Pointer, Type )
 
 Preparation function for creating a new View when double clicking on a GuiBlock.
 
 =cut
 
-sub _create_view {
+sub create_view {
     my $self    = shift;
-    my $arr_ptr = shift;
+    my $schedule_objs_ptr = shift;
     my $type    = shift;
     my $ob      = shift;
     my $obj_id  = $ob->id if $ob;
     my $btn;
-    my @array = @$arr_ptr;
 
     if   ( $type eq 'teacher' ) { $type = 'lab'; }
     else                        { $type = 'teacher'; }
 
-    foreach my $obj (@array) {
+    foreach my $obj (@$schedule_objs_ptr) {
         unless ( defined($obj_id) && $obj_id == $obj->id ) {
-            my $button_ptrs = $self->_button_refs;
-            $btn = $button_ptrs->{$obj};
-            $self->create_new_view( $obj, $type, $btn );
+            $self->create_new_view( $obj, $type);
         }
     }
 }
@@ -828,8 +636,7 @@ sub create_new_view {
     my $self    = shift;
     my $obj     = shift;
     my $type    = shift;
-    my $btn_ptr = shift;
-    
+
     my $mw           = $self->main_window;
     my $open         = $self->is_open( $obj->id, $type );
     my $schedule_ptr = $self->schedule_ptr;
@@ -838,7 +645,7 @@ sub create_new_view {
     if ( $open == 0 ) {
         if ( $ENV{DEBUG} ) {
             print "Calling new view with <$mw>, <$schedule>, "
-              . "<$obj>, <$btn_ptr>\n";
+              . "<$obj>\n";
         }
         my $view = View->new( $mw, $schedule, $obj );
 
@@ -862,7 +669,7 @@ sub is_open {
     my $self = shift;
     my $id   = shift;
     my $type = shift;
-    
+
     my $openViews = $self->views;
     foreach my $view ( values %$openViews ) {
         if ( $view->type eq $type ) {

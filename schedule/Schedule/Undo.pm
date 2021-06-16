@@ -46,7 +46,7 @@ our $Max_id = 0;
 
 =head2 new ()
 
-creates a GuiSchedule object
+creates a Undo object
 
 B<Parameters>
 
@@ -72,7 +72,7 @@ Undo object
 # new
 #--------------------------------------------------------------------
 sub new {
-	my $this = shift;
+	my $class = shift;
 	my $block_id = shift;
 	my $origin_start = shift;
 	my $origin_day = shift;

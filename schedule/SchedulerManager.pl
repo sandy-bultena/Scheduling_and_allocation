@@ -30,6 +30,7 @@ use Export::PDF;           # write PDF schecdules
 use Export::Latex;         # write Latex schedules
 use Export::CSV;           # write CSV schedules
 use SchedulerManagerTk;    # gui code
+use GuiSchedule::GuiSchedule;
 use SharedData;
 
 # ==================================================================
@@ -85,14 +86,13 @@ $gui->create_status_bar( \$Current_schedule_file );
 # pre-process procedures
 # ==================================================================
 $gui->bind_schedule_and_dirty_flag( \$Schedule, \$Dirtyflag );
-$gui->define_notebook_tabs(\@Scheduler::Required_pages);
+$gui->define_notebook_tabs( \@Scheduler::Required_pages );
 
 $gui->define_exit_callback( \&exit_schedule );
 
-    # create the guiSchedule (which shows all the schedule views etc.
-    my $guiSchedule = GuiSchedule->new( $gui, \$Dirtyflag, \$Schedule );
-    $gui->set_gui_schedule ($guiSchedule);
-
+# create the guiSchedule (which shows all the schedule views etc.
+my $guiSchedule = GuiSchedule->new( $gui, \$Dirtyflag, \$Schedule );
+$gui->set_gui_schedule($guiSchedule);
 
 # ==================================================================
 # Start the event loop
@@ -287,7 +287,8 @@ sub new_schedule {
     # TODO: save previous schedule?
     $Schedule = Schedule->new();
 
-    $gui->update_for_new_schedule_and_show_page($Scheduler::Pages_lookup{Schedule}->name);
+    $gui->update_for_new_schedule_and_show_page(
+                                     $Scheduler::Pages_lookup{Schedule}->name );
 
     undef $Current_schedule_file;
     $Dirtyflag = 0;
@@ -401,7 +402,8 @@ sub open_schedule {
 
     # update the gui
     # update for new schedule
-    $gui->update_for_new_schedule_and_show_page($Scheduler::Pages_lookup{Schedules}->name);
+    $gui->update_for_new_schedule_and_show_page(
+                                    $Scheduler::Pages_lookup{Schedules}->name );
 
     $Dirtyflag = 0;
     return;
@@ -436,23 +438,24 @@ sub update_choices_of_schedule_views {
         push @stream_names, $obj->number;
     }
 
-    $gui->draw_view_choices(
-                             'Schedules',
-                             [
-                                [
-                                   'teacher',       'Teacher View',
-                                   \@teacher_names, \@teacher_ordered
-                                ],
-                                [
-                                   'lab',       'Lab Views',
-                                   \@lab_names, \@lab_ordered
-                                ],
-                                [
-                                   'stream',       'Stream Views',
-                                   \@stream_names, \@stream_ordered
-                                ],
-                             ]
-    );
+    my $view_choices = [
+                         ViewChoices->new(
+                                           'teacher',       'Teacher View',
+                                           \@teacher_names, \@teacher_ordered
+                         ),
+                         ViewChoices->new(
+                                  'lab', 'Lab Views', \@lab_names, \@lab_ordered
+                         ),
+                         ViewChoices->new(
+                                           'stream',       'Stream Views',
+                                           \@stream_names, \@stream_ordered
+                         ),
+    ];
+    use Data::Dumper;print Dumper $view_choices;die;
+
+    $gui->draw_view_choices( 'Schedules', $view_choices );
+    
+    $guiSchedule->determine_button_colours($view_choices);
 }
 
 # ==================================================================
@@ -502,11 +505,10 @@ sub update_overview {
     else {
         push @teacher_text, 'There is no schedule, please open one';
     }
-    
-    $gui->draw_overview("Overview",\@course_text,\@teacher_text);
+
+    $gui->draw_overview( "Overview", \@course_text, \@teacher_text );
 
 }
-
 
 # ==================================================================
 # draw_edit_teachers
@@ -517,14 +519,15 @@ sub update_overview {
 
         sub update_edit_teachers {
 
-            my $f = $gui->get_notebook_page($Scheduler::Pages_lookup{Teachers}->name);
+            my $f =
+              $gui->get_notebook_page(
+                                     $Scheduler::Pages_lookup{Teachers}->name );
             if ($de) {
                 $de->refresh( $Schedule->teachers );
             }
             else {
-                $de =
-                  DataEntry->new( $f, $Schedule->teachers, $Schedule,
-                                  $Dirtyflag, $guiSchedule );
+                $de = DataEntry->new( $f, $Schedule->teachers, $Schedule,
+                                      $Dirtyflag, $guiSchedule );
             }
         }
     }
@@ -535,21 +538,20 @@ sub update_overview {
 # ==================================================================
 {
     my $de;
-    
 
-        sub update_edit_streams {
+    sub update_edit_streams {
 
-            my $f = $gui->get_notebook_page($Scheduler::Pages_lookup{Streams}->name);
-            if ($de) {
-                $de->refresh( $Schedule->streams );
-            }
-            else {
-                $de =
-                  DataEntry->new( $f, $Schedule->streams, $Schedule,
-                                  $Dirtyflag, $guiSchedule );
-            }
+        my $f =
+          $gui->get_notebook_page( $Scheduler::Pages_lookup{Streams}->name );
+        if ($de) {
+            $de->refresh( $Schedule->streams );
         }
-    
+        else {
+            $de = DataEntry->new( $f, $Schedule->streams, $Schedule, $Dirtyflag,
+                                  $guiSchedule );
+        }
+    }
+
 }
 
 # ==================================================================
@@ -561,14 +563,15 @@ sub update_overview {
 
         sub draw_edit_labs {
 
-            my $f = $gui->get_notebook_page($Scheduler::Pages_lookup{Labs}->name);;
+            my $f =
+              $gui->get_notebook_page( $Scheduler::Pages_lookup{Labs}->name );
             if ($de) {
                 $de->refresh( $Schedule->labs );
             }
             else {
                 $de = $de =
-                  DataEntry->new( $f, $Schedule->labs, $Schedule,
-                                  $Dirtyflag, $guiSchedule );
+                  DataEntry->new( $f, $Schedule->labs, $Schedule, $Dirtyflag,
+                                  $guiSchedule );
             }
 
         }
@@ -580,9 +583,9 @@ sub update_overview {
 # ==================================================================
 sub update_edit_courses {
     my $self = shift;
-    my $f = $gui->get_notebook_page($Scheduler::Pages_lookup{Courses}->name);;
-    EditCourses->new( $f, $Schedule, $Dirtyflag, $SchedulerManagerTk::Colours, $SchedulerManager::Fonts,
-                      $guiSchedule );
+    my $f = $gui->get_notebook_page( $Scheduler::Pages_lookup{Courses}->name );
+    EditCourses->new( $f, $Schedule, $Dirtyflag, $SchedulerManagerTk::Colours,
+                      $SchedulerManager::Fonts, $guiSchedule );
 }
 
 # ==================================================================
@@ -594,21 +597,20 @@ sub update_edit_courses {
 
         sub update_edit_labs {
 
-            my $f = $gui->get_notebook_page($Scheduler::Pages_lookup{Labs}->name);;
+            my $f =
+              $gui->get_notebook_page( $Scheduler::Pages_lookup{Labs}->name );
             if ($de) {
                 $de->refresh( $Schedule->labs );
             }
             else {
                 $de = $de =
                   DataEntry->new( $f, $Schedule->labs, $Schedule, \$Dirtyflag,
-                    $guiSchedule );
+                                  $guiSchedule );
             }
 
         }
     }
 }
-
-
 
 # ==================================================================
 # print_views

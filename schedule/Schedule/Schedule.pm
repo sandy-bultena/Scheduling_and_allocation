@@ -9,7 +9,7 @@ use lib ("$FindBin::Bin/..");
 
 use Carp;
 use YAML;
-$YAML::LoadBlessed = 1;  # default changed in YAML 1.30
+$YAML::LoadBlessed = 1;    # default changed in YAML 1.30
 
 use Schedule::Teachers;
 use Schedule::Courses;
@@ -92,7 +92,7 @@ sub new {
                  -conflicts => Conflicts->new(),
                  -labs      => Labs->new(),
                  -streams   => Streams->new(),
-               };
+    };
 
     # reset MAX_ID for all classes that have Max_id
     foreach my $class (@Schedule_classes) {
@@ -100,19 +100,6 @@ sub new {
         my $m = $class . "::Max_id";
         ${$m} = 0 if defined ${$m};
     }
-
-    #$GuiBlocks::Max_id=0;
-    #$GuiSchedule::Max_id=0;
-    #$Undo::Max_id=0;
-    #$View::Max_id=0;
-
-    #$Block::Max_id=0;
-    #$Course::Max_id=0;
-    #$Lab::Max_id=0;
-    #$Section::Max_id=0;
-    #$Stream::Max_id=0;
-    #$Teacher::Max_id=0;
-    #$Time_slot::Max_id=0;
 
     bless $self, $class;
     return $self;
@@ -220,7 +207,7 @@ sub write_YAML {
                         $Course::Max_id,    $Lab::Max_id,
                         $Section::Max_id,   $Teacher::Max_id,
                         $Time_slot::Max_id, $Stream::Max_id,
-                      );
+        );
     };
     if ($@) {
         croak "Cannot create save data";
@@ -442,7 +429,7 @@ allocated type course
 sub allocated_courses_for_teacher {
     my $self    = shift;
     my $teacher = shift;
-    return grep {$_->needs_allocation} $self->courses_for_teacher($teacher);
+    return grep { $_->needs_allocation } $self->courses_for_teacher($teacher);
 }
 
 # =================================================================
@@ -531,6 +518,33 @@ sub blocks_in_lab {
     else {
         return [ values %blocks ];
     }
+}
+
+# =================================================================
+# get block info for lab
+# =================================================================
+
+=head2 get_blocks_for_obj 
+
+Returns a list of courses blocks associated with the specified object
+
+=cut
+
+sub get_blocks_for_obj {
+    my $self = shift;
+    my $obj  = shift;
+
+    my @blocks;
+    if ( $obj->isa("Teacher") ) {
+        @blocks = self->blocks_for_teacher($obj);
+    }
+    elsif ( $obj->isa("Lab") ) {
+        @blocks = $self->blocks_in_lab($obj);
+    }
+    else {
+        @blocks = $self->blocks_for_stream($obj);
+    }
+    return @blocks;
 }
 
 # =================================================================
@@ -1092,7 +1106,7 @@ sub teacher_details {
 
         # sections
         foreach my $s ( sort { $a->number <=> $b->number } $c->sections ) {
-            if ($s->has_teacher($teacher)) {
+            if ( $s->has_teacher($teacher) ) {
                 $text .= "\n\t$s\n";
                 $text .= "\t" . "- " x 25 . "\n";
 
@@ -1104,7 +1118,7 @@ sub teacher_details {
                     } $s->blocks
                   )
                 {
-                    if ($b->has_teacher($teacher)) {
+                    if ( $b->has_teacher($teacher) ) {
                         $text .= "\t"
                           . $b->day . " "
                           . $b->start . ", "
