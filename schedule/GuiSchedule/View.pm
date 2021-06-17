@@ -84,9 +84,10 @@ View object
 sub new {
 
     my $class    = shift;
-    my $mw       = shift;
+    my $callers_gui       = shift;
     my $schedule = shift;
     my $obj      = shift;
+    my $mw = $callers_gui->mw;
 
     # ---------------------------------------------------------------
     # type of view depends on which object it is for
@@ -601,22 +602,9 @@ for that given view
 sub set_view_button_colours {
     my $self = shift;
 
-    # get all teachers, labs and streams and update
-    # the button colours based on the new positions of guiblocks
-    my @teachers = $self->schedule->all_teachers;
-    my @labs     = $self->schedule->all_labs;
-    my @streams  = $self->schedule->all_streams;
-
     if ( $self->guiSchedule ) {
 
-        $self->guiSchedule->determine_button_colours( \@teachers, 'teacher' )
-          if @teachers;
-
-        $self->guiSchedule->determine_button_colours( \@labs, 'lab' )
-          if @labs;
-
-        $self->guiSchedule->determine_button_colours( \@streams, 'stream' )
-          if @streams;
+        $self->guiSchedule->determine_button_colours( )
     }
 
 }
@@ -936,7 +924,7 @@ Close the current View.
 sub _close_view {
     my $self        = shift;
     my $guiSchedule = $self->guiSchedule;
-    $guiSchedule->_close_view($self);
+    $guiSchedule->close_view($self);
 }
 
 # =================================================================

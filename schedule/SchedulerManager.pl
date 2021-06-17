@@ -415,45 +415,9 @@ sub open_schedule {
 
 sub update_choices_of_schedule_views {
 
-    # get teacher/lab/stream info
-    my @teacher_array = $Schedule->all_teachers;
-    my @teacher_ordered = sort { $a->lastname cmp $b->lastname } @teacher_array;
-    my @teacher_names;
-    foreach my $obj (@teacher_ordered) {
-        my $name = uc( substr( $obj->firstname, 0, 1 ) ) . " " . $obj->lastname;
-        push @teacher_names, $name;
-    }
-
-    my @lab_array = $Schedule->all_labs;
-    my @lab_ordered = sort { $a->number cmp $b->number } @lab_array;
-    my @lab_names;
-    foreach my $obj (@lab_ordered) {
-        push @lab_names, $obj->number;
-    }
-
-    my @stream_array = $Schedule->all_streams;
-    my @stream_ordered = sort { $a->number cmp $b->number } @stream_array;
-    my @stream_names;
-    foreach my $obj (@stream_ordered) {
-        push @stream_names, $obj->number;
-    }
-
-    my $view_choices = [
-                         ViewChoices->new(
-                                           'teacher',       'Teacher View',
-                                           \@teacher_names, \@teacher_ordered
-                         ),
-                         ViewChoices->new(
-                                  'lab', 'Lab Views', \@lab_names, \@lab_ordered
-                         ),
-                         ViewChoices->new(
-                                           'stream',       'Stream Views',
-                                           \@stream_names, \@stream_ordered
-                         ),
-    ];
-    use Data::Dumper;print Dumper $view_choices;die;
-
-    $gui->draw_view_choices( 'Schedules', $view_choices );
+    my $btn_callback = $guiSchedule->get_callback_for_buttons;
+    my $view_choices = $guiSchedule->get_view_choices();
+    $gui->draw_view_choices( 'Schedules', $view_choices, $btn_callback );
     
     $guiSchedule->determine_button_colours($view_choices);
 }

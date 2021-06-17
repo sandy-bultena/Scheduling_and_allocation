@@ -128,6 +128,10 @@ sub schedule_ptr {
     $self->{-schedule_ptr} = shift if @_;
     return $self->{-schedule_ptr};
 }
+sub schedule {
+    my $self = shift;
+    return ${$self->{-schedule_ptr}};
+}
 
 =head2 dirty_flag ( [DirtyFlag] )
 
@@ -152,33 +156,6 @@ sub set_dirty {
     ${ $self->{-dirty} } = 1;
 }
 
-=head2 views ( )
-
-Get the Views of this GuiSchedule object.
-
-=cut
-
-sub views {
-    my $self = shift;
-    return $self->{-views};
-}
-
-=head2 add_view ( View )
-
-Add a View to the list of Views for this GuiSchedule object.
-
-=cut
-
-sub add_view {
-    my $self = shift;
-    my $view = shift;
-    $self->{-views} = {} unless $self->{-views};
-
-    # save
-    $self->{-views}->{ $view->id } = $view;
-    return $self;
-}
-
 =head2 Undoes ( )
 
 Get the Undoes of this GuiSchedule object.
@@ -187,12 +164,7 @@ Get the Undoes of this GuiSchedule object.
 
 sub undoes {
     my $self = shift;
-    if (wantarray) {
         return @{ $self->{-undoes} };
-    }
-    else {
-        return scalar @{ $self->{-undoes} };
-    }
 }
 
 =head2 Redoes ( )
@@ -203,12 +175,13 @@ Get the Redoes of this GuiSchedule object.
 
 sub redoes {
     my $self = shift;
-    if (wantarray) {
         return @{ $self->{-redoes} };
-    }
-    else {
-        return scalar @{ $self->{-redoes} };
-    }
+}
+
+sub close_view {
+    my $self = shift;
+    my $view = shift;
+    $gui->close_view($view);
 }
 
 =head2 undo ( )
@@ -226,28 +199,26 @@ sub undo {
     # ------------------------------------------------------------------------
     my $action;
     if ( $type eq 'undo' ) {
-        $action = pop $self->undoes;
+        my @undoes = $self->undoes;
+        $action = pop @undoes;
     }
     else {
-        $action = pop $self->redoes;
+        my @redoes = $self->redoes;
+        $action = pop @redoes;
     }
     return unless defined $action;
 
     # ------------------------------------------------------------------------
     # process action
     # ------------------------------------------------------------------------
-    my $schedule_ptr = $self->schedule_ptr;
-    my $schedule     = $$schedule_ptr;
-
-    # ------------------------------------------------------------------------
+ 
     # Processing a simply change in either date/time within a single view
     # (no switching labs or teachers)
-    # ------------------------------------------------------------------------
-
+ 
     if ( $action->move_type eq "Day/Time" ) {
 
         my $obj = $action->origin_obj;
-        my $block = _find_block_to_apply_undo_redo( $action, $obj );
+        my $block = $self->_find_block_to_apply_undo_redo( $action, $obj );
 
         # --------------------------------------------------------------------
         # make new undo/redo object as necessary
@@ -285,7 +256,7 @@ sub undo {
 
         my $original_obj = $action->origin_obj;
         my $target_obj   = $action->new_obj;
-        my $block = _find_block_to_apply_undo_redo( $action, $target_obj );
+        my $block = $self->_find_block_to_apply_undo_redo( $action, $target_obj );
 
         # --------------------------------------------------------------------
         # make new undo/redo object as necessary
@@ -325,11 +296,9 @@ sub _find_block_to_apply_undo_redo {
     my $self         = shift;
     my $action       = shift;
     my $obj          = shift;
-    my $schedule_ptr = $self->schedule_ptr;
-    my $schedule     = $$schedule_ptr;
-
+ 
     my $block;
-    my @blocks = $schedule->get_blocks_for_obj($obj);
+    my @blocks = $self->schedule->get_blocks_for_obj($obj);
     foreach my $b (@blocks) {
         if ( $b->id == $action->block_id ) {
             $block = $b;
@@ -469,32 +438,15 @@ Closes all open Views.
 
 sub destroy_all {
     my $self = shift;
-
     my $openViews = $self->views;
 
     foreach my $view ( values %$openViews ) {
-        $self->_close_view($view);
+        $self->close_view($view);
     }
     $self->remove_all_undoes;
     $self->remove_all_redoes;
 }
 
-=head2 _close_view ( View )
-
-Closes the selected View.
-
-=cut
-
-sub _close_view {
-    my $self = shift;
-    my $view = shift;
-
-    my $toplevel = $view->toplevel;
-
-    $self->remove_view($view);
-    $self->add_guischedule_to_views;
-    $toplevel->destroy;
-}
 
 # =================================================================
 # updaters
@@ -549,6 +501,47 @@ sub update_for_conflicts {
     }
 }
 
+sub get_view_choices {
+    my $self = shift;
+    
+        # get teacher/lab/stream info
+    my @teacher_array = $self->schedule->all_teachers;
+    my @teacher_ordered = sort { $a->lastname cmp $b->lastname } @teacher_array;
+    my @teacher_names;
+    foreach my $obj (@teacher_ordered) {
+        my $name = uc( substr( $obj->firstname, 0, 1 ) ) . " " . $obj->lastname;
+        push @teacher_names, $name;
+    }
+
+    my @lab_array = $self->schedule->all_labs;
+    my @lab_ordered = sort { $a->number cmp $b->number } @lab_array;
+    my @lab_names;
+    foreach my $obj (@lab_ordered) {
+        push @lab_names, $obj->number;
+    }
+
+    my @stream_array = $self->schedule->all_streams;
+    my @stream_ordered = sort { $a->number cmp $b->number } @stream_array;
+    my @stream_names;
+    foreach my $obj (@stream_ordered) {
+        push @stream_names, $obj->number;
+    }
+
+    return [
+                         ViewChoices->new(
+                                           'teacher',       'Teacher View',
+                                           \@teacher_names, \@teacher_ordered
+                         ),
+                         ViewChoices->new(
+                                  'lab', 'Lab Views', \@lab_names, \@lab_ordered
+                         ),
+                         ViewChoices->new(
+                                           'stream',       'Stream Views',
+                                           \@stream_names, \@stream_ordered
+                         ),
+    ];
+}
+
 =head2 determine_button_colours ( Array of Teachers/Labs/Streams, Type of Object ) 
 
 Finds the highest conflict for each teacher/lab/stream in the array and sets 
@@ -559,24 +552,20 @@ the colour of the button accordingly.
 sub determine_button_colours {
 
     my $self         = shift;
-    my $view_choices = shift;
+    my $view_choices = shift || $self->get_view_choices();
 
     foreach my $view_choice (@$view_choices) {
-        my $individual_schedules = $view_choices->schedule_objects;
+        my $scheduable_objs = $view_choice->scheduable_objs;
         my $type                 = $view_choice->type;
 
-        # get schedule object from reference
-        my $schedule_ptr = $self->schedule_ptr;
-        my $schedule     = $$schedule_ptr;
-
         # calculate conflicts
-        $schedule->calculate_conflicts;
+        $self->schedule->calculate_conflicts;
 
         my @blocks;
 
         # for every teacher, lab, stream schedule
-        foreach my $individual_schedule (@$individual_schedules) {
-            @blocks = $schedule->get_blocks_for_obj($individual_schedule);
+        foreach my $scheduable_obj (@$scheduable_objs) {
+            @blocks = $self->schedule->get_blocks_for_obj($scheduable_obj);
 
             # what is this view's conflict? start with 0
             my $view_conflict = 0;
@@ -589,7 +578,7 @@ sub determine_button_colours {
                 last if $view_conflict == $Conflict::Sorted_Conflicts[0];
             }
 
-            $gui->set_button_colour( $individual_schedule, $view_conflict );
+            $gui->set_button_colour( $scheduable_obj, $view_conflict );
 
         }
     }
@@ -607,18 +596,17 @@ Preparation function for creating a new View when double clicking on a GuiBlock.
 
 sub create_view {
     my $self    = shift;
-    my $schedule_objs_ptr = shift;
+    my $schedulable_objs = shift;
     my $type    = shift;
     my $ob      = shift;
     my $obj_id  = $ob->id if $ob;
-    my $btn;
 
     if   ( $type eq 'teacher' ) { $type = 'lab'; }
     else                        { $type = 'teacher'; }
 
-    foreach my $obj (@$schedule_objs_ptr) {
-        unless ( defined($obj_id) && $obj_id == $obj->id ) {
-            $self->create_new_view( $obj, $type);
+    foreach my $scheduable_obj (@$schedulable_objs) {
+        unless ( defined($obj_id) && $obj_id == $scheduable_obj->id ) {
+            $self->create_new_view( undef, $scheduable_obj, $type);
         }
     }
 }
@@ -634,20 +622,14 @@ Button Pointer is only used in debug mode
 
 sub create_new_view {
     my $self    = shift;
-    my $obj     = shift;
+    shift;  # when Tk calls this, it adds an extra object that we don't care about
+    my $scheduable_obj     = shift;
     my $type    = shift;
 
-    my $mw           = $self->main_window;
-    my $open         = $self->is_open( $obj->id, $type );
-    my $schedule_ptr = $self->schedule_ptr;
-    my $schedule     = $$schedule_ptr;
+    my $open         = $self->is_open( $scheduable_obj->id, $type );
 
-    if ( $open == 0 ) {
-        if ( $ENV{DEBUG} ) {
-            print "Calling new view with <$mw>, <$schedule>, "
-              . "<$obj>\n";
-        }
-        my $view = View->new( $mw, $schedule, $obj );
+    if ( not $open ) {
+        my $view = View->new( $gui, $self->schedule, $scheduable_obj );
 
         $self->add_view($view);
         $self->add_guischedule_to_views;
@@ -656,6 +638,11 @@ sub create_new_view {
         $open->toplevel->raise;
         $open->toplevel->focus;
     }
+}
+
+sub get_callback_for_buttons {
+    my $self = shift;
+    return sub {create_new_view($self, @_);}
 }
 
 =head2 is_open ( Teacher/Lab/Stream ID, object type )
@@ -679,6 +666,35 @@ sub is_open {
 
     return 0;
 }
+
+=head2 views ( )
+
+Get the Views of this GuiSchedule object.
+
+=cut
+
+sub views {
+    my $self = shift;
+    return $self->{-views};
+}
+
+=head2 add_view ( View )
+
+Add a View to the list of Views for this GuiSchedule object.
+
+=cut
+
+sub add_view {
+    my $self = shift;
+    my $view = shift;
+    $self->{-views} = {} unless $self->{-views};
+
+    # save
+    $self->{-views}->{ $view->id } = $view;
+    return $self;
+}
+
+
 
 # =================================================================
 # footer

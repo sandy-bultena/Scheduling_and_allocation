@@ -69,25 +69,25 @@ sub new {
     my $type  = shift;    # what type of views are available?
     my $title = shift;    # title of this collection of view choices
     my $names = shift;    # array of names used for each $schedule_object
-    my $schedule_objects = shift;
+    my $scheduable_objs = shift;
 
     # verify
     if ( $type !~ /^(teacher|lab|stream)$/ ) {
         die("You have specified an invalid type ($type) for a ViewChoice\n");
     }
 
-    # make an ordered list of names=>$schedule_objects
-    my @named_schedule_objects;
-    foreach my $i ( 0 .. scalar(@$names) ) {
-        push @named_schedule_objects,
-          NamedObject->new( $names->[$i], $schedule_objects->[$i] );
+    # make an ordered list of names=>$scheduable_objs
+    my @named_scheduable_objs;
+    foreach my $i ( 0 .. scalar(@$names)-1 ) {
+        push @named_scheduable_objs,
+          NamedObject->new( $names->[$i], $scheduable_objs->[$i] );
     }
 
     my $self = {
                  -type                   => $type,
                  -title                  => $title,
-                 -schedule_objects       => $schedule_objects,
-                 -named_schedule_objects => \@named_schedule_objects,
+                 -scheduable_objs       => $scheduable_objs,
+                 -named_scheduable_objs => \@named_scheduable_objs,
     };
     return bless $self;
 }
@@ -102,14 +102,14 @@ sub title {
     return $self->{-title};
 }
 
-sub named_schedule_objects {
+sub named_scheduable_objs {
     my $self = shift;
-    return $self->{-title};
+    return $self->{-named_scheduable_objs};
 }
 
-sub schedule_objects {
+sub scheduable_objs {
     my $self = shift;
-    return $self->{-schedule_objects};
+    return $self->{-scheduable_objs};
 }
 
 # ============================================================================
@@ -135,7 +135,7 @@ sub name {
 sub object {
     my $self = shift;
     $self->{-obj} = shift if @_;
-    return $self->{-object};
+    return $self->{-obj};
 }
 
 1;

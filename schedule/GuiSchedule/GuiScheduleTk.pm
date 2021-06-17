@@ -16,6 +16,11 @@ sub new {
     return $self;
 }
 
+sub mw {
+    my $self = shift;
+    return $self->{-mainWindow};
+}
+
 =head2 main_window ( [MainWindow] )
 
 Get/sets the MainWindow for this GuiSchedule object.
@@ -101,10 +106,9 @@ sub create_buttons_for_frame {
     my $frame        = shift;
     my $view_choices = shift;
     my $command_sub  = shift || \&create_new_view;
-    my $ordered      = $view_choices->named_schedule_objects;
+    my $ordered      = $view_choices->named_scheduable_objs;
     my $type         = $view_choices->type;
 
-use Data::Dumper; print Dumper $view_choices;
     my $row = 0;
     my $col = 0;
 
@@ -114,16 +118,16 @@ use Data::Dumper; print Dumper $view_choices;
     if ( $arr_size > 10 ) { $divisor = 4; }
 
     # for every view choice object
-    foreach my $named_schedule_obj (@$ordered) {
-        my $name = $named_schedule_obj->name;
+    foreach my $named_scheduable_obj (@$ordered) {
+        my $name = $named_scheduable_obj->name;
 
         # create the command array reference including the GuiSchedule,
         # the Teacher/Lab/Stream, it's type
-        my $command = [ $command_sub, $self, $named_schedule_obj->object, $type ];
+        my $command = [ $command_sub, $self, $named_scheduable_obj->object, $type ];
 
         # create the button on the frame
         my $btn = $frame->Button(
-                                  -text    => $named_schedule_obj->name,
+                                  -text    => $named_scheduable_obj->name,
                                   -command => $command
           )->grid(
                                           -row    => $row,
@@ -137,9 +141,8 @@ use Data::Dumper; print Dumper $view_choices;
         push( @{$command}, \$btn );
 
         # add it to hash of button references
-        $self->add_button_refs( \$btn, $named_schedule_obj->obj );
+        $self->add_button_refs( \$btn, $named_scheduable_obj->object );
 
-        my $openView = $self->is_open( $named_schedule_obj->obj->id, $type );
         $col++;
 
         # reset to next row
@@ -147,5 +150,24 @@ use Data::Dumper; print Dumper $view_choices;
     }
 
 }
+
+
+=head2 _close_view ( View )
+
+Closes the selected View.
+
+=cut
+
+sub close_view {
+    my $self = shift;
+    my $view = shift;
+
+    my $toplevel = $view->toplevel;
+
+    $self->remove_view($view);
+    $self->add_guischedule_to_views;
+    $toplevel->destroy;
+}
+
 
 1

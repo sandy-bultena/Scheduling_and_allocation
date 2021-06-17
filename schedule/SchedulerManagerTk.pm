@@ -605,6 +605,7 @@ sub set_gui_schedule {
         my $self        = shift;
         my $default_tab = shift;
         my $all_view_choices   = shift;
+        my $btn_callback = shift;
 
         my $f = $Pages{ lc($default_tab) };
 
@@ -624,7 +625,7 @@ sub set_gui_schedule {
               ->pack( -expand => 1, -fill => 'both' );
 
             $guiSchedule->gui->create_buttons_for_frame(
-             $view_choices_scrolled_frame, $view_choices );
+             $view_choices_scrolled_frame, $view_choices, $btn_callback );
         }
 
     }

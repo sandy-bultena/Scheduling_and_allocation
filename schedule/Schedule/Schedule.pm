@@ -536,7 +536,7 @@ sub get_blocks_for_obj {
 
     my @blocks;
     if ( $obj->isa("Teacher") ) {
-        @blocks = self->blocks_for_teacher($obj);
+        @blocks = $self->blocks_for_teacher($obj);
     }
     elsif ( $obj->isa("Lab") ) {
         @blocks = $self->blocks_in_lab($obj);
