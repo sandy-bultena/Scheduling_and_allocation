@@ -15,9 +15,9 @@ package Scheduler;
 # Required libraries
 # ==================================================================
 use FindBin;    # find which directory this executable is in
-use lib "$FindBin::Bin/";
-use lib "$FindBin::Bin/Library";
-our $BinDir = "$FindBin::Bin/";
+use lib "$FindBin::Bin/../";
+use lib "$FindBin::Bin/../Library";
+our $BinDir = "$FindBin::Bin/../";
 
 use YAML;       # read / write YAML files
 $YAML::LoadBlessed = 1;    # reads and process perl objects from the YAML file
@@ -29,77 +29,123 @@ use Schedule::Schedule;    # the Model (Schedule data)
 use Export::PDF;           # write PDF schecdules
 use Export::Latex;         # write Latex schedules
 use Export::CSV;           # write CSV schedules
-use SchedulerManagerTk;    # gui code
-use GuiSchedule::GuiSchedule;
+use GUI::SchedulerTk;      # gui code
+use Presentation::ViewsManager;
 use SharedData;
-
-# ==================================================================
-# Define the gui interface
-# ==================================================================
-our $gui = SchedulerManagerTk->new();
-
-foreach my $method (@Scheduler::SchedulerManagerGui_methods) {
-    unless ( $gui->can($method) ) {
-        die("You gui class does not contain method ($method)");
-    }
-}
-
-# ==================================================================
-# user preferences saved in ini file (YAML format)
-# ==================================================================
-my $User_base_dir;
-my $Preferences = {};
-
-# where to find the ini file?
-if ( $^O =~ /darwin/i ) {    # Mac OS linux
-    $User_base_dir = $ENV{"HOME"};
-}
-elsif ( $^O =~ /win/i ) {
-    $User_base_dir = $ENV{"USERPROFILE"};
-}
-else {
-    $User_base_dir = $ENV{"HOME"};
-}
-
-# read it already!
-read_ini();
 
 # ==================================================================
 # global vars
 # ==================================================================
+my $User_base_dir;
+my $Preferences = {};
 my $Schedule;                 # the current schedule
 my $Current_schedule_file;    # will save to this file when save is requested
 my $Current_directory = $Preferences->{-current_dir} || $User_base_dir;
 my $Filetypes = [ [ "Schedules", ".yaml" ], [ "All Files", "*" ] ];
 my $Dirtyflag;
+my $Gui;
+my $Views_manager;
+
+# ==================================================================
+# external.  Defined in SharedData.pm
+# ==================================================================
+our %Pages_lookup;
+
+# ==================================================================
+# main
+# ==================================================================
+sub main {
+    $Gui = SchedulerTk->new();
+
+    foreach my $method (@Scheduler::SchedulerManagerGui_methods) {
+        unless ( $Gui->can($method) ) {
+            die("You gui class does not contain method ($method)");
+        }
+    }
+    get_user_preferences();
+    create_main_window();
+    pre_process_stuff();
+    $Gui->start_event_loop();
+}
+
+# ==================================================================
+# user preferences saved in ini file (YAML format)
+# ==================================================================
+sub get_user_preferences {
+
+    # where to find the ini file?
+    if ( $^O =~ /darwin/i ) {    # Mac OS linux
+        $User_base_dir = $ENV{"HOME"};
+    }
+    elsif ( $^O =~ /win/i ) {
+        $User_base_dir = $ENV{"USERPROFILE"};
+    }
+    else {
+        $User_base_dir = $ENV{"HOME"};
+    }
+
+    # read it already!
+    read_ini();
+}
 
 # ==================================================================
 # Create the mainWindow
 # ==================================================================
-$gui->create_main_window();
-my ( $toolbar_buttons, $button_properties, $menu ) = menu_info();
-$gui->create_menu_and_toolbars( $toolbar_buttons, $button_properties, $menu );
-$gui->create_front_page( $Preferences, \&open_schedule, \&new_schedule );
-$gui->create_status_bar( \$Current_schedule_file );
+sub create_main_window() {
+    $Gui->create_main_window();
+    my ( $toolbar_buttons, $button_properties, $menu ) = menu_info();
+    $Gui->create_menu_and_toolbars( $toolbar_buttons, $button_properties,
+                                    $menu );
+    $Gui->create_front_page( $Preferences, \&open_schedule, \&new_schedule );
+    $Gui->create_status_bar( \$Current_schedule_file );
+}
 
 # ==================================================================
 # pre-process procedures
 # ==================================================================
-$gui->bind_schedule_and_dirty_flag( \$Schedule, \$Dirtyflag );
-$gui->define_notebook_tabs( \@Scheduler::Required_pages );
+sub pre_process_stuff {
+    $Gui->bind_dirty_flag( \$Dirtyflag );
+    $Gui->define_notebook_tabs( \@Scheduler::Required_pages );
 
-$gui->define_exit_callback( \&exit_schedule );
+    $Gui->define_exit_callback( \&exit_schedule );
 
-# create the guiSchedule (which shows all the schedule views etc.
-my $guiSchedule = GuiSchedule->new( $gui, \$Dirtyflag, \$Schedule );
-$gui->set_gui_schedule($guiSchedule);
+    # create the  (which shows all the schedule views etc.)
+    $Views_manager = ViewsManager->new( $Gui, \$Dirtyflag, \$Schedule );
+    $Gui->set_views_manager($Views_manager);
+}
 
 # ==================================================================
-# Start the event loop
+# read_ini
 # ==================================================================
-$gui->start_event_loop();
+sub read_ini {
 
-system("pause");
+    if ( $User_base_dir && -e "$User_base_dir/.schedule" ) {
+        local $/ = undef;
+        open my $fh, "<", "$User_base_dir/.schedule" or return;
+        eval { $Preferences = Load(<$fh>) };
+        close $fh;
+    }
+}
+
+# ==================================================================
+# write_ini
+# ==================================================================
+sub write_ini {
+
+    # open file
+    open my $fh, ">", "$User_base_dir/.schedule" or return;
+
+    # print YAML output
+    $Preferences->{-current_dir}  = $Current_directory;
+    $Preferences->{-current_file} = '';
+    if ($Current_schedule_file) {
+        $Preferences->{-current_file} = abs_path($Current_schedule_file);
+    }
+    eval { print $fh Dump($Preferences); };
+
+    # finish up
+    close $fh;
+}
 
 # ==================================================================
 # define what goes in the menu and toolbar
@@ -282,16 +328,95 @@ sub menu_info {
 # ==================================================================
 sub new_schedule {
 
-    $gui->reset();
-
     # TODO: save previous schedule?
     $Schedule = Schedule->new();
-
-    $gui->update_for_new_schedule_and_show_page(
-                                     $Scheduler::Pages_lookup{Schedule}->name );
-
     undef $Current_schedule_file;
+
+    _schedule_file_changed(undef);
+
+}
+
+# ==================================================================
+# open_schedule
+# ==================================================================
+sub open_schedule {
+
+    my $file = shift;
+
+    # get file to open
+    unless ( $file && -e $file ) {
+        $file = "";
+        $file = $Gui->choose_existing_file( $Current_directory, $Filetypes );
+    }
+
+    # if user has chosen file...
+    if ($file) {
+
+        # get YAML input of file
+        eval { $Schedule = Schedule->read_YAML($file) };
+        if ( $@ || !$Schedule ) {
+            $Gui->show_error( 'Read Schedule',
+                              "Cannot read schedule\nERROR:$@" );
+            undef $file;
+        }
+    }
+
+    # if schedule successfully read, then
+    _schedule_file_changed($file);
+}
+
+# ==================================================================
+# import_schedule from CSV
+# ==================================================================
+sub import_schedule {
+    my $file = shift;
+
+    # get file to open
+    unless ( $file && -e $file ) {
+        $file = "";
+        $file =
+          $Gui->choose_existing_file(
+                                      $Current_directory,
+                                      [
+                                         [ 'Comma Separated Value', '.csv' ],
+                                         [ 'All',                   '*' ]
+                                      ]
+          );
+    }
+
+    # if user has chosen file...
+    if ($file) {
+
+        # get CSV input of file
+        eval { $Schedule = CSV->import_csv($file) };
+        if ( $@ || !$Schedule ) {
+            $Gui->show_error( 'Read Schedule', "Cannot read CSV\nERROR:$@" );
+            undef $file;
+        }
+    }
+
+    # if schedule successfully read, then
+    _schedule_file_changed($file);
+}
+
+# ==================================================================
+# schedule file has changed
+# ==================================================================
+sub _schedule_file_changed {
+    my $file = shift;
+
+    if ( $file && $Schedule ) {
+        $Current_schedule_file = abs_path($file);
+        $Current_directory     = dirname($file);
+        write_ini();
+    }
+
+    # update for new schedule
+    $Gui->update_for_new_schedule_and_show_page(
+                                    $Scheduler::Pages_lookup{Schedules}->name );
+
     $Dirtyflag = 0;
+    return;
 }
 
 # ==================================================================
@@ -310,14 +435,14 @@ sub _save_schedule {
 
     # There is no schedule to save!
     unless ($Schedule) {
-        $gui->show_error( "Save Schedule", "There is no schedule to save!" );
+        $Gui->show_error( "Save Schedule", "There is no schedule to save!" );
         return;
     }
 
     # get file to save to
     my $file;
     if ( $save_as || !$Current_schedule_file ) {
-        $file = $gui->choose_file( $Current_directory, $Filetypes );
+        $file = $Gui->choose_file( $Current_directory, $Filetypes );
 
         return unless $file;
     }
@@ -328,7 +453,7 @@ sub _save_schedule {
     # save YAML output of file
     eval { $Schedule->write_YAML($file) };
     if ($@) {
-        $gui->show_error( 'Save Schedule', "Cannot save schedule\nERROR:$@" );
+        $Gui->show_error( 'Save Schedule', "Cannot save schedule\nERROR:$@" );
         return;
     }
 
@@ -348,9 +473,9 @@ sub _save_schedule {
 sub save_as_csv {
 
     unless ($Schedule) {
-        $gui->show_error( 'Save Schedule', 'There is no schedule to save!' );
+        $Gui->show_error( 'Save Schedule', 'There is no schedule to save!' );
     }
-    my $file = $gui->choose_file(
+    my $file = $Gui->choose_file(
                                   $Current_directory,
                                   [
                                      [ 'Comma Separated Value', '.csv' ],
@@ -364,66 +489,28 @@ sub save_as_csv {
 
     my $csv = CSV->new( -output_file => $file, -schedule => $Schedule );
     $csv->export();
-    $gui->show_info( "Export", "File $file was created" );
+    $Gui->show_info( "Export", "File $file was created" );
 
 }
 
 # ==================================================================
-# open_schedule
-# ==================================================================
-sub open_schedule {
-
-    my $file = shift;
-
-    # get file to open
-    unless ( $file && -e $file ) {
-        $file = "";
-        $file = $gui->choose_existing_file( $Current_directory, $Filetypes );
-    }
-
-    # if user has chosen file...
-    if ($file) {
-
-        # get YAML input of file
-        eval { $Schedule = Schedule->read_YAML($file) };
-        if ( $@ || !$Schedule ) {
-            $gui->show_error( 'Read Schedule',
-                              "Cannot read schedule\nERROR:$@" );
-            undef $file;
-        }
-    }
-
-    # if schedule successfully read, then
-    if ( $file && $Schedule ) {
-        $Current_schedule_file = abs_path($file);
-        $Current_directory     = dirname($file);
-        write_ini();
-    }
-
-    # update the gui
-    # update for new schedule
-    $gui->update_for_new_schedule_and_show_page(
-                                    $Scheduler::Pages_lookup{Schedules}->name );
-
-    $Dirtyflag = 0;
-    return;
-}
-
-# ==================================================================
-# update_choices_of_schedule_views
+# update_choices_of_schedulable_views
+# (what teachers/labs/streams) can we create schedules for?
 # ==================================================================
 
-sub update_choices_of_schedule_views {
+sub update_choices_of_schedulable_views {
 
-    my $btn_callback = $guiSchedule->get_callback_for_buttons;
-    my $view_choices = $guiSchedule->get_view_choices();
-    $gui->draw_view_choices( 'Schedules', $view_choices, $btn_callback );
-    
-    $guiSchedule->determine_button_colours($view_choices);
+    my $btn_callback = $Views_manager->get_create_new_view_callback;
+    my $view_choices = $Views_manager->get_view_choices();
+    my $page_name    = $Scheduler::Pages_lookup{Schedules}->name;
+    $Gui->draw_view_choices( $page_name, $view_choices, $btn_callback );
+
+    $Views_manager->determine_button_colours($view_choices);
 }
 
 # ==================================================================
 # update_overview
+# A text representation of the schedules
 # ==================================================================
 sub update_overview {
 
@@ -470,12 +557,13 @@ sub update_overview {
         push @teacher_text, 'There is no schedule, please open one';
     }
 
-    $gui->draw_overview( "Overview", \@course_text, \@teacher_text );
+    $Gui->draw_overview( "Overview", \@course_text, \@teacher_text );
 
 }
 
 # ==================================================================
-# draw_edit_teachers
+# update_edit_teachers
+# - A page where teachers can be added/modified or deleted
 # ==================================================================
 {
     my $de;
@@ -484,14 +572,14 @@ sub update_overview {
         sub update_edit_teachers {
 
             my $f =
-              $gui->get_notebook_page(
+              $Gui->get_notebook_page(
                                      $Scheduler::Pages_lookup{Teachers}->name );
             if ($de) {
                 $de->refresh( $Schedule->teachers );
             }
             else {
                 $de = DataEntry->new( $f, $Schedule->teachers, $Schedule,
-                                      $Dirtyflag, $guiSchedule );
+                                      $Dirtyflag, $Views_manager );
             }
         }
     }
@@ -499,6 +587,7 @@ sub update_overview {
 
 # ==================================================================
 # draw_edit_streams
+# - A page where streams can be added/modified or deleted
 # ==================================================================
 {
     my $de;
@@ -506,54 +595,21 @@ sub update_overview {
     sub update_edit_streams {
 
         my $f =
-          $gui->get_notebook_page( $Scheduler::Pages_lookup{Streams}->name );
+          $Gui->get_notebook_page( $Scheduler::Pages_lookup{Streams}->name );
         if ($de) {
             $de->refresh( $Schedule->streams );
         }
         else {
             $de = DataEntry->new( $f, $Schedule->streams, $Schedule, $Dirtyflag,
-                                  $guiSchedule );
+                                  $Views_manager );
         }
     }
 
 }
 
 # ==================================================================
-# draw_edit_labs
-# ==================================================================
-{
-    my $de;
-    {
-
-        sub draw_edit_labs {
-
-            my $f =
-              $gui->get_notebook_page( $Scheduler::Pages_lookup{Labs}->name );
-            if ($de) {
-                $de->refresh( $Schedule->labs );
-            }
-            else {
-                $de = $de =
-                  DataEntry->new( $f, $Schedule->labs, $Schedule, $Dirtyflag,
-                                  $guiSchedule );
-            }
-
-        }
-    }
-}
-
-# ==================================================================
-# draw_edit_courses
-# ==================================================================
-sub update_edit_courses {
-    my $self = shift;
-    my $f = $gui->get_notebook_page( $Scheduler::Pages_lookup{Courses}->name );
-    EditCourses->new( $f, $Schedule, $Dirtyflag, $SchedulerManagerTk::Colours,
-                      $SchedulerManager::Fonts, $guiSchedule );
-}
-
-# ==================================================================
-# draw_edit_labs
+# update_edit_labs
+# - A page where labs can be added/modified or deleted
 # ==================================================================
 {
     my $de;
@@ -562,14 +618,14 @@ sub update_edit_courses {
         sub update_edit_labs {
 
             my $f =
-              $gui->get_notebook_page( $Scheduler::Pages_lookup{Labs}->name );
+              $Gui->get_notebook_page( $Scheduler::Pages_lookup{Labs}->name );
             if ($de) {
                 $de->refresh( $Schedule->labs );
             }
             else {
                 $de = $de =
-                  DataEntry->new( $f, $Schedule->labs, $Schedule, \$Dirtyflag,
-                                  $guiSchedule );
+                  DataEntry->new( $f, $Schedule->labs, $Schedule, $Dirtyflag,
+                                  $Views_manager );
             }
 
         }
@@ -577,7 +633,20 @@ sub update_edit_courses {
 }
 
 # ==================================================================
+# draw_edit_courses
+# - A page where courses can be added/modified or deleted
+# ==================================================================
+sub update_edit_courses {
+    my $self = shift;
+    my $f = $Gui->get_notebook_page( $Scheduler::Pages_lookup{Courses}->name );
+    EditCourses->new( $f, $Schedule, $Dirtyflag, $SchedulerTk::Colours,
+                      $SchedulerTk::Fonts, $Views_manager );
+}
+
+# ==================================================================
 # print_views
+# - print the schedule 'views'
+# - type defines the output type, PDF, Latex
 # ==================================================================
 
 sub print_views {
@@ -588,14 +657,14 @@ sub print_views {
     # no schedule yet
     # --------------------------------------------------------------
     unless ($Schedule) {
-        $gui->show_error( "Export", "Cannot export - There is no schedule" );
+        $Gui->show_error( "Export", "Cannot export - There is no schedule" );
     }
 
     # --------------------------------------------------------------
     # cannot print if the schedule is not saved
     # --------------------------------------------------------------
     if ($Dirtyflag) {
-        my $ans = $gui->question( "Unsaved Changes",
+        my $ans = $Gui->question( "Unsaved Changes",
                   "There are unsaved changes\n" . "Do you want to save them?" );
         if ( $ans eq 'Yes' ) {
             save_schedule();
@@ -610,7 +679,7 @@ sub print_views {
     # --------------------------------------------------------------
     my $file = $Current_schedule_file;
     $file =~ s/\.yaml$//;
-    $gui->wait_for_it( "Printing", "Please wait while we process the files" );
+    $Gui->wait_for_it( "Printing", "Please wait while we process the files" );
 
     # -------------------------------------------------------------------
     # text overview
@@ -634,8 +703,8 @@ sub print_views {
         }
     }
 
-    $gui->stop_waiting();
-    $gui->show_info( "Export", "$type $print_type views created\n$file*.pdf" );
+    $Gui->stop_waiting();
+    $Gui->show_info( "Export", "$type $print_type views created\n$file*.pdf" );
 
     return;
 }
@@ -648,82 +717,4 @@ sub exit_schedule {
     write_ini();
 }
 
-# ==================================================================
-# import_schedule
-# ==================================================================
-
-sub import_schedule {
-    my $file = shift;
-
-    # get file to open
-    unless ( $file && -e $file ) {
-        $file = "";
-        $file =
-          $gui->choose_existing_file(
-                                      $Current_directory,
-                                      [
-                                         [ 'Comma Separated Value', '.csv' ],
-                                         [ 'All',                   '*' ]
-                                      ]
-          );
-    }
-
-    # if user has chosen file...
-    if ($file) {
-
-        # get CSV input of file
-        eval { $Schedule = CSV->import_csv($file) };
-        if ( $@ || !$Schedule ) {
-            $gui->show_error( 'Read Schedule', "Cannot read CSV\nERROR:$@" );
-            undef $file;
-        }
-    }
-
-    # if schedule successfully read, then
-    if ( $file && $Schedule ) {
-
-        #$Current_schedule_file = abs_path($file);
-        $Current_directory = dirname($file);
-        write_ini();
-    }
-
-    # update the view page
-    $gui->update_for_new_schedule_and_show("Schedules");
-
-    $Dirtyflag = 1;
-    return;
-}
-
-# ==================================================================
-# read_ini
-# ==================================================================
-sub read_ini {
-
-    if ( $User_base_dir && -e "$User_base_dir/.schedule" ) {
-        local $/ = undef;
-        open my $fh, "<", "$User_base_dir/.schedule" or return;
-        eval { $Preferences = Load(<$fh>) };
-        close $fh;
-    }
-}
-
-# ==================================================================
-# write_ini
-# ==================================================================
-sub write_ini {
-
-    # open file
-    open my $fh, ">", "$User_base_dir/.schedule" or return;
-
-    # print YAML output
-    $Preferences->{-current_dir}  = $Current_directory;
-    $Preferences->{-current_file} = '';
-    if ($Current_schedule_file) {
-        $Preferences->{-current_file} = abs_path($Current_schedule_file);
-    }
-    eval { print $fh Dump($Preferences); };
-
-    # finish up
-    close $fh;
-}
-
+1;

@@ -2,44 +2,46 @@
 use strict;
 use warnings;
 
-package GuiSchedule;
+package ViewsManager;
 use FindBin;
 use lib "$FindBin::Bin/..";
 use GuiSchedule::GuiBlocks;
 use GuiSchedule::View;
 use Schedule::Undo;
-use GuiSchedule::GuiScheduleTk;
+use GUI::ViewsManagerTk;
 
 =head1 NAME
 
-GuiSchedule - 
+ViewsManager - Manage all of the views (presentations of schedules) 
 
 =head1 VERSION
 
-Version 2.00
+Version 6.00
 
 =head1 SYNOPSIS
 
-    use Schedule::Schedule;
-    use GuiSchedule::GuiSchedule
-    use Tk;
+    use GUI::SchedulerTk;
+    use GUI::ViewsManager;
     
-    my $Dirtyflag   = 0;
-    my $mw          = MainWindow->new();
-    my $Schedule    = Schedule->read('myschedule_file.yaml');
-    my $guiSchedule = GuiSchedule->new( $mw, \$Dirtyflag, \$Schedule );
+    my $gui = SchedulerTk->new();
+    my $views_manager = GuiSchedule->new( $gui, \$Dirtyflag, \$Schedule );
     
-    # create clickable buttons for every teacher in $Schedule
-    $guiSchedule->create_frame( $mw, 'teacher' );
+    # get list of all possible views, with the appropriate call back function
+    # to create a view, if needed
+    my $btn_callback = $views_manager->get_create_new_view_callback;
+    my $view_choices = $views_manager->get_view_choices();
+    
+    $views_manager->determine_button_colours($view_choices);
+
+    # destroys any views that have been created
+    $views_manager->destroy_all;
     
     #display a view (schedule) for a specific teacher
-    my @all_teachers = $Schedule->all_teachers();
-    my $teacher = $all_teachers[0];
-    $guiSchedule->create_new_view($teacher,"teacher");   
+    $guiSchedule->create_new_view(undef, $teacher,"teacher");   
 
 =head1 DESCRIPTION
 
-This class creates a button interface to access the all of the views,
+This class creates a button interface to access the all of the schedule views,
 and it manages those views.
 
 Manages all the "undo" and "redo" of actions taken upon the views.
@@ -51,7 +53,7 @@ Manages all the "undo" and "redo" of actions taken upon the views.
 # =================================================================
 # Class Variables
 # =================================================================
-our $Max_id = 0;
+#TODO: our $Max_id = 0;
 
 # =================================================================
 # new
@@ -59,13 +61,15 @@ our $Max_id = 0;
 
 =head2 new ()
 
-creates a GuiSchedule object
+creates a ViewsManager object
 
 B<Parameters>
 
--mw => MainWindow to create new Views from
+-gui_main => the gui that is used by whatever class invokes this class
+             because we need to know the main_window etc.
 
--dirtyFlag => Flag to know when the GuiSchedule has changed since last save
+-dirty_flag_ptr => Pointer to a flag that lets indicates if the schedule has 
+              been changed since the last save
 
 -schedule => where course-sections/teachers/labs/streams are defined 
 
@@ -81,22 +85,30 @@ GuiSchedule object
 my $gui;
 
 sub new {
-    my $class      = shift;
-    my $gui_main  = shift;
-    my $dirtyFlag = shift;
-    my $schedule  = shift;
+    my $class          = shift;
+    my $gui_main       = shift;
+    my $dirty_flag_ptr = shift;
+    my $schedule       = shift;
 
-    $gui = GuiScheduleTk->new($gui_main);
+    $gui = ViewsManagerTk->new($gui_main);
 
-    my $self = {-gui=>$gui,-gui_main=>$gui_main};
+    my $self = { -gui => $gui, -gui_main => $gui_main };
 
     bless $self;
-    $self->{-id} = $Max_id++;
-    $self->dirty_flag($dirtyFlag);
-    $self->schedule_ptr($schedule);
+
+    #TODO:    $self->{-id}         = $Max_id++;
+    $self->{-dirty_flag} = $dirty_flag_ptr;
+    $self->_schedule_ptr($schedule);
 
     return $self;
 }
+
+=head2 gui 
+
+Get/sets the gui that takes care of the GUI for this object.
+
+=cut
+
 sub gui {
     my $self = shift;
     return $self->{-gui};
@@ -106,36 +118,38 @@ sub gui {
 # getters/setters
 # =================================================================
 
-=head2 id ()
+#TODO:
+#=head2 id ()
+#
+#Returns the unique id for this ViewsManager object.
+#
+#=cut
+#
+#sub id {
+#    my $self = shift;
+#    return $self->{-id};
+#}
 
-Returns the unique id for this GuiSchedule object.
-
-=cut
-
-sub id {
-    my $self = shift;
-    return $self->{-id};
-}
-
-=head2 schedule_ptr ( [Schedule] )
-
-Get/sets the Schedule for this GuiSchedule object.
-
-=cut
-
-sub schedule_ptr {
+sub _schedule_ptr {
     my $self = shift;
     $self->{-schedule_ptr} = shift if @_;
     return $self->{-schedule_ptr};
 }
+
+=head2 schedule 
+
+Get/sets the Schedule for this ViewsManager object.
+
+=cut
+
 sub schedule {
     my $self = shift;
-    return ${$self->{-schedule_ptr}};
+    return ${ $self->{-schedule_ptr} };
 }
 
-=head2 dirty_flag ( [DirtyFlag] )
+=head2 dirty_flag 
 
-Get/sets the DirtyFlag for this GuiSchedule object.
+Get the dirty_flag for the schedule.
 
 =cut
 
@@ -147,7 +161,7 @@ sub dirty_flag {
 
 =head2 set_dirty ( )
 
-Sets the dirty flag for changes to Schedule.
+Sets the dirty flag for changes to the schedule.
 
 =cut
 
@@ -156,37 +170,49 @@ sub set_dirty {
     ${ $self->{-dirty} } = 1;
 }
 
+# =================================================================
+# Undo and redo
+# =================================================================
+
 =head2 Undoes ( )
 
-Get the Undoes of this GuiSchedule object.
+Get the Undo objects of this ViewsManager object.
 
 =cut
 
 sub undoes {
     my $self = shift;
-        return @{ $self->{-undoes} };
+    return @{ $self->{-undoes} };
 }
 
 =head2 Redoes ( )
 
-Get the Redoes of this GuiSchedule object.
+Get the Redoes of this ViewsManager object.
 
 =cut
 
 sub redoes {
     my $self = shift;
-        return @{ $self->{-redoes} };
-}
-
-sub close_view {
-    my $self = shift;
-    my $view = shift;
-    $gui->close_view($view);
+    return @{ $self->{-redoes} };
 }
 
 =head2 undo ( )
 
 Undo/Redo last action
+
+B<Parameters>
+
+-type => "Day/Time" or anything else
+
+=over 
+
+=item * "Day/Time" is when the action occured for a specific 
+schedulable object (i.e. a teacher/lab/stream)
+
+=item * I<other> is when the action is applied to more than one
+schedulable object (i.e. moving a course from one lab to another)
+     
+=back
 
 =cut
 
@@ -211,10 +237,10 @@ sub undo {
     # ------------------------------------------------------------------------
     # process action
     # ------------------------------------------------------------------------
- 
+
     # Processing a simply change in either date/time within a single view
     # (no switching labs or teachers)
- 
+
     if ( $action->move_type eq "Day/Time" ) {
 
         my $obj = $action->origin_obj;
@@ -256,7 +282,8 @@ sub undo {
 
         my $original_obj = $action->origin_obj;
         my $target_obj   = $action->new_obj;
-        my $block = $self->_find_block_to_apply_undo_redo( $action, $target_obj );
+        my $block =
+          $self->_find_block_to_apply_undo_redo( $action, $target_obj );
 
         # --------------------------------------------------------------------
         # make new undo/redo object as necessary
@@ -293,10 +320,10 @@ sub undo {
 }
 
 sub _find_block_to_apply_undo_redo {
-    my $self         = shift;
-    my $action       = shift;
-    my $obj          = shift;
- 
+    my $self   = shift;
+    my $action = shift;
+    my $obj    = shift;
+
     my $block;
     my @blocks = $self->schedule->get_blocks_for_obj($obj);
     foreach my $b (@blocks) {
@@ -311,7 +338,7 @@ sub _find_block_to_apply_undo_redo {
 
 =head2 add_undo ( Undo )
 
-Add a Undo to the list of Undoes for this GuiSchedule object.
+Add a Undo to the list of Undoes for this ViewsManager object.
 
 =cut
 
@@ -326,7 +353,7 @@ sub add_undo {
 
 =head2 add_redo ( Undo )
 
-Add a Redo to the list of Redoes for this GuiSchedule object.
+Add a Redo to the list of Redoes for this ViewsManager object.
 
 =cut
 
@@ -336,49 +363,6 @@ sub add_redo {
 
     $self->{-redoes} = [] unless $self->{-redoes};
     push @{ $self->{-redoes} }, $redo;
-    return $self;
-}
-
-=head2 add_guischedule_to_views ( )
-
-Adds the current GuiSchedule object to all open Views.
-
-=cut
-
-sub add_guischedule_to_views {
-    my $self      = shift;
-    my $openViews = $self->views;
-    foreach my $view ( values %$openViews ) {
-        $view->guiSchedule($self);
-    }
-}
-
-# =================================================================
-# resetters/removers
-# =================================================================
-
-=head2 remove_view ( $view )
-
-Remove a View from the list of Views for this GuiSchedule object
-
-=cut
-
-sub remove_view {
-    my $self = shift;
-    my $view = shift;
-    delete $self->{-views}->{ $view->id };
-    return $self;
-}
-
-=head2 remove_all_views ( )
-
-Removes all Views associated with this GuiSchedule object.
-
-=cut
-
-sub remove_all_views {
-    my $self = shift;
-    $self->{-views} = {};
     return $self;
 }
 
@@ -430,6 +414,50 @@ sub remove_all_redoes {
     return $self;
 }
 
+# ============================================================================
+# house keeping
+# ============================================================================
+
+=head2 add_manager_to_views ( )
+
+Making sure the views have access to the view manager
+
+=cut
+
+sub add_manager_to_views {
+    my $self      = shift;
+    my $openViews = $self->views;
+    foreach my $view ( values %$openViews ) {
+        $view->guiSchedule($self);
+    }
+}
+
+# =================================================================
+# keeping track of the views
+# =================================================================
+
+=head2 close_view ($view)
+
+Close the gui window, and remove view from list of 'open' views
+
+=cut
+
+sub close_view {
+    my $self = shift;
+    my $view = shift;
+    $gui->close_view($view);
+    $self->_remove_view($view);
+    delete $self->{-views}->{ $view->id };
+    return $self;
+}
+
+sub _remove_view {
+    my $self = shift;
+    my $view = shift;
+    delete $self->{-views}->{ $view->id };
+    return $self;
+}
+
 =head2 destroy_all ( )
 
 Closes all open Views.
@@ -437,7 +465,7 @@ Closes all open Views.
 =cut
 
 sub destroy_all {
-    my $self = shift;
+    my $self      = shift;
     my $openViews = $self->views;
 
     foreach my $view ( values %$openViews ) {
@@ -447,14 +475,79 @@ sub destroy_all {
     $self->remove_all_redoes;
 }
 
+=head2 is_open 
+
+Checks if the View corresponding to the button pressed by user is open.
+
+B<Parameters>
+
+- id => the id of the view that you want to check on
+
+- type => the type of view that you want to check
+
+B<Returns> 
+
+- the View object if View is open, else 0.
+
+=cut
+
+sub is_open {
+    my $self = shift;
+    my $id   = shift;
+    my $type = shift;
+
+    my $openViews = $self->views;
+    foreach my $view ( values %$openViews ) {
+        if ( $view->type eq $type ) {
+            if ( $view->obj->id == $id ) { return $view; }
+        }
+    }
+
+    return 0;
+}
+
+=head2 views ( )
+
+Get the Views of this ViewsManager object.
+
+=cut
+
+sub views {
+    my $self = shift;
+    return $self->{-views};
+}
+
+=head2 add_view 
+
+Add a View to the list of Views for this GuiSchedule object.
+
+B<Parameters> 
+
+- view object
+
+=cut
+
+sub add_view {
+    my $self = shift;
+    my $view = shift;
+    $self->{-views} = {} unless $self->{-views};
+
+    # save
+    $self->{-views}->{ $view->id } = $view;
+    return $self;
+}
 
 # =================================================================
-# updaters
+# updater the views
 # =================================================================
 
-=head2 update_all_views ( Block )
+=head2 update_all_views 
 
 Updates the position of the current moving GuiBlock across all open Views.
+
+<Parameters>
+
+- gui block object (TODO: is this a gui block or a just a regular block?)
 
 =cut
 
@@ -486,7 +579,7 @@ sub redraw_all_views {
     }
 }
 
-=head2 update_for_conflicts ( )
+=head2 update_for_conflicts
 
 Goes through all open Views and updates their GuiBlocks for any new Conflicts.
 
@@ -501,10 +594,21 @@ sub update_for_conflicts {
     }
 }
 
+=head get_view_choices 
+
+Gets a list of all scheduable objects and organizes them by type (teacher/lab/stream)
+with a list of the schedulable objects, the names to be displayed in the gui, etc.
+
+B<Returns>
+
+An array of ViewChoices (see SharedData.pm)
+
+=cut
+
 sub get_view_choices {
     my $self = shift;
-    
-        # get teacher/lab/stream info
+
+    # get teacher/lab/stream info
     my @teacher_array = $self->schedule->all_teachers;
     my @teacher_ordered = sort { $a->lastname cmp $b->lastname } @teacher_array;
     my @teacher_names;
@@ -528,35 +632,37 @@ sub get_view_choices {
     }
 
     return [
-                         ViewChoices->new(
-                                           'teacher',       'Teacher View',
-                                           \@teacher_names, \@teacher_ordered
-                         ),
-                         ViewChoices->new(
-                                  'lab', 'Lab Views', \@lab_names, \@lab_ordered
-                         ),
-                         ViewChoices->new(
-                                           'stream',       'Stream Views',
-                                           \@stream_names, \@stream_ordered
-                         ),
+             ViewChoices->new(
+                               'teacher',       'Teacher View',
+                               \@teacher_names, \@teacher_ordered
+             ),
+             ViewChoices->new( 'lab', 'Lab Views', \@lab_names, \@lab_ordered ),
+             ViewChoices->new(
+                               'stream',       'Stream Views',
+                               \@stream_names, \@stream_ordered
+             ),
     ];
 }
 
-=head2 determine_button_colours ( Array of Teachers/Labs/Streams, Type of Object ) 
+=head2 determine_button_colours 
 
 Finds the highest conflict for each teacher/lab/stream in the array and sets 
 the colour of the button accordingly.
+
+B<Parameters>
+
+- a list of the view_choices
 
 =cut
 
 sub determine_button_colours {
 
-    my $self         = shift;
+    my $self = shift;
     my $view_choices = shift || $self->get_view_choices();
 
     foreach my $view_choice (@$view_choices) {
         my $scheduable_objs = $view_choice->scheduable_objs;
-        my $type                 = $view_choice->type;
+        my $type            = $view_choice->type;
 
         # calculate conflicts
         $self->schedule->calculate_conflicts;
@@ -585,54 +691,91 @@ sub determine_button_colours {
 }
 
 # =================================================================
-# creators
+# callbacks used by View objects
 # =================================================================
 
-=head2 create_view ( Array Pointer, Type )
+=head2 create_view_containing_block 
 
-Preparation function for creating a new View when double clicking on a GuiBlock.
+B<Used as a callback function for View objects>
+
+B<Parameters>
+
+=over
+
+=item * scheduable_objs 
+
+A list of objects (teachers/labs/streams) where a 
+schedule can be created for them, and so a view is created for each of these
+objects
+
+=item * type of view to draw (teacher/lab/stream)
+
+=item * block object
+
+=back 
+
+Find a scheduable object(s) in the given list, and if the given block object
+is also part of that specific schedule, then create a new view.
+
+TODO:  Clarify what the hell this is doing, once we are working on the View.pm file 
 
 =cut
 
-sub create_view {
-    my $self    = shift;
+sub create_view_containing_block {
+    my $self             = shift;
     my $schedulable_objs = shift;
-    my $type    = shift;
-    my $ob      = shift;
-    my $obj_id  = $ob->id if $ob;
+    my $type             = shift;
+    my $ob               = shift;
+
+    my $obj_id = $ob->id if $ob;
 
     if   ( $type eq 'teacher' ) { $type = 'lab'; }
     else                        { $type = 'teacher'; }
 
     foreach my $scheduable_obj (@$schedulable_objs) {
         unless ( defined($obj_id) && $obj_id == $scheduable_obj->id ) {
-            $self->create_new_view( undef, $scheduable_obj, $type);
+            $self->create_new_view( undef, $scheduable_obj, $type );
         }
     }
 }
 
-=head2 create_new_view ( Teacher/Lab/Stream Object, Type, Button Pointer )
+=head2 create_new_view 
 
-Creates a new View for the selected Teacher, Lab or Stream, depending on the object. 
-If View is already open, the View for that object is brought to front.
+B<Used as a callback function for View objects>
 
-Button Pointer is only used in debug mode
+Creates a new View for the selected Teacher, Lab or Stream , depending on the 
+scheduable object. 
+
+If the View is already open, the View for that object is brought to front.
+
+B<Parameters>
+
+=over
+
+=item * undef
+
+Because this is used as a callback function, it inserts a
+parameter that we don't care about.  If calling this function directly, just
+use C<undef> as the first parameter.
+
+=item * scheduable_obj - an object that can have a schedule (teacher/lab/stream)
+
+=item * type - type of view to show (teacher/lab/stream)
 
 =cut
 
 sub create_new_view {
-    my $self    = shift;
-    shift;  # when Tk calls this, it adds an extra object that we don't care about
-    my $scheduable_obj     = shift;
-    my $type    = shift;
+    my $self           = shift;
+    my $undef          = shift;
+    my $scheduable_obj = shift;
+    my $type           = shift;
 
-    my $open         = $self->is_open( $scheduable_obj->id, $type );
+    my $open = $self->is_open( $scheduable_obj->id, $type );
 
     if ( not $open ) {
         my $view = View->new( $gui, $self->schedule, $scheduable_obj );
-
         $self->add_view($view);
-        $self->add_guischedule_to_views;
+        $self->add_manager_to_views;
     }
     else {
         $open->toplevel->raise;
@@ -640,61 +783,21 @@ sub create_new_view {
     }
 }
 
-sub get_callback_for_buttons {
-    my $self = shift;
-    return sub {create_new_view($self, @_);}
-}
+=head2 get_create_new_view_callback
 
-=head2 is_open ( Teacher/Lab/Stream ID, object type )
+Creates a callback function from C<create_new_view>
+that includes this object as the first parameter.
 
-Checks if the View corresponding to the button pressed by user is open.
-Returns the View object if View is open, else 0.
+B<Returns>
 
-=cut
-
-sub is_open {
-    my $self = shift;
-    my $id   = shift;
-    my $type = shift;
-
-    my $openViews = $self->views;
-    foreach my $view ( values %$openViews ) {
-        if ( $view->type eq $type ) {
-            if ( $view->obj->id == $id ) { return $view; }
-        }
-    }
-
-    return 0;
-}
-
-=head2 views ( )
-
-Get the Views of this GuiSchedule object.
+The new callback function
 
 =cut
 
-sub views {
+sub get_create_new_view_callback {
     my $self = shift;
-    return $self->{-views};
+    return sub { create_new_view( $self, @_ ); }
 }
-
-=head2 add_view ( View )
-
-Add a View to the list of Views for this GuiSchedule object.
-
-=cut
-
-sub add_view {
-    my $self = shift;
-    my $view = shift;
-    $self->{-views} = {} unless $self->{-views};
-
-    # save
-    $self->{-views}->{ $view->id } = $view;
-    return $self;
-}
-
-
 
 # =================================================================
 # footer

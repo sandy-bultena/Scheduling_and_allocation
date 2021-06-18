@@ -1,10 +1,10 @@
 use strict;
 use warnings;
 
-package GuiScheduleTk;
+package ViewsManagerTk;
 use FindBin;
 use lib "$FindBin::Bin/..";
-use SchedulerManagerTk;
+use GUI::SchedulerTk;
 my $mw;
 
 sub new {
@@ -16,14 +16,22 @@ sub new {
     return $self;
 }
 
+=head2 mw 
+
+Get the MainWindow object.
+
+Same as main_window method
+
+=cut
+
 sub mw {
     my $self = shift;
     return $self->{-mainWindow};
 }
 
-=head2 main_window ( [MainWindow] )
+=head2 main_window 
 
-Get/sets the MainWindow for this GuiSchedule object.
+Get the MainWindow object 
 
 =cut
 
@@ -33,10 +41,16 @@ sub main_window {
     return $self->{-mainWindow};
 }
 
-=head2 add_button_refs ( \button, Teacher/Lab/Stream Object )
+=head2 add_button_refs 
 
 Adds a button reference to the hash of all button references and the 
 Object it is associated to.
+
+B<Parameters>
+
+- button object
+
+- schedulable object (Teacher/Lab/Stream)
 
 =cut
 
@@ -53,7 +67,7 @@ sub add_button_refs {
 
 =head2 _button_refs 
 
-Returns a hash of all button hashes for this GuiSchedule object
+Returns a hash of all button hashes 
 
 =cut
 
@@ -64,7 +78,7 @@ sub _button_refs {
 
 =head2 reset_button_refs 
 
-Resets the hash of button references for this GuiSchedule object.
+Resets the hash of button references.
 
 =cut
 
@@ -72,6 +86,14 @@ sub reset_button_refs {
     my $self = shift;
     $self->{-buttonRefs} = {};
 }
+
+=head2 set_button_colour
+
+Sets the colour of the button which is used to create the view.
+
+The colour is dependent on the conflict for this particular view
+
+=cut
 
 sub set_button_colour {
     my $self          = shift;
@@ -83,7 +105,7 @@ sub set_button_colour {
     my $btn         = $button_ptrs->{$obj};
 
     # set button colour to conflict colour if there is a conflict
-    my $colour = $SchedulerManagerTk::Colours->{ButtonBackground};
+    my $colour = $SchedulerTk::Colours->{ButtonBackground};
     if ($view_conflict) {
         $colour = Conflict->Colours->{$view_conflict} || 'red';
     }
@@ -94,10 +116,20 @@ sub set_button_colour {
     }
 }
 
-=head2 create_frame ( Frame, Type )
+=head2 create_buttons_for_frame 
 
-Populates frame with buttons for all Teachers, Labs or Streams depending on Type in alphabetical order.
+Populates frame with buttons for all Teachers, Labs or Streams 
+depending on Type in alphabetical order.
 
+B<Parameters>
+
+- frame object (will be drawn on)
+
+- view_choices object (see Shared.pm) 
+  - an object that defines everything needed to
+    know what schedulable objects are available 
+
+- command_sub => callback routine to create a view if the button is clicked
 =cut
 
 sub create_buttons_for_frame {
@@ -123,18 +155,19 @@ sub create_buttons_for_frame {
 
         # create the command array reference including the GuiSchedule,
         # the Teacher/Lab/Stream, it's type
-        my $command = [ $command_sub, $self, $named_scheduable_obj->object, $type ];
+        my $command =
+          [ $command_sub, $self, $named_scheduable_obj->object, $type ];
 
         # create the button on the frame
         my $btn = $frame->Button(
                                   -text    => $named_scheduable_obj->name,
                                   -command => $command
           )->grid(
-                                          -row    => $row,
-                                          -column => $col,
-                                          -sticky => "nsew",
-                                          -ipadx  => 30,
-                                          -ipady  => 10
+                   -row    => $row,
+                   -column => $col,
+                   -sticky => "nsew",
+                   -ipadx  => 30,
+                   -ipady  => 10
           );
 
         # pass the button reference the the event handler.
@@ -151,7 +184,6 @@ sub create_buttons_for_frame {
 
 }
 
-
 =head2 _close_view ( View )
 
 Closes the selected View.
@@ -164,10 +196,7 @@ sub close_view {
 
     my $toplevel = $view->toplevel;
 
-    $self->remove_view($view);
-    $self->add_guischedule_to_views;
     $toplevel->destroy;
 }
-
 
 1

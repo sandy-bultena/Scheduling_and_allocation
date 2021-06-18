@@ -7,7 +7,7 @@ package Scheduler;
 
 our @Required_pages = (
                         NoteBookPage->new(
-                                 "Schedules", \&update_choices_of_schedule_views
+                              "Schedules", \&update_choices_of_schedulable_views
                         ),
                         NoteBookPage->new( "Overview", \&update_overview ),
                         NoteBookPage->new( "Courses",  \&update_edit_courses ),
@@ -22,10 +22,10 @@ foreach my $page (@Required_pages) {
 
 our @SchedulerManagerGui_methods = (
     qw(new create_main_window create_menu_and_toolbars create_front_page
-      create_status_bar bind_schedule_and_dirty_flag define_exit_callback
+      create_status_bar bind_dirty_flag define_exit_callback
       start_event_loop update_for_new_schedule_and_show_page show_error show_info choose_file
       choose_existing_file question wait_for_it stop_waiting show_info define_notebook_tabs
-      set_gui_schedule)
+      set_views_manager)
 );
 
 # ============================================================================
@@ -65,10 +65,10 @@ sub handler {
 package ViewChoices;
 
 sub new {
-    my $class = shift;
-    my $type  = shift;    # what type of views are available?
-    my $title = shift;    # title of this collection of view choices
-    my $names = shift;    # array of names used for each $schedule_object
+    my $class           = shift;
+    my $type            = shift; # what type of views are available?
+    my $title           = shift; # title of this collection of view choices
+    my $names           = shift; # array of names used for each $schedule_object
     my $scheduable_objs = shift;
 
     # verify
@@ -78,14 +78,14 @@ sub new {
 
     # make an ordered list of names=>$scheduable_objs
     my @named_scheduable_objs;
-    foreach my $i ( 0 .. scalar(@$names)-1 ) {
+    foreach my $i ( 0 .. scalar(@$names) - 1 ) {
         push @named_scheduable_objs,
           NamedObject->new( $names->[$i], $scheduable_objs->[$i] );
     }
 
     my $self = {
-                 -type                   => $type,
-                 -title                  => $title,
+                 -type                  => $type,
+                 -title                 => $title,
                  -scheduable_objs       => $scheduable_objs,
                  -named_scheduable_objs => \@named_scheduable_objs,
     };

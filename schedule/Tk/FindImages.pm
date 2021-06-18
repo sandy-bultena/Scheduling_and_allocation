@@ -11,7 +11,7 @@ our $image_dir;
 our $logo_file;
 
 sub get_image_dir {
-    
+
     return $image_dir if $image_dir;
 
     if ($SchedulerManagerTk::BinDir) {
@@ -20,8 +20,9 @@ sub get_image_dir {
     if ($Allocation::BinDir) {
         return "$Allocation::BinDir/Tk/Images";
     }
-	#return "$Scheduler::BinDir/Tk/Images";
-	
+
+    #return "$Scheduler::BinDir/Tk/Images";
+
     ######## THIS CODE IS BAD, AND TAKES A LOT OF TIME
     ######## WAS ORIGINALLY USED IF TRYING TO MAKE A 'PAR' PACKAGE
     ######## WHICH MOVES THE FILES AROUND.
@@ -49,23 +50,23 @@ sub get_image_dir {
             }
         }
     };
-        
+
     if ( $@ !~ 'found it' ) {
         chdir($pwd);
         die $@;
     }
-    
+
     chdir($pwd);
     return $image_dir;
 }
 
 sub get_allocation_logo {
-	return "$Allocation::BinDir/AllocationLogo.gif";    
+    return "$Allocation::BinDir/AllocationLogo.gif";
 }
 
 sub get_logo {
-	
-	return "$SchedulerManagerTk::BinDir/ScheduleLogo.gif";
+
+    return "$SchedulerTk::BinDir/ScheduleLogo.gif";
     return $logo_file if $logo_file;
 
     my $pwd = cwd;
@@ -73,7 +74,7 @@ sub get_logo {
     # search for images in default directory, depending on OS
     eval {
         find( \&wantedLogo, "$FindBin::Bin/.." );
-        if ( $^O =~ /darwin/i ) {    # Mac OS linux
+        if ( $^O =~ /darwin/i ) {                      # Mac OS linux
             find( \&wantedLogo, $ENV{"HOME"} );
         }
         elsif ( $^O =~ /win/i ) {
@@ -92,12 +93,12 @@ sub get_logo {
             }
         }
     };
-        
+
     if ( $@ !~ 'found it' ) {
         chdir($pwd);
         die $@;
     }
-    
+
     chdir($pwd);
     return $logo_file;
 }
@@ -110,8 +111,8 @@ sub wanted {
 }
 
 sub wantedLogo {
-    if($_ eq "ScheduleLogo.gif") {
-        $logo_file = $File::Find::dir . "/ScheduleLogo.gif";    
+    if ( $_ eq "ScheduleLogo.gif" ) {
+        $logo_file = $File::Find::dir . "/ScheduleLogo.gif";
         die "found it";
     }
 }
