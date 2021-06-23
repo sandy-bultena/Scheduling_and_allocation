@@ -125,7 +125,7 @@ B<Parameters>
 
 - frame object (will be drawn on)
 
-- view_choices object (see Shared.pm) 
+- ScheduablesByType object (see Shared.pm) 
   - an object that defines everything needed to
     know what schedulable objects are available 
 
@@ -136,24 +136,24 @@ sub create_buttons_for_frame {
 
     my $self         = shift;
     my $frame        = shift;
-    my $view_choices = shift;
+    my $scheduables_by_type = shift;
     my $command_sub  = shift || \&create_new_view;
-    my $ordered      = $view_choices->named_scheduable_objs;
-    my $type         = $view_choices->type;
+    my $scheduables      = $scheduables_by_type->named_scheduable_objs;
+    my $type         = $scheduables_by_type->type;
 
     my $row = 0;
     my $col = 0;
 
     # determine how many buttons should be on one row
-    my $arr_size = scalar @{$ordered};
+    my $arr_size = scalar @{$scheduables};
     my $divisor  = 2;
     if ( $arr_size > 10 ) { $divisor = 4; }
 
     # for every view choice object
-    foreach my $named_scheduable_obj (@$ordered) {
+    foreach my $named_scheduable_obj (@$scheduables) {
         my $name = $named_scheduable_obj->name;
 
-        # create the command array reference including the GuiSchedule,
+        # create the command array reference including the ViewsManager,
         # the Teacher/Lab/Stream, it's type
         my $command =
           [ $command_sub, $self, $named_scheduable_obj->object, $type ];
@@ -184,19 +184,5 @@ sub create_buttons_for_frame {
 
 }
 
-=head2 _close_view ( View )
-
-Closes the selected View.
-
-=cut
-
-sub close_view {
-    my $self = shift;
-    my $view = shift;
-
-    my $toplevel = $view->toplevel;
-
-    $toplevel->destroy;
-}
 
 1

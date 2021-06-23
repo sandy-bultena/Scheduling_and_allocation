@@ -54,7 +54,7 @@ creates, draws and returns a GuiBlocks object
 
 B<Parameters>
 
--view => View the GuiBlock will be drawn on
+-gui_view => View the GuiBlock will be drawn on
 
 -block => Block to turn into a GuiBlock
 
@@ -71,16 +71,18 @@ GuiBlock object
 #--------------------------------------------------------------------
 sub new {
     my $this   = shift;
-    my $view   = shift;
+    my $gui_view   = shift;
     my $block  = shift;
-    my $colour = shift;
+    my $colour = shift || "";
     my $scale  = shift;
 
-    # get canvas from view to draw on
-    my $canvas = $view->canvas;
+    # get canvas from gui_view to draw on
+    my $canvas = $gui_view->canvas;
 
     # draw the block
-    my $gui_objs = DrawView->draw_block($canvas,$block,$view->get_scale_info(),$view->type,$colour);
+    print "Calling drawview, colour $colour\n";
+    my $gui_objs = DrawView->draw_block($canvas,$block,$gui_view->get_scale_info(),
+    $gui_view->view->type,$colour);
 
     my @lines = @{$gui_objs->{-lines}};
     my $text = $gui_objs->{-text};
@@ -98,7 +100,7 @@ sub new {
     bless $self;
     $self->{-id} = $Max_id++;
     $self->block($block);
-    $self->view($view);
+    $self->gui_view($gui_view);
     $self->coords( \@coords );
     $self->colour($colour);
     $self->rectangle($rectangle);
@@ -125,7 +127,7 @@ sub change_colour {
     my $colour = shift;
     $colour = Colour->string($colour);
 
-    my $cn    = $self->view->canvas;
+    my $cn    = $self->gui_view->canvas;
     my $group = $self->group;
 
     my ( $light, $dark, $textcolour ) = DrawView::get_colour_shades( $colour );
@@ -173,16 +175,16 @@ sub block {
     return $self->{-block};
 }
 
-=head2 view ( [view] )
+=head2 gui_view ( [gui_view] )
 
-Get/set the view for this guiblock
+Get/set the gui_view for this guiblock
 
 =cut
 
-sub view {
+sub gui_view {
     my $self = shift;
-    $self->{-view} = shift if @_;
-    return $self->{-view};
+    $self->{-gui_view} = shift if @_;
+    return $self->{-gui_view};
 }
 
 =head2 coords ( [coords] )
@@ -207,7 +209,7 @@ sub colour {
     my $self = shift;
     if (@_) {
         $self->{-colour} = shift;
-        my $canvas    = $self->view->canvas;
+        my $canvas    = $self->gui_view->canvas;
         my $rectangle = $self->rectangle;
         $canvas->itemconfigure( $rectangle, -fill => $self->{-colour} );
     }

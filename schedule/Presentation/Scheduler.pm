@@ -501,11 +501,11 @@ sub save_as_csv {
 sub update_choices_of_schedulable_views {
 
     my $btn_callback = $Views_manager->get_create_new_view_callback;
-    my $view_choices = $Views_manager->get_view_choices();
+    my $all_view_choices = $Views_manager->get_all_scheduables();
     my $page_name    = $Scheduler::Pages_lookup{Schedules}->name;
-    $Gui->draw_view_choices( $page_name, $view_choices, $btn_callback );
+    $Gui->draw_view_choices( $page_name, $all_view_choices, $btn_callback );
 
-    $Views_manager->determine_button_colours($view_choices);
+    $Views_manager->determine_button_colours($all_view_choices);
 }
 
 # ==================================================================

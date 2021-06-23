@@ -6,7 +6,7 @@ package AssignBlock;
 use FindBin;
 use lib "$FindBin::Bin/..";
 use PerlLib::Colours;
-use GuiSchedule::ViewBase;
+use GUI::ViewBaseTk;
 use Carp;
 
 =head1 NAME
@@ -106,8 +106,8 @@ sub new {
 	# ---------------------------------------------------------------
 	# draw 1/2 the block
 	# ---------------------------------------------------------------
-	my $cn = $view->canvas;
-	my @coords = $view->get_time_coords( $day, $start, 1 / 2 );
+	my $cn = $view->gui->canvas;
+	my @coords = $view->gui->get_time_coords( $day, $start, 1 / 2 );
 
 	my $r = $cn->createRectangle(
 		@coords,
@@ -130,7 +130,7 @@ sub new {
 	$self->day($day);
 	$self->start($start);
 	$self->view($view);
-	$self->canvas( $view->canvas );
+	$self->canvas( $view->gui->canvas );
 
 	# just in case, want coords to be from top left -> bottom right
 	# or other logic in this class may fail

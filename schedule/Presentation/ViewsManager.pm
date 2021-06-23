@@ -6,7 +6,7 @@ package ViewsManager;
 use FindBin;
 use lib "$FindBin::Bin/..";
 use GuiSchedule::GuiBlocks;
-use GuiSchedule::View;
+use Presentation::View;
 use Schedule::Undo;
 use GUI::ViewsManagerTk;
 
@@ -20,24 +20,28 @@ Version 6.00
 
 =head1 SYNOPSIS
 
+    use Schedule::Schedule;
     use GUI::SchedulerTk;
     use GUI::ViewsManager;
+    use YAML;
+    $YAML::LoadBlessed = 1;
     
+    my $Schedule = Schedule->read_YAML($file) };
     my $gui = SchedulerTk->new();
-    my $views_manager = GuiSchedule->new( $gui, \$Dirtyflag, \$Schedule );
+    my $views_manager = ViewsManager->new( $gui, \$Dirtyflag, \$Schedule );
     
     # get list of all possible views, with the appropriate call back function
     # to create a view, if needed
     my $btn_callback = $views_manager->get_create_new_view_callback;
-    my $view_choices = $views_manager->get_view_choices();
+    my $all_view_choices = $views_manager->get_all_scheduables();
     
-    $views_manager->determine_button_colours($view_choices);
+    $views_manager->determine_button_colours($all_view_choices);
 
     # destroys any views that have been created
     $views_manager->destroy_all;
     
     #display a view (schedule) for a specific teacher
-    $guiSchedule->create_new_view(undef, $teacher,"teacher");   
+    $views_manager>create_new_view(undef, $teacher,"teacher");   
 
 =head1 DESCRIPTION
 
@@ -75,7 +79,7 @@ B<Parameters>
 
 B<Returns>
 
-GuiSchedule object
+ViewsManager object
 
 =cut
 
@@ -392,7 +396,7 @@ sub remove_last_redo {
 
 =head2 remove_all_undoes ( )
 
-Removes all Undoes associated with this GuiSchedule object.
+Removes all Undoes associated with this ViewsManager object.
 
 =cut
 
@@ -404,7 +408,7 @@ sub remove_all_undoes {
 
 =head2 remove_all_redoes ( )
 
-Removes all Redoes associated with this GuiSchedule object.
+Removes all Redoes associated with this ViewsManager object.
 
 =cut
 
@@ -428,7 +432,7 @@ sub add_manager_to_views {
     my $self      = shift;
     my $openViews = $self->views;
     foreach my $view ( values %$openViews ) {
-        $view->guiSchedule($self);
+        $view->views_manager($self);
     }
 }
 
@@ -445,7 +449,10 @@ Close the gui window, and remove view from list of 'open' views
 sub close_view {
     my $self = shift;
     my $view = shift;
-    $gui->close_view($view);
+    
+    print "in views_manager close_view: $view\n";
+        
+    $view->close();
     $self->_remove_view($view);
     delete $self->{-views}->{ $view->id };
     return $self;
@@ -499,7 +506,7 @@ sub is_open {
     my $openViews = $self->views;
     foreach my $view ( values %$openViews ) {
         if ( $view->type eq $type ) {
-            if ( $view->obj->id == $id ) { return $view; }
+            if ( $view->scheduable->id == $id ) { return $view; }
         }
     }
 
@@ -519,7 +526,7 @@ sub views {
 
 =head2 add_view 
 
-Add a View to the list of Views for this GuiSchedule object.
+Add a View to the list of Views for this ViewsManager object.
 
 B<Parameters> 
 
@@ -575,6 +582,7 @@ sub redraw_all_views {
     my $openViews = $self->views;
 
     foreach my $view ( values %$openViews ) {
+        print "redrawing view $view\n";
         $view->redraw;
     }
 }
@@ -594,54 +602,20 @@ sub update_for_conflicts {
     }
 }
 
-=head get_view_choices 
+=head get_all_scheduables 
 
 Gets a list of all scheduable objects and organizes them by type (teacher/lab/stream)
 with a list of the schedulable objects, the names to be displayed in the gui, etc.
 
 B<Returns>
 
-An array of ViewChoices (see SharedData.pm)
+An array of ScheduablesByType (see SharedData.pm)
 
 =cut
 
-sub get_view_choices {
+sub get_all_scheduables {
     my $self = shift;
-
-    # get teacher/lab/stream info
-    my @teacher_array = $self->schedule->all_teachers;
-    my @teacher_ordered = sort { $a->lastname cmp $b->lastname } @teacher_array;
-    my @teacher_names;
-    foreach my $obj (@teacher_ordered) {
-        my $name = uc( substr( $obj->firstname, 0, 1 ) ) . " " . $obj->lastname;
-        push @teacher_names, $name;
-    }
-
-    my @lab_array = $self->schedule->all_labs;
-    my @lab_ordered = sort { $a->number cmp $b->number } @lab_array;
-    my @lab_names;
-    foreach my $obj (@lab_ordered) {
-        push @lab_names, $obj->number;
-    }
-
-    my @stream_array = $self->schedule->all_streams;
-    my @stream_ordered = sort { $a->number cmp $b->number } @stream_array;
-    my @stream_names;
-    foreach my $obj (@stream_ordered) {
-        push @stream_names, $obj->number;
-    }
-
-    return [
-             ViewChoices->new(
-                               'teacher',       'Teacher View',
-                               \@teacher_names, \@teacher_ordered
-             ),
-             ViewChoices->new( 'lab', 'Lab Views', \@lab_names, \@lab_ordered ),
-             ViewChoices->new(
-                               'stream',       'Stream Views',
-                               \@stream_names, \@stream_ordered
-             ),
-    ];
+    return SharedRoutines->get_all_scheduables($self->schedule);
 }
 
 =head2 determine_button_colours 
@@ -658,9 +632,9 @@ B<Parameters>
 sub determine_button_colours {
 
     my $self = shift;
-    my $view_choices = shift || $self->get_view_choices();
+    my $all_view_choices = shift || $self->get_all_scheduables();
 
-    foreach my $view_choice (@$view_choices) {
+    foreach my $view_choice (@$all_view_choices) {
         my $scheduable_objs = $view_choice->scheduable_objs;
         my $type            = $view_choice->type;
 
@@ -773,13 +747,14 @@ sub create_new_view {
     my $open = $self->is_open( $scheduable_obj->id, $type );
 
     if ( not $open ) {
-        my $view = View->new( $gui, $self->schedule, $scheduable_obj );
+        my $view = View->new( $self,$gui->mw, $self->schedule, $scheduable_obj );
         $self->add_view($view);
         $self->add_manager_to_views;
     }
     else {
-        $open->toplevel->raise;
-        $open->toplevel->focus;
+        # TODO: Should have a View method for this instead of View->gui
+        $open->gui->_toplevel->raise;
+        $open->gui->_toplevel->focus;
     }
 }
 

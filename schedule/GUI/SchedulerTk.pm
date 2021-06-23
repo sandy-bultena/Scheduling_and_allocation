@@ -67,7 +67,6 @@ use Tk::FindImages;
 use Tk::InitGui;
 use Tk::ToolBar;
 use PerlLib::Colours;
-use GuiSchedule::View;
 use GuiSchedule::DataEntry;
 use GuiSchedule::EditCourses;
 
@@ -166,7 +165,7 @@ sub bind_dirty_flag {
 
     # watch Dirty_flag and change the dirty_flag_text whenever
     # the dirty_flag changes
-    my $dirty_watch = Tie::Watch->new(
+    Tie::Watch->new(
         -variable => $Dirty_flag_ptr,
         -store    => sub {
             my $self = shift;
@@ -631,7 +630,7 @@ is asked to create a view
     sub draw_view_choices {
         my $self             = shift;
         my $default_tab      = shift;
-        my $all_view_choices = shift || [];
+        my $all_scheduables = shift || [];
         my $btn_callback     = shift || sub { return; };
 
         my $f = $Pages{ lc($default_tab) };
@@ -642,9 +641,9 @@ is asked to create a view
 
         $frame = $f->Frame->pack( -expand => 1, -fill => 'both' );
 
-        foreach my $view_choices (@$all_view_choices) {
+        foreach my $scheduables_by_type (@$all_scheduables) {
             my $view_choices_frame =
-              $frame->LabFrame( -label => $view_choices->title, )
+              $frame->LabFrame( -label => $scheduables_by_type->title, )
               ->pack( -expand => 1, -fill => 'both' );
 
             my $view_choices_scrolled_frame =
@@ -652,7 +651,7 @@ is asked to create a view
               ->pack( -expand => 1, -fill => 'both' );
 
             $views_manager->gui->create_buttons_for_frame(
-                   $view_choices_scrolled_frame, $view_choices, $btn_callback );
+                   $view_choices_scrolled_frame, $scheduables_by_type, $btn_callback );
         }
 
     }

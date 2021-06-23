@@ -521,12 +521,12 @@ sub blocks_in_lab {
 }
 
 # =================================================================
-# get block info for lab
+# get block info for specified scheduable object
 # =================================================================
 
 =head2 get_blocks_for_obj 
 
-Returns a list of courses blocks associated with the specified object
+Returns a list of courses blocks associated with the specified scheduable object
 
 =cut
 
@@ -541,11 +541,40 @@ sub get_blocks_for_obj {
     elsif ( $obj->isa("Lab") ) {
         @blocks = $self->blocks_in_lab($obj);
     }
-    else {
-        @blocks = $self->blocks_for_stream($obj);
+    elsif ( $obj->isa("Stream") ) {
+         @blocks = $self->blocks_for_stream($obj);
     }
     return @blocks;
 }
+
+# =================================================================
+# return scheduable object type
+# =================================================================
+
+=head2 get_scheduable_object_type 
+
+Returns the type of the schedulable object
+
+=cut
+
+sub get_scheduable_object_type {
+    my $self = shift;
+    my $obj  = shift;
+
+    my $type = "";
+    if ( $obj->isa("Teacher") ) {
+        $type = "teacher";
+    }
+    elsif ( $obj->isa("Lab") ) {
+        $type = "lab";
+    }
+    elsif ($obj->isa("Stream") ) {
+        $type = "stream";
+    }
+    return $type;
+}
+
+
 
 # =================================================================
 # get section info for streams

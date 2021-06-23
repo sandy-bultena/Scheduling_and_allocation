@@ -28,6 +28,59 @@ our @SchedulerManagerGui_methods = (
       set_views_manager)
 );
 
+package SharedRoutines;
+
+sub get_all_scheduables {
+    my $class = shift;
+    my $schedule = shift;
+    
+    # get teacher info
+    my @teacher_array = $schedule->all_teachers;
+    my @teacher_ordered = sort { $a->lastname cmp $b->lastname } @teacher_array;
+    my @teacher_names;
+    foreach my $obj (@teacher_ordered) {
+        my $name = uc( substr( $obj->firstname, 0, 1 ) ) . " " . $obj->lastname;
+        push @teacher_names, $name;
+    }
+
+    # get lab info
+    my @lab_array = $schedule->all_labs;
+    my @lab_ordered = sort { $a->number cmp $b->number } @lab_array;
+    my @lab_names;
+    foreach my $obj (@lab_ordered) {
+        push @lab_names, $obj->number;
+    }
+
+    # get stream info
+    my @stream_array = $schedule->all_streams;
+    my @stream_ordered = sort { $a->number cmp $b->number } @stream_array;
+    my @stream_names;
+    foreach my $obj (@stream_ordered) {
+        push @stream_names, $obj->number;
+    }
+
+    return [
+             ScheduablesByType->new(
+                               'teacher',       'Teacher View',
+                               \@teacher_names, \@teacher_ordered
+             ),
+             ScheduablesByType->new( 'lab', 'Lab Views', \@lab_names, \@lab_ordered ),
+             ScheduablesByType->new(
+                               'stream',       'Stream Views',
+                               \@stream_names, \@stream_ordered
+             ),
+    ];
+}
+
+sub valid_view_type {
+    my $class = shift;
+    my $type = shift;
+    return 'teacher' if lc($type) eq 'teacher';
+    return 'stream' if lc($type) eq 'stream';
+    return 'lab' if lc($type) eq 'lab';
+    die ("Invalid view type <$type>\n");
+}
+
 # ============================================================================
 # NoteBookPage class
 # - defines notebook page info
@@ -57,17 +110,17 @@ sub handler {
 }
 
 # ============================================================================
-# ViewChoices class
+# ScheduablesByType class
 # - defines the data for what views are available
 # ... NOTE: A view is a visual representation of a schedule for a specific
 #           teacher, lab or stream
 # ============================================================================
-package ViewChoices;
+package ScheduablesByType;
 
 sub new {
     my $class           = shift;
-    my $type            = shift; # what type of views are available?
-    my $title           = shift; # title of this collection of view choices
+    my $type            = shift; # what type of scheduables are these?
+    my $title           = shift; # title of this collection of scheduables
     my $names           = shift; # array of names used for each $schedule_object
     my $scheduable_objs = shift;
 
