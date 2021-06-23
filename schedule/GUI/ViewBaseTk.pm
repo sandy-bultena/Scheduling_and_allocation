@@ -5,7 +5,6 @@ use warnings;
 package ViewBaseTk;
 use FindBin;
 use lib "$FindBin::Bin/..";
-use GuiSchedule::GuiBlocks;
 use Schedule::Conflict;
 use Export::DrawView;
 use List::Util qw( min max );
@@ -89,6 +88,20 @@ sub canvas {
     return $self->{-canvas};
 }
 
+=head2 current_scale 
+
+Get/set the current scale of this View object.
+
+=cut
+
+sub current_scale {
+    my $self = shift;
+    $self->{-current_scale} = shift if @_;
+    return $self->{-current_scale};
+}
+
+
+
 
 # =================================================================
 # Public methods
@@ -164,7 +177,7 @@ sub new {
     $self->_y_origin(0);
     $self->_width_scale(100);
     $self->_horiz_scale(60);
-    $self->_current_scale(1);
+    $self->current_scale(1);
 
     # ---------------------------------------------------------------
     # create scale menu
@@ -228,24 +241,20 @@ sub set_title {
     $tl->title($title);
 }
 
-=head2 draw_block( Block ) 
+=head2 bind_popup_menu( GuiBlock ) 
 
-Turns the block into a GuiBlock and draws it on the View. 
+Draws the GuiBlock onto the view
 Binds a popup menu if one is defined
 
 B<Parameters>
 
-- block => Block object that is being converted and drawn
+- guiblock => object where the popup menu is being bound to
 
 =cut
 
-sub draw_block {
+sub bind_popup_menu {
     my $self  = shift;
-    my $block = shift;
-
-    my $scale = $self->_current_scale;
-
-    my $guiblock = GuiBlocks->new( $self, $block, undef, $scale );
+    my $guiblock = shift;
 
     # menu bound to individual gui-blocks
     $self->canvas->bind( $guiblock->group, '<3>',
@@ -364,7 +373,7 @@ Redraws the View with new GuiBlocks and their positions.
 sub redraw {
     my $self          = shift;
     my $cn            = $self->canvas;
-    my $current_scale = $self->_current_scale;
+    my $current_scale = $self->current_scale;
 
     # remove everything on canvas
     $cn->delete('all');
@@ -413,7 +422,7 @@ sub get_scale_info {
              -yorg  => $self->_y_origin,
              -xscl  => $self->_width_scale,
              -yscl  => $self->_horiz_scale,
-             -scale => $self->_current_scale,
+             -scale => $self->current_scale,
     };
 }
 
@@ -556,18 +565,6 @@ sub _horiz_scale {
     return $self->{-horiz_scale};
 }
 
-=head2 _current_scale 
-
-Get/set the current scale of this View object.
-
-=cut
-
-sub _current_scale {
-    my $self = shift;
-    $self->{_current_scale} = shift if @_;
-    return $self->{_current_scale};
-}
-
 # =================================================================
 # Private Methods
 # =================================================================
@@ -603,7 +600,7 @@ sub _resize_view {
     my $y_origin      = $self->_y_origin;
     my $horiz_scale   = $self->_horiz_scale;
     my $width_scale   = $self->_width_scale;
-    my $current_scale = $self->_current_scale;
+    my $current_scale = $self->current_scale;
 
     # reset scales back to default value
     $x_origin      /= $current_scale;
@@ -632,7 +629,7 @@ sub _resize_view {
     $self->_y_origin($y_origin);
     $self->_horiz_scale($horiz_scale);
     $self->_width_scale($width_scale);
-    $self->_current_scale($current_scale);
+    $self->current_scale($current_scale);
 
     # set height and width of canvas and toplevel
     $self->canvas->configure( -width  => $canvas_width,

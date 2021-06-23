@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-package GuiBlocks;
+package GuiBlock;
 use FindBin;
 use lib "$FindBin::Bin/..";
 use PerlLib::Colours;
@@ -54,7 +54,9 @@ creates, draws and returns a GuiBlocks object
 
 B<Parameters>
 
--gui_view => View the GuiBlock will be drawn on
+-type => Type of view (teacher/ lab/ stream)
+
+-gui_view => the gui object assocatied with the view
 
 -block => Block to turn into a GuiBlock
 
@@ -71,6 +73,7 @@ GuiBlock object
 #--------------------------------------------------------------------
 sub new {
     my $this   = shift;
+    my $type = shift;
     my $gui_view   = shift;
     my $block  = shift;
     my $colour = shift || "";
@@ -80,9 +83,8 @@ sub new {
     my $canvas = $gui_view->canvas;
 
     # draw the block
-    print "Calling drawview, colour $colour\n";
     my $gui_objs = DrawView->draw_block($canvas,$block,$gui_view->get_scale_info(),
-    $gui_view->view->type,$colour);
+    $type,$colour);
 
     my @lines = @{$gui_objs->{-lines}};
     my $text = $gui_objs->{-text};

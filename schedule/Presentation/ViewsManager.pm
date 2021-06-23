@@ -5,7 +5,6 @@ use warnings;
 package ViewsManager;
 use FindBin;
 use lib "$FindBin::Bin/..";
-use GuiSchedule::GuiBlocks;
 use Presentation::View;
 use Schedule::Undo;
 use GUI::ViewsManagerTk;

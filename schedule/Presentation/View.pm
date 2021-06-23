@@ -7,7 +7,7 @@ use FindBin;
 use lib "$FindBin::Bin/..";
 use List::Util qw( min max );
 use GUI::ViewTk;
-use GuiSchedule::GuiBlocks;
+use GUI::GuiBlockTk;
 use Schedule::Undo;
 use GUI::ViewBaseTk;
 use Schedule::Conflict;
@@ -306,7 +306,10 @@ sub redraw {
         $b->start( $b->start );
         $b->day( $b->day );
 
-        my $guiblock = $self->gui->draw_block($b);
+        my $scale = $self->gui->current_scale;
+        my $guiblock = GuiBlock->new( $self->type, $self->gui, $b, undef, $scale );
+
+        $self->gui->bind_popup_menu($guiblock);
         $self->_add_guiblock($guiblock);
     }
 
