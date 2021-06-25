@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-package AssignBlock;
+package AssignBlockTk;
 use FindBin;
 use lib "$FindBin::Bin/..";
 use PerlLib::Colours;
@@ -24,22 +24,22 @@ Version 1.00
     use GuiSchedule::AssignBlock;
     my $view = $self;
     
-    # Create blocks for each time
-    my @all_blocks;
+    # Create assigned_blocks for each time
+    my @all_assigned_blocks;
     foreach my $day ( 1 ... 5 ) {
         foreach my $start ( $EarliestTime * 2 ... ( $LatestTime * 2 ) - 1 ) {
-            push @all_blocks, AssignBlock->new($view,$day,$start);
+            push @all_assigned_blocks, AssignBlock->new($view,$day,$start);
         }
     }
     
     # Get block at canvas position x,y (use class method)
-    my $block = AssignBlock->find( $x, $y,\@all_blocks);
+    my $block = AssignBlock->find( $x, $y,\@all_assigned_blocks);
 
     # use the AssignBlock object to get info
     my $day = $block->day;
     $block->colour("lime green");
     
-    # Get all the blocks for a specific day between start & stop time (inclusive) (use class method)
+    # Get all the assigned_blocks for a specific day between start & stop time (inclusive) (use class method)
     my @selected = AssignBlock->get_day_blocks( $day, \@all_blocks);
     
     # Find all blocks that contain a certain x,y range
@@ -101,8 +101,6 @@ sub new {
 	my $start = shift;
 	carp("You need a view!!!") unless $view;
 
-	use Data::Dumper;
-
 	# ---------------------------------------------------------------
 	# draw 1/2 the block
 	# ---------------------------------------------------------------
@@ -151,18 +149,18 @@ sub new {
 }
 
 # =================================================================
-# find ($x, $y, $blocks)
+# find ($x, $y, $assigned_blocks)
 # =================================================================
 
-=head2 at_canvas_coords ($x, $y, $blocks)
+=head2 at_canvas_coords ($x, $y, $assigned_blocks)
 
-find the first block within blocks that contains the canvas coords $x, $y
+find the first block within assigned_blocks that contains the canvas coords $x, $y
 
 B<Parameters>
 
 ($x, $y)  canvas coordinates
 
-$blocks array pointer of AssignBlocks
+$assigned_blocks array pointer of AssignBlocks
 
 B<Returns>
 
@@ -174,29 +172,29 @@ sub find {
 	my $class  = shift;
 	my $x      = shift;
 	my $y      = shift;
-	my $blocks = shift;
-	return unless $blocks;
+	my $assigned_blocks = shift;
+	return unless $assigned_blocks;
 
 	my @found;
-	@found = grep { $_->at_canvas_coords( $x, $y ) } @$blocks;
+	@found = grep { $_->at_canvas_coords( $x, $y ) } @$assigned_blocks;
 
 	return $found[0] if @found;
 	return;
 }
 
 # =================================================================
-# in_range ($x1,$y1,$x2,$y2, $blocks)
+# in_range ($x1,$y1,$x2,$y2, $assigned_blocks)
 # =================================================================
 
-=head2 in_range ($x1,$y1,$x2,$y2, $blocks)
+=head2 in_range ($x1,$y1,$x2,$y2, $assigned_blocks)
 
-return an array of all blocks within a certain rectangular area
+return an array of all assigned_blocks within a certain rectangular area
 
 B<Parameters>
 
 $x1,$y1,$x2,$y2 rectangle area coordinates
 
-$blocks array pointer of AssignBlocks
+$assigned_blocks array pointer of AssignBlocks
 
 B<Returns>
 
@@ -210,8 +208,8 @@ sub in_range {
 	my $y1     = shift || 1;
 	my $x2     = shift || 1;
 	my $y2     = shift || 1;
-	my $blocks = shift;
-	die unless $blocks;
+	my $assigned_blocks = shift;
+	die unless $assigned_blocks;
 
 	# make sure start in left top towards bottom right
 	if ( $x1 > $x2 ) { my $tmp = $x1; $x1 = $x2; $x2 = $tmp; }
@@ -219,8 +217,56 @@ sub in_range {
 
 	return
 	  grep { $_->x1 < $x2 && $_->x2 > $x1 && $_->y1 < $y2 && $_->y2 > $y1 }
-	  @$blocks;
+	  @$assigned_blocks;
 }
+
+# =================================================================
+# get_day_start_duration ($chosen)
+# =================================================================
+=head2 get_day_start_duration ($chosen)
+
+For the given AssignBlocks that were chosen by the user, calculate
+and return information about the range of blocks chosen
+
+B<Parameters>
+
+$assigned_blocks array pointer of AssignBlocks
+
+B<Returns>
+
+A list of:
+
+- day
+
+- start time
+
+- duration (in hours)
+
+=cut
+
+sub get_day_start_duration {
+    my $class  = shift;
+    my $chosen = shift;
+    my @x      = @$chosen;
+    return unless @x;
+
+    my $day   = $x[0]->day;
+    my $start = $x[0]->start;
+    my $size  = scalar @x;
+
+    foreach my $i ( @x ) {
+        my $temp = $i->start;
+        if ( $temp < $start ) {
+            $start = $temp;
+        }
+    }
+
+    # note that each block is a 1/2 hour, so the duration
+    # (in hours) would be the number of blocks divided by two
+    return ( $day, $start, $size / 2.0 );
+}
+
+
 
 =head1 INSTANCE METHODS
 
@@ -391,26 +437,6 @@ sub y2 {
 }
 
 #
-sub Get_day_start_duration {
-	my $class  = shift;
-	my $chosen = shift;
-	my @x      = @$chosen;
-	return unless @x;
-
-	my $day   = $x[0]->day;
-	my $start = $x[0]->start;
-	my $size  = scalar @x;
-
-	foreach my $i ( @x ) {
-		my $temp = $i->start;
-		if ( $temp < $start ) {
-			$start = $temp;
-		}
-	}
-
-	return ( $day, $start, $size / 2.0 );
-}
-
 # =================================================================
 # footer
 # =================================================================

@@ -78,13 +78,12 @@ sub new {
     $mw = shift;
     my $conflict_info = shift;
 
-    my $self = $class->SUPER::new($mw, $conflict_info);
+    my $self = $class->SUPER::new( $mw, $conflict_info );
     $self->view($view);
 
     return $self;
 
 }
-
 
 =head2 setup_popup_menu( ("teacher" | "lab" | "stream"), 
         (Teacher | Lab | Stream), sub {}, sub {}, sub {})
@@ -153,7 +152,6 @@ sub setup_popup_menu {
     $self->_popup_menu($pm);
 }
 
-
 =head2 setup_undo_redo( \number, \number, sub {} )
  
 Setup the gui to show undo/redo numbers, add actions to the main menu, and add 
@@ -187,11 +185,13 @@ sub setup_undo_redo {
     # ---------------------------------------------------------------
     # bind keys
     # ---------------------------------------------------------------
-    $tl->bind( '<Control-KeyPress-z>' => sub {$callback->($self->view, 'undo' )} );
-    $tl->bind( '<Meta-Key-z>'         => sub {$callback->($self->view, 'undo' )} );
+    $tl->bind(
+         '<Control-KeyPress-z>' => sub { $callback->( $self->view, 'undo' ) } );
+    $tl->bind( '<Meta-Key-z>' => sub { $callback->( $self->view, 'undo' ) } );
 
-    $tl->bind( '<Control-KeyPress-y>' => sub {$callback->($self->view, 'redo' )} );
-    $tl->bind( '<Meta-Key-y>'         => sub {$callback->($self->view, 'redo' )} );
+    $tl->bind(
+         '<Control-KeyPress-y>' => sub { $callback->( $self->view, 'redo' ) } );
+    $tl->bind( '<Meta-Key-y>' => sub { $callback->( $self->view, 'redo' ) } );
 
     # ---------------------------------------------------------------
     # add undo/redo to main menu
@@ -200,12 +200,12 @@ sub setup_undo_redo {
     $mainMenu->add(
                     'command',
                     -label   => "Undo",
-                    -command => sub {$callback->($self->view, 'undo' )},
+                    -command => sub { $callback->( $self->view, 'undo' ) },
     );
     $mainMenu->add(
                     'command',
                     -label   => "Redo",
-                    -command => sub {$callback->($self->view, 'redo' )},
+                    -command => sub { $callback->( $self->view, 'redo' ) },
     );
 
     # ---------------------------------------------------------------
@@ -249,6 +249,8 @@ callback => callback function called once a selection of assign_blocks is comple
 
 B<Inputs to Callback>
 
+- View object
+
 - a ptr to a list of AssignBlock objects
 
 =back
@@ -278,7 +280,7 @@ sub setup_assign_blocks {
                my $y  = shift;
 
                # if mouse is not on an assignable block, bail out
-               my $assblock = AssignBlock->find( $x, $y, $assignable_blocks );
+               my $assblock = AssignBlockTk->find( $x, $y, $assignable_blocks );
                return unless $assblock;
 
                # get day of assignable block that was clicked
@@ -295,7 +297,7 @@ sub setup_assign_blocks {
 
 }
 
-=head2 _prepare_to_select_assign_blocks( Tk::Canvas, day, x,y, \[AssignBlock...] ) 
+=head2 _prepare_to_select_assign_blocks( Tk::Canvas, day, x,y, \[AssignBlockTk...] ) 
   
 Binds mouse movement for selecting AssignBlocks 
 
@@ -316,22 +318,23 @@ B<Parameters>
 
 - x1,y1 => canvas coordinates of the mouse when it was initially clicked
 
-- all_blocks => ptr to array of all assignable blocks
+- assignable_blocks => ptr to array of all assignable blocks
 
 =cut
 
 sub _prepare_to_select_assign_blocks {
-    my $self       = shift;
-    my $cn         = shift;
-    my $day        = shift;
-    my $x1         = shift;
-    my $y1         = shift;
-    my $all_blocks = shift;
+    my $self              = shift;
+    my $cn                = shift;
+    my $day               = shift;
+    my $x1                = shift;
+    my $y1                = shift;
+    my $assignable_blocks = shift;
 
     my @selected_assigned_blocks;
 
     #Get a list of all the AssignBlocks associated with a given day
-    my @day_blocks = grep { $_->day == $day } @$all_blocks;
+    my @assign_blocks_day =
+      grep { $_->day == $day } @$assignable_blocks;
 
     #Binds motion to a motion sub to handle the selection of multiple time slots
     #when moving mouse
@@ -339,8 +342,12 @@ sub _prepare_to_select_assign_blocks {
                      '<Motion>',
                      [
                         \&_selecting_assigned_blocks,
-                        Ev('x'), Ev('y'), \$x1, \$y1,
-                        \@selected_assigned_blocks, \@day_blocks,
+                        Ev('x'),
+                        Ev('y'),
+                        \$x1,
+                        \$y1,
+                        \@selected_assigned_blocks,
+                        \@assign_blocks_day,
                      ]
     );
 
@@ -373,7 +380,7 @@ sub _prepare_to_select_assign_blocks {
     );
 }
 
-=head2 _selecting_assigned_blocks( Tk::Canvas, x2,y2, x1,y1, \[AssignBlock,..], \[AssignBlock,..] )
+=head2 _selecting_assigned_blocks( Tk::Canvas, x2,y2, x1,y1, \[AssignBlockTk,..], \[AssignBlockTk,..] )
 
 Called when mouse is moving, and in the process of selecting AssignBlocks
 
@@ -388,7 +395,7 @@ B<Parameters>
 - selected_assigned_blocks => ptr to array of selected AssignBlocks 
                               (reset in this routine)
 
-- day_blocks => ptr to list of AssignBlocks for the day (when the mouse was
+- assign_blocks_day => ptr to list of AssignBlocks for the day (when the mouse was
                 first clicked, the 'day' was calcuated)
 
 =cut 
@@ -400,17 +407,17 @@ sub _selecting_assigned_blocks {
     my $x1                       = shift;
     my $y1                       = shift;
     my $selected_assigned_blocks = shift;
-    my $day_blocks               = shift;
+    my $assign_blocks_day        = shift;
 
     #Temporarily unbind motion
     $cn->CanvasBind( '<Motion>', sub { } );
 
     #get the AssignBlocks currently under the selection window
     @$selected_assigned_blocks =
-      AssignBlock->in_range( $$x1, $$y1, $x2, $y2, $day_blocks );
+      AssignBlockTk->in_range( $$x1, $$y1, $x2, $y2, $assign_blocks_day );
 
     #colour selection blue
-    foreach my $blk (@$day_blocks) {
+    foreach my $blk (@$assign_blocks_day) {
         $blk->unfill;
     }
     foreach my $blk (@$selected_assigned_blocks) {
@@ -423,13 +430,13 @@ sub _selecting_assigned_blocks {
                      [
                         \&_selecting_assigned_blocks,
                         Ev('x'), Ev('y'), $x1, $y1, $selected_assigned_blocks,
-                        $day_blocks
+                        $assign_blocks_day
                      ]
     );
 
 }
 
-=head2 _selectedAssignBlocks( Tk::Canvas, \[AssignBlock,..] )
+=head2 _selectedAssignBlocks( Tk::Canvas, \[AssignBlockTk,..] )
 
 Mouse is up, AssignBlocks have been selected.  Deal with it!
 
@@ -456,7 +463,8 @@ sub _selectedAssignBlocks {
       $selected_assigned_blocks && @$selected_assigned_blocks;
     return unless $something_to_do;
 
-    $Selected_assign_block_completed_cb->($selected_assigned_blocks);
+    $Selected_assign_block_completed_cb->($self->view, $selected_assigned_blocks
+    );
 }
 
 # ============================================================================
@@ -590,8 +598,8 @@ sub _select_guiblock_to_move {
     $cn->CanvasBind(
                      "<ButtonRelease-1>",
                      [
-                        \&_gui_block_has_stopped_moving, $self,
-                        $view,                           $guiblock
+                        \&_gui_block_has_stopped_moving,
+                        $self, $view, $guiblock
                      ]
     );
 }
@@ -629,7 +637,7 @@ sub _gui_block_is_moving {
     $cn->CanvasBind( "<Motion>", "" );
 
     # raise the block
-   $guiblock->gui_view->canvas->raise( $guiblock->group );
+    $guiblock->gui_view->canvas->raise( $guiblock->group );
 
     # where block needs to go
     my $desiredX = $xmouse - $xstart + $startingX;
@@ -723,7 +731,7 @@ sub _gui_block_has_stopped_moving {
     # get the guiblocks new coordinates (closest day/time)
     my $block = $guiblock->block;
     my $coords =
-      $self->_get_time_coords( $block->day_number, $block->start_number,
+      $self->get_time_coords( $block->day_number, $block->start_number,
                               $block->duration );
 
     # current x/y coordinates of rectangle
@@ -837,6 +845,5 @@ and/or modified under the terms of the Perl Artistic License
      (see http://www.perl.com/perl/misc/Artistic.html)
 
 =cut
-
 
 1;

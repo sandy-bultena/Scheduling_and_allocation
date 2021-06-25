@@ -304,7 +304,7 @@ sub move_block {
 
     # get new coordinates of block
     my $coords =
-      $self->_get_time_coords( $block->day_number, $block->start_number,
+      $self->get_time_coords( $block->day_number, $block->start_number,
                                $block->duration );
 
     # get current x/y of the guiblock
@@ -424,6 +424,39 @@ sub get_scale_info {
              -scale => $self->current_scale,
     };
 }
+
+=head2 get_time_coords( day, start, duration )
+
+Converts the times into X and Y coordinates and returns them
+
+B<Parameters>
+
+day => the day
+
+start => the start time of the block
+
+duration => number of hours for this block
+
+=cut
+
+sub get_time_coords {
+    my $self     = shift;
+    my $day      = shift;
+    my $start    = shift;
+    my $duration = shift;
+
+    my $scl = $self->get_scale_info();
+    my @coords = DrawView->get_coords( $day, $start, $duration, $scl );
+
+    if (wantarray) {
+        return @coords;
+    }
+    else {
+        [@coords];
+    }
+}
+
+
 
 =head2 destroy()
 
@@ -760,37 +793,6 @@ sub _set_block_coords {
       DrawView->coords_to_day_time_duration( $x, $y, $y, $scl );
     $guiblock->block->day_number($day);
     $guiblock->block->start_number($time);
-}
-
-=head2 _get_time_coords( day, start, duration )
-
-Converts the times into X and Y coordinates and returns them
-
-B<Parameters>
-
-day => the day
-
-start => the start time of the block
-
-duration => number of hours for this block
-
-=cut
-
-sub _get_time_coords {
-    my $self     = shift;
-    my $day      = shift;
-    my $start    = shift;
-    my $duration = shift;
-
-    my $scl = $self->get_scale_info();
-    my @coords = DrawView->get_coords( $day, $start, $duration, $scl );
-
-    if (wantarray) {
-        return @coords;
-    }
-    else {
-        [@coords];
-    }
 }
 
 # =================================================================

@@ -64,7 +64,6 @@ use File::Basename;
 # Libraries (shipped with this project)
 # ============================================================================
 use Tk::FindImages;
-use Tk::InitGui;
 use Tk::ToolBar;
 use PerlLib::Colours;
 use GuiSchedule::DataEntry;
@@ -73,7 +72,6 @@ use GuiSchedule::EditCourses;
 # ============================================================================
 # Package variables
 # ============================================================================
-our ( $Colours, $Fonts );
 our $BinDir = "$FindBin::Bin/";
 
 # ============================================================================
@@ -98,6 +96,8 @@ my $mw;
 my $Notebook;
 my $Required_notebook_tabs;
 my $exit_callback;
+my ( $Colours, $Fonts );
+
 
 =head2 new
 
@@ -210,27 +210,11 @@ sub create_main_window {
     # when clicking the 'x' in the corner of the window, call _exit_schedule
     $mw->protocol( 'WM_DELETE_WINDOW', \&_exit_schedule );
 
-    # Gets and sets the colours and fonts
-    ( $Colours, $Fonts ) = InitGui->set($mw);
+    # colours and fonts
+    FontsAndColoursTk->setup($mw);
+    $Fonts = FontsAndColoursTk->Fonts;
+    $Colours = FontsAndColoursTk->Colours;
 
-    # Hard code the colours
-    $Colours = {
-                 WorkspaceColour           => "#eeeeee",
-                 WindowForeground          => "black",
-                 SelectedBackground        => "#cdefff",
-                 SelectedForeground        => "#0000ff",
-                 DarkBackground            => "#cccccc",
-                 ButtonBackground          => "#abcdef",
-                 ButtonForeground          => "black",
-                 ActiveBackground          => "#89abcd",
-                 highlightbackground       => "#0000ff",
-                 ButtonHighlightBackground => "#ff0000",
-                 DataBackground            => "white",
-                 DataForeground            => "black",
-    };
-
-    SetSystemColours( $mw, $Colours );
-    $mw->configure( -bg => $Colours->{WorkspaceColour} );
     $self->{-mw} = $mw;
 }
 

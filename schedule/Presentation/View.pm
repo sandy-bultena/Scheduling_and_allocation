@@ -8,14 +8,15 @@ use lib "$FindBin::Bin/..";
 use List::Util qw( min max );
 use GUI::ViewTk;
 use GUI::GuiBlockTk;
-use Schedule::Undo;
 use GUI::ViewBaseTk;
+use GUI::AssignBlockTk;
+use Schedule::Undo;
 use Schedule::Conflict;
-use GuiSchedule::AssignBlock;
 use Schedule::Blocks;
 use Export::DrawView;
 use List::Util qw( min max );
 use SharedData;
+use GuiSchedule::AssignToResource;
 
 =head1 NAME
 
@@ -258,11 +259,6 @@ sub new {
     $self->gui->setup_undo_redo( \$Undo_number, \$Redo_number, \&_cb_undo_redo );
 
     # ---------------------------------------------------------------
-    # setup for assigning blocks resources
-    # ---------------------------------------------------------------
-    $self->_setup_for_assignable_blocks();
-
-    # ---------------------------------------------------------------
     # refresh drawing - redrawing creates the guiblocks
     # ---------------------------------------------------------------
     $self->redraw();
@@ -498,7 +494,7 @@ sub _cb_assign_blocks {
 
     #Get the day and time of the chosen blocks
     my ( $day, $start, $duration ) =
-      AssignBlock->Get_day_start_duration($chosen_blocks);
+      AssignBlockTk->get_day_start_duration($chosen_blocks);
 
     #create the menu to select the block to assign to the timeslot
     AssignToResource->new( $self->gui, $self->schedule, $self->views_manager, $day,
@@ -800,7 +796,7 @@ sub _setup_for_assignable_blocks {
     my $type = $self->type;
     
     # don't do this for 'stream' types
-    return unless lc($type) ne 'lab' && lc($type) ne 'teacher';
+    return unless lc($type) eq 'lab' || lc($type) eq 'teacher';
 
     #Loop through each half hour time slot,
     # and create and draw AsignBlock for each
@@ -808,7 +804,7 @@ sub _setup_for_assignable_blocks {
     foreach my $day ( 1 ... 5 ) {
         foreach my $start ( $Earliest_time * 2 ... ( $Latest_time * 2 ) - 1 ) {
             push @assignable_blocks,
-              AssignBlock->new( $self, $day, $start / 2 );
+              AssignBlockTk->new( $self, $day, $start / 2 );
         }
     }
 

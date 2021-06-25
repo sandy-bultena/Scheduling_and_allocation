@@ -18,6 +18,7 @@ use Tk::Menu;
 use Tk::LabEntry;
 use Tk::Optionmenu;
 use Tk::JBrowseEntry;
+use GUI::FontsAndColoursTk;
 use Data::Dumper;
 my $image_dir = Tk::FindImages::get_image_dir();
 
@@ -62,7 +63,7 @@ my %dayName = (
 # ===================================================================
 sub new {
     my $class = shift;
-    $frame    = shift;
+    my $viewTk    = shift;
     $Schedule = shift;
 
     $GuiSchedule = shift;
@@ -73,6 +74,8 @@ sub new {
 
     $obj  = shift;
     $type = shift;
+    
+    $frame = $viewTk->canvas;
 
     $lab     = $obj if $type eq 'lab';
     $teacher = $obj if $type eq 'teacher';
@@ -155,8 +158,7 @@ sub OpenDialog {
 
         my $df = $db->Subwidget("top");
 
-        my $fonts    = $Scheduler::Fonts;
-        my $x        = $Scheduler::Fonts;    # to get rid of stupid warning
+        my $fonts    = FontsAndColoursTk->Fonts;
         my $bigFont  = $fonts->{bigbold};
         my $boldFont = $fonts->{bold};
 

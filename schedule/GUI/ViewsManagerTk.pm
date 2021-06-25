@@ -5,6 +5,7 @@ package ViewsManagerTk;
 use FindBin;
 use lib "$FindBin::Bin/..";
 use GUI::SchedulerTk;
+use GUI::FontsAndColoursTk;
 my $mw;
 
 sub new {
@@ -105,7 +106,7 @@ sub set_button_colour {
     my $btn         = $button_ptrs->{$obj};
 
     # set button colour to conflict colour if there is a conflict
-    my $colour = $SchedulerTk::Colours->{ButtonBackground};
+    my $colour = FontsAndColoursTk->Colours->{ButtonBackground};
     if ($view_conflict) {
         $colour = Conflict->Colours->{$view_conflict} || 'red';
     }

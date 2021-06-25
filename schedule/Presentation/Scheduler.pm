@@ -32,6 +32,7 @@ use Export::CSV;           # write CSV schedules
 use GUI::SchedulerTk;      # gui code
 use Presentation::ViewsManager;
 use SharedData;
+use GUI::FontsAndColoursTk;
 
 # ==================================================================
 # global vars
@@ -639,8 +640,8 @@ sub update_overview {
 sub update_edit_courses {
     my $self = shift;
     my $f = $Gui->get_notebook_page( $Scheduler::Pages_lookup{Courses}->name );
-    EditCourses->new( $f, $Schedule, $Dirtyflag, $SchedulerTk::Colours,
-                      $SchedulerTk::Fonts, $Views_manager );
+    EditCourses->new( $f, $Schedule, $Dirtyflag, FontsAndColoursTk->Colours,
+                      FontsAndColoursTk->Fonts, $Views_manager );
 }
 
 # ==================================================================
