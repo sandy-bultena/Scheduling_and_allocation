@@ -34,7 +34,7 @@ Version 1.00
 
 Describes a GuiBlock
 
-=head1 METHODS
+=head1 PUBLIC METHODS
 
 =cut
 
@@ -48,7 +48,7 @@ our $Edge   = 5;
 # new
 # =================================================================
 
-=head2 new ()
+=head2 new( 'teacher'|'lab'|'stream', ViewTk, Block, )
 
 creates, draws and returns a GuiBlocks object
 
@@ -59,8 +59,6 @@ B<Parameters>
 -gui_view => the gui object assocatied with the view
 
 -block => Block to turn into a GuiBlock
-
--coords => Where to draw the GuiBlock on the View
 
 B<Returns>
 
@@ -77,7 +75,6 @@ sub new {
     my $gui_view   = shift;
     my $block  = shift;
     my $colour = shift || "";
-    my $scale  = shift;
 
     # get canvas from gui_view to draw on
     my $canvas = $gui_view->canvas;
@@ -103,7 +100,7 @@ sub new {
     $self->{-id} = $Max_id++;
     $self->block($block);
     $self->gui_view($gui_view);
-    $self->coords( \@coords );
+    $self->_coords( \@coords );
     $self->colour($colour);
     $self->rectangle($rectangle);
     $self->text($text);
@@ -118,9 +115,13 @@ sub new {
 # change the colour of the guiblock
 # =================================================================
 
-=head2 change_colour ($colour)
+=head2 change_colour( colour )
 
 Change the colour of the guiblock (including text and shading)
+
+B<Parameters>
+
+-colour => a string specifying a valid colour (name or #rrggbb)
 
 =cut
 
@@ -153,8 +154,9 @@ sub change_colour {
 # =================================================================
 # getters/setters
 # =================================================================
+=head1 PROPERTIES
 
-=head2 id ()
+=head2 id()
 
 Returns the unique id for this guiblock object
 
@@ -165,7 +167,7 @@ sub id {
     return $self->{-id};
 }
 
-=head2 block ( [block] )
+=head2 block( [block] )
 
 Get/set the block for this guiblock
 
@@ -177,7 +179,7 @@ sub block {
     return $self->{-block};
 }
 
-=head2 gui_view ( [gui_view] )
+=head2 gui_view( [gui_view] )
 
 Get/set the gui_view for this guiblock
 
@@ -189,13 +191,13 @@ sub gui_view {
     return $self->{-gui_view};
 }
 
-=head2 coords ( [coords] )
+=head2 _coords ( [coords] )
 
 Get/set the coordinates for this guiblock
 
 =cut
 
-sub coords {
+sub _coords {
     my $self = shift;
     $self->{-coords} = shift if @_;
     return $self->{-coords};
@@ -218,7 +220,7 @@ sub colour {
     return $self->{-colour};
 }
 
-=head2 rectangle ( [rectangle object] )
+=head2 rectangle( [rectangle object] )
 
 Get/set the rectangle object for this guiblock
 
@@ -230,7 +232,7 @@ sub rectangle {
     return $self->{-rectangle};
 }
 
-=head2 text ( [text object] )
+=head2 text( [text object] )
 
 Get/set the text object for this guiblock
 
@@ -242,7 +244,7 @@ sub text {
     return $self->{-text};
 }
 
-=head2 group ( [group] )
+=head2 group( [group] )
 
 Get/set the group for this guiblock. The group is what moves on the canvas.
 
@@ -254,7 +256,7 @@ sub group {
     return $self->{-group};
 }
 
-=head2 is_controlled ( [boolean] )
+=head2 is_controlled( [boolean] )
 
 Get/set the group for this guiblock. The group is what moves on the canvas.
 

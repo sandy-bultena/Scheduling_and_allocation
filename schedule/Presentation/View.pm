@@ -306,8 +306,7 @@ sub redraw {
         $b->start( $b->start );
         $b->day( $b->day );
 
-        my $scale = $self->gui->current_scale;
-        my $guiblock = GuiBlock->new( $self->type, $self->gui, $b, undef, $scale );
+        my $guiblock = GuiBlock->new( $self->type, $self->gui, $b );
 
         $self->gui->bind_popup_menu($guiblock);
         $self->_add_guiblock($guiblock);
@@ -429,7 +428,6 @@ close the view
 
 sub close {
     my $self = shift;
-    print "in view close, $self\n";
     $self->gui->destroy;
 }
 
@@ -451,7 +449,6 @@ B<Handles Event:> View is closed via the gui interface
 sub _cb_close_view {
     my $self          = shift;
     my $views_manager = $self->views_manager;
-    print "calling views_manager->close_view($self)\n";
     $views_manager->close_view($self);
 }
 
@@ -535,7 +532,6 @@ sub _cb_toggle_movement {
         $block->movable(1);
     }
 
-    print "Toggled block, it is now ",$block->movable,"\n";
     # redraw, and set dirty flag
     $self->views_manager->redraw_all_views;
     my $views_manager = $self->views_manager;
@@ -562,15 +558,9 @@ sub _cb_move_block_between_scheduable_objects {
     my ( $self, $that_scheduable ) = @_;
     my $this_scheduable = $self->scheduable;
     
-    print "in cb_move_block_between...\n";
-
     # get the gui block that the popup_menu was invoked on
     my $guiblock = $self->gui->popup_guiblock();
     
-    print "gui block is : $guiblock\n";
-    
-    print "block is: ",$guiblock->block,"\n";
-
     # reassign teacher/lab to blocks
     if ( $self->type eq 'teacher' ) {
         $guiblock->block->remove_teacher($this_scheduable);
@@ -904,8 +894,6 @@ sub _set_view_button_colours {
     my $self = shift;
 
     if ( $self->views_manager ) {
-        print "Asking view manager to determine button colours\n";
-
         $self->views_manager->determine_button_colours();
     }
 

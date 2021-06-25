@@ -469,7 +469,6 @@ sub draw_block {
     $Edge = $edge;
 
     $colour = Colour->string($colour);
-    print "Drawview colour choosing $colour\n";
 
     # --------------------------------------------------------------------
     # get coords

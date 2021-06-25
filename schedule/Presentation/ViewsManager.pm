@@ -449,8 +449,6 @@ sub close_view {
     my $self = shift;
     my $view = shift;
     
-    print "in views_manager close_view: $view\n";
-        
     $view->close();
     $self->_remove_view($view);
     delete $self->{-views}->{ $view->id };
@@ -581,7 +579,6 @@ sub redraw_all_views {
     my $openViews = $self->views;
 
     foreach my $view ( values %$openViews ) {
-        print "redrawing view $view\n";
         $view->redraw;
     }
 }

@@ -49,10 +49,7 @@ a guiblock object which is attached to the current popup menu
 
 sub popup_guiblock {
     my $self = shift;
-    print "setting popup_guiblock: @_\n" if @_;
     $self->{-popup_guiblock} = shift if @_;
-    print "returning ",$self->{-popup_guiblock},"\n";
-    print $self->{-popup_guiblock}->block,"\n\n";
     return $self->{-popup_guiblock};
 }
 
@@ -67,12 +64,14 @@ to close the window
 sub on_closing {
     my $self = shift;
     $self->{-closing_callback} = shift if @_;
+    
     if ( !defined $self->{-closing_callback} ) {
         $self->{-closing_callback} = sub {
             my $self = shift;
             $self->destroy();
           }
     }
+    
     return $self->{-closing_callback};
 }
 
@@ -434,7 +433,6 @@ Close/destroy the gui window
 
 sub destroy {
     my $self     = shift;
-    print "in ViewBaseTk destroy: $self\n";
     my $toplevel = $self->_toplevel;
     $toplevel->destroy;
 }

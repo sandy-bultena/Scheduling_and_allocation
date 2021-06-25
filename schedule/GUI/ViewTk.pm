@@ -187,11 +187,11 @@ sub setup_undo_redo {
     # ---------------------------------------------------------------
     # bind keys
     # ---------------------------------------------------------------
-    $tl->bind( '<Control-KeyPress-z>' => [ $callback, $self, 'undo' ] );
-    $tl->bind( '<Meta-Key-z>'         => [ $callback, $self, 'undo' ] );
+    $tl->bind( '<Control-KeyPress-z>' => sub {$callback->($self->view, 'undo' )} );
+    $tl->bind( '<Meta-Key-z>'         => sub {$callback->($self->view, 'undo' )} );
 
-    $tl->bind( '<Control-KeyPress-y>' => [ $callback, $self, 'redo' ] );
-    $tl->bind( '<Meta-Key-y>'         => [ $callback, $self, 'redo' ] );
+    $tl->bind( '<Control-KeyPress-y>' => sub {$callback->($self->view, 'redo' )} );
+    $tl->bind( '<Meta-Key-y>'         => sub {$callback->($self->view, 'redo' )} );
 
     # ---------------------------------------------------------------
     # add undo/redo to main menu
@@ -200,12 +200,12 @@ sub setup_undo_redo {
     $mainMenu->add(
                     'command',
                     -label   => "Undo",
-                    -command => [ $callback, $tl, $self, 'undo' ]
+                    -command => sub {$callback->($self->view, 'undo' )},
     );
     $mainMenu->add(
                     'command',
                     -label   => "Redo",
-                    -command => [ $callback, $tl, $self, 'redo' ]
+                    -command => sub {$callback->($self->view, 'redo' )},
     );
 
     # ---------------------------------------------------------------
