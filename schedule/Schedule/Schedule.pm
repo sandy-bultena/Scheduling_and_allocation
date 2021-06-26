@@ -562,13 +562,13 @@ sub get_scheduable_object_type {
     my $obj  = shift;
 
     my $type = "";
-    if ( $obj->isa("Teacher") ) {
+    if ( $obj->isa("Teacher") || $obj->isa("Teachers") ) {
         $type = "teacher";
     }
-    elsif ( $obj->isa("Lab") ) {
+    elsif ( $obj->isa("Lab") || $obj->isa("Labs") ) {
         $type = "lab";
     }
-    elsif ($obj->isa("Stream") ) {
+    elsif ($obj->isa("Stream") || $obj->isa("Streams") ) {
         $type = "stream";
     }
     return $type;

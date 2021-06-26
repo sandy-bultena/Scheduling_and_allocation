@@ -360,7 +360,7 @@ sub add_empty_row {
     my $row       = shift;
     my $colwidths = $t->colwidths;
     my $disabled  = $t->disabled;
-
+    
     # for each column, add an entry box
     foreach my $c ( 1 .. $t->columns ) {
 

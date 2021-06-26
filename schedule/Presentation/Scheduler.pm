@@ -31,6 +31,7 @@ use Export::Latex;         # write Latex schedules
 use Export::CSV;           # write CSV schedules
 use GUI::SchedulerTk;      # gui code
 use Presentation::ViewsManager;
+use Presentation::DataEntry;
 use SharedData;
 use GUI::FontsAndColoursTk;
 
@@ -572,15 +573,15 @@ sub update_overview {
 
         sub update_edit_teachers {
 
-            my $f =
+            my $notebook_page =
               $Gui->get_notebook_page(
                                      $Scheduler::Pages_lookup{Teachers}->name );
             if ($de) {
                 $de->refresh( $Schedule->teachers );
             }
             else {
-                $de = DataEntry->new( $f, $Schedule->teachers, $Schedule,
-                                      $Dirtyflag, $Views_manager );
+                $de = DataEntry->new( $notebook_page, $Schedule->teachers, $Schedule,
+                                      \$Dirtyflag, $Views_manager );
             }
         }
     }
@@ -601,7 +602,7 @@ sub update_overview {
             $de->refresh( $Schedule->streams );
         }
         else {
-            $de = DataEntry->new( $f, $Schedule->streams, $Schedule, $Dirtyflag,
+            $de = DataEntry->new( $f, $Schedule->streams, $Schedule, \$Dirtyflag,
                                   $Views_manager );
         }
     }
@@ -625,7 +626,7 @@ sub update_overview {
             }
             else {
                 $de = $de =
-                  DataEntry->new( $f, $Schedule->labs, $Schedule, $Dirtyflag,
+                  DataEntry->new( $f, $Schedule->labs, $Schedule, \$Dirtyflag,
                                   $Views_manager );
             }
 

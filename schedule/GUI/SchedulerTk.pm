@@ -66,7 +66,6 @@ use File::Basename;
 use Tk::FindImages;
 use Tk::ToolBar;
 use PerlLib::Colours;
-use GuiSchedule::DataEntry;
 use GuiSchedule::EditCourses;
 
 # ============================================================================
