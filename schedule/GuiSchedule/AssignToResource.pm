@@ -4,51 +4,37 @@ use warnings;
 
 package AssignToResource;
 use FindBin;
-use Carp;
-use Tk;
 use lib "$FindBin::Bin/..";
-use Tk::DragDrop;
-use Tk::DropSite;
-use Tk::ItemStyle;
-use Tk::FindImages;
-use PerlLib::Colours;
-use Tk::FindImages;
-use Tk::Dialog;
-use Tk::Menu;
-use Tk::LabEntry;
-use Tk::Optionmenu;
-use Tk::JBrowseEntry;
-use GUI::FontsAndColoursTk;
+use Carp;
 use Data::Dumper;
-my $image_dir = Tk::FindImages::get_image_dir();
+use GUI::AssignToResourceTk;
 
 # =================================================================
 # Class/Global Variables
 # =================================================================
 our $Max_id = 0;
 my $Schedule;
-my $GuiSchedule;
-my $Trash1_photo;
-my $Trash2_photo;
+my $Views_manager;
 my %Styles;
 
-my $frame;
-my $day;
-my $start;
-my $duration;
-my $type;
+my $Frame;
+my $Day;
+my $Start;
+my $Duration;
+my $Type;
 
-my $obj;
+my $Scheduable;
 
 # ===================================================================
 # globals
 # ===================================================================
-my $course;
-my $section;
-my $block;
-my $teacher;
-my $lab;
-my $stream;
+my $Course;
+my $Section;
+my $Block;
+my $Teacher;
+my $Lab;
+my $Stream;
+my $Gui;
 
 my %dayName = (
                 1 => "Monday",
@@ -62,452 +48,118 @@ my %dayName = (
 # new
 # ===================================================================
 sub new {
-    my $class = shift;
-    my $viewTk    = shift;
-    $Schedule = shift;
+    my $class  = shift;
+    my $viewTk = shift;
 
-    $GuiSchedule = shift;
+    $Schedule      = shift;
+    $Views_manager = shift;
 
-    $day      = shift;
-    $start    = shift;
-    $duration = shift;
+    $Day      = shift;
+    $Start    = shift;
+    $Duration = shift;
 
-    $obj  = shift;
-    $type = shift;
+    $Scheduable = shift;
+    $Type       = shift;
+
+    $Frame = $viewTk->canvas;
+
+    $Lab     = $Scheduable if $Type eq 'lab';
+    $Teacher = $Scheduable if $Type eq 'teacher';
+    $Stream  = $Scheduable if $Type eq 'stream';
     
-    $frame = $viewTk->canvas;
-
-    $lab     = $obj if $type eq 'lab';
-    $teacher = $obj if $type eq 'teacher';
-    $stream  = $obj if $type eq 'stream';
-
-    return OpenDialog();
+    OpenDialog();
 }
 
 # ============================================================================
 # OpenDialog
 # ============================================================================
 sub OpenDialog {
+    print "Opening Dialog\n";
     if ($Schedule) {
+
+        $Gui = AssignToResourceTk->new($Type);
 
         #------------------------------------
         # SET UP LAB DATA
         #------------------------------------
-        my @labs       = $Schedule->labs->list;
-        my $curLab     = "";
-        my $newLabNum  = "";
-        my $newLabName = "";
-
-        my %labName;
-        foreach my $i (@labs) {
-            $labName{ $i->id } = "$i";
+        my %lab_names;
+        foreach my $lab ( $Schedule->labs->list ) {
+            $lab_names{ $lab->id } = "$lab";
         }
+        $Gui->list_labs( \%lab_names );
 
         #------------------------------------
         # SET UP TEACHER DATA
         #------------------------------------
-        my @teachers = $Schedule->teachers->list;
-        my $curTeach = "";
-        my $newFName = "";
-        my $newLName = "";
-
-        my %teacherName;
-        foreach my $i (@teachers) {
-            $teacherName{ $i->id } = $i->firstname . " " . $i->lastname;
+        my %teacher_names;
+        foreach my $teacher ( $Schedule->teachers->list ) {
+            $teacher_names{ $teacher->id } = "$teacher";
         }
+        $Gui->list_teachers( \%teacher_names );
 
         #------------------------------------
         # SET UP COURSE DATA
         #------------------------------------
-
-        my @courses   = $Schedule->courses->list;
-        my $curCourse = "";
-
-        my %courseName;
-        foreach my $i (@courses) {
-            $courseName{ $i->id } = $i->print_description2;
+        my %course_names;
+        foreach my $course ( $Schedule->courses->list ) {
+            $course_names{ $course->id } = $course->short_description;
         }
+        $Gui->list_courses( \%course_names );
 
         #------------------------------------
         # SET UP SECTION DATA
         #------------------------------------
-
-        my @sections;
-        my $curSection = "";
-        my $newSection = "";
-
-        my %sectionName;
+        my %section_names;
+        $Gui->list_sections( \%section_names );
 
         #------------------------------------
         # SET UP BLOCK DATA
         #------------------------------------
-        my @blocks;
-        my $curBlock = "";
-        my $newBlock = "";
-        my %blockName;
+        my %block_names;
+        $Gui->list_blocks( \%block_names );
+
+        #------------------------------------
+        # setup event handlers
+        #------------------------------------
+        $Gui->cb_course_selected( \&_cb_course_selected );
+        $Gui->cb_section_selected( \&_cb_section_selected );
+        $Gui->cb_block_selected( \&_cb_block_selected );
+        $Gui->cb_teacher_selected( \&_cb_teacher_selected );
+        $Gui->cb_lab_selected(\&_cb_lab_selected);
+        $Gui->cb_add_new_section( \&_add_new_section );
+        $Gui->cb_add_new_block( \&_add_new_block );
+        $Gui->cb_add_new_teacher (\&_add_new_teacher);
+        $Gui->cb_add_new_lab (\&_add_new_lab);
 
         #------------------------------------
         # Create Dialog Box
         #------------------------------------
-
-        my $db = $frame->DialogBox( -title   => "Assign Block",
-                                    -buttons => [ "Ok", "Cancel" ] );
-
-        my $OKAY = $db->Subwidget("B_Ok");
-        $OKAY->configure( -state => 'disabled' );
-
-        my $df = $db->Subwidget("top");
-
-        my $fonts    = FontsAndColoursTk->Fonts;
-        my $bigFont  = $fonts->{bigbold};
-        my $boldFont = $fonts->{bold};
-
-        # -----------------------------------
-        # Create Main Labels
-        # -----------------------------------
-
-        my $lblTitle;
-        $lblTitle = $db->Label(
-                                -text => "Assign block to Resource",
-                                -font => $bigFont
-        ) if $type eq 'lab';
-
-        $lblTitle = $db->Label(
-                                -text => "Assign block to Teacher",
-                                -font => $bigFont
-        ) if $type eq 'teacher';
-
-        my $selectedBlockText =
-            $dayName{$day} . " at "
-          . _hoursToString($start) . " for "
-          . $duration
+        my $title = "Assign block to " . ucfirst($Type);
+        my $block_text =
+            $dayName{$Day} . " at "
+          . _hoursToString($Start) . " for "
+          . $Duration
           . " hour(s)";
-        my $lblCourseInfo = $db->Label(
-                                        -text   => "Course Info (required)",
-                                        -font   => $boldFont,
-                                        -anchor => 'w'
-        );
-        my $lblTeacherInfo = $db->Label(
-                                         -text   => "Teacher (optional)",
-                                         -font   => $boldFont,
-                                         -anchor => 'w'
-        );
-        my $lblLabInfo = $db->Label(
-                                     -text   => "Resource (optional)",
-                                     -font   => $boldFont,
-                                     -anchor => 'w'
-        );
-        my $lblCourse = $db->Label( -text => "Choose Course", -anchor => 'w' );
-        my $lblTeacher =
-          $db->Label( -text => "Choose Teacher", -anchor => 'w' );
-        my $lblLab = $db->Label( -text => "Choose Resource", -anchor => 'w' );
-        my $lblSection =
-          $db->Label( -text => "Choose Section", -anchor => 'w' );
-        my $lblBlock =
-          $db->Label( -text => "Choose Block To Modify", -anchor => 'w' );
-        my $lblCreateSection =
-          $db->Label( -text => "Create new from Section Name", -anchor => 'w' );
-        my $lblCreateTeacher =
-          $db->Label( -text   => "Create new from Firstname / Lastname",
-                      -anchor => 'w' );
-        my $lblCreateLab = $db->Label(
-                            -text => "Create new from Resource number and name",
-                            -anchor => 'w' );
-        my $lblCreateBlock = $db->Label(
-                                -text => "Create block from selected date/time",
-                                -anchor => 'w' );
 
-        # -----------------------------------------------
-        # Defining widget variable names
-        # -----------------------------------------------
-
-        my $CourseJBE;
-        my $SectionJBE;
-        my $TeacherJBE;
-        my $LabJBE;
-        my $BlockJBE;
-
-        my $SectionEntry;
-        my $TeacherFName;
-        my $TeacherLName;
-        my $BlockDescr;
-        my $LabDscr;
-        my $LabNumber;
-
-        my $SectionNewBtn;
-        my $TeacherNewBtn;
-        my $BlockNewBtn;
-        my $LabNewBtn;
-
-        #----------------------------------------
-        # Course widgets
-        #----------------------------------------
-
-        # course
-        $CourseJBE = $db->JBrowseEntry(
-            -variable  => \$curCourse,
-            -state     => 'readonly',
-            -choices   => \%courseName,
-            -width     => 20,
-            -browsecmd => [
-                sub {
-                    my $btn = ${ +shift };
-                    $btn->configure( -state => 'normal' ),
-                      my %rHash = reverse %courseName;
-                    my $id      = $rHash{$curCourse};
-                    $course = $Schedule->courses->get($id);
-                    updateSectionList(
-                                       \$SectionJBE,  \$BlockJBE,
-                                       \%sectionName, \%blockName,
-                                       \$curSection,  \$curBlock,
-                                       \$OKAY,        \$BlockNewBtn
-                    );
-                },
-                \$SectionNewBtn
-            ]
-        );
-
-        my $courseDropEntry = $CourseJBE->Subwidget("entry");
-        $courseDropEntry->configure( -disabledbackground => "white" );
-        $courseDropEntry->configure( -disabledforeground => "black" );
-
-        # ========================================================
-        # section widgets
-        # ========================================================
-        $SectionJBE = $db->JBrowseEntry(
-            -variable  => \$curSection,
-            -state     => 'readonly',
-            -width     => 20,
-            -browsecmd => [
-                sub {
-                    my $btn = ${ +shift };
-                    $btn->configure( -state => 'normal' );
-                    my %rHash = reverse %sectionName;
-                    my $id      = $rHash{$curSection};
-                    $section = $course->get_section_by_id($id);
-                    updateBlockList( \$BlockJBE, $section, \%blockName,
-                                     \$curBlock, \$OKAY );
-                    setDefaultTeacher( $section, \$curTeach );
-                },
-                \$BlockNewBtn
-            ]
-        );
-
-        my $secDropEntry = $SectionJBE->Subwidget("entry");
-        $secDropEntry->configure( -disabledbackground => "white" );
-        $secDropEntry->configure( -disabledforeground => "black" );
-
-        $SectionEntry = $db->Entry( -textvariable => \$newSection );
-
-        $SectionNewBtn = $db->Button(
-            -text    => "Create",
-            -state   => 'disabled',
-            -width   => 20,
-            -command => sub {
-                add_new_section(
-                                 \$newSection, \%sectionName, \$SectionJBE,
-                                 \$curSection, $OKAY,         \$BlockNewBtn,
-                                 \$curBlock
-                );
-            }
-        );
-
-        # =====================================================
-        # block
-        # =====================================================
-        $BlockJBE = $db->JBrowseEntry(
-            -variable  => \$curBlock,
-            -state     => 'readonly',
-            -choices   => \%blockName,
-            -width     => 20,
-            -browsecmd => sub {
-                my %rHash = reverse %blockName;
-                my $id    = $rHash{$curBlock};
-                $block = $section->get_block_by_id($id);
-                $OKAY->configure( -state => 'normal' );
-            }
-        );
-        my $blockDropEntry = $BlockJBE->Subwidget("entry");
-        $blockDropEntry->configure( -disabledbackground => "white" );
-        $blockDropEntry->configure( -disabledforeground => "black" );
-
-        $BlockDescr = $db->Entry(
-                                  -textvariable       => \$selectedBlockText,
-                                  -state              => 'disabled',
-                                  -disabledbackground => 'white'
-        );
-
-        $BlockNewBtn = $db->Button(
-            -text    => "Create",
-            -state   => 'disabled',
-            -command => sub {
-                add_new_block( \$section,  \%blockName, \$BlockJBE,
-                               \$curBlock, \$OKAY );
-            }
-        );
-
-        # =============================================
-        # teacher
-        # ============================================
-        $TeacherJBE = $db->JBrowseEntry(
-            -variable  => \$curTeach,
-            -state     => 'readonly',
-            -choices   => \%teacherName,
-            -width     => 20,
-            -browsecmd => sub {
-                my %rHash = reverse %teacherName;
-                my $id    = $rHash{$curTeach};
-                $teacher = $Schedule->teachers->get($id);
-            }
-        );
-        my $teacherDropEntry = $TeacherJBE->Subwidget("entry");
-        $teacherDropEntry->configure( -disabledbackground => "white" );
-        $teacherDropEntry->configure( -disabledforeground => "black" );
-
-        $TeacherFName = $db->Entry( -textvariable => \$newFName );
-        $TeacherLName = $db->Entry( -textvariable => \$newLName );
-
-        $TeacherNewBtn = $db->Button(
-            -text    => "Create",
-            -command => sub {
-                add_new_teacher( \$newFName,   \$newLName, \%teacherName,
-                                 \$TeacherJBE, \$curTeach );
-            }
-        );
-
-        # ======================================================
-        # Lab
-        # ======================================================
-        $LabJBE = $db->JBrowseEntry(
-            -variable  => \$curLab,
-            -state     => 'readonly',
-            -choices   => \%labName,
-            -width     => 20,
-            -browsecmd => sub {
-                my %rHash = reverse %labName;
-                my $id    = $rHash{$curLab};
-                $lab = $Schedule->labs->get($id);
-            }
-        );
-        my $labDropEntry = $LabJBE->Subwidget("entry");
-        $labDropEntry->configure( -disabledbackground => "white" );
-        $labDropEntry->configure( -disabledforeground => "black" );
-
-        $LabNumber = $db->Entry( -textvariable => \$newLabNum );
-        $LabDscr   = $db->Entry( -textvariable => \$newLabName );
-
-        $LabNewBtn = $db->Button(
-            -text    => "Create",
-            -command => sub {
-                add_new_lab( \$newLabNum, \$newLabName, \%labName,
-                             \$LabJBE,    \$curLab );
-            }
-        );
-
-        # -------------------------------------------------------
-        # Widget Placement
-        # -------------------------------------------------------
-        # title
-        $lblTitle->grid( "-", "-", "-", -padx => 2, -sticky => 'nsew' );
-
-        # course
-        $db->Label( -text => '' )->grid( "-", "-", "-", -sticky => 'nsew' );
-        $lblCourseInfo->grid( "-", "-", "-", -padx => 2, -sticky => 'nsew' );
-        $lblCourse->grid( "-", "-", "-", -padx => 2, -sticky => 'nsew' );
-        $CourseJBE->grid( "-", "-", "-", -padx => 2, -sticky => 'nsew' );
-
-        # section
-        $lblSection->grid(
-                           $lblCreateSection,
-                           "-", "-",
-                           -padx   => 2,
-                           -sticky => 'nsew'
-        );
-        $SectionJBE->grid(
-                           $SectionEntry, "-", $SectionNewBtn,
-                           -padx   => 2,
-                           -sticky => 'nsew'
-        );
-
-        # block
-        $lblBlock->grid(
-                         $lblCreateBlock,
-                         "-", "-",
-                         -padx   => 2,
-                         -sticky => 'nsew'
-        );
-        $BlockJBE->grid(
-                         $BlockDescr, "-", $BlockNewBtn,
-                         -padx   => 2,
-                         -sticky => 'nsew'
-        );
-
-        # teacher
-        unless ( $type eq 'teacher' ) {
-            $db->Label( -text => '' )
-              ->grid( "-", "-", "-", -padx => 2, -sticky => 'nsew' );
-            $lblTeacherInfo->grid(
-                                   "-", "-", "-",
-                                   -padx   => 2,
-                                   -sticky => 'nsew'
-            );
-            $lblTeacher->grid(
-                               $lblCreateTeacher,
-                               "-", "-",
-                               -padx   => 2,
-                               -sticky => 'nsew'
-            );
-            $TeacherJBE->grid(
-                               $TeacherFName, $TeacherLName,
-                               $TeacherNewBtn,
-                               -sticky => 'nsew',
-                               -padx   => 2
-            );
-            $db->Label( -text => '' )
-              ->grid( "-", "-", "-", -padx => 2, -sticky => 'nsew' );
-        }
-
-        # lab
-        unless ( $type eq 'lab' ) {
-            $db->Label( -text => '' )
-              ->grid( "-", "-", "-", -padx => 2, -sticky => 'nsew' );
-            $lblLabInfo->grid(
-                               "-", "-", "-",
-                               -padx   => 2,
-                               -sticky => 'nsew'
-            );
-            $lblLab->grid(
-                           $lblCreateLab,
-                           "-", "-",
-                           -padx   => 2,
-                           -sticky => 'nsew'
-            );
-            $LabJBE->grid(
-                           $LabNumber, $LabDscr,
-                           $LabNewBtn,
-                           -sticky => 'nsew',
-                           -padx   => 2
-            );
-            $db->Label( -text => '' )
-              ->grid( "-", "-", "-", -padx => 2, -sticky => 'nsew' );
-        }
+        $Gui->draw( $Frame, $title, );
+        print "gui is drawn\n";
 
         #------------------------------------
         #Show menu
         #------------------------------------
-        my $answer = $db->Show() || "Cancel";
+        my $answer = $Gui->Show() || "Cancel";
 
         if ( $answer eq "Ok" ) {
 
             # check if a block is defined
-            if ($block) {
+            if ($Block) {
 
                 #if it is, assign all the properties to the block and return
-                $block->day($day);
-                $block->start( _hoursToString($start) );
-                $block->duration($duration);
-                $block->assign_lab($lab)         if $lab;
-                $block->assign_teacher($teacher) if $teacher;
+                $Block->day($Day);
+                $Block->start( _hoursToString($Start) );
+                $Block->duration($Duration);
+                $Block->assign_lab($Lab)         if $Lab;
+                $Block->assign_teacher($Teacher) if $Teacher;
                 return 1;
             }
         }
@@ -515,292 +167,245 @@ sub OpenDialog {
     }
 }
 
-# ----------------------------------------------------------------------------
-# updateSectionList
-# When a course is selected, the section menu has to change for the new Course
-# ----------------------------------------------------------------------------
+############################33
+sub _cb_course_selected {
+    print "in _cb_course_selected\n";
 
-sub updateSectionList {
+    # get course id and set global Course variable
+    my $course_name = shift;
+    my $id = _get_id ( $Gui->list_courses, $course_name );
+    $Course = $Schedule->courses->get($id);
 
-    my $SectionJBE  = ${ +shift };
-    my $BlockJBE    = ${ +shift };
-    my $sectionName = shift;
-    my $blockName   = shift;
-    my $curSection  = shift;
-    my $curBlock    = shift;
-    my $OKAY        = ${ +shift };
-    my $BlockNewBtn = ${ +shift };
+    # since we have a new course, we need to nullify the sections and blocks
+    $Section = undef;
+    $Block   = undef;
+    $Gui->clear_sections_and_blocks();
+    $Gui->enable_new_section_button();
 
-    #Disable okay;
-    $OKAY->configure( -state => 'disabled' );
+    # what sections are available for this course ?
+    my @sections = $Course->sections;
 
-    #Blanking the section and block inputs
-    $$curSection = "";
-    $section     = "";
-    $$curBlock   = "";
-    $block       = "";
-    $BlockNewBtn->configure( -state => 'disabled' );
-
-    # Blanking the choice hashes
-    %$sectionName = ();
-    %$blockName   = ();
-
-    my @sections = $course->sections;
-
+    # add to drop-down menu choices
     foreach my $i (@sections) {
-        $sectionName->{ $i->id } = "$i";
+        $Gui->list_sections->{ $i->id } = "$i";
     }
-
-    # Updating the Drop down with the new options
-    $SectionJBE->configure( -choices => $sectionName );
-    $BlockJBE->configure( -choices => $blockName );
+    print "Calling set_section_choices\n";
+    $Gui->set_section_choices();
 
 }
 
-# ----------------------------------------------------------------------------
-# updateBlockList
-# When a section is selected, the block menu has to change for the new Section
-# ----------------------------------------------------------------------------
+sub _cb_section_selected {
 
-sub updateBlockList {
+    # get section id and save global Section
+    my $section_name = shift;
+    my $id = _get_id ( $Gui->list_sections, $section_name );
+    $Section = $Course->get_section_by_id($id);;
 
-    my $BlockJBE  = ${ +shift };
-    my $section   = shift;
-    my $blockName = shift;
-    my $curBlock  = shift;
-    my $OKAY      = ${ +shift };
+    # since we have a new section, we need to nullify the blocks
+    $Gui->clear_blocks();
+    $Gui->enable_new_block_button();
 
-    #Disable okay;
-    $OKAY->configure( -state => 'disabled' );
+    # what blocks are available for this course ?
+    my @blocks = $Section->blocks;
 
-    #Blanking the block inputs
-    $$curBlock = "";
-    $block     = "";
-
-    # Blanking the choice hashes
-    %$blockName = ();
-
-    my @blocks = $section->blocks;
-
+    # add to drop-down menu choices
     foreach my $i (@blocks) {
-        $blockName->{ $i->id } = $i->print_description2;
+        $Gui->list_blocks->{ $i->id } = "$i";
     }
+    $Gui->set_block_choices();
 
-    # Updating the Drop down with the new options
-    $BlockJBE->configure( -choices => $blockName );
+    # set the default teacher for this course/section if this
+    # assign to resource type is NOT a teacher
+    return if $Type eq 'teacher';
 
+    my @teachers = $Section->teachers;
+    if (@teachers) {
+        $Teacher = $teachers[0];
+        $Gui->set_teacher("$Teacher");
+    }
 }
 
-# ============================================================================
-# add_new_lab
-# ============================================================================
-sub add_new_lab {
-
-    my $labNum     = shift;
-    my $newLabName = shift;
-    my $labName    = shift;
-    my $LabJBE     = ${ +shift };
-    my $curLab     = shift;
-
-    # Check is a first and last name are inputed, otherwise return
-    if ($$labNum) {
-
-        #see if a teacher by that name exsits
-        my $labNew = $Schedule->labs->get_by_number($$labNum);
-
-        unless ($labNew) {
-
-            #if no teacher by the inputed name exists, create a new teacher
-            $labNew = Lab->new( -number => $$labNum,
-                                -descr  => $$newLabName );
-            $$labNum     = "";
-            $$newLabName = "";
-            $Schedule->labs->add($labNew);
-
-            $labName->{ $labNew->id } = "$labNew";
-            $LabJBE->configure( -choices => $labName );
-            $$curLab = "$labNew";
-            $lab     = $labNew;
-        }
-        else {
-
-            #If a teacher exists by that name, ask the user if he would like
-            #to set that teacher, otherwise return
-            my $db = $frame->DialogBox( -title   => "Resource already exists",
-                                        -buttons => [ "Yes", "No" ] );
-            $db->Label( -text => "A Resource by this number already exsists!\n"
-                        . "Do you want to set that resource?" )->pack;
-
-            my $answer = $db->Show() || "";
-            if ( $answer eq "Yes" ) {
-                $$curLab     = "$labNew";
-                $$labNum     = "";
-                $$newLabName = "";
-                $lab         = $labNew;
-            }
-        }
-    }
-
+sub _cb_block_selected {
+    my $block_name = shift;
+    my $id = _get_id ( $Gui->list_blocks, $block_name );
+    $Block = $Section->get_block_by_id($id);
 }
 
-# ============================================================================
-# add new teacher
-# ============================================================================
-
-sub add_new_teacher {
-
-    my $firstname   = shift;
-    my $lastname    = shift;
-    my $teacherName = shift;
-    my $TeacherJBE  = ${ +shift };
-    my $curTeach    = shift;
-
-    # Check is a first and last name are inputed, otherwise return
-    if ( $$firstname && $$lastname ) {
-
-        #see if a teacher by that name exsits
-        my $teacherNew =
-          $Schedule->teachers->get_by_name( $$firstname, $$lastname );
-
-        unless ($teacherNew) {
-
-            #if no teacher by the inputed name exists, create a new teacher
-            $teacherNew = Teacher->new( -firstname => $$firstname,
-                                        -lastname  => $$lastname );
-            $$firstname = "";
-            $$lastname  = "";
-            $Schedule->teachers->add($teacherNew);
-
-            $teacherName->{ $teacherNew->id } = "$teacherNew";
-            $TeacherJBE->configure( -choices => $teacherName );
-            $$curTeach = "$teacherNew";
-            $teacher   = $teacherNew;
-        }
-        else {
-
-            #If a teacher exists by that name, ask the user if he would like
-            #to set that teacher, otherwise return
-            my $db = $frame->DialogBox( -title   => "Teacher already exists",
-                                        -buttons => [ "Yes", "No" ] );
-            $db->Label( -text => "A teacher by this name already exsists!\n"
-                        . "Do you want to set that teacher?" )->pack;
-
-            my $answer = $db->Show() || "";
-            if ( $answer eq "Yes" ) {
-                $$curTeach  = "$teacherNew";
-                $$firstname = "";
-                $$lastname  = "";
-                $teacher    = $teacherNew;
-            }
-        }
-    }
-
-}
-
-# ============================================================================
-# set default teacher for a given section
-# ============================================================================
-sub setDefaultTeacher {
-    my $section    = shift;
-    my $curTeach   = shift;
-    
-    return if $type eq 'teacher';
-    
-    return unless $section;
-    my $default_teacher = $section->default_teacher();
-    return unless $default_teacher;
-
-    $$curTeach = "$default_teacher";
-    $teacher   = $default_teacher;
+sub _cb_lab_selected {
+    my $lab_name = shift;
+    my $id = _get_id ( $Gui->list_lab, $lab_name );
+    $Lab = $Schedule->labs->get($id);
 }
 
 # ============================================================================
 # add_new_section
 # ============================================================================
-sub add_new_section {
+sub _cb_add_new_section {
 
-    my $name        = shift;
-    my $sectionName = shift;
-    my $SectionJBE  = ${ +shift };
-    my $curSection  = shift;
-    my $OKAY        = shift;
-    my $BlockNewBtn = ${ +shift };
-    my $curBlock    = shift;
+    my $name = shift;
+    return unless $Course;
 
-    #check if a course is defined, otherwise return
-    if ($course) {
+    #check to see if a section by that name  exists
+    my @sections = $Course->get_section_by_name($name);
+    my $sectionNew;
 
-        #check to see if a section by that name  exists
-        my @sections = $course->get_section_by_name($$name);
-        my $sectionNew;
+    # --------------------------------------------------------------------
+    # sections with this name already exist
+    # --------------------------------------------------------------------
+    if (@sections) {
+        my $answer = $Gui->yes_no(
+                         "Section already exists",
+                         scalar @sections
+                           . "Section(s) by this name already exsist!\n"
+                           . "Do you still want create this new section?\n\n"
+                           . "The name of the section will be set to something unique"
+        );
 
-        #If a section by the same name does exists
-        my $create_flag = 1;
-
-        if (@sections) {
-
-            # ask the user if he want's to create a new section with that name
-            my $db = $frame->DialogBox( -title   => "Section already exists",
-                                        -buttons => [ "Yes", "No" ] );
-            $db->Label( -text => scalar @sections
-                . " section(s) by this name already exsist!\nDo you still want create this new section?"
-            )->pack;
-            my $answer = $db->Show() || "";
-
-            #If not, set section to first instance of the section with
-            #the section name
-            if ( $answer ne 'Yes' ) {
-                $create_flag = 0;
-                my $temp = $sections[0];
-                $$curSection = "$temp";
-                $section     = $temp;
-            }
+        #If not, set section to first instance of the section with
+        #the section name
+        if ( $answer eq 'No' ) {
+            $Section = $sections[0];
+            _cb_section_selected("$Section");
+            $Gui->set_section("$Section");
+            return;
         }
-
-        #Create the new section
-        if ($create_flag) {
-
-            $sectionNew = Section->new(
-                                        -number => $course->get_new_number,
-                                        -hours  => 0,
-                                        -name   => $$name
-            );
-            $$name = "";
-            $course->add_section($sectionNew);
-
-            $sectionName->{ $sectionNew->id } = "$sectionNew";
-            $SectionJBE->configure( -choices => $sectionName );
-            $$curSection = "$sectionNew";
-            $section     = $sectionNew;
-            $$curBlock   = "";
-            $block       = "";
-            $BlockNewBtn->configure( -state => 'normal' );
-        }
-        $OKAY->configure( -state => 'disabled' );
     }
+
+    # --------------------------------------------------------------------
+    # create new section
+    # --------------------------------------------------------------------
+    $Section = Section->new(
+                             -number => $Course->get_new_number,
+                             -hours  => 0,
+                             -name   => $name
+    );
+    $Course->add_section($Section);
+
+    # --------------------------------------------------------------------
+    # add the new section to the drop down list, and make it the
+    # selected section
+    # --------------------------------------------------------------------
+    $Gui->list_sections->{ $Section->id } = "$Section";
+    _cb_section_selected("$Section");
+    $Gui->set_section("$Section");
 
 }
 
 # ============================================================================
 # add_new_block
 # ============================================================================
-sub add_new_block {
-    my $section   = ${ +shift };
-    my $blockName = shift;
-    my $BlockJBE  = ${ +shift };
-    my $curBlock  = shift;
-    my $OKAY      = ${ +shift };
+sub _cb_add_new_block {
 
-    #If a section is defined, create a new block and set active block to it
-    if ($section) {
-        my $new = Block->new( -number => $section->get_new_number );
-        $blockName->{ $new->id } = $new->print_description2;
-        $$curBlock = $new->print_description2;
-        $section->add_block($new);
-        $BlockJBE->configure( -choices => $blockName );
-        $block = $new;
-        $OKAY->configure( -state => 'normal' );
+    my $name = shift;
+    return unless $Course;
+    return unless $Section;
+
+    $Block = Block->new( -number => $Section->get_new_number );
+    $Section->add_block($Block);
+    $Gui->list_blocks->{ $Block->id } = $Block->short_description;
+    $Gui->set_block( $Block->short_description );
+}
+
+sub _get_id {
+    my $hash_ptr = shift;
+    my $name     = shift;
+    my %ref      = reverse %{$hash_ptr};
+    return $ref{$name};
+}
+
+sub _reset_hash {
+    my $hash_ptr;
+    my $new_hash_ptr;
+
+    %{$hash_ptr} = ();
+    foreach my $key ( keys %$new_hash_ptr ) {
+        $hash_ptr->{$key} = $new_hash_ptr->{$key};
     }
+}
+
+
+# ============================================================================
+# add_new_lab
+# ============================================================================
+sub cb_add_new_lab {
+
+    my $lab_name     = shift;
+    my $lab_number = shift;
+
+    return unless $lab_number;
+    
+    
+        #see if a lab by that number exsits
+        my $labNew = $Schedule->labs->get_by_number($lab_number);
+
+        if ($labNew) {
+                    my $question = $Gui->yes_no( "Lab already exists",
+                                     "I won't let you do anything, ok?" );
+        $Lab = undef;
+        return;
+        }
+            
+
+            $Lab = Lab->new( -number => $lab_number,
+                                -descr  => $lab_name );
+
+            $Schedule->labs->add($Lab);
+            $Gui->list_labs->{ $labNew->id } = "$Lab";
+            $Lab     = $labNew;
+            $Gui->set_lab("$Lab");
+
+
+}
+
+# ============================================================================
+# set lab
+# ============================================================================
+sub _cb_set_lab {
+    my $id = shift;
+    $Lab = $Schedule->labs->get($id);
+}
+
+# ============================================================================
+# teacher was selected
+# ============================================================================
+sub _cb_teacher_selected {
+    my $teacher_name = shift;
+    my $id = _get_id { $Gui->list_teachers, $teacher_name };
+    $Teacher = $Schedule->Teachers->get($id);
+}
+
+# ============================================================================
+# add new teacher
+# ============================================================================
+sub _cb_add_new_teacher {
+
+    my $self = shift;
+
+    my $firstname = shift;
+    my $lastname  = shift;
+    my $teacher   = "";
+
+    # Check is a first and last name are inputed, otherwise return
+    return unless !$firstname || !$lastname;
+
+    #see if a teacher by that name exsits
+    $teacher = $Schedule->teachers->get_by_name( $firstname, $lastname );
+
+    if ($teacher) {
+
+        my $question = $Gui->yes_no( "Teacher already exists",
+                                     "I won't let you do anything, ok?" );
+        $Teacher = undef;
+        return;
+    }
+
+    #if no teacher by the inputed name exists, create a new teacher
+    $Teacher = Teacher->new( -firstname => $firstname,
+                             -lastname  => $lastname );
+    $Schedule->teachers->add($Teacher);
+
+    $Gui->list_teachers->{ $Teacher->id } = "$Teacher";
+    $Gui->set_teacher("$Teacher");
 }
 
 #=======================
@@ -822,13 +427,13 @@ sub _hoursToString {
 # footer
 # =================================================================
 
-=head1 AUTHOR
+=head1 AUTHORS
 
 Sandy Bultena, Alex Oxorn
 
 =head1 COPYRIGHT
 
-Copyright (c) 2020, Sandy Bultena, Alex Oxorn. 
+Copyright (c) 2021, Sandy Bultena, Alex Oxorn.
 
 All Rights Reserved.
 

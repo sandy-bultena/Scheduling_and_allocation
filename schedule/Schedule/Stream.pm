@@ -149,7 +149,7 @@ sub print_description {
 
 }
 
-sub print_description2 {
+sub short_description {
     my $self = shift;
     my $text = $self->number . ": " . $self->descr;
 

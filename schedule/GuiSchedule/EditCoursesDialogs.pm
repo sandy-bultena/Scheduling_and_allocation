@@ -131,7 +131,7 @@ sub _show_tree_menu {
         foreach my $teach ( $Schedule->all_teachers ) {
             #next if $obj->has_teacher($teach);
             $add_teach_menu->command(
-                -label   => $teach->firstname . " " . $teach->lastname,
+                -label   => "$teach",
                 -command => sub {
                     $obj->assign_teacher($teach);
                     refresh_course( $tree, $obj, $input, 1 );
@@ -159,7 +159,7 @@ sub _show_tree_menu {
 
         foreach my $teacher ( $obj->teachers ) {
             $remove_teach->command(
-                -label   => $teacher->firstname . " " . $teacher->lastname,
+                -label   => "$teacher",
                 -command => sub {
                     $obj->remove_teacher($teacher);
                     refresh_course( $tree, $obj, $input, 1 );
@@ -205,7 +205,7 @@ sub _show_tree_menu {
 
         foreach my $stream ( $obj->streams ) {
             $remove_stream_menu->command(
-                -label   => $stream->print_description2,
+                -label   => $stream->short_description,
                 -command => sub {
                     $obj->remove_stream($stream);
                     refresh_schedule($tree);
@@ -258,7 +258,7 @@ sub _show_tree_menu {
         foreach my $teach ( $Schedule->all_teachers ) {
             #next if $obj->has_teacher($teach);
             $add_teach_menu->command(
-                -label   => $teach->firstname . " " . $teach->lastname,
+                -label   => "$teach",
                 -command => sub {
                     $obj->assign_teacher($teach);
                     set_dirty();
@@ -286,7 +286,7 @@ sub _show_tree_menu {
 
         foreach my $teach ( $obj->teachers ) {
             $remove_teach_menu->command(
-                -label   => $teach->firstname . " " . $teach->lastname,
+                -label   => "$teach",
                 -command => sub {
                     $obj->remove_teacher($teach);
                     refresh_section( $tree, $obj, $input, 1 );
@@ -404,7 +404,7 @@ sub _show_tree_menu {
         foreach my $teach ( $Schedule->all_teachers ) {
             next if $obj->has_teacher($teach);
             $add_teach_menu->command(
-                -label   => $teach->firstname . " " . $teach->lastname,
+                -label   => "$teach",
                 -command => sub {
                     $obj->assign_teacher($teach);
                     set_dirty();
@@ -451,7 +451,7 @@ sub _show_tree_menu {
 
         foreach my $teach ( $obj->teachers ) {
             $remove_teach_menu->command(
-                -label   => $teach->firstname . " " . $teach->lastname,
+                -label   => "$teach",
                 -command => sub {
                     $obj->remove_teacher($teach);
                     refresh_block( $tree, $obj, $input, 1 );
@@ -623,7 +623,7 @@ sub _show_teacher_menu {
                 my $tempBlock = $blockarray[ $itr - 1 ];
                 $blockList->add(
                     'command',
-                    -label   => $tempBlock->print_description2,
+                    -label   => $tempBlock->short_description,
                     -command => sub {
                         $tempBlock->assign_teacher($add_obj);
                         set_dirty();
@@ -700,7 +700,7 @@ sub _show_lab_menu {
                 my $tempBlock = $blockarray[ $itr - 1 ];
                 $blockList->add(
                     'command',
-                    -label   => $tempBlock->print_description2,
+                    -label   => $tempBlock->short_description,
                     -command => sub {
                         $tempBlock->assign_lab($add_obj);
                         set_dirty();
@@ -804,28 +804,28 @@ sub _edit_course_dialog {
 
     my %teacherName;
     foreach my $i (@teachers) {
-        $teacherName{ $i->id } = $i->firstname . " " . $i->lastname;
+        $teacherName{ $i->id } = "$i";
     }
 
     my @teachersO = $obj->teachers;
     my $curTeachO = "";
     my %teacherNameO;
     foreach my $i (@teachersO) {
-        $teacherNameO{ $i->id } = $i->firstname . " " . $i->lastname;
+        $teacherNameO{ $i->id } = "$i";
     }
 
     my @streams   = $Schedule->all_streams;
     my $curStream = "";
     my %streamName;
     foreach my $i (@streams) {
-        $streamName{ $i->id } = $i->print_description2;
+        $streamName{ $i->id } = $i->short_description;
     }
 
     my @streamsO   = $obj->streams;
     my $curStreamO = "";
     my %streamNameO;
     foreach my $i (@streamsO) {
-        $streamNameO{ $i->id } = $i->print_description2;
+        $streamNameO{ $i->id } = $i->short_description;
     }
 
     #---------------------------------------------------
@@ -1037,8 +1037,7 @@ sub _edit_course_dialog {
 
                     my %teacherName2;
                     foreach my $i (@teachers2) {
-                        $teacherName2{ $i->id } =
-                          $i->firstname . " " . $i->lastname;
+                        $teacherName2{ $i->id } = "$i";
                     }
 
                     @teachersO    = @teachers2;
@@ -1126,8 +1125,7 @@ sub _edit_course_dialog {
                 my $id       = $rHash{$curTeach};
                 my $teachAdd = $Schedule->teachers->get($id);
                 $obj->assign_teacher($teachAdd);
-                $teacherNameO{$id} =
-                  $teachAdd->firstname . " " . $teachAdd->lastname;
+                $teacherNameO{$id} = "$teachAdd";
                 $curTeach = "";
                 $teachDropO->configure( -choices => \%teacherNameO );
                 $teachDropO->update;
@@ -1329,7 +1327,7 @@ sub _edit_section_dialog {
     my @blocks = $obj->blocks;
     my %blockName;
     foreach my $i (@blocks) {
-        $blockName{ $i->id } = $i->print_description2;
+        $blockName{ $i->id } = $i->short_description;
     }
 
     my @teachersN = $Schedule->all_teachers;
@@ -1337,7 +1335,7 @@ sub _edit_section_dialog {
 
     my %teacherNameN;
     foreach my $i (@teachersN) {
-        $teacherNameN{ $i->id } = $i->firstname . " " . $i->lastname;
+        $teacherNameN{ $i->id } = "$i";
     }
 
     my @teachersO = $obj->teachers;
@@ -1348,21 +1346,21 @@ sub _edit_section_dialog {
 
     my %teacherNameO;
     foreach my $i (@teachersO) {
-        $teacherNameO{ $i->id } = $i->firstname . " " . $i->lastname;
+        $teacherNameO{ $i->id } = "$i";
     }
 
     my @streamsN   = $Schedule->all_streams;
     my $curStreamN = "";
     my %streamNameN;
     foreach my $i (@streamsN) {
-        $streamNameN{ $i->id } = $i->print_description2;
+        $streamNameN{ $i->id } = $i->short_description;
     }
 
     my @streamsO   = $obj->streams;
     my $curStreamO = "";
     my %streamNameO;
     foreach my $i (@streamsO) {
-        $streamNameO{ $i->id } = $i->print_description2;
+        $streamNameO{ $i->id } = $i->short_description;
     }
 
     #--------------------------------------------------------
@@ -1450,7 +1448,7 @@ sub _edit_section_dialog {
                 my @blocks2 = $obj->blocks;
                 my %blockName2;
                 foreach my $i (@blocks2) {
-                    $blockName2{ $i->id } = $i->print_description2;
+                    $blockName2{ $i->id } = $i->short_description;
                 }
                 @blocks    = @blocks2;
                 %blockName = %blockName2;
@@ -1504,8 +1502,7 @@ sub _edit_section_dialog {
                     my @teach2 = $obj->teachers;
                     my %teachName2;
                     foreach my $i (@teach2) {
-                        $teachName2{ $i->id } =
-                          $i->firstname . " " . $i->lastname;
+                        $teachName2{ $i->id } ="$i";
                     }
                     @teachersO    = @teach2;
                     %teacherNameO = %teachName2;
@@ -1565,8 +1562,7 @@ sub _edit_section_dialog {
                 my $id       = $rHash{$curTeachN};
                 my $teachAdd = $Schedule->teachers->get($id);
                 $obj->assign_teacher($teachAdd);
-                $teacherNameO{$id} =
-                  $teachAdd->firstname . " " . $teachAdd->lastname;
+                $teacherNameO{$id} = "$teachAdd";
                 $curTeachN = "";
                 $teachDropO->configure( -choices => \%teacherNameO );
                 $teachDropO->update;
@@ -1759,7 +1755,7 @@ sub _edit_block_dialog {
 
     my %teacherNameN;
     foreach my $i (@teachersN) {
-        $teacherNameN{ $i->id } = $i->firstname . " " . $i->lastname;
+        $teacherNameN{ $i->id } = "$i";
     }
 
     my @teachersO = $obj->teachers;
@@ -1767,7 +1763,7 @@ sub _edit_block_dialog {
 
     my %teacherNameO;
     foreach my $i (@teachersO) {
-        $teacherNameO{ $i->id } = $i->firstname . " " . $i->lastname;
+        $teacherNameO{ $i->id } = "$i";
     }
 
     my @labsN = $Schedule->all_labs;
@@ -1868,8 +1864,7 @@ sub _edit_block_dialog {
                 my $id       = $rHash{$curTeachN};
                 my $teachAdd = $Schedule->teachers->get($id);
                 $obj->assign_teacher($teachAdd);
-                $teacherNameO{$id} =
-                  $teachAdd->firstname . " " . $teachAdd->lastname;
+                $teacherNameO{$id} = "$teachAdd";
                 $curTeachN = "";
                 $teachDropO->configure( -choices => \%teacherNameO );
                 $teachDropO->update;

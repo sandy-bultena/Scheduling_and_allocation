@@ -401,7 +401,7 @@ sub update_all_CI {
         my $teacher = $total->{$TeacherKey};
         $total->{$CIKey} =
           CICalc->new($teacher)->calculate( $Schedules{$semester} );
-        $all_semesters{ $teacher->firstname . " " . $teacher->lastname } =
+        $all_semesters{ "$teacher" } =
           $total->{$CIKey};
         $row++;
     }
@@ -418,7 +418,7 @@ sub update_all_CI {
         my $tots = $self->totals($sem);
         foreach my $tot (@$tots) {
             my $teacher = $tot->{$TeacherKey};
-            $all_semesters{ $teacher->firstname . " " . $teacher->lastname } +=
+            $all_semesters{ "$teacher" } +=
               $tot->{$CIKey};
         }
     }
@@ -429,7 +429,7 @@ sub update_all_CI {
         foreach my $tot (@$tots) {
             my $teacher = $tot->{$TeacherKey};
             $tot->{$CITotalKey} =
-              $all_semesters{ $teacher->firstname . " " . $teacher->lastname };
+              $all_semesters{ "$teacher" };
         }
     }    
 

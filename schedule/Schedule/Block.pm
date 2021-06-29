@@ -671,7 +671,7 @@ sub print_description {
 #Alex COde
 #Date: Time Hours
 #=================
-sub print_description2 {
+sub short_description {
 	
     my $self = shift;
     my $text = "";

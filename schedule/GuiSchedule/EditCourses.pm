@@ -256,9 +256,7 @@ sub create_panel_for_modifying {
 	# ---------------------------------------------------------------
 	foreach my $teacher ( sort { &_teacher_sort } $Schedule->teachers->list ) {
 		$teachers_list->insert( 'end',
-			    $teacher->id . ":  "
-			  . $teacher->firstname . " "
-			  . $teacher->lastname );
+			    $teacher->id . ":  ". "$teacher");
 	}
 	foreach my $lab ( sort { &_alpha_number_sort } $Schedule->labs->list ) {
 		$labs_list->insert( 'end',
@@ -349,7 +347,7 @@ sub refresh_section {
 
 		$tree->add(
 			$new_path,
-			-text => $bl->print_description2
+			-text => $bl->short_description
 			,    #$bl->day . " " . $bl->start . " " . $bl->duration . "hrs",
 			-data => { -obj => $bl }
 		);
@@ -400,7 +398,7 @@ sub add_teacher {
 	my $t_id = "Teacher" . $t->id;
 	$tree->add(
 		"$path/$t_id",
-		-text => "Teacher: " . $t->firstname . " " . $t->lastname,
+		-text => "Teacher: $t",
 		-data => { -obj => $t }
 	);
 	$tree->hide( 'entry', "$path/$t_id" ) unless $not_hide;
@@ -1315,7 +1313,7 @@ sub _teacher_stat {
 	my $message = $Schedule->teacher_stat($teacher);
 
 	$frame->messageBox(
-		-title   => $teacher->firstname . " " . $teacher->lastname,
+		-title   => "$teacher",
 		-message => $message,
 		-type    => 'Ok'
 	);

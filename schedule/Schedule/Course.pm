@@ -539,16 +539,16 @@ sub print_description {
 }
 
 # =================================================================
-# print_description2
+# short_description
 # =================================================================
 
-=head2 print_description2
+=head2 short_description
 
 Number: Name
 
 =cut
 
-sub print_description2 {
+sub short_description {
 	my $self = shift;
 
 	return $self->number . ": " . $self->name;

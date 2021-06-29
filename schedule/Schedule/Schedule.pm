@@ -1074,8 +1074,7 @@ sub teacher_stat {
         elsif ( $i->day eq 'sun' ) { $week{'Sunday'}    = 1 }
     }
 
-    my $message =
-      $teacher->firstname . " " . $teacher->lastname . "'s Stats.\n\n";
+    my $message = "$teacher" . "'s Stats.\n\n";
 
     $message = $message . "Days of the week working:\n";
 
@@ -1098,7 +1097,7 @@ sub teacher_stat {
         }
         $message =
             $message . "->"
-          . $i->print_description2
+          . $i->short_description
           . " ($numSections Section(s))\n";
     }
 
