@@ -163,7 +163,8 @@ sub get_by_name {
     return unless $first_name && $last_name;
     
     foreach my $teacher ($self->list) {
-        if ($teacher->firstname eq $first_name && $teacher->lastname eq $last_name) {
+        if (lc($teacher->firstname) eq lc($first_name) 
+            && lc($teacher->lastname) eq lc($last_name)) {
             return $teacher;
         }
     }

@@ -33,12 +33,25 @@ Base class for different types of schedule views
 # =================================================================
 # Class Variables
 # =================================================================
-our $Status_text = "";
+our $Status_text      = "";
 our $Immovable_colour = "#dddddd";
 
 # =================================================================
 # Public Properties
 # =================================================================
+
+=head2 mw ( [Tk::MainWindow] )
+
+B<Gets/Sets>
+a Tk MainWindow object
+
+=cut
+
+sub mw {
+    my $self = shift;
+    $self->{-mw} = shift if @_;
+    return $self->{-mw};
+}
 
 =head2 popup_guiblock( [GuiBlock] )  
 
@@ -64,14 +77,14 @@ to close the window
 sub on_closing {
     my $self = shift;
     $self->{-closing_callback} = shift if @_;
-    
+
     if ( !defined $self->{-closing_callback} ) {
         $self->{-closing_callback} = sub {
             my $self = shift;
             $self->destroy();
           }
     }
-    
+
     return $self->{-closing_callback};
 }
 
@@ -98,9 +111,6 @@ sub current_scale {
     $self->{-current_scale} = shift if @_;
     return $self->{-current_scale};
 }
-
-
-
 
 # =================================================================
 # Public methods
@@ -132,7 +142,8 @@ sub new {
     my $conflict_info = shift;
 
     my $self = {};
-    $self->{-mw} = $mw;
+    bless $self, $class;
+    $self->mw($mw);
 
     # ---------------------------------------------------------------
     # create a new toplevel window, add a canvas
@@ -167,7 +178,6 @@ sub new {
     # ---------------------------------------------------------------
     # create object
     # ---------------------------------------------------------------
-    bless $self, $class;
     $self->canvas($cn);
     $self->_toplevel($tl);
     $self->_x_offset(1);
@@ -252,7 +262,7 @@ B<Parameters>
 =cut
 
 sub bind_popup_menu {
-    my $self  = shift;
+    my $self     = shift;
     my $guiblock = shift;
 
     # menu bound to individual gui-blocks
@@ -305,7 +315,7 @@ sub move_block {
     # get new coordinates of block
     my $coords =
       $self->get_time_coords( $block->day_number, $block->start_number,
-                               $block->duration );
+                              $block->duration );
 
     # get current x/y of the guiblock
     my ( $curXpos, $curYpos ) =
@@ -342,14 +352,14 @@ sub colour_block {
     my $type     = shift;
     my $conflict =
       Conflict->most_severe( $guiblock->block->is_conflicted, $type );
-      
+
     # if the block is unmovable, then grey it out, and do not change
     # its colour even if there is a conflict
-    unless ($guiblock->block->moveable) {
-        $guiblock->change_colour($Immovable_colour );
+    unless ( $guiblock->block->moveable ) {
+        $guiblock->change_colour($Immovable_colour);
         return;
     }
-    
+
     # else ...
 
     # change the colour of the block to the most important conflict
@@ -370,8 +380,10 @@ Redraws the View with new GuiBlocks and their positions.
 =cut
 
 sub redraw {
-    my $self          = shift;
-    my $cn            = $self->canvas;
+    my $self = shift;
+    my $cn;
+    eval { $cn = $self->canvas; };
+    return if @!;
     my $current_scale = $self->current_scale;
 
     # remove everything on canvas
@@ -455,8 +467,6 @@ sub get_time_coords {
         [@coords];
     }
 }
-
-
 
 =head2 destroy()
 
@@ -728,7 +738,7 @@ B<Parameters>
 
 sub _postmenu {
     ( my $c, my $self, my $x, my $y, my $guiblock ) = @_;
-    
+
     if ( my $m = $self->_popup_menu ) {
         $self->popup_guiblock($guiblock);
         $m->post( $x, $y ) if $m;

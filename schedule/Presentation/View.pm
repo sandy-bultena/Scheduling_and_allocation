@@ -16,7 +16,7 @@ use Schedule::Blocks;
 use Export::DrawView;
 use List::Util qw( min max );
 use SharedData;
-use GuiSchedule::AssignToResource;
+use Presentation::AssignToResource;
 
 =head1 NAME
 
@@ -497,9 +497,8 @@ sub _cb_assign_blocks {
       AssignBlockTk->get_day_start_duration($chosen_blocks);
 
     #create the menu to select the block to assign to the timeslot
-    print "assigning to resource ",$self->gui,"\n";
-    AssignToResource->new( $self->gui, $self->schedule, $self->views_manager, $day,
-                           $start, $duration, $self->scheduable, $self->type );
+    AssignToResource->new( $self->gui->mw, $self->schedule, $day,
+                           $start, $duration, $self->scheduable);
 
     #redraw
     $self->redraw();
