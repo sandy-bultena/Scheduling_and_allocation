@@ -129,7 +129,8 @@ sub new {
     $Gui->cb_edit_obj( \&_cb_edit_obj );
     $Gui->cb_new_course( \&_cb_new_course );
     $Gui->cb_show_teacher_stat( \&_cb_show_teacher_stat );
-
+    $Gui->cb_get_tree_menu(\&_cb_get_tree_menu);
+    $Gui->cb_get_scheduable_menu_info(\&_cb_get_scheduable_menu);
 }
 
 ###################################################################
@@ -234,6 +235,7 @@ sub _cb_get_tree_menu {
 sub _cb_get_scheduable_menu {
     return DynamicMenus::show_scheduable_menu($Schedule,@_);
 }
+
 # =================================================================
 # _cb_object_dropped_on_tree
 # - assign resource to schedule object
@@ -538,7 +540,7 @@ sub _set_dirty {
 ###################################################################
 sub _sort_by_number { $a->number <=> $b->number }
 
-sub _sort_by_alphabet { $a->number cmp $b->number }
+sub _sort_by_alphabet {$a->number cmp $b->number }
 
 sub _sort_by_block_time {
     $a->day_number <=> $b->day_number

@@ -593,6 +593,57 @@ sub get_object_type {
 
 
 # =================================================================
+# get object by id and type
+# =================================================================
+
+=head2 get_object_by_id_and_type
+
+Returns schedule object
+
+=cut
+
+sub get_object_by_id_and_type {
+    my $self = shift;
+    my $id = shift;
+    my $type = shift;
+    my $obj = undef;
+    
+    if ($type eq 'teacher') {
+        return $self->teachers->get($id);
+    }
+    elsif ($type eq 'lab') {
+        return $self->labs->get($id);
+    }
+    elsif ($type eq 'stream') {
+        return $self->streams->get($id);
+    }
+    elsif ($type eq 'course') {
+        return $self->courses->get($id);
+    }
+    elsif ($type eq 'section') {
+        foreach my $course ($self->all_courses) {
+            my $section = $course->get_section_by_id($id);
+            return $section if $section;
+        }
+    }
+    elsif ($type eq 'block') {
+        foreach my $course ($self->all_courses) {
+            foreach my $section ($course->sections) {
+                my $block = $section->get_block_by_id($id);
+                return $block if $block;
+            }            
+        }
+    }
+    
+    else {
+        print "Unable to find $type with id: $id\n";
+    }
+
+
+}
+
+
+# =================================================================
 # get section info for streams
 # =================================================================
 

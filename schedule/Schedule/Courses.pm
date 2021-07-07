@@ -125,7 +125,7 @@ sub remove {
 # get
 # =================================================================
 
-=head2 get(lab_id)
+=head2 get(course_id)
 
 Returns Courses object with id
 

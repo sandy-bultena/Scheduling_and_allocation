@@ -223,7 +223,6 @@ sub _create_panel_for_modifying {
     $self->_tk_labs_list($labs_list);
     $self->_tk_streams_list($streams_list);
     $self->_tk_teachers_list($teachers_list);
-    print $self->_tk_teachers_list,"\n";
 
 }
 
@@ -245,7 +244,7 @@ sub _create_right_click_menu {
         [ \&_show_scheduable_menu, 'lab', $self, Ev('X'), Ev('Y') ] );
 
     $self->_tk_streams_list->bind( '<Button-3>',
-        [ \&_show_scheduable_menu, $self, Ev('X'), Ev('Y') ] );
+        [ \&_show_scheduable_menu, 'stream', $self, Ev('X'), Ev('Y') ] );
 
     $tree->bind( '<Button-3>', [ \&_show_tree_menu, $self, Ev('X'), Ev('Y') ] );
 
@@ -260,7 +259,6 @@ sub _show_scheduable_menu {
     # get id of currently selected scheduable
     my @indices = $list->curselection();
     return unless @indices;
-
     my $scheduable = $list->get( $indices[0] );
     ( my $scheduable_id ) = split " ", $scheduable;
     chop $scheduable_id;
@@ -283,7 +281,7 @@ sub _show_tree_menu {
     my ( $x, $y ) = @_;
 
     # what was selected? If nothing, bail out
-    my ($path, $obj) = $self->_selected_obj();
+    my ($obj, $path) = $self->_selected_obj();
     return unless $path;
 
     # get the object and parent object associated with the selected item,
@@ -628,12 +626,12 @@ sub __setup {
         qw(trash object_dropped_on_tree edit_obj show_teacher_stat
           new_course get_scheduable_menu_info set_teacher_to_blocks
           set_teacher_to_sections set_lab_to_blocks set_lab_to_sections
-          set_stream_to_sections cb_get_tree_menu)
+          set_stream_to_sections get_tree_menu)
     );
     _create_setters_and_getters(
         -category   => "cb",
         -properties => \@callbacks,
-        -default    => sub { return }
+        -default    => sub {print "not implemented\n",caller(),"\n"; return }
     );
 
     # ------------------------------------------------------------------------
