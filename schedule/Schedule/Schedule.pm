@@ -575,6 +575,22 @@ sub get_scheduable_object_type {
 }
 
 
+# =================================================================
+# return object type
+# =================================================================
+
+=head2 get_object_type 
+
+Returns the type of the schedule object (all lower case)
+
+=cut
+
+sub get_object_type {
+    my $self = shift;
+    my $obj  = shift;
+    return lc(ref($obj));
+}
+
 
 # =================================================================
 # get section info for streams
