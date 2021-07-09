@@ -141,11 +141,13 @@ sub _edit_selection {
 sub _double_click_teacher {
     my ( $lb, $self ) = @_;
     my $lb_sel  = $lb->curselection;
-    my $teachID = $lb->get($lb_sel);
+    my $txt = $lb->get($lb_sel);
 
-    ( my $id ) = split " ", $teachID;
-    chop $id;
-
+    my $id;
+    if ($txt =~ /^\s*(\d+)\s*:/) {
+        $id = $1;
+    }
+    else {return;}
     $self->cb_show_teacher_stat->($id);
 }
 
@@ -266,8 +268,11 @@ $list->selectionSet($ent) if defined $ent;
     return unless $indices;
     my $index = $indices->[0] if ref($indices);
     my $scheduable = $list->get( $index );
-    ( my $scheduable_id ) = split ":", $scheduable;
-    chop $scheduable_id;
+    my $scheduable_id;
+    if ($scheduable =~ /^\s*(\d+)\s*:/) {
+        $scheduable_id = $1;
+    }
+    else {return;}
 
     # get info from Presenter
     my $menu_array =
@@ -329,21 +334,11 @@ $tree->selectionSet($ent) if $ent;
             ],
         );
 
-        $self->_tk_teachers_list->DropSite(
-            -droptypes   => [qw/Local/],
-            -dropcommand => [ \&_drop_on_trash, $self ],
-        );
-
         $self->_tk_labs_list->DragDrop(
             -event     => '<B1-Motion>',
             -sitetypes => [qw/Local/],
             -startcommand =>
               [ \&_teacher_lab_start_drag, $self->_tk_labs_list, 'lab' ],
-        );
-
-        $self->_tk_labs_list->DropSite(
-            -droptypes   => [qw/Local/],
-            -dropcommand => [ \&_drop_on_trash, $self ],
         );
 
         $self->_tk_streams_list->DragDrop(
@@ -353,53 +348,15 @@ $tree->selectionSet($ent) if $ent;
               [ \&_teacher_lab_start_drag, $self->_tk_streams_list, 'stream' ],
         );
 
-        $self->_tk_streams_list->DropSite(
-            -droptypes   => [qw/Local/],
-            -dropcommand => [ \&_drop_on_trash, $self ],
-        );
-
         $tree->DropSite(
             -droptypes     => [qw/Local/],
             -dropcommand   => [ \&_dropped_on_tree, $self ],
             -motioncommand => [ \&_dragging_over_tree, $self ],
         );
 
-        # -------------------------------------------------------------
-        # drag from course tree to trash can
-        # -------------------------------------------------------------
-        $tree->DragDrop(
-            -event        => '<B1-Motion>',
-            -sitetypes    => [qw/Local/],
-            -startcommand => [ \&_course_tree_start_start_drag, $self ],
-        );
-
         # =================================================================
         # tree starting to drag - change name of drag widget to selected item
         # =================================================================
-        sub _course_tree_start_start_drag {
-            my ( $self, $trash_label, $drag ) = @_;
-            $trash_label->configure(
-                -bg => $Colours->{WorkspaceColour},
-                -fg => $Colours->{WindowForeground},
-            );
-
-            my $path = $self->_tk_tree->selectionGet();
-
-            $Drag_source  = $drag;
-            $Dragged_from = 'Tree';
-            $dropped      = 0;
-            $toggle       = 0;
-
-            return unless $path;
-
-            $drag->configure(
-                -text => $self->_tk_tree->itemCget( $path, 0, -text ),
-                -font => [qw/-family arial -size 18/],
-                -bg   => '#abcdef'
-            );
-
-            undef;
-        }
     }
 
     # =================================================================
@@ -419,36 +376,6 @@ $tree->selectionSet($ent) if $ent;
         undef;
     }
 
-    # =================================================================
-    # dropped item on trash can
-    # =================================================================
-    sub _drop_on_trash {
-
-        my $self = shift;
-        my $tree = shift;
-
-        # validate that we have data to work with
-        return unless $Dragged_from;
-        my ( $obj, $path ) = $self->_selected_obj;
-        return unless $path;
-
-        # get parent widget
-        my $parent_path = $tree->info( 'parent', $path );
-        return unless $parent_path;
-        my $parent_obj = $tree->infoData($parent_path)->{-obj};
-
-        # remove object
-        $tree->delete( 'offsprings', $parent_path );
-        $tree->update;
-        $self->cb_trash->( $parent_obj, $obj, $parent_path );
-        $tree->autosetmode();
-
-        # -------------------------------------------------------------
-        # tidy up
-        # -------------------------------------------------------------
-        $tree->autosetmode();
-        $Dragged_from = '';
-    }
 }
 
 # =================================================================
@@ -492,15 +419,18 @@ sub _dropped_on_tree {
 
     # validate that we have data to work with
     return unless $Dragged_from;
-    my ( $obj, $path ) = $self->selected_obj;
+    my ( $obj, $path ) = $self->_selected_obj;
     return unless $path;
 
     # -------------------------------------------------------------
     # Initialize some variables
     # -------------------------------------------------------------
     my $txt = $Drag_source->cget( -text );
-    ( my $id ) = split " ", $txt;
-    chop $id;
+    my $id;
+    if ($txt =~ /^\s*(\d+)\s*:/) {
+        $id = $1;
+    }
+    else {return;}
 
     # -------------------------------------------------------------
     # add appropriate object to object
@@ -520,7 +450,7 @@ sub _dropped_on_tree {
 # =================================================================
 sub _dragging_over_tree {
     my $self = shift;
-    my $tree = shift;
+    my $tree = $self->_tk_tree;
     my $x    = shift;
     my $y    = shift;
 
@@ -550,6 +480,7 @@ sub _dragging_over_tree {
 sub set_teachers {
     my $self             = shift;
     my $ids_and_teachers = shift;
+    $self->_tk_teachers_list->delete(0,'end');
     foreach my $teacher (@$ids_and_teachers) {
         $self->_tk_teachers_list->insert( 'end',
             $teacher->{-id} . " : " . $teacher->{-name} );
@@ -559,6 +490,7 @@ sub set_teachers {
 sub set_streams {
     my $self            = shift;
     my $ids_and_streams = shift;
+    $self->_tk_streams_list->delete(0,'end');
     foreach my $stream (@$ids_and_streams) {
         $self->_tk_streams_list->insert( 'end',
             $stream->{-id} . " : " . $stream->{-name} );
@@ -568,6 +500,7 @@ sub set_streams {
 sub set_labs {
     my $self         = shift;
     my $ids_and_labs = shift;
+    $self->_tk_labs_list->delete(0,'end');
     foreach my $lab (@$ids_and_labs) {
         $self->_tk_labs_list->insert( 'end',
             $lab->{-id} . " : " . $lab->{-name} );

@@ -89,6 +89,10 @@ sub show_scheduable_menu {
     my $courses = [];
 
     push @$menu,
+    ["command","Delete $type",
+    -command=>[\&EditCourses::remove_scheduable,$type,$sel_obj]];
+    
+    push @$menu,
       [
         'cascade', "Add $type to Course",
         -tearoff   => 0,

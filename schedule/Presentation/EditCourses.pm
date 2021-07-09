@@ -100,26 +100,7 @@ sub new {
     # ---------------------------------------------------------------
     # populate teacher and lab and stream list
     # ---------------------------------------------------------------
-    my @teacher;
-    foreach
-      my $teacher ( sort { &_sort_by_teacher_name } $Schedule->teachers->list )
-    {
-        push @teacher, { -id => $teacher->id, -name => "$teacher" };
-    }
-    $Gui->set_teachers( \@teacher );
-
-    my @labs;
-    foreach my $lab ( sort { &_sort_by_alphabet } $Schedule->labs->list ) {
-        push @labs, { -id => $lab->id, -name => "$lab" };
-    }
-    $Gui->set_labs( \@labs );
-
-    my @streams;
-    foreach my $stream ( sort { &_sort_by_alphabet } $Schedule->streams->list )
-    {
-        push @streams, { -id => $stream->id, -name => "$stream" };
-    }
-    $Gui->set_streams( \@streams );
+    _refresh_scheduable_lists();
 
     # ---------------------------------------------------------------
     # define event handlers for EditCoursesTk
@@ -172,6 +153,15 @@ my %Clear_all_subs = (
     section => sub { $$s_ptr->clear_all_from_section(shift); },
     block   => sub { $$s_ptr->clear_all_from_block(shift); },
 );
+
+sub remove_scheduable {
+    my $type = shift;
+    my $obj = shift;
+    $Schedule->remove_teacher($obj) if ($type eq 'teacher');
+    $Schedule->remove_lab($obj) if ($type eq 'lab');
+    $Schedule->remove_stream($obj) if ($type eq 'stream');
+    _refresh_schedule_gui();
+}
 
 sub assign_obj2_to_obj1 {
     my $obj1      = shift;
@@ -303,38 +293,6 @@ sub _cb_object_dropped_on_tree {
 }
 
 # =================================================================
-# _cb_trash -> delete an object from the schedule
-# =================================================================
-sub _cb_trash {
-    my $parent_obj = shift;
-    my $obj        = shift;
-    my $path       = shift;
-
-    my $obj_type = $Schedule->get_object_type($obj);
-
-    if ( $obj_type eq 'teacher' ) {
-        $parent_obj->remove_teacher($obj);
-        _refresh_block_gui( $parent_obj, $path );
-    }
-    elsif ( $obj_type eq 'lab' ) {
-        $parent_obj->remove_lab($obj);
-        _refresh_block_gui( $parent_obj, $path );
-    }
-    elsif ( $obj_type eq 'block' ) {
-        $parent_obj->remove_block($obj);
-        _refresh_section_gui( $parent_obj, $path );
-    }
-    elsif ( $obj_type eq 'section' ) {
-        $parent_obj->remove_section($obj);
-        _refresh_course_gui( $parent_obj, $path );
-    }
-    elsif ( $obj_type eq 'course' ) {
-        $Schedule->courses->remove($obj);
-        _refresh_schedule_gui();
-    }
-}
-
-# =================================================================
 # edit/modify a schedule object
 # =================================================================
 sub _cb_edit_obj {
@@ -394,12 +352,40 @@ sub _cb_show_teacher_stat {
 ###################################################################
 
 # ===================================================================
+# labs/teachers/streams list
+# ===================================================================
+sub _refresh_scheduable_lists {
+    
+    my @teacher;
+    foreach
+      my $teacher ( sort { &_sort_by_teacher_name } $Schedule->teachers->list )
+    {
+        push @teacher, { -id => $teacher->id, -name => "$teacher" };
+    }
+    $Gui->set_teachers( \@teacher );
+
+    my @labs;
+    foreach my $lab ( sort { &_sort_by_alphabet } $Schedule->labs->list ) {
+        push @labs, { -id => $lab->id, -name => "$lab" };
+    }
+    $Gui->set_labs( \@labs );
+
+    my @streams;
+    foreach my $stream ( sort { &_sort_by_alphabet } $Schedule->streams->list )
+    {
+        push @streams, { -id => $stream->id, -name => "$stream" };
+    }
+    $Gui->set_streams( \@streams );
+}
+
+# ===================================================================
 # refresh Schedule
 # ===================================================================
 sub _refresh_schedule_gui {
     my $path = "Schedule";
     $Gui->delete( 'offsprings', $path );
 
+    # refresh tree
     foreach my $course ( sort { &_sort_by_alphabet } $Schedule->courses->list )
     {
         my $c_id    = "Course" . $course->id;
@@ -413,6 +399,10 @@ sub _refresh_schedule_gui {
         );
         _refresh_course_gui( $course, $newpath );
     }
+    
+    # refresh lists
+     _refresh_scheduable_lists();
+    
 }
 
 # ===================================================================

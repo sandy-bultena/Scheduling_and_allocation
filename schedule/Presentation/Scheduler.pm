@@ -42,7 +42,8 @@ use GUI::FontsAndColoursTk;
 my $User_base_dir;
 my $Preferences = {};
 my $Schedule;                 # the current schedule
-my $Current_schedule_file;    # will save to this file when save is requested
+my $Current_schedule_file;    # will save to this file...
+                              # ... when save is requested
 my $Current_directory = $Preferences->{-current_dir} || $User_base_dir;
 my $Filetypes = [ [ "Schedules", ".yaml" ], [ "All Files", "*" ] ];
 my $Dirtyflag;
@@ -98,7 +99,7 @@ sub create_main_window() {
     $Gui->create_main_window();
     my ( $toolbar_buttons, $button_properties, $menu ) = menu_info();
     $Gui->create_menu_and_toolbars( $toolbar_buttons, $button_properties,
-                                    $menu );
+        $menu );
     $Gui->create_front_page( $Preferences, \&open_schedule, \&new_schedule );
     $Gui->create_status_bar( \$Current_schedule_file );
 }
@@ -164,58 +165,58 @@ sub menu_info {
     # actions with callback and hints
     # ----------------------------------------------------------
     my %actions = (
-                    new => {
-                             code => \&new_schedule,
-                             hint => 'Create new Schedule File',
-                    },
-                    open => {
-                              code => \&open_schedule,
-                              hint => 'Open Schedule File',
-                    },
-                    CSVimport => {
-                                   code => \&import_schedule,
-                                   hint => 'Import Schedule from CSV'
-                    },
-                    CSVexport => {
-                                   code => \&save_as_csv,
-                                   hint => 'Save entire schedule as a CSV'
-                    },
-                    pdf_teachers => {
-                        code => [ \&print_views, 'PDF', 'teacher' ],
-                        hint => 'Print to pdf of Teacher Schedules',
-                    },
-                    pdf_streams => {
-                        code => [ \&print_views, 'PDF', 'stream' ],
-                        hint => 'Print to pdf of Stream Schedules',
-                    },
-                    pdf_labs => {
-                                  code => [ \&print_views, 'PDF', 'lab' ],
-                                  hint => 'Print to pdf of Lab Schedules',
-                    },
-                    pdf_text => {
-                        code => [ \&print_views, 'PDF', 'text' ],
-                        hint => 'Text output of schedules (good for registrar)',
-                    },
-                    latex_teachers => {
-                        code => [ \&print_views, 'Latex', 'teacher' ],
-                        hint => 'Print to pdf of Teacher Schedules',
-                    },
-                    latex_streams => {
-                        code => [ \&print_views, 'Latex', 'stream' ],
-                        hint => 'Print to pdf of Stream Schedules',
-                    },
-                    latex_labs => {
-                        code => [ \&print_views, 'Latex', 'lab' ],
-                        hint => 'Print to pdf of Lab Schedules',
-                    },
-                    latex_text => {
-                        code => [ \&print_views, 'Latex', 'text' ],
-                        hint => 'Text output of schedules (good for registrar)',
-                    },
-                    save => {
-                              code => \&save_schedule,
-                              hint => "Save Schedule File",
-                    },
+        new => {
+            code => \&new_schedule,
+            hint => 'Create new Schedule File',
+        },
+        open => {
+            code => \&open_schedule,
+            hint => 'Open Schedule File',
+        },
+        CSVimport => {
+            code => \&import_schedule,
+            hint => 'Import Schedule from CSV'
+        },
+        CSVexport => {
+            code => \&save_as_csv,
+            hint => 'Save entire schedule as a CSV'
+        },
+        pdf_teachers => {
+            code => [ \&print_views, 'PDF', 'teacher' ],
+            hint => 'Print to pdf of Teacher Schedules',
+        },
+        pdf_streams => {
+            code => [ \&print_views, 'PDF', 'stream' ],
+            hint => 'Print to pdf of Stream Schedules',
+        },
+        pdf_labs => {
+            code => [ \&print_views, 'PDF', 'lab' ],
+            hint => 'Print to pdf of Lab Schedules',
+        },
+        pdf_text => {
+            code => [ \&print_views, 'PDF', 'text' ],
+            hint => 'Text output of schedules (good for registrar)',
+        },
+        latex_teachers => {
+            code => [ \&print_views, 'Latex', 'teacher' ],
+            hint => 'Print to pdf of Teacher Schedules',
+        },
+        latex_streams => {
+            code => [ \&print_views, 'Latex', 'stream' ],
+            hint => 'Print to pdf of Stream Schedules',
+        },
+        latex_labs => {
+            code => [ \&print_views, 'Latex', 'lab' ],
+            hint => 'Print to pdf of Lab Schedules',
+        },
+        latex_text => {
+            code => [ \&print_views, 'Latex', 'text' ],
+            hint => 'Text output of schedules (good for registrar)',
+        },
+        save => {
+            code => \&save_schedule,
+            hint => "Save Schedule File",
+        },
     );
 
     # ----------------------------------------------------------
@@ -223,102 +224,105 @@ sub menu_info {
     # ----------------------------------------------------------
     my $menu = [
         [
-           qw/cascade File -tearoff 0 -menuitems/,
-           [
-              [
-                 "command", "~New",
-                 -accelerator => "Ctrl-n",
-                 -command     => $actions{new}{code},
-              ],
-              [
-                 "command", "~Open",
-                 -accelerator => "Ctrl-o",
-                 -command     => $actions{open}{code}
-              ],
-              [ "command", "~Import CSV", -command => $actions{import}{code} ],
-              'separator',
-              [
-                 "command", "~Save",
-                 -accelerator => "Ctrl-s",
-                 -command     => $actions{save}{code}
-              ],
-              [ "command", "Save As", -command => \&save_as_schedule ],
-              [
-                 "command", "Save As CSV", -command => $actions{CSVexport}{code}
-              ],
-              'separator',
-              [
-                 "command", "~Exit",
-                 -accelerator => "Ctrl-e",
-                 -command     => \&exit_schedule
-              ],
+            qw/cascade File -tearoff 0 -menuitems/,
+            [
+                [
+                    "command", "~New",
+                    -accelerator => "Ctrl-n",
+                    -command     => $actions{new}{code},
+                ],
+                [
+                    "command", "~Open",
+                    -accelerator => "Ctrl-o",
+                    -command     => $actions{open}{code}
+                ],
+                [
+                    "command", "~Import CSV", -command => $actions{import}{code}
+                ],
+                'separator',
+                [
+                    "command", "~Save",
+                    -accelerator => "Ctrl-s",
+                    -command     => $actions{save}{code}
+                ],
+                [ "command", "Save As", -command => \&save_as_schedule ],
+                [
+                    "command", "Save As CSV",
+                    -command => $actions{CSVexport}{code}
+                ],
+                'separator',
+                [
+                    "command", "~Exit",
+                    -accelerator => "Ctrl-e",
+                    -command     => \&exit_schedule
+                ],
 
-           ],
+            ],
         ],
         [
-           qw/cascade Print -tearoff 0 /,
-           -menuitems => [
-                          [
-                            qw/cascade PDF -tearoff 0/,
-                            -menuitems => [
-                                    [
-                                      "command",
-                                      "Teacher Schedules",
-                                      -command => $actions{pdf_teachers}{code},
-                                    ],
-                                    [
-                                      "command",
-                                      "Lab Schedules",
-                                      -command => $actions{pdf_labs}{code},
-                                    ],
-                                    [
-                                      "command",
-                                      "Stream Schedules",
-                                      -command => $actions{pdf_streams}{code},
-                                    ],
-                                    'separator',
-                                    [
-                                      "command", "Text Output",
-                                      -command => $actions{pdf_text}{code},
-                                    ],
-                            ],
-                          ],
-                          [
-                            qw/cascade Latex -tearoff 0/,
-                            -menuitems => [
-                                  [
-                                    "command",
-                                    "Teacher Schedules",
-                                    -command => $actions{latex_teachers}{code},
-                                  ],
-                                  [
-                                    "command",
-                                    "Lab Schedules",
-                                    -command => $actions{latex_labs}{code},
-                                  ],
-                                  [
-                                    "command",
-                                    "Stream Schedules",
-                                    -command => $actions{latex_streams}{code},
-                                  ],
-                                  'separator',
-                                  [
-                                    "command", "Text Output",
-                                    -command => $actions{latex_text}{code},
-                                  ],
-                            ],
-                          ],
-                          [
-                            qw/cascade CSV -tearoff 0/,
-                            -menuitems => [
-                                       [
-                                         "command",
-                                         "Save schedule as CSV",
-                                         -command => $actions{CSVexport}{code},
-                                       ],
-                            ],
-                          ],
-           ],
+            qw/cascade Print -tearoff 0 /,
+            -menuitems => [
+                [
+                    qw/cascade PDF -tearoff 0/,
+                    -menuitems => [
+                        [
+                            "command",
+                            "Teacher Schedules",
+                            -command => $actions{pdf_teachers}{code},
+                        ],
+                        [
+                            "command",
+                            "Lab Schedules",
+                            -command => $actions{pdf_labs}{code},
+                        ],
+                        [
+                            "command",
+                            "Stream Schedules",
+                            -command => $actions{pdf_streams}{code},
+                        ],
+                        'separator',
+                        [
+                            "command", "Text Output",
+                            -command => $actions{pdf_text}{code},
+                        ],
+                    ],
+                ],
+                [
+                    qw/cascade Latex -tearoff 0/,
+                    -menuitems => [
+                        [
+                            "command",
+                            "Teacher Schedules",
+                            -command => $actions{latex_teachers}{code},
+                        ],
+                        [
+                            "command",
+                            "Lab Schedules",
+                            -command => $actions{latex_labs}{code},
+                        ],
+                        [
+                            "command",
+                            "Stream Schedules",
+                            -command => $actions{latex_streams}{code},
+                        ],
+                        'separator',
+                        [
+                            "command", "Text Output",
+                            -command => $actions{latex_text}{code},
+                        ],
+                    ],
+                ],
+                [
+                    qw/cascade CSV -tearoff 0/,
+                    -menuitems => [
+                        [
+                            "command",
+                            "Save schedule as CSV",
+                            -command => $actions{CSVexport}{code},
+                        ],
+                    ],
+                ],
+            ],
         ],
     ];
 
@@ -359,7 +363,7 @@ sub open_schedule {
         eval { $Schedule = Schedule->read_YAML($file) };
         if ( $@ || !$Schedule ) {
             $Gui->show_error( 'Read Schedule',
-                              "Cannot read schedule\nERROR:$@" );
+                "Cannot read schedule\nERROR:$@" );
             undef $file;
         }
     }
@@ -378,13 +382,8 @@ sub import_schedule {
     unless ( $file && -e $file ) {
         $file = "";
         $file =
-          $Gui->choose_existing_file(
-                                      $Current_directory,
-                                      [
-                                         [ 'Comma Separated Value', '.csv' ],
-                                         [ 'All',                   '*' ]
-                                      ]
-          );
+          $Gui->choose_existing_file( $Current_directory,
+            [ [ 'Comma Separated Value', '.csv' ], [ 'All', '*' ] ] );
     }
 
     # if user has chosen file...
@@ -416,7 +415,7 @@ sub _schedule_file_changed {
 
     # update for new schedule
     $Gui->update_for_new_schedule_and_show_page(
-                                    $Scheduler::Pages_lookup{Schedules}->name );
+        $Scheduler::Pages_lookup{Schedules}->name );
 
     $Dirtyflag = 0;
     return;
@@ -478,13 +477,8 @@ sub save_as_csv {
     unless ($Schedule) {
         $Gui->show_error( 'Save Schedule', 'There is no schedule to save!' );
     }
-    my $file = $Gui->choose_file(
-                                  $Current_directory,
-                                  [
-                                     [ 'Comma Separated Value', '.csv' ],
-                                     [ 'All',                   '*' ]
-                                  ]
-    );
+    my $file = $Gui->choose_file( $Current_directory,
+        [ [ 'Comma Separated Value', '.csv' ], [ 'All', '*' ] ] );
     return unless $file;
 
     # if the user didn't provide the .csv extension
@@ -503,9 +497,9 @@ sub save_as_csv {
 
 sub update_choices_of_schedulable_views {
 
-    my $btn_callback = $Views_manager->get_create_new_view_callback;
+    my $btn_callback     = $Views_manager->get_create_new_view_callback;
     my $all_view_choices = $Views_manager->get_all_scheduables();
-    my $page_name    = $Scheduler::Pages_lookup{Schedules}->name;
+    my $page_name        = $Scheduler::Pages_lookup{Schedules}->name;
     $Gui->draw_view_choices( $page_name, $all_view_choices, $btn_callback );
 
     $Views_manager->determine_button_colours($all_view_choices);
@@ -527,7 +521,7 @@ sub update_overview {
         }
         else {
             foreach my $c ( sort { $a->number cmp $b->number }
-                            $Schedule->all_courses )
+                $Schedule->all_courses )
             {
                 push @course_text, $c;
             }
@@ -550,7 +544,7 @@ sub update_overview {
         }
         else {
             foreach my $t ( sort { lc( $a->lastname ) cmp lc( $b->lastname ) }
-                            $Schedule->all_teachers )
+                $Schedule->all_teachers )
             {
                 push @teacher_text, $Schedule->teacher_details($t);
             }
@@ -576,13 +570,13 @@ sub update_overview {
 
             my $notebook_page =
               $Gui->get_notebook_page(
-                                     $Scheduler::Pages_lookup{Teachers}->name );
+                $Scheduler::Pages_lookup{Teachers}->name );
             if ($de) {
                 $de->refresh( $Schedule->teachers );
             }
             else {
-                $de = DataEntry->new( $notebook_page, $Schedule->teachers, $Schedule,
-                                      \$Dirtyflag, $Views_manager );
+                $de = DataEntry->new( $notebook_page, $Schedule->teachers,
+                    $Schedule, \$Dirtyflag, $Views_manager );
             }
         }
     }
@@ -603,8 +597,9 @@ sub update_overview {
             $de->refresh( $Schedule->streams );
         }
         else {
-            $de = DataEntry->new( $f, $Schedule->streams, $Schedule, \$Dirtyflag,
-                                  $Views_manager );
+            $de =
+              DataEntry->new( $f, $Schedule->streams, $Schedule, \$Dirtyflag,
+                $Views_manager );
         }
     }
 
@@ -628,7 +623,7 @@ sub update_overview {
             else {
                 $de = $de =
                   DataEntry->new( $f, $Schedule->labs, $Schedule, \$Dirtyflag,
-                                  $Views_manager );
+                    $Views_manager );
             }
 
         }
@@ -642,7 +637,7 @@ sub update_overview {
 sub update_edit_courses {
     my $self = shift;
     my $f = $Gui->get_notebook_page( $Scheduler::Pages_lookup{Courses}->name );
-    EditCourses->new( $f, $Schedule, $Dirtyflag,  $Views_manager );
+    EditCourses->new( $f, $Schedule, $Dirtyflag, $Views_manager );
 }
 
 # ==================================================================
@@ -667,7 +662,7 @@ sub print_views {
     # --------------------------------------------------------------
     if ($Dirtyflag) {
         my $ans = $Gui->question( "Unsaved Changes",
-                  "There are unsaved changes\n" . "Do you want to save them?" );
+            "There are unsaved changes\n" . "Do you want to save them?" );
         if ( $ans eq 'Yes' ) {
             save_schedule();
         }
