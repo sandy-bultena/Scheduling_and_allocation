@@ -48,8 +48,6 @@ Version 1.00
     $section->remove_teacher($teacher);
     $section->teachers();
     
-    $section->add_lab("P327");
-    $section->remove_lab("P325");
     $section->labs();
     
 
@@ -334,7 +332,7 @@ sub get_block {
 # assign_lab
 # =================================================================
 
-=head2 assign_lab ( lab # )
+=head2 assign_lab ( lab objects )
 
 Assign a lab to all blocks in this section
 
@@ -354,6 +352,53 @@ sub assign_lab {
 
     return $self;
 }
+
+# =================================================================
+# has_lab
+# =================================================================
+
+=head2 _lab ( lab object )
+
+Returns true if lab is in any of the blocks belonging to this section
+
+=cut
+
+sub has_lab {
+    my $self = shift;
+    my $lab = shift;
+    return 0 unless $lab;
+
+    foreach my $l ($self->labs) {
+        return 1 if $l->id == $lab->id;
+    }
+
+    return 0;
+}
+
+# =================================================================
+# remove_all_lab
+# =================================================================
+
+=head2 remove_all_lab (  )
+
+removes all labs from all blocks in this section
+
+Returns Section object
+
+=cut
+
+sub remove_all_labs {
+    my $self = shift;
+    my $lab  = shift;
+
+    foreach my $block ( $self->blocks ) {
+        $block->remove_all_labs();
+    }
+
+    return $self;
+
+}
+
 
 # =================================================================
 # remove_lab
@@ -573,6 +618,28 @@ sub remove_all_teachers {
     my $self    = shift;
     foreach my $teacher ($self->teachers) {
         $self->remove_teacher($teacher);
+    }
+
+    return $self;
+
+}
+
+# =================================================================
+# remove_all_blocks
+# =================================================================
+
+=head2 remove_all_blocks ( )
+
+removes all blocks from this section
+
+Returns Section object
+
+=cut
+
+sub remove_all_blocks {
+    my $self    = shift;
+    foreach my $block ($self->blocks) {
+        $self->remove_block($block);
     }
 
     return $self;

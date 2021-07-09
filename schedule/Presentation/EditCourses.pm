@@ -7,7 +7,7 @@ use FindBin;
 use Carp;
 use lib "$FindBin::Bin/..";
 
-#use GuiSchedule::EditCoursesDialogs;
+#use GUI::EditCoursesDialogs;
 use GUI::EditCoursesTk;
 use Presentation::DynamicMenus;
 
@@ -129,111 +129,118 @@ sub new {
     $Gui->cb_edit_obj( \&_cb_edit_obj );
     $Gui->cb_new_course( \&_cb_new_course );
     $Gui->cb_show_teacher_stat( \&_cb_show_teacher_stat );
-    $Gui->cb_get_tree_menu(\&_cb_get_tree_menu);
-    $Gui->cb_get_scheduable_menu_info(\&_cb_get_scheduable_menu);
+    $Gui->cb_get_tree_menu( \&_cb_get_tree_menu );
+    $Gui->cb_get_scheduable_menu_info( \&_cb_get_scheduable_menu );
 }
 
 ###################################################################
 # modifying the schedule
 ###################################################################
 
-my $s_ptr = \$Schedule;
+my $s_ptr        = \$Schedule;
 my %Refresh_subs = (
-    course=>\&_refresh_course_gui,
-    section=>\&_refresh_section_gui,
-    block=>\&_refresh_block_gui,
+    course  => \&_refresh_course_gui,
+    section => \&_refresh_section_gui,
+    block   => \&_refresh_block_gui,
+    schedule => \&_refresh_schedule_gui,
 );
 
 my %Assign_subs = (
-    teacher => sub{$$s_ptr->assign_teacher(shift);},
-    lab =>sub{$$s_ptr->assign_lab(shift);},
-    stream => sub{$$s_ptr->assign_stream(shift);}
+    teacher => sub { my $obj = shift; $obj->assign_teacher(shift); },
+    lab     => sub { my $obj = shift; $obj->assign_lab(shift); },
+    stream  => sub { my $obj = shift; $obj->assign_stream(shift); },
 );
 
 my %Remove_subs = (
-    teacher => sub{$$s_ptr->remove_teacher(shift);},
-    lab =>sub{$$s_ptr->remove_lab(shift);},
-    stream => sub{$$s_ptr->remove_stream(shift);}
+    teacher => sub { my $obj = shift; $obj->remove_teacher(shift); },
+    lab     => sub { my $obj = shift; $obj->remove_lab(shift); },
+    stream  => sub { my $obj = shift; $obj->remove_stream(shift); },
+    course => sub {my $obj = shift; $obj->courses->remove(shift);},
+    block => sub {my $obj = shift; $obj->remove_block(shift);},
+    section => sub {my $obj = shift; $obj->remove_section(shift);},
 );
 
 my %Remove_all_subs = (
-    teacher => sub{$$s_ptr->remove_all_teachers;},
-    lab =>sub{$$s_ptr->remove_all_labs;},
-    stream => sub{$$s_ptr->remove_all_streams;}
+    teacher  => sub {my $obj = shift; $obj->remove_all_teachers(); },
+    lab => sub { my $obj = shift; $obj->remove_all_labs(); },
+    stream => sub { my $obj = shift; $obj->remove_all_streams(); },
+    section => sub {my $obj = shift; $obj->remove_all_sections(); },
+    block => sub {my $obj = shift; $obj->remove_all_blocks(); },
 );
 my %Clear_all_subs = (
-    course => sub{$$s_ptr->clear_all_from_course;},
-    section =>sub{$$s_ptr->clear_all_from_section;},
-    block => sub{$$s_ptr->clear_all_from_block;}
+    course  => sub { $$s_ptr->clear_all_from_course(shift); },
+    section => sub { $$s_ptr->clear_all_from_section(shift); },
+    block   => sub { $$s_ptr->clear_all_from_block(shift); },
 );
 
-
-
 sub assign_obj2_to_obj1 {
-    my $obj1 = shift;
-    my $obj2 = shift;
+    my $obj1      = shift;
+    my $obj2      = shift;
     my $tree_path = shift;
-    $Assign_subs{$$s_ptr->get_obj_type($obj1)}->($obj2);
-    $Refresh_subs{$$s_ptr->get_obj_type($obj2)}->($obj1,$tree_path);
+    $Assign_subs{ $$s_ptr->get_object_type($obj2) }->( $obj1, $obj2 );
+    $Refresh_subs{ $$s_ptr->get_object_type($obj1) }->( $obj1, $tree_path );
     _set_dirty();
-} 
+}
 
 sub remove_obj2_from_obj1 {
     my $obj1 = shift;
     my $obj2 = shift;
     my $tree_path = shift;
-    $Remove_subs{$$s_ptr->get_obj_type($obj1)}->($obj2);
-    $Refresh_subs{$$s_ptr->get_obj_type($obj2)}->($obj1,$tree_path);
+    $Remove_subs{ $$s_ptr->get_object_type($obj2) }->( $obj1, $obj2 );
+    $Refresh_subs{ $$s_ptr->get_object_type($obj1) }->( $obj1, $tree_path );
     _set_dirty();
-} 
-      
-sub remove_all_types_from_obj1 {
-    my $obj1 = shift;
-    my $type = shift;
-    my $tree_path = shift;   
-    $Remove_all_subs{$$s_ptr->get_obj_type($obj1)}->($type);
-    $Refresh_subs{$type}->($obj1,$tree_path);
+}
+
+sub remove_all_type_from_obj1 {
+    my $obj1      = shift;
+    my $type      = shift;
+    my $tree_path = shift;
+    $Remove_all_subs{ $type }->($obj1);
+    $Refresh_subs{ $$s_ptr->get_object_type($obj1)}->( $obj1, $tree_path );
     _set_dirty();
 }
 
 sub clear_all_from_obj1 {
-    my $obj1 = shift;
-    my $tree_path = shift;   
-    $Clear_all_subs{$$s_ptr->get_obj_type($obj1)}->();
-    _refresh_schedule_gui();
+    my $obj1      = shift;
+    my $tree_path = shift;
+    $Clear_all_subs{ $$s_ptr->get_object_type($obj1) }->($obj1);
+    $Refresh_subs{ $$s_ptr->get_object_type($obj1) }->( $obj1, $tree_path );
     _set_dirty();
 }
 
+sub add_blocks_dialog {
+    print "not functional yet\n";
+}
 
-   sub add_blocks_dialog{
-       print "not functional yet\n";
-   }
-   sub edit_blocks_dialog{
-       print "not functional yet\n";
-   }
-   sub edit_section_dialog {
-       print "not functional yet\n";
-   }
-   sub  add_section_dialog {
-       print "not functional yet\n";
-   }
-   sub edit_course_dialog {
-       print "not functional yet\n";
-   }  
-   sub new_course_dialog {
+sub edit_blocks_dialog {
+    print "not functional yet\n";
+}
+
+sub edit_section_dialog {
+    print "not functional yet\n";
+}
+
+sub add_section_dialog {
+    print "not functional yet\n";
+}
+
+sub edit_course_dialog {
+    print "not functional yet\n";
+}
+
+sub new_course_dialog {
     print "not yet implemented\n";
 }
-     
 
 ###################################################################
-# Event handlers for EditCoursesTk 
+# Event handlers for EditCoursesTk
 ###################################################################
 sub _cb_get_tree_menu {
-    return DynamicMenus::create_tree_menus($Schedule,@_);
+    return DynamicMenus::create_tree_menus( $Schedule, @_ );
 }
-    
+
 sub _cb_get_scheduable_menu {
-    return DynamicMenus::show_scheduable_menu($Schedule,@_);
+    return DynamicMenus::show_scheduable_menu( $Schedule, @_ );
 }
 
 # =================================================================
@@ -353,7 +360,6 @@ sub _cb_edit_obj {
     }
 }
 
-
 # ============================================================================================
 # Create a new course
 # ============================================================================================
@@ -373,7 +379,6 @@ sub _cb_new_course {
 
 }
 
-
 #===============================================================
 # Show Teacher Stats
 #===============================================================
@@ -383,7 +388,6 @@ sub _cb_show_teacher_stat {
     my $teacher = $Schedule->teachers->get($id);
     $Gui->show_message( "$teacher", $Schedule->teacher_stat($teacher) );
 }
-
 
 ###################################################################
 # refresh the gui with shedule data
@@ -425,9 +429,6 @@ sub _refresh_course_gui {
         my $s_id     = "Section" . $s->id;
         my $new_path = "$path/$s_id";
         my $text     = "$s";
-        if ( @{ $s->streams } ) {
-            $text = $text . " (" . join( ",", $s->streams ) . ")";
-        }
         $Gui->add(
             $new_path,
             -text => $text,
@@ -446,6 +447,12 @@ sub _refresh_section_gui {
     my $path     = shift;
     my $not_hide = shift;
     $Gui->delete( 'offsprings', $path );
+
+    my $text = "$section";
+    if ( @{ $section->streams } ) {
+        $text = $text . " (" . join( ",", $section->streams ) . ")";
+    }
+    $Gui->update_tree_text( $path, $text );
 
     # add all the blocks for this section
     foreach my $bl ( sort { &_sort_by_block_id } $section->blocks ) {
@@ -518,13 +525,10 @@ sub _add_lab_to_gui {
     #no warnings;
     $Gui->add(
         "$path/$l_id",
-        -text => "Resource: " . $l->number . " " . $l->descr,
+        -text => "Lab: " . $l->number . " " . $l->descr,
         -data => { -obj => $l }
     );
 
-    #	$tree->hide( 'entry', "$path/$l_id" ) unless $not_hide;
-
-    #	$tree->autosetmode();
 }
 
 # =================================================================
@@ -540,7 +544,7 @@ sub _set_dirty {
 ###################################################################
 sub _sort_by_number { $a->number <=> $b->number }
 
-sub _sort_by_alphabet {$a->number cmp $b->number }
+sub _sort_by_alphabet { $a->number cmp $b->number }
 
 sub _sort_by_block_time {
     $a->day_number <=> $b->day_number

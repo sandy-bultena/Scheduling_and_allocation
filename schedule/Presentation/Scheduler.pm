@@ -32,6 +32,7 @@ use Export::CSV;           # write CSV schedules
 use GUI::SchedulerTk;      # gui code
 use Presentation::ViewsManager;
 use Presentation::DataEntry;
+use Presentation::EditCourses;
 use SharedData;
 use GUI::FontsAndColoursTk;
 

@@ -8,7 +8,6 @@ use Carp;
 use Tk;
 use lib "$FindBin::Bin/..";
 
-#use GuiSchedule::EditCoursesDialogs;
 use Tk::DynamicTree;
 use Tk::DragDrop;
 use Tk::DropSite;
@@ -86,6 +85,9 @@ sub new {
     $tree->bind( '<Key-Return>', [ \&_return, $self ] );
     $self->_tk_tree($tree);
 
+    #	$tree->hide( 'entry', "$path/$l_id" ) unless $not_hide;
+
+    #	$tree->autosetmode();
     # ----------------------------------------------------------------
     # make panel for modifying Schedule
     # ----------------------------------------------------------------
@@ -255,12 +257,16 @@ sub _create_right_click_menu {
 # ==================================================================
 sub _show_scheduable_menu {
     my ( $list, $type, $self, $x, $y ) = @_;
+        my $ent = $list->nearest($y-$list->rooty);
+    $list->selectionClear(0,'end') ;
+$list->selectionSet($ent) if defined $ent;
 
     # get id of currently selected scheduable
-    my @indices = $list->curselection();
-    return unless @indices;
-    my $scheduable = $list->get( $indices[0] );
-    ( my $scheduable_id ) = split " ", $scheduable;
+    my $indices = $list->curselection();
+    return unless $indices;
+    my $index = $indices->[0] if ref($indices);
+    my $scheduable = $list->get( $index );
+    ( my $scheduable_id ) = split ":", $scheduable;
     chop $scheduable_id;
 
     # get info from Presenter
@@ -279,6 +285,11 @@ sub _show_tree_menu {
     my $tree = shift;
     my $self = shift;
     my ( $x, $y ) = @_;
+    
+        my $ent = $tree->nearest($y-$tree->rooty);
+    $tree->selectionClear;
+    $tree->anchorClear;
+$tree->selectionSet($ent) if $ent;
 
     # what was selected? If nothing, bail out
     my ($obj, $path) = $self->_selected_obj();
@@ -576,8 +587,17 @@ sub delete {
     my $self           = shift;
     my $type_of_delete = shift;
     my $path           = shift;
-    $self->_tk_tree->delete( $type_of_delete, $path );
+    $self->_tk_tree->delete( $type_of_delete, $path ) if $self->_tk_tree->infoExists($path);
 }
+sub update_tree_text {
+    my $self = shift;
+    my $path = shift;
+    my $new_text = shift;
+    my $tree = $self->_tk_tree;
+     return unless $tree->infoExists($path);
+    $tree->itemConfigure( $path, 0, -text=>$new_text );
+}
+    
 
 sub course_style {
     return $Styles{-course};
