@@ -7,9 +7,9 @@ use FindBin;
 use Carp;
 use lib "$FindBin::Bin/..";
 
-#use GUI::EditCoursesDialogs;
 use GUI::EditCoursesTk;
 use Presentation::DynamicMenus;
+use Presentation::EditCourseDialog;
 
 =head1 NAME
 
@@ -169,7 +169,7 @@ sub assign_obj2_to_obj1 {
     my $tree_path = shift;
     $Assign_subs{ $$s_ptr->get_object_type($obj2) }->( $obj1, $obj2 );
     $Refresh_subs{ $$s_ptr->get_object_type($obj1) }->( $obj1, $tree_path );
-    _set_dirty();
+    set_dirty();
 }
 
 sub remove_obj2_from_obj1 {
@@ -178,7 +178,7 @@ sub remove_obj2_from_obj1 {
     my $tree_path = shift;
     $Remove_subs{ $$s_ptr->get_object_type($obj2) }->( $obj1, $obj2 );
     $Refresh_subs{ $$s_ptr->get_object_type($obj1) }->( $obj1, $tree_path );
-    _set_dirty();
+    set_dirty();
 }
 
 sub remove_all_type_from_obj1 {
@@ -187,7 +187,7 @@ sub remove_all_type_from_obj1 {
     my $tree_path = shift;
     $Remove_all_subs{ $type }->($obj1);
     $Refresh_subs{ $$s_ptr->get_object_type($obj1)}->( $obj1, $tree_path );
-    _set_dirty();
+    set_dirty();
 }
 
 sub clear_all_from_obj1 {
@@ -195,7 +195,7 @@ sub clear_all_from_obj1 {
     my $tree_path = shift;
     $Clear_all_subs{ $$s_ptr->get_object_type($obj1) }->($obj1);
     $Refresh_subs{ $$s_ptr->get_object_type($obj1) }->( $obj1, $tree_path );
-    _set_dirty();
+    set_dirty();
 }
 
 sub add_blocks_dialog {
@@ -215,7 +215,10 @@ sub add_section_dialog {
 }
 
 sub edit_course_dialog {
-    print "not functional yet\n";
+
+    my $course   = shift;
+    print ref($course),"\n";
+    EditCourseDialog->new($frame,$Schedule,$course);
 }
 
 sub new_course_dialog {
@@ -288,7 +291,7 @@ sub _cb_object_dropped_on_tree {
     elsif ( $dropped_on_type eq 'course' ) {
         _refresh_course_gui( $dropped_onto_obj, $path, 1 );
     }
-    _set_dirty();
+    set_dirty();
 
 }
 
@@ -524,7 +527,7 @@ sub _add_lab_to_gui {
 # =================================================================
 # set dirty flag
 # =================================================================
-sub _set_dirty {
+sub set_dirty {
     $$Dirty_ptr = 1;
     $Views_manager->redraw_all_views if $Views_manager;
 }
@@ -546,8 +549,8 @@ sub _sort_by_block_id {
 }
 
 sub _sort_by_teacher_name {
-    $a->lastname cmp $b->lastname
-      || $a->firstname cmp $b->firstname;
+    $a->firstname cmp $b->firstname
+      || $a->lastname cmp $b->lastname;
 }
 
 # =================================================================

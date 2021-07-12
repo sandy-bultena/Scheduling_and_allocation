@@ -25,9 +25,10 @@ sub create_tree_menus {
     # course
     # ------------------------------------------------------------------------
     if ( $type eq 'course' ) {
+        _edit_course($menu,$sel_obj,$tree_path);
         _remove_item( $menu, $sel_obj, $Schedule, $tree_path, "Remove Course" );
         _add_teachers( $menu, $sel_obj, $tree_path );
-        _add_section_edit_course( $menu, $sel_obj, $tree_path );
+        _add_section( $menu, $sel_obj, $tree_path );
         _needs_allocation( $menu, $sel_obj, $tree_path );
         _remove_teachers( $menu, $sel_obj, $tree_path );
         _remove_all( $menu, $sel_obj, $tree_path );
@@ -282,7 +283,7 @@ sub _add_blocks_edit_section {
 # --------------------------------------------------------------------
 # add sections, edit course
 # --------------------------------------------------------------------
-sub _add_section_edit_course {
+sub _add_section {
     my $menu    = shift;
     my $sel_obj = shift;
     my $tree_path;
@@ -292,14 +293,17 @@ sub _add_section_edit_course {
         "Add Sections(s)",
         -command => [ \&EditCourses::add_section_dialog, $sel_obj, $tree_path ]
       ];
-
+    push @$menu, "separator";
+}
+sub _edit_course {
+    my $menu = shift;
+    my $sel_obj = shift;
     push @$menu,
       [
         'command',
         "Edit Course",
-        -command => [ \&EditCourses::edit_course_dialog, $sel_obj, $tree_path ]
+        -command => [ \&EditCourses::edit_course_dialog, $sel_obj]
       ];
-    push @$menu, "separator";
 }
 
 # --------------------------------------------------------------------
