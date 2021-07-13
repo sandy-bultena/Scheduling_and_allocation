@@ -7,39 +7,25 @@ use FindBin;
 use Carp;
 use lib "$FindBin::Bin/..";
 
-#use GUI::EditCoursesDialogs;
 use GUI::EditCourseDialogTk;
+use Presentation::EditSectionDialog;
 
 my $Schedule;
 my $Gui;
 my $Course;
+my $Frame;
 
 sub new {
-    {
-        no warnings;
-        print "\n\n";
-        for my $i ( 0 .. 4 ) {
-            my @caller = caller($i);
-            print "@caller", "\n";
-        }
-        print "Calling EditCourseDialog\n";
-    }
-
     my $class = shift;
-    my $frame = shift;
+    $Frame = shift;
     $Schedule = shift;
     $Course   = shift;
-    print "ref obj is: ", ref($Course), "\n";
     my $self = bless { -course => $Course };
 
-    my $cNum = $Course->number;
-    my $desc = $Course->name;
-    print "Course description <$desc>\n";
-
-    # ------------------------------------------------------------------------
+   # ------------------------------------------------------------------------
     # make dialog box
     # ------------------------------------------------------------------------
-    $Gui = EditCourseDialogTk->new( $frame, $Course->id, $Course->number,
+    $Gui = EditCourseDialogTk->new( $Frame, $Course->id, $Course->number,
         $Course->name, $Course->needs_allocation, );
 
     _update_stream_choices();
@@ -50,6 +36,7 @@ sub new {
 
     $Gui->cb_remove_course_by_id( \&_cb_remove_course_by_id );
     $Gui->cb_change_course_name_by_id( \&_cb_change_course_name_by_id );
+    $Gui->cb_change_course_number_by_id( \&_cb_change_course_number_by_id );
     $Gui->cb_add_stream_to_course( \&_cb_add_stream_to_course );
     $Gui->cb_remove_stream_from_course( \&_cb_remove_stream_from_course );
     $Gui->cb_remove_teacher_from_course( \&_cb_remove_teacher_from_course );
@@ -64,13 +51,32 @@ sub new {
 }
 
 sub _cb_remove_course_by_id {
-    print caller();
-    print "not implemented yet\n";
+    my $course_id  = shift;
+    my $course     = $Schedule->courses->get($course_id);
+    return unless $course;
+    $Schedule->remove_course($course);
+    EditCourses::_refresh_schedule_gui();
+    EditCourses::set_dirty();
 }
 
 sub _cb_change_course_name_by_id {
-    print caller();
-    print "not implemented yet\n";
+    my $course_id  = shift;
+    my $name = shift;
+    my $course     = $Schedule->courses->get($course_id);
+    return unless $course;
+    $course->name($name);
+    EditCourses::_refresh_schedule_gui();
+    EditCourses::set_dirty();
+}
+
+sub _cb_change_course_number_by_id {
+    my $course_id  = shift;
+    my $number = shift;
+    my $course     = $Schedule->courses->get($course_id);
+    return unless $course;
+    $course->number($number);
+    EditCourses::_refresh_schedule_gui();
+    EditCourses::set_dirty();
 }
 
 sub _cb_set_allocation {
@@ -134,7 +140,7 @@ sub _update_section_choices {
 }
 
 # ============================================================================
-# edit section from course
+# edit/add section from course
 # ============================================================================
 sub _cb_edit_section {
     my $course_id  = shift;
@@ -142,24 +148,33 @@ sub _cb_edit_section {
     my $course     = $Schedule->courses->get($course_id);
     return unless $course;
 
-    unless ($section_id) {
-        my $section_num = $course->get_new_number;    # gets a new section id
-        my $section     = Section->new(
+    my $section;
+    
+    # if section exists, use it
+    if ($section_id) {
+        $section = $Course->get_section_by_id($section_id);
+    }
+    
+    # else create a new section
+    else {
+        my $section_num = $Course->get_new_number;    # gets a new section id
+        $section     = Section->new(
             -number => $section_num,
             -hours  => 0,
         );
         $course->add_section($section);
+    EditCourses::_refresh_course_gui( $course, "Schedule/Course" . $course_id );
+    EditCourses::set_dirty();
     }
 
-    #EditSection->new(@_);
-    EditCourses::set_dirty();
+    my $change_message = EditSectionDialog->new($Frame,$Schedule,$Course,$section);
 
     # because many things could have changed in the other dialog,
     # we need to update everything just in case
     _update_stream_choices();
     _update_teacher_choices();
     _update_section_choices();
-    return 0;
+    return $change_message;
 }
 
 # ============================================================================
@@ -190,8 +205,8 @@ sub _cb_remove_section_from_course {
 # ============================================================================
 sub _cb_add_sections_with_blocks {
     my $course_id     = shift;
-    my $section_names = shift;
-    my $block_hours   = shift;
+    my $section_names = shift || [];
+    my $block_hours   = shift || [];
     my $course        = $Schedule->courses->get($course_id);
     return unless $course;
 
