@@ -2,13 +2,25 @@
 use strict;
 use warnings;
 
+# =================================================================
+# Add blocks dialog GUI
+# -----------------------------------------------------------------
+# Inputs:
+#   frame
+# Returns:
+#   An array of hours for each block
+#   - undef if Cancelled
+# Required Event Handlers:
+#   -none-
+# =================================================================
+
 package AddBlocksDialogTk;
 
 use FindBin;
 use Carp;
 use lib "$FindBin::Bin/..";
 
-my $MAX_BLOCK    = 10;
+my $MAX_BLOCK = 10;
 my $inputframe;
 my $number_of_blocks;
 
@@ -19,6 +31,7 @@ sub new {
     my $class = shift;
     $inputframe = shift;
     my $self = bless {}, $class;
+    $number_of_blocks = "";
 
     my $db_num_blocks = $inputframe->DialogBox(
         -title          => 'How Many Blocks',
@@ -33,7 +46,7 @@ sub new {
         'Entry',
         -textvariable    => \$number_of_blocks,
         -validate        => 'key',
-        -validatecommand => \&is_integer,
+        -validatecommand => \&_is_integer,
         -invalidcommand  => sub { $inputframe->bell },
         -width           => 20,
     )->pack( -fill => 'x' );
@@ -46,6 +59,36 @@ sub new {
 
     return $self->_process_block_hours();
 
+}
+
+# ----------------------------------------------------------------------------
+# hours per block to add to each section
+# ----------------------------------------------------------------------------
+sub _block_hours {
+    my $self = shift;
+    $self->{-block_hours} = shift if @_;
+    $self->{-block_hours} = [] unless $self->{-block_hours};
+    return $self->{-block_hours};
+}
+
+# =================================================================
+# validate that number be entered in a entry box is a whole number
+# (positive integer)
+# =================================================================
+sub _is_integer {
+    my $n = shift;
+    return 1 if $n =~ /^(\s*\d+\s*|)$/;
+    return 0;
+}
+
+# =================================================================
+# validate that number be entered in a entry box is a real number
+# (positive real number)
+# =================================================================
+sub _is_number {
+    my $n = shift;
+    return 1 if $n =~ (/^(\s*\d*\.?\d*\s*|)$/);
+    return 0;
 }
 
 # ----------------------------------------------------------------------------
@@ -67,7 +110,7 @@ sub _process_block_hours {
         $top->Label( -text => "How Many Hours Per Block?" )
           ->grid( -columnspan => 2 );
         foreach my $i ( 1 ... $number_of_blocks ) {
-            push @{ $self->block_hours }, "";
+            push @{ $self->_block_hours }, "";
         }
 
         # stop the dialog box from executing the
@@ -75,14 +118,14 @@ sub _process_block_hours {
         $db_block_hours->bind( "<Return>", sub { } );
 
         my $first_entry;
-        my $hrs   = $self->block_hours;
+        my $hrs   = $self->_block_hours;
         my $index = 1;
         foreach my $hour (@$hrs) {
             my $label = $top->Label( -text => "Block $index" );
             my $entry = $top->Entry(
                 -textvariable    => \$hour,
                 -validate        => 'key',
-                -validatecommand => \&is_number,
+                -validatecommand => \&_is_number,
                 -invalidcommand  => sub { $inputframe->bell },
             );
             $first_entry = $entry unless $first_entry;
@@ -104,45 +147,10 @@ sub _process_block_hours {
 
         # show dialog box
         $answer = $db_block_hours->Show() || "Cancel";
-        return undef if $answer eq 'Cancel'; 
-               
+        return undef if $answer eq 'Cancel';
+
         return $self->block_hours;
     }
 }
-
-# ----------------------------------------------------------------------------
-# hours per block to add to each section
-# ----------------------------------------------------------------------------
-sub block_hours {
-    my $self = shift;
-    $self->{-block_hours} = shift if @_;
-    $self->{-block_hours} = [] unless $self->{-block_hours};
-    return $self->{-block_hours};
-}
-
-
-# =================================================================
-# validate that number be entered in a entry box is a whole number
-# (positive integer)
-# =================================================================
-sub is_integer {
-    my $n = shift;
-    return 1 if $n =~ /^(\s*\d+\s*|)$/;
-    return 0;
-}
-
-# =================================================================
-# validate that number be entered in a entry box is a real number
-# (positive real number)
-# =================================================================
-sub is_number {
-	my $n = shift;
-	return 1 if $n =~ (/^(\s*\d*\.?\d*\s*|)$/);
-	return 0;
-}
-
-
-
-
 
 1;

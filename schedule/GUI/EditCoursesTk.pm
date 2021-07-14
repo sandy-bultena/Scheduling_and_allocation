@@ -2,6 +2,35 @@
 use strict;
 use warnings;
 
+# =================================================================
+# Edit courses GUI
+# - inserts widgets into a gui container (frame)
+# -----------------------------------------------------------------
+# INPUTS:
+#   frame
+#
+# METHODS:
+#   alert               ()
+#   add                 (tree_path)
+#   course_style        ()
+#   delete              (type_of_delete, path)
+#   set_labs            (array of {-id=>lab_id, -name=>lab_number})
+#   set_streams         (array of {-id=>stream_id, -name=>{stream_name})
+#   show_message        (title, message)
+#   update_tree_text    (tree_path, new_text)
+#
+# RETURNS:
+#   - nothing -
+#
+# REQUIRED EVENT HANDLERS:
+#   cb_object_dropped_on_tree       (type_of_object_dropped, id_of_dropped_object, tree_path, target_object)
+#   cb_edit_obj                     (object_to_edit, tree_path)
+#   cb_get_scheduable_menu_info     (teacher_lab_stream_id, type)
+#   cb_get_tree_menu                (selected_object, parent_object, tree_path)
+#   cb_new_course                   ()
+#   cb_show_teacher_stat            (teacher_id)
+# =================================================================
+
 package EditCoursesTk;
 use FindBin;
 use Carp;
@@ -31,11 +60,14 @@ my $Fonts;
 my $Colours;
 my %Styles;
 
+# =================================================================
+# Constructor
+# =================================================================
 sub new {
     my $class = shift;
     my $frame = shift;
     $Colours = FontsAndColoursTk->Colours;
-    $Fonts = FontsAndColoursTk->Fonts;
+    $Fonts   = FontsAndColoursTk->Fonts;
 
     my $self = bless {}, $class;
     $self->_tk_frame($frame);
@@ -79,15 +111,12 @@ sub new {
         'DynamicTree',
         -scrollbars => 'osoe',
         -separator  => '/',
-        -command    => [ \&_edit_selection, $self ],
+        -command    => [ \&_cmd_edit_selection, $self ],
     )->pack( -expand => 1, -fill => 'both', -side => 'left' );
     $tree = $treescrolled->Subwidget('dynamictree');
-    $tree->bind( '<Key-Return>', [ \&_return, $self ] );
+    $tree->bind( '<Key-Return>', [ \&_cmd_return, $self ] );
     $self->_tk_tree($tree);
 
-    #	$tree->hide( 'entry', "$path/$l_id" ) unless $not_hide;
-
-    #	$tree->autosetmode();
     # ----------------------------------------------------------------
     # make panel for modifying Schedule
     # ----------------------------------------------------------------
@@ -110,50 +139,271 @@ sub new {
     return $self;
 }
 
+# =================================================================
+# alert the user
+# =================================================================
+sub alert {
+    my $self = shift;
+    $self->_tk_tree->bell;
+}
+
+# =================================================================
+# add node to tree
+# =================================================================
+sub add {
+    my $self    = shift;
+    my $path    = shift;
+    my %options = @_;
+    $self->_tk_tree->add( $path, %options );
+    $self->_tk_tree->autosetmode();
+
+}
+
+# =================================================================
+# text style for course for the tree
+# =================================================================
+sub course_style {
+    return $Styles{-course};
+}
+
+# =================================================================
+# delete node from tree
+# =================================================================
+sub delete {
+    my $self           = shift;
+    my $type_of_delete = shift;
+    my $path           = shift;
+    $self->_tk_tree->delete( $type_of_delete, $path )
+      if $self->_tk_tree->infoExists($path);
+}
+
+# =================================================================
+# set labs (put in listbox)
+# =================================================================
+sub set_labs {
+    my $self         = shift;
+    my $ids_and_labs = shift;
+    $self->_tk_labs_list->delete( 0, 'end' );
+    foreach my $lab (@$ids_and_labs) {
+        $self->_tk_labs_list->insert( 'end',
+            $lab->{-id} . " : " . $lab->{-name} );
+    }
+}
+
+# =================================================================
+# set streams (put in listbox)
+# =================================================================
+sub set_streams {
+    my $self            = shift;
+    my $ids_and_streams = shift;
+    $self->_tk_streams_list->delete( 0, 'end' );
+    foreach my $stream (@$ids_and_streams) {
+        $self->_tk_streams_list->insert( 'end',
+            $stream->{-id} . " : " . $stream->{-name} );
+    }
+}
+
+# =================================================================
+# set teachers (put in listbox)
+# =================================================================
+sub set_teachers {
+    my $self             = shift;
+    my $ids_and_teachers = shift;
+    $self->_tk_teachers_list->delete( 0, 'end' );
+    foreach my $teacher (@$ids_and_teachers) {
+        $self->_tk_teachers_list->insert( 'end',
+            $teacher->{-id} . " : " . $teacher->{-name} );
+    }
+}
+
+# =================================================================
+# show message
+# =================================================================
+sub show_message {
+    my $self  = shift;
+    my $title = shift;
+    my $msg   = shift;
+
+    $self->_tk_frame->messageBox(
+        -title   => $title,
+        -message => $msg,
+        -type    => 'Ok'
+    );
+}
+
+# =================================================================
+# update the text of a particular node in the tree
+# =================================================================
+sub update_tree_text {
+    my $self     = shift;
+    my $path     = shift;
+    my $new_text = shift;
+    my $tree     = $self->_tk_tree;
+    return unless $tree->infoExists($path);
+    $tree->itemConfigure( $path, 0, -text => $new_text );
+}
+
 ###################################################################
 # Event handlers
 ###################################################################
 
 # =================================================================
-# tree: <Key-Return>
+# dropped teacher or lab on tree
 # =================================================================
-sub _return {
+sub _cmd_dropped_on_tree {
     my $self = shift;
-    #### TODO: is this correct?
-    return if $self->_tk_tree->infoAnchor;
-    my $path = $self->_tk_tree->selectionGet();
-    $self->_edit_selection($path) if $path;
+
+    # validate that we have data to work with
+    return unless $Dragged_from;
+    my ( $obj, $path ) = $self->__selected_obj;
+    return unless $path;
+
+    # -------------------------------------------------------------
+    # Initialize some variables
+    # -------------------------------------------------------------
+    my $txt = $Drag_source->cget( -text );
+    my $id;
+    if ( $txt =~ /^\s*(\d+)\s*:/ ) {
+        $id = $1;
+    }
+    else { return; }
+
+    # -------------------------------------------------------------
+    # add appropriate object to object
+    # -------------------------------------------------------------
+    $self->cb_object_dropped_on_tree->( $Dragged_from, $id, $path, $obj );
+
+    # -------------------------------------------------------------
+    # tidy up
+    # -------------------------------------------------------------
+    $self->_tk_tree->autosetmode();
+    $Dragged_from = '';
+
 }
 
 # =================================================================
 # tree: <command>, Edit Selection button: <command>
 # =================================================================
-sub _edit_selection {
+sub _cmd_edit_selection {
     my $self = shift;
-    my $path = shift;
-    my $obj  = $self->_get_obj($path);
+    my ($obj, $path) = $self->__selected_obj();
     $self->cb_edit_obj->( $obj, $path );
 }
 
 # =================================================================
 # teachers_list: <Double-Button-1>
 # =================================================================
-sub _double_click_teacher {
+sub _cmd_double_click_teacher {
     my ( $lb, $self ) = @_;
-    my $lb_sel  = $lb->curselection;
-    my $txt = $lb->get($lb_sel);
+    my $lb_sel = $lb->curselection;
+    my $txt    = $lb->get($lb_sel);
 
     my $id;
-    if ($txt =~ /^\s*(\d+)\s*:/) {
+    if ( $txt =~ /^\s*(\d+)\s*:/ ) {
         $id = $1;
     }
-    else {return;}
+    else { return; }
     $self->cb_show_teacher_stat->($id);
 }
 
+# ==================================================================
+# create and show teacher/lab/stream menu
+# ==================================================================
+sub _cmd_show_scheduable_menu {
+    my ( $list, $type, $self, $x, $y ) = @_;
+    my $ent = $list->nearest( $y - $list->rooty );
+    $list->selectionClear( 0, 'end' );
+    $list->selectionSet($ent) if defined $ent;
+
+    # get id of currently selected scheduable
+    my $indices = $list->curselection();
+    return unless $indices;
+    my $index = $indices->[0] if ref($indices);
+    my $scheduable = $list->get($index);
+    my $scheduable_id;
+    if ( $scheduable =~ /^\s*(\d+)\s*:/ ) {
+        $scheduable_id = $1;
+    }
+    else { return; }
+
+    # get info from Presenter
+    my $menu_array =
+      $self->cb_get_scheduable_menu_info->( $scheduable_id, $type );
+
+    # create menu
+    my $list_menu = $list->Menu( -tearoff => 0, -menuitems => $menu_array );
+    $list_menu->post( $x, $y );
+}
+
+# ==================================================================
+# show pop-up tree menu
+# ==================================================================
+sub _cmd_show_tree_menu {
+    my $tree = shift;
+    my $self = shift;
+    my ( $x, $y ) = @_;
+
+    my $ent = $tree->nearest( $y - $tree->rooty );
+    $tree->selectionClear;
+    $tree->anchorClear;
+    $tree->selectionSet($ent) if $ent;
+
+    # what was selected? If nothing, bail out
+    my ( $obj, $path ) = $self->__selected_obj();
+    return unless $path;
+
+    # get the object and parent object associated with the selected item,
+    # if no parent (i.e. Schedule) we don't need a drop down menu
+    my $parent = $tree->info( 'parent', $path );
+    return unless $parent;
+    my $parent_obj = $tree->infoData($parent)->{-obj};
+
+    # create the drop down menu
+    my $menu_array = $self->cb_get_tree_menu->( $obj, $parent_obj, $path );
+    my $tree_menu = $tree->Menu( -tearoff => 0, -menuitems => $menu_array );
+    $tree_menu->post( $x, $y );
+}
+
 # =================================================================
-# New Course Button: <command> => $self->cb_new_course
+# trying to drop a lab/teacher onto the tree
 # =================================================================
+sub _cmd_dragging_over_tree {
+    my $self = shift;
+    my $tree = $self->_tk_tree;
+    my $x    = shift;
+    my $y    = shift;
+
+    # ignore this if trying to drop from tree to tree
+    return if $Dragged_from eq 'Tree';
+
+    # get the nearest item, and if it is good to
+    # drop on it, set the selection
+
+    my $ent = $tree->GetNearest($y);
+    $tree->selectionClear;
+    $tree->anchorClear;
+
+    if ($ent) {
+
+        ###### TODO ... no isa!
+        my $obj = $tree->infoData($ent)->{-obj};
+        if ( $obj->isa('Block') || $obj->isa('Section') || $obj->isa('Course') )
+        {
+            $tree->selectionSet($ent);
+        }
+    }
+}
+
+# =================================================================
+# tree: <Key-Return>
+# =================================================================
+sub _cmd_return {
+    my $self = shift;
+    #### TODO: is this correct?
+    return if $self->_tk_tree->infoAnchor;
+    my $path = $self->_tk_tree->selectionGet();
+    $self->_cmd_edit_selection($path) if $path;
+}
 
 # ===================================================================
 # create panel for modifying the schedule
@@ -179,13 +429,13 @@ sub _create_panel_for_modifying {
     $button_row->Button(
         -text    => "New Course",
         -width   => 11,
-        -command => $self->cb_new_course,
+        -command => sub{$self->cb_new_course->()},
     )->pack( -side => 'left' );
 
     $button_row->Button(
         -text    => "Edit Selection",
         -width   => 11,
-        -command => [ \&_edit_selection, $self ]
+        -command => [ \&_cmd_edit_selection, $self ]
     )->pack( -side => 'left' );
 
     # ---------------------------------------------------------------
@@ -213,7 +463,7 @@ sub _create_panel_for_modifying {
     # ---------------------------------------------------------------
     $teachers_list->bind( '<B1-Motion>', undef );
     $teachers_list->bind( "<Double-Button-1>",
-        [ \&_double_click_teacher, $teachers_list, $self ] );
+        [ \&_cmd_double_click_teacher, $teachers_list, $self ] );
 
     # ---------------------------------------------------------------
     # assign weights to the panel grid
@@ -242,74 +492,17 @@ sub _create_right_click_menu {
     my $stream_menu = $self->_tk_streams_list->Menu( -tearoff => 0 );
 
     $self->_tk_teachers_list->bind( '<Button-3>',
-        [ \&_show_scheduable_menu, 'teacher', $self, Ev('X'), Ev('Y') ] );
+        [ \&_cmd_show_scheduable_menu, 'teacher', $self, Ev('X'), Ev('Y') ] );
 
     $self->_tk_labs_list->bind( '<Button-3>',
-        [ \&_show_scheduable_menu, 'lab', $self, Ev('X'), Ev('Y') ] );
+        [ \&_cmd_show_scheduable_menu, 'lab', $self, Ev('X'), Ev('Y') ] );
 
     $self->_tk_streams_list->bind( '<Button-3>',
-        [ \&_show_scheduable_menu, 'stream', $self, Ev('X'), Ev('Y') ] );
+        [ \&_cmd_show_scheduable_menu, 'stream', $self, Ev('X'), Ev('Y') ] );
 
-    $tree->bind( '<Button-3>', [ \&_show_tree_menu, $self, Ev('X'), Ev('Y') ] );
+    $tree->bind( '<Button-3>',
+        [ \&_cmd_show_tree_menu, $self, Ev('X'), Ev('Y') ] );
 
-}
-
-# ==================================================================
-# create and show teacher/lab/stream menu
-# ==================================================================
-sub _show_scheduable_menu {
-    my ( $list, $type, $self, $x, $y ) = @_;
-        my $ent = $list->nearest($y-$list->rooty);
-    $list->selectionClear(0,'end') ;
-$list->selectionSet($ent) if defined $ent;
-
-    # get id of currently selected scheduable
-    my $indices = $list->curselection();
-    return unless $indices;
-    my $index = $indices->[0] if ref($indices);
-    my $scheduable = $list->get( $index );
-    my $scheduable_id;
-    if ($scheduable =~ /^\s*(\d+)\s*:/) {
-        $scheduable_id = $1;
-    }
-    else {return;}
-
-    # get info from Presenter
-    my $menu_array =
-      $self->cb_get_scheduable_menu_info->( $scheduable_id, $type );
-
-    # create menu
-    my $list_menu = $list->Menu( -tearoff => 0, -menuitems => $menu_array );
-    $list_menu->post( $x, $y );
-}
-
-# ==================================================================
-# show pop-up tree menu
-# ==================================================================
-sub _show_tree_menu {
-    my $tree = shift;
-    my $self = shift;
-    my ( $x, $y ) = @_;
-    
-        my $ent = $tree->nearest($y-$tree->rooty);
-    $tree->selectionClear;
-    $tree->anchorClear;
-$tree->selectionSet($ent) if $ent;
-
-    # what was selected? If nothing, bail out
-    my ($obj, $path) = $self->_selected_obj();
-    return unless $path;
-
-    # get the object and parent object associated with the selected item,
-    # if no parent (i.e. Schedule) we don't need a drop down menu
-    my $parent = $tree->info( 'parent', $path );
-    return unless $parent;
-    my $parent_obj = $tree->infoData($parent)->{-obj};
-
-    # create the drop down menu
-    my $menu_array = $self->cb_get_tree_menu->( $obj, $parent_obj, $path );
-    my $tree_menu = $tree->Menu( -tearoff => 0, -menuitems => $menu_array );
-    $tree_menu->post( $x, $y );
 }
 
 # =================================================================
@@ -350,8 +543,8 @@ $tree->selectionSet($ent) if $ent;
 
         $tree->DropSite(
             -droptypes     => [qw/Local/],
-            -dropcommand   => [ \&_dropped_on_tree, $self ],
-            -motioncommand => [ \&_dragging_over_tree, $self ],
+            -dropcommand   => [ \&_cmd_dropped_on_tree, $self ],
+            -motioncommand => [ \&_cmd_dragging_over_tree, $self ],
         );
 
         # =================================================================
@@ -381,14 +574,13 @@ $tree->selectionSet($ent) if $ent;
 # =================================================================
 # get object that is currently selected item on tree
 # =================================================================
-sub _selected_obj {
+sub __selected_obj {
     my $self = shift;
     my $tree = $self->_tk_tree;
 
     my $path = $tree->selectionGet();
     return ( undef, $path ) unless $path;
 
-    # get info about dropped object
     $path = ( ref $path ) ? $path->[0] : $path;
     my $obj = $tree->infoData($path)->{-obj};
 
@@ -398,7 +590,7 @@ sub _selected_obj {
 # =================================================================
 # get the object from the specified tree path
 # =================================================================
-sub _get_obj {
+sub __get_obj {
     my $self = shift;
     my $path = shift;
 
@@ -411,162 +603,24 @@ sub _get_obj {
     return $obj;
 }
 
-# =================================================================
-# dropped teacher or lab on tree
-# =================================================================
-sub _dropped_on_tree {
-    my $self = shift;
-
-    # validate that we have data to work with
-    return unless $Dragged_from;
-    my ( $obj, $path ) = $self->_selected_obj;
-    return unless $path;
-
-    # -------------------------------------------------------------
-    # Initialize some variables
-    # -------------------------------------------------------------
-    my $txt = $Drag_source->cget( -text );
-    my $id;
-    if ($txt =~ /^\s*(\d+)\s*:/) {
-        $id = $1;
-    }
-    else {return;}
-
-    # -------------------------------------------------------------
-    # add appropriate object to object
-    # -------------------------------------------------------------
-    $self->cb_object_dropped_on_tree->( $Dragged_from, $id, $path, $obj );
-
-    # -------------------------------------------------------------
-    # tidy up
-    # -------------------------------------------------------------
-    $self->_tk_tree->autosetmode();
-    $Dragged_from = '';
-
-}
-
-# =================================================================
-# trying to drop a lab/teacher onto the tree
-# =================================================================
-sub _dragging_over_tree {
-    my $self = shift;
-    my $tree = $self->_tk_tree;
-    my $x    = shift;
-    my $y    = shift;
-
-    # ignore this if trying to drop from tree to tree
-    return if $Dragged_from eq 'Tree';
-
-    # get the nearest item, and if it is good to
-    # drop on it, set the selection
-
-    my $ent = $tree->GetNearest($y);
-    $tree->selectionClear;
-    $tree->anchorClear;
-
-    if ($ent) {
-
-        ###### TODO ... no isa!
-        my $obj = $tree->infoData($ent)->{-obj};
-        if ( $obj->isa('Block') || $obj->isa('Section') || $obj->isa('Course') )
-        {
-            $tree->selectionSet($ent);
-        }
-    }
-}
-
-############# New ########################
-
-sub set_teachers {
-    my $self             = shift;
-    my $ids_and_teachers = shift;
-    $self->_tk_teachers_list->delete(0,'end');
-    foreach my $teacher (@$ids_and_teachers) {
-        $self->_tk_teachers_list->insert( 'end',
-            $teacher->{-id} . " : " . $teacher->{-name} );
-    }
-}
-
-sub set_streams {
-    my $self            = shift;
-    my $ids_and_streams = shift;
-    $self->_tk_streams_list->delete(0,'end');
-    foreach my $stream (@$ids_and_streams) {
-        $self->_tk_streams_list->insert( 'end',
-            $stream->{-id} . " : " . $stream->{-name} );
-    }
-}
-
-sub set_labs {
-    my $self         = shift;
-    my $ids_and_labs = shift;
-    $self->_tk_labs_list->delete(0,'end');
-    foreach my $lab (@$ids_and_labs) {
-        $self->_tk_labs_list->insert( 'end',
-            $lab->{-id} . " : " . $lab->{-name} );
-    }
-}
-
-sub add {
-    my $self    = shift;
-    my $path    = shift;
-    my %options = @_;
-    $self->_tk_tree->add( $path, %options );
-    $self->_tk_tree->autosetmode();
-
-}
-
-sub delete {
-    my $self           = shift;
-    my $type_of_delete = shift;
-    my $path           = shift;
-    $self->_tk_tree->delete( $type_of_delete, $path ) if $self->_tk_tree->infoExists($path);
-}
-sub update_tree_text {
-    my $self = shift;
-    my $path = shift;
-    my $new_text = shift;
-    my $tree = $self->_tk_tree;
-     return unless $tree->infoExists($path);
-    $tree->itemConfigure( $path, 0, -text=>$new_text );
-}
-    
-
-sub course_style {
-    return $Styles{-course};
-}
-
-sub alert {
-    my $self = shift;
-    $self->_tk_tree->bell;
-}
-
-sub message_box {
-    my $self  = shift;
-    my $title = shift;
-    my $msg   = shift;
-
-    $self->_tk_frame( -title => $title, -message => $msg, -type => 'Ok' );
-}
-
 sub __setup {
 
     # ------------------------------------------------------------------------
     # Entry or Text Box variable bindings
     # ------------------------------------------------------------------------
-    _create_setters_and_getters(
+    __create_setters_and_getters(
         -category   => 'list',
         -properties => [qw()],
         -default    => {}
     );
 
-    _create_setters_and_getters(
+    __create_setters_and_getters(
         -category   => "_tb",
         -properties => [qw( )],
         -default    => ""
     );
 
-    _create_setters_and_getters(
+    __create_setters_and_getters(
         -category   => "_new",
         -properties => [qw()],
         -default    => ""
@@ -576,39 +630,21 @@ sub __setup {
     # getters and setters for callback routines
     # ------------------------------------------------------------------------
     my @callbacks = (
-        qw(trash object_dropped_on_tree edit_obj show_teacher_stat
-          new_course get_scheduable_menu_info set_teacher_to_blocks
-          set_teacher_to_sections set_lab_to_blocks set_lab_to_sections
-          set_stream_to_sections get_tree_menu)
-    );
-    _create_setters_and_getters(
-        -category   => "cb",
-        -properties => \@callbacks,
-        -default    => sub {print "not implemented\n",caller(),"\n"; return }
+        qw(object_dropped_on_tree edit_obj show_teacher_stat new_course
+          get_scheduable_menu_info get_tree_menu)
     );
 
-    # ------------------------------------------------------------------------
-    # Tk Labels
-    # ------------------------------------------------------------------------
-    my @labels = (
-        qw (
-          )
-    );
-    _create_setters_and_getters(
-        -category   => "_lbl",
-        -properties => \@labels,
-        -default    => undef
+    __create_setters_and_getters(
+        -category   => "cb",
+        -properties => \@callbacks,
+        -default    => sub { print "not implemented\n", caller(), "\n"; return }
     );
 
     # ------------------------------------------------------------------------
     # Defining widget getters and setters
     # ------------------------------------------------------------------------
-    my @widgets = (
-        qw(labs_list teachers_list streams_list tree frame
-
-          )
-    );
-    _create_setters_and_getters(
+    my @widgets = (qw(labs_list teachers_list streams_list tree frame));
+    __create_setters_and_getters(
         -category   => "_tk",
         -properties => \@widgets,
         -default    => undef
@@ -622,7 +658,7 @@ sub __setup {
 # 1) cat_property
 # 2) cat_property_ptr
 # ============================================================================
-sub _create_setters_and_getters {
+sub __create_setters_and_getters {
 
     my %stuff   = @_;
     my $cat     = $stuff{-category};
@@ -638,7 +674,6 @@ sub _create_setters_and_getters {
             $self->{ $cat . "_" . $prop } = shift if @_;
             return $self->{ $cat . "_" . $prop } || $default;
         };
-
 
         # set getter to property pointer
         *{ $cat . "_" . $prop . "_ptr" } = sub {

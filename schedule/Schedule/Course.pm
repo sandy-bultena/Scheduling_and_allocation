@@ -64,6 +64,8 @@ B<Parameters>
 
 -name => course name
 
+-semester => semester the course is offered
+
 B<Returns>
 
 Course object
@@ -160,9 +162,6 @@ sub semester {
 	if (@_) {
 		my $semester = lc(shift);
 		if ( $semester !~ /^(summer|winter|fall)/ ) {
-			warn("invalid semester for course; ($semester) \n");
-			my @caller = caller();
-			print "Called from: ",join(", ",@caller),"\n";
 			$semester = "";
 		}
 		$self->{-semester} = $semester;

@@ -1,6 +1,47 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
+# =================================================================
+# Edit section dialog GUI
+# -----------------------------------------------------------------
+# INPUTS:
+#   frame
+#   course name
+#   section id
+#   section name
+#
+# METHODS:
+#   Show - shows the dialog box
+#
+#   update_teacher_choices
+#       inputs: hash of all teachers {teacher_id => teacher_name}
+#               hash of teachers assigned to this section {teacher_id => teacher_name}
+#
+#   update_block_choices
+#       inputs: hash of blocks assigned to this section {block_id => block_number}
+#
+#   update_stream_choices
+#       inputs: hash of all streams {stream_id => stream_name}
+#               hash of streams assigned to this section {stream_id => stream_number}
+#
+# RETURNS:
+#   A string indicating what action was taken
+#
+# REQUIRED EVENT HANDLERS:
+#   cb_remove_section_by_id             (section_id)
+#   cb_change_section_name_by_id        (section_id, name)
+#   cb_add_blocks_to_section            (section_id, array of block hours)
+#   cb_remove_block_from_section        (section_id, block_id)
+#   cb_edit_block                       (section_id, block_id)
+#   cb_add_teacher_to_section           (section_id, teacher_id)
+#   cb_remove_teacher_from_section      (section_id, teacher_id)
+#   cb_add_stream_to_section            (section_id, stream_id)
+#   cb_remove_stream_from_section       (section_id, stream_id)
+#
+# NOTES:
+#   All changes occur when appropriate buttons are clicked.
+#   The section name will be updated only when the dialog is closed.
+# =================================================================
 
 package EditSectionDialogTk;
 
@@ -17,6 +58,9 @@ my $Changed = "";
 my $Edit_dialog;
 __setup();
 
+# ============================================================================
+# constructor
+# ============================================================================
 sub new {
     my $class       = shift;
     my $frame       = shift;
@@ -128,7 +172,7 @@ sub new {
 
     my $teach_add_btn = $top->Button(
         -text    => "Set to all blocks",
-        -command => [ \&_cmd_set_teacher_to_all_blocks, $self ]
+        -command => [ \&_cmd_add_teacher_to_all_blocks, $self ]
     );
 
     $top->Label(
@@ -244,26 +288,6 @@ sub update_block_choices {
 }
 
 # ============================================================================
-# update teacher choices
-# ============================================================================
-sub update_teacher_choices {
-    my $self                     = shift;
-    my $choices_teacher          = shift;
-    my $choices_teacher_assigned = shift;
-
-    $self->_choices_teacher($choices_teacher);
-    $self->_tk_teacher_dropdown->configure( -choices => $choices_teacher );
-    $self->_tk_teacher_dropdown->update;
-    $Txt_teacher = "";
-
-    $self->_tk_teacher_assigned_dropdown->configure(
-        -choices => $choices_teacher_assigned );
-    $self->_choices_teacher_assigned($choices_teacher_assigned);
-    $self->_tk_teacher_assigned_dropdown->update;
-    $Txt_teacher_assigned = "";
-}
-
-# ============================================================================
 # update stream choices
 # ============================================================================
 sub update_stream_choices {
@@ -284,11 +308,142 @@ sub update_stream_choices {
 }
 
 # ============================================================================
+# update teacher choices
+# ============================================================================
+sub update_teacher_choices {
+    my $self                     = shift;
+    my $choices_teacher          = shift;
+    my $choices_teacher_assigned = shift;
+
+    $self->_choices_teacher($choices_teacher);
+    $self->_tk_teacher_dropdown->configure( -choices => $choices_teacher );
+    $self->_tk_teacher_dropdown->update;
+    $Txt_teacher = "";
+
+    $self->_tk_teacher_assigned_dropdown->configure(
+        -choices => $choices_teacher_assigned );
+    $self->_choices_teacher_assigned($choices_teacher_assigned);
+    $self->_tk_teacher_assigned_dropdown->update;
+    $Txt_teacher_assigned = "";
+}
+
+# ============================================================================
+# add blocks
+# ============================================================================
+sub _cmd_add_blocks {
+    my $self = shift;
+        my $block_hours = AddBlocksDialogTk->new($self->_tk_top_frame);
+
+    if (  $block_hours) {
+        $self->cb_add_blocks_to_section->($self->section_id,$block_hours);
+        $self->_tk_block_status->configure( -text => "Block(s) Added" );
+        $self->_tk_top_frame->bell;
+    }
+    else {
+        $self->_tk_block_status->configure( -text => "" );
+    }
+    $self->_tk_block_status->update;
+}
+
+# ============================================================================
+# add stream to section
+# ============================================================================
+sub _cmd_add_stream_to_section {
+    my $self = shift;
+    return unless $Txt_stream;
+    my $id = __get_id( $self->_choices_stream, $Txt_stream );
+    $self->cb_add_stream_to_section->( $self->section_id, $id );
+
+    $Txt_stream = "";
+    $self->_tk_stream_status->configure( -text => "Stream Added" );
+    $self->_tk_stream_status->update;
+    $self->_tk_stream_status->bell;
+    $Changed = "Section Modified";
+}
+
+# ============================================================================
+# set teacher to all blocks
+# ============================================================================
+sub _cmd_add_teacher_to_all_blocks {
+    my $self = shift;
+    return unless $Txt_teacher;
+    my $id = __get_id( $self->_choices_teacher, $Txt_teacher );
+    $self->cb_add_teacher_to_section->( $self->section_id, $id );
+
+    $Txt_teacher = "";
+    $self->_tk_teacher_status->configure( -text => "Teacher Added" );
+    $self->_tk_teacher_status->bell;
+    $self->_tk_teacher_status->update;
+    $Changed = "Section Modified";
+}
+
+# ============================================================================
+# block edit
+# ============================================================================
+
+sub _cmd_block_edit {
+        my $self = shift;
+    return unless $Txt_block;
+    my $id = __get_id( $self->_choices_block, $Txt_block );
+    $self->cb_edit_block->($self->section_id,$id);
+    
+}
+
+# ============================================================================
+# remove block
+# ============================================================================
+sub _cmd_remove_block {
+    my $self = shift;
+    return unless $Txt_block;
+
+    my $id = __get_id( $self->_choices_block, $Txt_block );
+    $self->cb_remove_block_from_section->($self->section_id,$id);
+
+    $self->_tk_block_dropdown->bell;
+    $self->_tk_block_status->configure( -text => "Block Removed" );
+    $self->_tk_block_status->bell;
+    $Changed = "Section Modified";
+}
+
+# ============================================================================
+# remove stream from section
+# ============================================================================
+sub _cmd_remove_stream_from_section {
+    my $self = shift;
+    return unless $Txt_stream_assigned;
+    my $id = __get_id( $self->_choices_stream_assigned, $Txt_stream_assigned );
+    $self->cb_remove_stream_from_section->( $self->section_id, $id );
+
+    $Txt_stream_assigned = "";
+    $self->_tk_stream_status->configure( -text => "Stream Removed" );
+    $self->_tk_stream_status->update;
+    $self->_tk_stream_status->bell;
+    $Changed = "Section Modified";
+}
+
+# ============================================================================
+# remove teacher from all blocks (remove teacher from section)
+# ============================================================================
+sub _cmd_remove_teacher_from_all_blocks {
+   my $self = shift;
+    return unless $Txt_teacher_assigned;
+    my $id =
+      __get_id( $self->_choices_teacher_assigned, $Txt_teacher_assigned );
+    $self->cb_remove_teacher_from_section->( $self->section_id, $id );
+
+    $Txt_teacher_assigned = "";
+    $self->_tk_teacher_status->configure( -text => "Teacher Removed" );
+    $self->_tk_teacher_status->bell;
+    $self->_tk_teacher_status->update;
+    $Changed = "Section Modified";
+}
+
+# ============================================================================
 # dialog closing, time to button up (ha ha)
 # ============================================================================
 sub _respond_to_dialog_closing {
     my $self   = shift;
-    my $answer = shift;
+    my $answer = shift || '';
 
     if ( $answer eq 'Delete' ) {
 
@@ -314,119 +469,6 @@ sub _respond_to_dialog_closing {
     return $Changed;
 }
 
-# ============================================================================
-# add blocks
-# ============================================================================
-sub _cmd_add_blocks {
-    my $self = shift;
-        my $block_hours = AddBlocksDialogTk->new($self->_tk_top_frame);
-
-    if (  $block_hours) {
-        $self->cb_add_blocks_to_section->($self->section_id,$block_hours);
-        $self->_tk_block_status->configure( -text => "Block(s) Added" );
-        $self->_tk_top_frame->bell;
-    }
-    else {
-        $self->_tk_block_status->configure( -text => "" );
-    }
-    $self->_tk_block_status->update;
-}
-
-# ============================================================================
-# remove block
-# ============================================================================
-sub _cmd_remove_block {
-    my $self = shift;
-    return unless $Txt_block;
-
-    my $id = __get_id( $self->_choices_block, $Txt_block );
-    print "removing block $id from section\n";
-    $self->cb_remove_block_from_section->($self->section_id,$id);
-
-    $self->_tk_block_dropdown->bell;
-    $self->_tk_block_status->configure( -text => "Block Removed" );
-    $self->_tk_block_status->bell;
-    $Changed = "Section Modified";
-}
-
-# ============================================================================
-# block edit
-# ============================================================================
-
-sub _cmd_block_edit {
-        my $self = shift;
-    return unless $Txt_block;
-    my $id = __get_id( $self->_choices_block, $Txt_block );
-    print "calling edit block\n";
-    $self->cb_edit_block->($self->section_id,$id);
-    
-}
-
-# ============================================================================
-# set teacher to all blocks
-# ============================================================================
-sub _cmd_set_teacher_to_all_blocks {
-    my $self = shift;
-    return unless $Txt_teacher;
-    my $id = __get_id( $self->_choices_teacher, $Txt_teacher );
-    $self->cb_add_teacher_to_section->( $self->section_id, $id );
-
-    $Txt_teacher = "";
-    $self->_tk_teacher_status->configure( -text => "Teacher Added" );
-    $self->_tk_teacher_status->bell;
-    $self->_tk_teacher_status->update;
-    $Changed = "Section Modified";
-}
-
-# ============================================================================
-# remove teacher from all blocks (remove teacher from section)
-# ============================================================================
-sub _cmd_remove_teacher_from_all_blocks {
-   my $self = shift;
-    return unless $Txt_teacher_assigned;
-    my $id =
-      __get_id( $self->_choices_teacher_assigned, $Txt_teacher_assigned );
-    $self->cb_remove_teacher_from_section->( $self->section_id, $id );
-
-    $Txt_teacher_assigned = "";
-    $self->_tk_teacher_status->configure( -text => "Teacher Removed" );
-    $self->_tk_teacher_status->bell;
-    $self->_tk_teacher_status->update;
-    $Changed = "Section Modified";
-}
-
-# ============================================================================
-# add stream to section
-# ============================================================================
-sub _cmd_add_stream_to_section {
-    my $self = shift;
-    return unless $Txt_stream;
-    my $id = __get_id( $self->_choices_stream, $Txt_stream );
-    $self->cb_add_stream_to_section->( $self->section_id, $id );
-
-    $Txt_stream = "";
-    $self->_tk_stream_status->configure( -text => "Stream Added" );
-    $self->_tk_stream_status->update;
-    $self->_tk_stream_status->bell;
-    $Changed = "Section Modified";
-}
-
-# ============================================================================
-# remove stream from section
-# ============================================================================
-sub _cmd_remove_stream_from_section {
-    my $self = shift;
-    return unless $Txt_stream_assigned;
-    my $id = __get_id( $self->_choices_stream_assigned, $Txt_stream_assigned );
-    $self->cb_remove_stream_from_section->( $self->section_id, $id );
-
-    $Txt_stream_assigned = "";
-    $self->_tk_stream_status->configure( -text => "Stream Removed" );
-    $self->_tk_stream_status->update;
-    $self->_tk_stream_status->bell;
-    $Changed = "Section Modified";
-}
-
 # ----------------------------------------------------------------------------
 # get id from hash used in JEntry boxes
 # ----------------------------------------------------------------------------
@@ -446,13 +488,13 @@ sub __setup {
       # setter/getters for various properties
       # ------------------------------------------------------------------------
 
-      _create_setters_and_getters(
+      __create_setters_and_getters(
           -category   => "section",
           -properties => [qw(id name)],
           -default    => ""
       );
 
-      _create_setters_and_getters(
+      __create_setters_and_getters(
           -category   => "_choices",
           -properties => [
               qw(stream_assigned stream teacher_assigned teacher
@@ -470,7 +512,7 @@ sub __setup {
             add_teacher_to_section add_block_to_section remove_block_from_section
             add_blocks_to_section )
       );
-      _create_setters_and_getters(
+      __create_setters_and_getters(
           -category   => "cb",
           -properties => \@callbacks,
           -default    => sub { print "Caller: caller()\n\n\n", die }
@@ -483,7 +525,7 @@ sub __setup {
           qw(top_frame block_status block_dropdown teacher_dropdown teacher_assigned_dropdown teacher_status
             stream_dropdown stream_assigned_dropdown stream_status)
       );
-      _create_setters_and_getters(
+      __create_setters_and_getters(
           -category   => "_tk",
           -properties => \@widgets,
           -default    => undef
@@ -497,7 +539,7 @@ sub __setup {
 # 1) cat_property
 # 2) cat_property_ptr
 # ============================================================================
-sub _create_setters_and_getters {
+sub __create_setters_and_getters {
 
       my %stuff   = @_;
       my $cat     = $stuff{-category};

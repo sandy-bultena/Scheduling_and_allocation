@@ -2,6 +2,21 @@
 use strict;
 use warnings;
 
+# =================================================================
+# Add sections dialog GUI
+# -----------------------------------------------------------------
+# Add Sections to a Course and add blocks to those sections.
+# -----------------------------------------------------------------
+# Inputs:
+#   frame
+# Returns:
+#   An array of section names
+#   An array of hours for each block
+#   - undef if Cancelled
+# Required Event Handlers:
+#   -none-
+# =================================================================
+
 package AddSectionDialogTk;
 
 use FindBin;
@@ -14,26 +29,18 @@ my $MAX_SECTIONS = 100;
 my $number_of_sections = "";
 my $inputframe;
 
-#==========================================================
-# Add Sections to a Course and add blocks to those sections.
-#==========================================================
-
-# ----------------------------------------------------------------------------
+# =================================================================
 # new
-# ----------------------------------------------------------------------------
+# =================================================================
 sub new {
     my $class = shift;
     $inputframe = shift;
     my $self = bless {}, $class;
+    my $number_of_sections = "";
 
-    return $self;
-}
-
-# ----------------------------------------------------------------------------
-# Show the main dialog
-# ----------------------------------------------------------------------------
-sub Show {
-    my $self            = shift;
+    # ------------------------------------------------------------------------
+    # Show the main dialog
+    # ------------------------------------------------------------------------
     my $db_num_sections = $inputframe->DialogBox(
         -title   => 'How Many Sections',
         -buttons => [ 'Ok', 'Cancel' ],
@@ -45,33 +52,33 @@ sub Show {
         'Entry',
         -textvariable    => \$number_of_sections,
         -validate        => 'key',
-        -validatecommand => \&is_integer,
+        -validatecommand => \&_is_integer,
         -invalidcommand  => sub { $inputframe->bell },
     )->pack( -fill => 'x', -padx => 5 );
 
     $db_num_sections->configure( -focus => $number_entry );
 
-   my $answer = "";
+    my $answer = "";
     $answer = $db_num_sections->Show() || "Cancel";
     $answer = "Cancel" unless $answer;
-    return $answer if $answer eq "Cancel";
+    return undef if $answer eq "Cancel";
 
     return $self->_process_the_sections();
 }
 
-# ----------------------------------------------------------------------------
-# names of sections to add
-# ----------------------------------------------------------------------------
-sub section_names {
-    my $self = shift;
-    $self->{-section_names} = shift if @_;
-    $self->{-section_names} = [] unless $self->{-section_names};
-    return $self->{-section_names};
+# =================================================================
+# validate that number be entered in a entry box is a whole number
+# (positive integer)
+# =================================================================
+sub _is_integer {
+    my $n = shift;
+    return 1 if $n =~ /^(\s*\d+\s*|)$/;
+    return 0;
 }
 
-# ----------------------------------------------------------------------------
+# =================================================================
 # process the sections
-# ----------------------------------------------------------------------------
+# =================================================================
 sub _process_the_sections {
     my $self = shift;
 
@@ -100,10 +107,10 @@ sub _process_the_sections {
     $scrolledframe->Label( -text => "Name the Sections (OPTIONAL)" )
       ->pack( -side => 'top' );
     foreach my $i ( 1 ... $number_of_sections ) {
-        push( @{ $self->section_names }, "" );
+        push( @{ $self->_section_names }, "" );
     }
-    
-    my $names = $self->section_names;
+
+    my $names = $self->_section_names;
 
     # create the entry boxes
     my $first_entry_box;
@@ -135,20 +142,17 @@ sub _process_the_sections {
     return undef if $answer eq 'Cancel';
 
     my $new_blocks = AddBlocksDialogTk->new($inputframe);
-    return $self->section_names, $new_blocks;
+    return $self->_section_names, $new_blocks;
 }
 
-
-
 # =================================================================
-# validate that number be entered in a entry box is a whole number
-# (positive integer)
+# names of sections to add
 # =================================================================
-sub is_integer {
-    my $n = shift;
-    return 1 if $n =~ /^(\s*\d+\s*|)$/;
-    return 0;
+sub _section_names {
+    my $self = shift;
+    $self->{-section_names} = shift if @_;
+    $self->{-section_names} = [] unless $self->{-section_names};
+    return $self->{-section_names};
 }
-
 
 1;

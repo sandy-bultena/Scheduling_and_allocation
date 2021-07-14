@@ -106,7 +106,6 @@ sub new {
     # define event handlers for EditCoursesTk
     # ---------------------------------------------------------------
     $Gui->cb_object_dropped_on_tree( \&_cb_object_dropped_on_tree );
-    $Gui->cb_trash( \&_cb_trash );
     $Gui->cb_edit_obj( \&_cb_edit_obj );
     $Gui->cb_new_course( \&_cb_new_course );
     $Gui->cb_show_teacher_stat( \&_cb_show_teacher_stat );
@@ -114,15 +113,15 @@ sub new {
     $Gui->cb_get_scheduable_menu_info( \&_cb_get_scheduable_menu );
 }
 
-###################################################################
-# modifying the schedule
-###################################################################
+# ===================================================================
+# method look up tables
+# ===================================================================
 
 my $s_ptr        = \$Schedule;
 my %Refresh_subs = (
-    course  => \&_refresh_course_gui,
-    section => \&_refresh_section_gui,
-    block   => \&_refresh_block_gui,
+    course   => \&_refresh_course_gui,
+    section  => \&_refresh_section_gui,
+    block    => \&_refresh_block_gui,
     schedule => \&_refresh_schedule_gui,
 );
 
@@ -136,17 +135,17 @@ my %Remove_subs = (
     teacher => sub { my $obj = shift; $obj->remove_teacher(shift); },
     lab     => sub { my $obj = shift; $obj->remove_lab(shift); },
     stream  => sub { my $obj = shift; $obj->remove_stream(shift); },
-    course => sub {my $obj = shift; $obj->courses->remove(shift);},
-    block => sub {my $obj = shift; $obj->remove_block(shift);},
-    section => sub {my $obj = shift; $obj->remove_section(shift);},
+    course  => sub { my $obj = shift; $obj->courses->remove(shift); },
+    block   => sub { my $obj = shift; $obj->remove_block(shift); },
+    section => sub { my $obj = shift; $obj->remove_section(shift); },
 );
 
 my %Remove_all_subs = (
-    teacher  => sub {my $obj = shift; $obj->remove_all_teachers(); },
-    lab => sub { my $obj = shift; $obj->remove_all_labs(); },
-    stream => sub { my $obj = shift; $obj->remove_all_streams(); },
-    section => sub {my $obj = shift; $obj->remove_all_sections(); },
-    block => sub {my $obj = shift; $obj->remove_all_blocks(); },
+    teacher => sub { my $obj = shift; $obj->remove_all_teachers(); },
+    lab     => sub { my $obj = shift; $obj->remove_all_labs(); },
+    stream  => sub { my $obj = shift; $obj->remove_all_streams(); },
+    section => sub { my $obj = shift; $obj->remove_all_sections(); },
+    block   => sub { my $obj = shift; $obj->remove_all_blocks(); },
 );
 my %Clear_all_subs = (
     course  => sub { $$s_ptr->clear_all_from_course(shift); },
@@ -154,15 +153,114 @@ my %Clear_all_subs = (
     block   => sub { $$s_ptr->clear_all_from_block(shift); },
 );
 
-sub remove_scheduable {
-    my $type = shift;
-    my $obj = shift;
-    $Schedule->remove_teacher($obj) if ($type eq 'teacher');
-    $Schedule->remove_lab($obj) if ($type eq 'lab');
-    $Schedule->remove_stream($obj) if ($type eq 'stream');
-    _refresh_schedule_gui();
+# =================================================================
+# add blocks to dialog
+# =================================================================
+sub add_blocks_dialog {
+    my $section = shift;
+    my $path    = shift;
+    my $course;
+    if ( $path =~ m:Schedule/Course(\d+)/: ) {
+        $course = $Schedule->courses->get($1);
+    }
+
+    my $block_hours = AddBlocksDialogTk->new($frame);
+    add_blocks_to_section( $course, $section, $block_hours );
+
+    EditCourses::_refresh_course_gui( $course,
+        "Schedule/Course" . $course->id );
+
+    EditCourses::set_dirty();
 }
 
+# =================================================================
+# add blocks to section
+# =================================================================
+sub add_blocks_to_section {
+    my $course      = shift;
+    my $section     = shift;
+    my $block_hours = shift;
+
+    # loop over blocks foreach section
+    foreach my $hours (@$block_hours) {
+        if ($hours) {
+            my $block_num = $section->get_new_number;
+            my $block = Block->new( -number => $block_num );
+            $block->duration($hours);
+            $section->add_block($block);
+        }
+    }
+
+    # update the guis
+    EditCourses::_refresh_section_gui( $section,
+        "Schedule/Course" . $course->id . "/Section" . $section->id );
+    EditCourses::set_dirty();
+
+}
+
+# =================================================================
+# add section dialog
+# =================================================================
+sub add_section_dialog {
+    my $course      = shift;
+    my $section_num = $course->get_new_number;    # gets a new section id
+    my $section     = Section->new(
+        -number => $section_num,
+        -hours  => 0,
+    );
+    $course->add_section($section);
+    EditCourses::_refresh_course_gui( $course,
+        "Schedule/Course" . $course->id );
+
+    my ( $section_names, $block_hours ) = AddSectionDialogTk->new($frame);
+    add_sections_with_blocks( $course->id, $section_names, $block_hours );
+
+    EditCourses::_refresh_course_gui( $course,
+        "Schedule/Course" . $course->id );
+
+    EditCourses::set_dirty();
+}
+
+# =================================================================
+# add section with blocks
+# =================================================================
+sub add_sections_with_blocks {
+    my $course        = shift;
+    my $section_names = shift;
+    my $block_hours   = shift || [];
+
+    return unless $section_names;
+
+    # loop over sections
+    foreach my $sec_name (@$section_names) {
+        my $section_num = $course->get_new_number;    # gets a new section id
+        my $section     = Section->new(
+            -number => $section_num,
+            -hours  => 0,
+            -name   => $sec_name,
+        );
+        $course->add_section($section);
+
+        # loop over blocks foreach section
+        foreach my $hours (@$block_hours) {
+            if ($hours) {
+                my $block_num = $section->get_new_number;
+                my $block = Block->new( -number => $block_num );
+                $block->duration($hours);
+                $section->add_block($block);
+            }
+        }
+    }
+
+    # update the guis
+    EditCourses::_refresh_course_gui( $course,
+        "Schedule/Course" . $course->id );
+    EditCourses::set_dirty();
+}
+
+# =================================================================
+# assign object 2 to to object 1
+# =================================================================
 sub assign_obj2_to_obj1 {
     my $obj1      = shift;
     my $obj2      = shift;
@@ -172,24 +270,9 @@ sub assign_obj2_to_obj1 {
     set_dirty();
 }
 
-sub remove_obj2_from_obj1 {
-    my $obj1 = shift;
-    my $obj2 = shift;
-    my $tree_path = shift;
-    $Remove_subs{ $$s_ptr->get_object_type($obj2) }->( $obj1, $obj2 );
-    $Refresh_subs{ $$s_ptr->get_object_type($obj1) }->( $obj1, $tree_path );
-    set_dirty();
-}
-
-sub remove_all_type_from_obj1 {
-    my $obj1      = shift;
-    my $type      = shift;
-    my $tree_path = shift;
-    $Remove_all_subs{ $type }->($obj1);
-    $Refresh_subs{ $$s_ptr->get_object_type($obj1)}->( $obj1, $tree_path );
-    set_dirty();
-}
-
+# =================================================================
+# clear all scheduables from object 1
+# =================================================================
 sub clear_all_from_obj1 {
     my $obj1      = shift;
     my $tree_path = shift;
@@ -198,47 +281,182 @@ sub clear_all_from_obj1 {
     set_dirty();
 }
 
-sub add_blocks_dialog {
-    print "not functional yet\n";
+# =================================================================
+# edit block dialog
+# =================================================================
+sub edit_block_dialog {
+    my $block = shift;
+    my $path  = shift;
+    my $course;
+    my $section;
+
+    if ( $path =~ m:Schedule/Course(\d+)/Section(\d+): ) {
+        $course  = $Schedule->courses->get($1);
+        $section = $course->get_section_by_id($2);
+    }
+    return unless $course && $section;
+
+    EditBlockDialog->new( $frame, $Schedule, $course, $section, $block );
+
+    _refresh_course_gui( $course, "Schedule/Course" . $course->id );
+
+    set_dirty();
 }
 
-sub edit_blocks_dialog {
-    print "not functional yet\n";
-}
-
-sub edit_section_dialog {
-    print "not functional yet\n";
-}
-
-sub add_section_dialog {
-    print "not functional yet\n";
-}
-
+# =================================================================
+# edit course dialog
+# =================================================================
 sub edit_course_dialog {
 
-    my $course   = shift;
-    print ref($course),"\n";
-    EditCourseDialog->new($frame,$Schedule,$course);
+    my $course = shift;
+    EditCourseDialog->new( $frame, $Schedule, $course );
 }
 
-sub new_course_dialog {
-    print "not yet implemented\n";
+# =================================================================
+# edit section dialog
+# =================================================================
+sub edit_section_dialog {
+    my $section = shift;
+    my $path    = shift;
+    my $course;
+    if ( $path =~ m:Schedule/Course(\d+)/: ) {
+
+        $course = $Schedule->courses->get($1);
+    }
+
+    EditSectionDialog->new( $frame, $Schedule, $course, $section );
 }
 
-###################################################################
-# Event handlers for EditCoursesTk
-###################################################################
+# =================================================================
+# remove all specified scheduable types from object 1
+# =================================================================
+sub remove_all_type_from_obj1 {
+    my $obj1      = shift;
+    my $type      = shift;
+    my $tree_path = shift;
+    $Remove_all_subs{$type}->($obj1);
+    $Refresh_subs{ $$s_ptr->get_object_type($obj1) }->( $obj1, $tree_path );
+    set_dirty();
+}
+
+# =================================================================
+# remove object2 from object 1
+# =================================================================
+sub remove_obj2_from_obj1 {
+    my $obj1      = shift;
+    my $obj2      = shift;
+    my $tree_path = shift;
+    $Remove_subs{ $$s_ptr->get_object_type($obj2) }->( $obj1, $obj2 );
+    $Refresh_subs{ $$s_ptr->get_object_type($obj1) }->( $obj1, $tree_path );
+    set_dirty();
+}
+
+# =================================================================
+# remove scheduable (teacher/lab/stream)
+# =================================================================
+sub remove_scheduable {
+    my $type = shift;
+    my $obj  = shift;
+    $Schedule->remove_teacher($obj) if ( $type eq 'teacher' );
+    $Schedule->remove_lab($obj)     if ( $type eq 'lab' );
+    $Schedule->remove_stream($obj)  if ( $type eq 'stream' );
+    _refresh_schedule_gui();
+}
+
+# =================================================================
+# set dirty flag
+# =================================================================
+sub set_dirty {
+    $$Dirty_ptr = 1;
+    $Views_manager->redraw_all_views if $Views_manager;
+}
+
+# ===================================================================
+# add lab to tree
+# ===================================================================
+sub _add_lab_to_gui {
+    my $l        = shift;
+    my $path     = shift;
+    my $not_hide = shift;
+
+    my $l_id = $l . $l->id;
+
+    #no warnings;
+    $Gui->add(
+        "$path/$l_id",
+        -text => "Lab: " . $l->number . " " . $l->descr,
+        -data => { -obj => $l }
+    );
+
+}
+
+# ===================================================================
+# add teacher to the tree
+# ===================================================================
+sub _add_teacher_to_gui {
+    my $t        = shift;
+    my $path     = shift;
+    my $not_hide = shift || 0;
+
+    my $t_id = "Teacher" . $t->id;
+    $Gui->add(
+        "$path/$t_id",
+        -text => "Teacher: $t",
+        -data => { -obj => $t }
+    );
+}
+
+# =================================================================
+# edit/modify a schedule object
+# =================================================================
+sub _cb_edit_obj {
+    my $obj  = shift;
+    my $path = shift;
+
+    my $obj_type = $Schedule->get_object_type($obj);
+
+    if ( $obj_type eq 'course' ) {
+        edit_course_dialog( $obj, $path );
+    }
+    elsif ( $obj_type eq 'section' ) {
+        edit_section_dialog( $obj, $path );
+    }
+    elsif ( $obj_type eq 'block' ) {
+        edit_block_dialog( $obj, $path );
+    }
+    elsif ( $obj_type eq 'teacher' ) {
+        _cb_show_teacher_stat( $obj->id );
+    }
+    else {
+        $Gui->alert;
+    }
+}
+
+# =================================================================
+# get tree menu
+# =================================================================
 sub _cb_get_tree_menu {
     return DynamicMenus::create_tree_menus( $Schedule, @_ );
 }
 
+# =================================================================
+# get scheduable menu
+# =================================================================
 sub _cb_get_scheduable_menu {
     return DynamicMenus::show_scheduable_menu( $Schedule, @_ );
 }
 
+# ============================================================================================
+# Create a new course
+# ============================================================================================
+sub _cb_new_course {
+    my $course = Course->new( -number => "", -name => "" );
+    $Schedule->courses->add($course);
+    EditCourseDialog->new( $frame, $Schedule, $course );
+}
+
 # =================================================================
-# _cb_object_dropped_on_tree
-# - assign resource to schedule object
+# object dropped on tree
 # =================================================================
 sub _cb_object_dropped_on_tree {
     my $dragged_object_type = shift;
@@ -295,51 +513,6 @@ sub _cb_object_dropped_on_tree {
 
 }
 
-# =================================================================
-# edit/modify a schedule object
-# =================================================================
-sub _cb_edit_obj {
-    my $obj  = shift;
-    my $path = shift;
-
-    my $obj_type = $Schedule->get_object_type($obj);
-
-    if ( $obj_type eq 'course' ) {
-        edit_course_dialog( $obj, $path );
-    }
-    elsif ( $obj_type eq 'section' ) {
-        edit_section_dialog( $obj, $path );
-    }
-    elsif ( $obj_type eq 'block' ) {
-        edit_block_dialog( $obj, $path );
-    }
-    elsif ( $obj_type eq 'teacher' ) {
-        _cb_show_teacher_stat( $obj->id );
-    }
-    else {
-        $Gui->alert;
-    }
-}
-
-# ============================================================================================
-# Create a new course
-# ============================================================================================
-sub _cb_new_course {
-
-    # make dialog box for editing
-    my $edit_dialog = _new_course_dialog($frame);
-
-    # empty dialog box
-    $edit_dialog->{-number}->configure( -text => '' );
-    $edit_dialog->{-name}->configure( -text => '' );
-    $edit_dialog->{-sections}->configure( -text => 1 );
-    $edit_dialog->{-hours}[0]->configure( -text => 1.5 );
-
-    # show and populate
-    $edit_dialog->{-toplevel}->raise();
-
-}
-
 #===============================================================
 # Show Teacher Stats
 #===============================================================
@@ -350,15 +523,11 @@ sub _cb_show_teacher_stat {
     $Gui->show_message( "$teacher", $Schedule->teacher_stat($teacher) );
 }
 
-###################################################################
-# refresh the gui with shedule data
-###################################################################
-
 # ===================================================================
 # labs/teachers/streams list
 # ===================================================================
 sub _refresh_scheduable_lists {
-    
+
     my @teacher;
     foreach
       my $teacher ( sort { &_sort_by_teacher_name } $Schedule->teachers->list )
@@ -402,10 +571,10 @@ sub _refresh_schedule_gui {
         );
         _refresh_course_gui( $course, $newpath );
     }
-    
+
     # refresh lists
-     _refresh_scheduable_lists();
-    
+    _refresh_scheduable_lists();
+
 }
 
 # ===================================================================
@@ -484,52 +653,6 @@ sub _refresh_block_gui {
 
     #$tree->hide( 'entry', $path ) unless $not_hide;
     #$tree->autosetmode();
-}
-
-# ===================================================================
-# add teacher to the tree
-# ===================================================================
-sub _add_teacher_to_gui {
-    my $t        = shift;
-    my $path     = shift;
-    my $not_hide = shift || 0;
-
-    my $t_id = "Teacher" . $t->id;
-    $Gui->add(
-        "$path/$t_id",
-        -text => "Teacher: $t",
-        -data => { -obj => $t }
-    );
-
-    #$tree->hide( 'entry', "$path/$t_id" ) unless $not_hide;
-    #$tree->autosetmode();
-}
-
-# ===================================================================
-# add lab to tree
-# ===================================================================
-sub _add_lab_to_gui {
-    my $l        = shift;
-    my $path     = shift;
-    my $not_hide = shift;
-
-    my $l_id = $l . $l->id;
-
-    #no warnings;
-    $Gui->add(
-        "$path/$l_id",
-        -text => "Lab: " . $l->number . " " . $l->descr,
-        -data => { -obj => $l }
-    );
-
-}
-
-# =================================================================
-# set dirty flag
-# =================================================================
-sub set_dirty {
-    $$Dirty_ptr = 1;
-    $Views_manager->redraw_all_views if $Views_manager;
 }
 
 ###################################################################

@@ -112,12 +112,6 @@ sub remove {
 
     $course->delete();
     
-    foreach my $course ( $self->list ) {
-        print $course->number; 
-        print "\t"
-    }
-    print "\n-------\n";
-
     return $self;
 }
 

@@ -4,6 +4,43 @@ use warnings;
 
 package EditBlockDialogTk;
 
+# =================================================================
+# Edit block dialog GUI
+# -----------------------------------------------------------------
+# INPUTS:
+#   frame
+#   title
+#   block_id
+#   current duration of block
+#
+# METHODS:
+#   Show - shows the dialog box
+#
+#   update_teacher_choices
+#       inputs: hash of all teachers {teacher_id => teacher_name}
+#               hash of teachers assigned to this block {teacher_id => teacher_name}
+#
+#   update_lab_choices
+#       inputs: hash of all lab {lab_id => lab_number}
+#               hash of lab assigned to this block {lab_id => lab_number}
+#
+# RETURNS:
+#   A string indicating what action was taken
+#
+# REQUIRED EVENT HANDLERS:
+#   cb_remove_block_by_id           (block_id)
+#   cb_change_block_duration        (block_id, hours)
+#   cb_add_teacher_to_block         (block_id, teacher_id)
+#   cb_remove_teacher_from_block    (block_id, teacher_id)
+#   cb_add_lab_to_block             (block_id, lab_id)
+#   cb_remove_lab_from_block        (block_id, lab_id)
+#
+# NOTES:
+#   All changes occur when appropriate buttons are clicked.
+#   The block duration will be updated only when the dialog is closed.
+# =================================================================
+
+
 my $Txt_lab;
 my $Txt_lab_assigned;
 my $Txt_teacher_assigned;
@@ -21,13 +58,13 @@ __setup();
 # new
 # ============================================================================
 sub new {
-    my $class          = shift;
-    my $frame          = shift;
-    my $title          = shift;
-    my $block_id       = shift;
+    my $class    = shift;
+    my $frame    = shift;
+    my $title    = shift;
+    my $block_id = shift;
     $Txt_block_duration = shift;
-    my $self           = bless {}, $class;
-    
+    my $self = bless {}, $class;
+
     $self->block_duration($Txt_block_duration);
     $self->block_id($block_id);
     $self->_tk_top_frame($frame);
@@ -163,10 +200,11 @@ sub new {
     $top->Label(
         -text   => 'Remove Resource',
         -anchor => 'w'
-    )->grid( $self->_tk_lab_assigned_dropdown, '-', $remove_lab_btn, -sticky => 'nsew' );
+      )->grid( $self->_tk_lab_assigned_dropdown,
+        '-', $remove_lab_btn, -sticky => 'nsew' );
 
-    $self->_tk_lab_status (
-      $top->Label( -text => "" )->grid( -columnspan => 4, -sticky => 'n' ));
+    $self->_tk_lab_status(
+        $top->Label( -text => "" )->grid( -columnspan => 4, -sticky => 'n' ) );
 
     #--------------------------------------------------------
     # layout
@@ -181,6 +219,7 @@ sub new {
     return $self;
 
 }
+
 # ============================================================================
 # Show Dialog box
 # ============================================================================
@@ -195,34 +234,23 @@ sub Show {
 }
 
 # ============================================================================
-# respond to dialog closing
+# update lab choices
 # ============================================================================
-sub _respond_to_dialog_closing {
-    my $self = shift;
-    my $answer = shift;
- 
-     if ( $answer eq 'Delete' ) {
+sub update_lab_choices {
+    my $self                 = shift;
+    my $choices_lab          = shift;
+    my $choices_lab_assigned = shift;
 
-        my $sure = $self->_tk_top_frame->DialogBox(
-            -title   => "Delete?",
-            -buttons => [ 'Yes', 'NO' ]
-        );
+    $self->_choices_lab($choices_lab);
+    $self->_tk_lab_dropdown->configure( -choices => $choices_lab );
+    $self->_tk_lab_dropdown->update;
+    $Txt_lab = "";
 
-        $sure->Label( -text => "Are you Sure You\nWant To Delete?" )->pack;
-
-        my $answer2 = $sure->Show();
-        $answer2 = "NO" unless $answer2;
-        return "continue" if $answer2 eq "NO";
-        $self->cb_remove_block_by_id->( $self->block_id );
-        return 'Block Deleted';
-
-    }
-    if ( $self->block_duration ne $Txt_block_duration ) {
-        $self->cb_change_block_duration->(
-            $self->block_id, $Txt_block_duration
-        );
-    }
-    return $Changed;
+    $self->_choices_lab_assigned($choices_lab_assigned);
+    $self->_tk_lab_assigned_dropdown->configure(
+        -choices => $choices_lab_assigned );
+    $self->_tk_lab_assigned_dropdown->update;
+    $Txt_lab_assigned = "";
 }
 
 # ============================================================================
@@ -246,25 +274,20 @@ sub update_teacher_choices {
 }
 
 # ============================================================================
-# update lab choices
+# add lab to block
 # ============================================================================
-sub update_lab_choices {
-    my $self                    = shift;
-    my $choices_lab          = shift;
-    my $choices_lab_assigned = shift;
+sub _cmd_add_lab_to_block {
+    my $self = shift;
+    return unless $Txt_lab;
+    my $id = __get_id( $self->_choices_lab, $Txt_lab );
+    $self->cb_add_lab_to_block->( $self->block_id, $id );
 
-    $self->_choices_lab($choices_lab);
-    $self->_tk_lab_dropdown->configure( -choices => $choices_lab );
-    $self->_tk_lab_dropdown->update;
     $Txt_lab = "";
-
-    $self->_choices_lab_assigned($choices_lab_assigned);
-    $self->_tk_lab_assigned_dropdown->configure(
-        -choices => $choices_lab_assigned );
-    $self->_tk_lab_assigned_dropdown->update;
-    $Txt_lab_assigned = "";
+    $self->_tk_lab_status->configure( -text => "Lab Added" );
+    $self->_tk_lab_status->bell;
+    $self->_tk_lab_status->update;
+    $Changed = "Block Modified";
 }
-
 
 # ============================================================================
 # add teacher to block
@@ -283,10 +306,26 @@ sub _cmd_add_teacher_to_block {
 }
 
 # ============================================================================
+# remove lab from block
+# ============================================================================
+sub _cmd_remove_lab_from_block {
+    my $self = shift;
+    return unless $Txt_lab_assigned;
+    my $id = __get_id( $self->_choices_lab_assigned, $Txt_lab_assigned );
+    $self->cb_remove_lab_from_block->( $self->block_id, $id );
+
+    $Txt_lab_assigned = "";
+    $self->_tk_lab_status->configure( -text => "Lab Removed" );
+    $self->_tk_lab_status->bell;
+    $self->_tk_lab_status->update;
+    $Changed = "Block Modified";
+}
+
+# ============================================================================
 # remove teacher from block
 # ============================================================================
 sub _cmd_remove_teacher_from_block {
-   my $self = shift;
+    my $self = shift;
     return unless $Txt_teacher_assigned;
     my $id =
       __get_id( $self->_choices_teacher_assigned, $Txt_teacher_assigned );
@@ -300,57 +339,55 @@ sub _cmd_remove_teacher_from_block {
 
 }
 
-# ============================================================================
-# add lab to block
-# ============================================================================
-sub _cmd_add_lab_to_block {
-    my $self = shift;
-    return unless $Txt_lab;
-    my $id = __get_id( $self->_choices_lab, $Txt_lab );
-    $self->cb_add_lab_to_block->( $self->block_id, $id );
-
-    $Txt_lab = "";
-    $self->_tk_lab_status->configure( -text => "Lab Added" );
-    $self->_tk_lab_status->bell;
-    $self->_tk_lab_status->update;
-    $Changed = "Block Modified";
-}
-
-# ============================================================================
-# remove lab from block
-# ============================================================================
-sub _cmd_remove_lab_from_block {
-   my $self = shift;
-    return unless $Txt_lab_assigned;
-    my $id =
-      __get_id( $self->_choices_lab_assigned, $Txt_lab_assigned );
-    $self->cb_remove_lab_from_block->( $self->block_id, $id );
-
-    $Txt_lab_assigned = "";
-    $self->_tk_lab_status->configure( -text => "Lab Removed" );
-    $self->_tk_lab_status->bell;
-    $self->_tk_lab_status->update;
-    $Changed = "Block Modified";
-}
-
 # =================================================================
 # validate that number be entered in a entry box is a real number
 # (positive real number)
 # =================================================================
 sub _is_number {
-	my $n = shift;
-	return 1 if $n =~ (/^(\s*\d*\.?\d*\s*|)$/);
-	return 0;
+    my $n = shift;
+    return 1 if $n =~ (/^(\s*\d*\.?\d*\s*|)$/);
+    return 0;
+}
+
+# ============================================================================
+# respond to dialog closing
+# ============================================================================
+sub _respond_to_dialog_closing {
+    my $self   = shift;
+    my $answer = shift;
+
+    if ( $answer eq 'Delete' ) {
+
+        my $sure = $self->_tk_top_frame->DialogBox(
+            -title   => "Delete?",
+            -buttons => [ 'Yes', 'NO' ]
+        );
+
+        $sure->Label( -text => "Are you Sure You\nWant To Delete?" )->pack;
+
+        my $answer2 = $sure->Show();
+        $answer2 = "NO" unless $answer2;
+        return "continue" if $answer2 eq "NO";
+        $self->cb_remove_block_by_id->( $self->block_id );
+        return 'Block Deleted';
+
+    }
+    if ( $self->block_duration ne $Txt_block_duration ) {
+        $self->cb_change_block_duration->(
+            $self->block_id, $Txt_block_duration
+        );
+    }
+    return $Changed;
 }
 
 # ----------------------------------------------------------------------------
 # get id from hash used in JEntry boxes
 # ----------------------------------------------------------------------------
 sub __get_id {
-      my $hash    = shift;
-      my $name    = shift;
-      my %reverse = reverse %$hash;
-      return $reverse{$name};
+    my $hash    = shift;
+    my $name    = shift;
+    my %reverse = reverse %$hash;
+    return $reverse{$name};
 }
 
 # ============================================================================
@@ -362,18 +399,16 @@ sub __setup {
     # setter/getters for various properties
     # ------------------------------------------------------------------------
 
-    _create_setters_and_getters(
+    __create_setters_and_getters(
         -category   => "block",
         -properties => [qw(id duration)],
         -default    => ""
     );
 
-    _create_setters_and_getters(
+    __create_setters_and_getters(
         -category   => "_choices",
-        -properties => [
-            qw(lab_assigned lab teacher_assigned teacher)
-        ],
-        -default => ""
+        -properties => [ qw(lab_assigned lab teacher_assigned teacher) ],
+        -default    => ""
     );
 
     # ------------------------------------------------------------------------
@@ -384,7 +419,7 @@ sub __setup {
           add_lab_to_block remove_lab_from_block remove_teacher_from_block
           add_teacher_to_block )
     );
-    _create_setters_and_getters(
+    __create_setters_and_getters(
         -category   => "cb",
         -properties => \@callbacks,
         -default    => sub { print "Caller: caller()\n\n\n", die }
@@ -397,7 +432,7 @@ sub __setup {
         qw(top_frame block_status block_dropdown teacher_dropdown teacher_assigned_dropdown teacher_status
           lab_dropdown lab_assigned_dropdown lab_status)
     );
-    _create_setters_and_getters(
+    __create_setters_and_getters(
         -category   => "_tk",
         -properties => \@widgets,
         -default    => undef
@@ -411,7 +446,7 @@ sub __setup {
 # 1) cat_property
 # 2) cat_property_ptr
 # ============================================================================
-sub _create_setters_and_getters {
+sub __create_setters_and_getters {
 
     my %stuff   = @_;
     my $cat     = $stuff{-category};

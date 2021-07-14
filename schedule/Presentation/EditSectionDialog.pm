@@ -2,6 +2,24 @@
 use strict;
 use warnings;
 
+# ============================================================================
+# Create and manage the EditSectionDialog
+#
+# - provides callback methods for EditSectionDialogTk
+#
+# INPUTS:
+#   frame       - a gui object that can be used as a container
+#   schedule    - the schedule object
+#   course      - the course that the section belongs to
+#   section     - the section to be edited
+#
+# METHODS:
+#   - none -
+#
+# ============================================================================
+# NOTE: this module is dependent on functions in EditCourses
+# ============================================================================
+
 package EditSectionDialog;
 use FindBin;
 use Carp;
@@ -12,13 +30,16 @@ use Presentation::EditBlockDialog;
 
 my $Schedule;
 my $Gui;
-my $Course; 
+my $Course;
 my $Section;
 my $frame;
 
+# ============================================================================
+# constructor
+# ============================================================================
 sub new {
     my $class = shift;
-    $frame = shift;
+    $frame    = shift;
     $Schedule = shift;
     $Course   = shift;
     $Section  = shift;
@@ -28,8 +49,8 @@ sub new {
     # ------------------------------------------------------------------------
     # make dialog box
     # ------------------------------------------------------------------------
-    $Gui = EditSectionDialogTk->new( $frame, $Course->name, $Section->id, 
-     $Section->name);
+    $Gui = EditSectionDialogTk->new( $frame, $Course->name, $Section->id,
+        $Section->name );
 
     _update_stream_choices();
     _update_teacher_choices();
@@ -43,9 +64,9 @@ sub new {
     $Gui->cb_remove_stream_from_section( \&_cb_remove_stream_from_section );
     $Gui->cb_remove_teacher_from_section( \&_cb_remove_teacher_from_section );
     $Gui->cb_add_teacher_to_section( \&_cb_add_teacher_to_section );
-    $Gui->cb_edit_block(\&_cb_edit_block);
-    $Gui->cb_remove_block_from_section(\&_cb_remove_block_from_section);
-    $Gui->cb_add_blocks_to_section(\&_cb_add_blocks_to_section);
+    $Gui->cb_edit_block( \&_cb_edit_block );
+    $Gui->cb_remove_block_from_section( \&_cb_remove_block_from_section );
+    $Gui->cb_add_blocks_to_section( \&_cb_add_blocks_to_section );
 
     $Gui->Show();
 }
@@ -55,57 +76,45 @@ sub new {
 # ============================================================================
 sub _cb_add_blocks_to_section {
     my $section_id = shift;
-    my $block_hours   = shift || [];
- 
+    my $block_hours = shift || [];
+
     my $section = $Course->get_section_by_id($section_id);
     return unless $section;
-    
- 
-        # loop over blocks foreach section
-        foreach my $hours (@$block_hours) {
-            if ($hours) {
-                my $block_num = $section->get_new_number;
-                my $block = Block->new( -number => $block_num );
-                $block->duration($hours);
-                $section->add_block($block);
-            }
-    }
-
-    # update the guis
-    EditCourses::_refresh_section_gui( $section, "Schedule/Course" . $Course->id.
-    "/Section".$section_id );
-    EditCourses::set_dirty();
+    EditCourses::add_blocks_to_section( $Course, $section, $block_hours );
     _update_block_choices();
 
 }
 
+# ============================================================================
+# add stream to section
+# ============================================================================
+sub _cb_add_stream_to_section {
+    my $section_id = shift;
+    my $stream_id  = shift;
+    my $section    = $Course->get_section_by_id($section_id);
+    return unless $section;
+    my $stream = $Schedule->streams->get_by_id($stream_id);
+    $section->assign_stream($stream);
+    EditCourses::_refresh_section_gui( $section,
+        "Schedule/Course" . $Course->id . "/Section" . $section_id );
+    EditCourses::set_dirty();
+    _update_stream_choices();
+}
 
 # ============================================================================
-# remove section
+# add teacher to section
 # ============================================================================
-sub _cb_remove_section_by_id {
+sub _cb_add_teacher_to_section {
     my $section_id = shift;
-    my $section = $Course->get_section_by_id($section_id);
+    my $teacher_id = shift;
+    my $section    = $Course->get_section_by_id($section_id);
     return unless $section;
-    $Course->remove_section($section);
-    EditCourses::_refresh_course_gui( $Course,
-        "Schedule/Course" . $Course->id );
+    my $teacher = $Schedule->teachers->get($teacher_id);
+    $section->assign_teacher($teacher);
+    EditCourses::_refresh_section_gui( $section,
+        "Schedule/Course" . $Course->id . "/Section" . $section_id );
     EditCourses::set_dirty();
-}
-# ============================================================================
-# remove block from section
-# ============================================================================
-sub _cb_remove_block_from_section {
-    my $section_id = shift;
-    my $block_id = shift;
-    my $section = $Course->get_section_by_id($section_id);
-    return unless $section;
-    my $block = $section->get_block_by_id($block_id);
-    $section->remove_block($block);
-    EditCourses::_refresh_section_gui( $section, "Schedule/Course" . $Course->id
-    ."/Section".$section_id );
-    EditCourses::set_dirty();
-    _update_block_choices();
+    _update_teacher_choices();
 }
 
 # ============================================================================
@@ -113,8 +122,8 @@ sub _cb_remove_block_from_section {
 # ============================================================================
 sub _cb_change_section_name_by_id {
     my $section_id = shift;
-    my $name = shift;
-    my $section = $Course->get_section_by_id($section_id);
+    my $name       = shift;
+    my $section    = $Course->get_section_by_id($section_id);
     return unless $section;
     $section->name($name);
     EditCourses::_refresh_course_gui( $Course,
@@ -122,6 +131,81 @@ sub _cb_change_section_name_by_id {
     EditCourses::set_dirty();
 }
 
+# ============================================================================
+# edit_block
+# ============================================================================
+sub _cb_edit_block {
+    my $section_id = shift;
+    my $block_id   = shift;
+    my $section    = $Course->get_section_by_id($section_id);
+    return unless $section;
+    my $block = $section->get_block_by_id($block_id);
+
+    my $edit_block =
+      EditBlockDialog->new( $frame, $Schedule, $Course, $Section, $block );
+    _update_block_choices();
+}
+
+# ============================================================================
+# remove block from section
+# ============================================================================
+sub _cb_remove_block_from_section {
+    my $section_id = shift;
+    my $block_id   = shift;
+    my $section    = $Course->get_section_by_id($section_id);
+    return unless $section;
+    my $block = $section->get_block_by_id($block_id);
+    $section->remove_block($block);
+    EditCourses::_refresh_section_gui( $section,
+        "Schedule/Course" . $Course->id . "/Section" . $section_id );
+    EditCourses::set_dirty();
+    _update_block_choices();
+}
+
+# ============================================================================
+# remove section
+# ============================================================================
+sub _cb_remove_section_by_id {
+    my $section_id = shift;
+    my $section    = $Course->get_section_by_id($section_id);
+    return unless $section;
+    $Course->remove_section($section);
+    EditCourses::_refresh_course_gui( $Course,
+        "Schedule/Course" . $Course->id );
+    EditCourses::set_dirty();
+}
+
+# ============================================================================
+# remove stream from section
+# ============================================================================
+sub _cb_remove_stream_from_section {
+    my $section_id = shift;
+    my $stream_id  = shift;
+    my $section    = $Course->get_section_by_id($section_id);
+    return unless $section;
+    my $stream = $Schedule->streams->get_by_id($stream_id);
+    $section->remove_stream($stream);
+    EditCourses::_refresh_section_gui( $section,
+        "Schedule/Course" . $Course->id . "/Section" . $section_id );
+    EditCourses::set_dirty();
+    _update_stream_choices();
+}
+
+# ============================================================================
+# remove teacher from section
+# ============================================================================
+sub _cb_remove_teacher_from_section {
+    my $section_id = shift;
+    my $teacher_id = shift;
+    my $section    = $Course->get_section_by_id($section_id);
+    return unless $section;
+    my $teacher = $Schedule->teachers->get($teacher_id);
+    $section->remove_teacher($teacher);
+    EditCourses::_refresh_section_gui( $section,
+        "Schedule/Course" . $Course->id . "/Section" . $section_id );
+    EditCourses::set_dirty();
+    _update_teacher_choices();
+}
 
 # ============================================================================
 # update stream choices
@@ -170,85 +254,6 @@ sub _update_teacher_choices {
     }
     $Gui->update_teacher_choices( \%teacherName, \%teacherNameO );
 
-}
-
-
-# ============================================================================
-# edit_block
-# ============================================================================
-sub _cb_edit_block {
-    my $section_id  = shift;
-    my $block_id = shift;
-    my $section = $Course->get_section_by_id($section_id);
-    return unless $section;
-    my $block = $section->get_block_by_id($block_id);
-
-    my $edit_block = EditBlockDialog->new($frame,$Schedule,$Course,$Section,$block);
-    _update_block_choices();
-}
-
-# ============================================================================
-# remove teacher from section
-# ============================================================================
-sub _cb_remove_teacher_from_section {
-    my $section_id  = shift;
-    my $teacher_id = shift;
-    my $section = $Course->get_section_by_id($section_id);
-    return unless $section;
-    my $teacher = $Schedule->teachers->get($teacher_id);
-    $section->remove_teacher($teacher);
-    EditCourses::_refresh_section_gui( $section, "Schedule/Course" . $Course->id
-    ."/Section".$section_id );
-    EditCourses::set_dirty();
-    _update_teacher_choices();
-}
-
-# ============================================================================
-# remove stream from section
-# ============================================================================
-sub _cb_remove_stream_from_section {
-    my $section_id = shift;
-    my $stream_id = shift;
-    my $section = $Course->get_section_by_id($section_id);
-    return unless $section;
-    my $stream = $Schedule->streams->get_by_id($stream_id);
-    $section->remove_stream($stream);
-    EditCourses::_refresh_section_gui( $section, "Schedule/Course" . $Course->id
-    ."/Section".$section_id );
-    EditCourses::set_dirty();
-    _update_stream_choices();
-}
-
-# ============================================================================
-# add teacher to section
-# ============================================================================
-sub _cb_add_teacher_to_section {
-    my $section_id  = shift;
-    my $teacher_id = shift;
-    my $section = $Course->get_section_by_id($section_id);
-    return unless $section;
-    my $teacher = $Schedule->teachers->get($teacher_id);
-    $section->assign_teacher($teacher);
-    EditCourses::_refresh_section_gui( $section, "Schedule/Course" . $Course->id
-    ."/Section".$section_id );
-    EditCourses::set_dirty();
-    _update_teacher_choices();
-}
-
-# ============================================================================
-# add stream to section
-# ============================================================================
-sub _cb_add_stream_to_section {
-    my $section_id = shift;
-    my $stream_id = shift;
-    my $section = $Course->get_section_by_id($section_id);
-    return unless $section;
-    my $stream = $Schedule->streams->get_by_id($stream_id);
-    $section->assign_stream($stream);
-    EditCourses::_refresh_section_gui( $section, "Schedule/Course" . $Course->id
-    ."/Section".$section_id );
-    EditCourses::set_dirty();
-    _update_stream_choices();
 }
 
 1;

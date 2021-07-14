@@ -637,7 +637,7 @@ sub update_overview {
 sub update_edit_courses {
     my $self = shift;
     my $f = $Gui->get_notebook_page( $Scheduler::Pages_lookup{Courses}->name );
-    EditCourses->new( $f, $Schedule, $Dirtyflag, $Views_manager );
+    EditCourses->new( $f, $Schedule, \$Dirtyflag, $Views_manager );
 }
 
 # ==================================================================

@@ -2,6 +2,52 @@
 use strict;
 use warnings;
 
+# =================================================================
+# Edit course dialog GUI
+# -----------------------------------------------------------------
+# INPUTS:
+#   frame
+#   course id
+#   course number
+#   course name
+#   needs allocation flag
+#
+# METHODS:
+#   Show - shows the dialog box
+#
+#   update_teacher_choices
+#       inputs: hash of all teachers {teacher_id => teacher_name}
+#               hash of teachers assigned to this course {teacher_id => teacher_name}
+#
+#   update_section_choices
+#       inputs: hash of sections assigned to this course {section_id => section_number}
+#
+#   update_stream_choices
+#       inputs: hash of all streams {stream_id => stream_name}
+#               hash of streams assigned to this course {stream_id => stream_number}
+#
+# RETURNS:
+#   A string indicating what action was taken
+#
+# REQUIRED EVENT HANDLERS:
+#   cb_set_allocation               (bool)
+#   cb_remove_course_by_id          (course_id)
+#   cb_change_course_name_by_id     (course_id, name)
+#   cb_change_course_number_by_id   (course_id, number)
+#   cb_is_course_num_unique         (new course number)
+#   cb_edit_section                 (course_id, section_id)
+#   cb_edit_section                 (course_id) # create new section before editing
+#   cb_add_sections_with_blocks     (course_id, array or section names, array of block hours)
+#   cb_add_teacher_to_course        (course_id, teacher_id)
+#   cb_remove_teacher_from_course   (course_id, teacher_id)
+#   cb_add_stream_to_course         (course_id, stream_id)
+#   cb_remove_stream_from_course    (course_id, stream_id)
+#
+# NOTES:
+#   All changes occur when appropriate buttons are clicked.
+#   The course number and name will be updated only when the dialog is closed.
+# =================================================================
+
 package EditCourseDialogTk;
 use FindBin;
 use Carp;
@@ -9,7 +55,10 @@ use lib "$FindBin::Bin/..";
 
 use GUI::AddSectionDialogTk;
 
-my $Txt_course_num;
+# =================================================================
+# variables bound to entry boxes
+# =================================================================
+my $Txt_course_number;
 my $Txt_course_name;
 my $Txt_stream;
 my $Txt_stream_assigned;
@@ -18,21 +67,27 @@ my $Txt_teacher;
 my $Txt_section;
 my $Bool_needs_allocation;
 
+# =================================================================
+# global
+# =================================================================
 my $Edit_dialog;
 
 __setup();
 
+# =================================================================
+# constructor
+# =================================================================
 sub new {
     my $class     = shift;
     my $frame     = shift;
     my $course_id = shift;
-    $Txt_course_num        = shift;
+    $Txt_course_number     = shift;
     $Txt_course_name       = shift;
     $Bool_needs_allocation = shift;
 
     my $self = bless {};
     $self->course_id($course_id);
-    $self->course_number($Txt_course_num);
+    $self->course_number($Txt_course_number);
     $self->course_name($Txt_course_name);
 
     #---------------------------------------------------
@@ -54,11 +109,12 @@ sub new {
     # Course # Entry widget
     $self->_tk_entry_course_number(
         $Edit_dialog->Entry(
-            -textvariable    => \$Txt_course_num,
+            -textvariable    => \$Txt_course_number,
             -validate        => 'key',
             -validatecommand => [ \&_cmd_validate_course_number, $self ],
         )
     );
+    _cmd_validate_course_number( $self, $Txt_course_number );
 
     $self->_tk_top_frame->Label( -text => "Course Number", -anchor => 'w' )
       ->grid( $self->_tk_entry_course_number, '-', '-', -sticky => "nsew" );
@@ -291,28 +347,22 @@ sub Show() {
     while ( $answer ne "Close" ) {
         $answer = $Edit_dialog->Show();
         $answer = "Close" unless $answer;
+        $answer = "Delete" unless $Txt_course_number;
         $answer = $self->_respond_to_dialog_closing($answer);
     }
 }
 
 # ============================================================================
-# update teacher choices
+# update section choices
 # ============================================================================
-sub update_teacher_choices {
-    my $self                     = shift;
-    my $choices_teacher          = shift;
-    my $choices_teacher_assigned = shift;
+sub update_section_choices {
+    my $self            = shift;
+    my $choices_section = shift;
 
-    $self->_choices_teacher($choices_teacher);
-    $self->_tk_teacher_dropdown->configure( -choices => $choices_teacher );
-    $self->_tk_teacher_dropdown->update;
-    $Txt_teacher = "";
-
-    $self->_tk_teacher_assigned_dropdown->configure(
-        -choices => $choices_teacher_assigned );
-    $self->_choices_teacher_assigned($choices_teacher_assigned);
-    $self->_tk_teacher_assigned_dropdown->update;
-    $Txt_teacher_assigned = "";
+    $self->_choices_section($choices_section);
+    $self->_tk_section_dropdown->configure( -choices => $choices_section );
+    $self->_tk_section_dropdown->update;
+    $Txt_section = "";
 }
 
 # ============================================================================
@@ -336,77 +386,88 @@ sub update_stream_choices {
 }
 
 # ============================================================================
-# update section choices
+# update teacher choices
 # ============================================================================
-sub update_section_choices {
-    my $self            = shift;
-    my $choices_section = shift;
+sub update_teacher_choices {
+    my $self                     = shift;
+    my $choices_teacher          = shift;
+    my $choices_teacher_assigned = shift;
 
-    $self->_choices_section($choices_section);
-    $self->_tk_section_dropdown->configure( -choices => $choices_section );
-    $self->_tk_section_dropdown->update;
-    $Txt_section = "";
+    $self->_choices_teacher($choices_teacher);
+    $self->_tk_teacher_dropdown->configure( -choices => $choices_teacher );
+    $self->_tk_teacher_dropdown->update;
+    $Txt_teacher = "";
+
+    $self->_tk_teacher_assigned_dropdown->configure(
+        -choices => $choices_teacher_assigned );
+    $self->_choices_teacher_assigned($choices_teacher_assigned);
+    $self->_tk_teacher_assigned_dropdown->update;
+    $Txt_teacher_assigned = "";
 }
 
-#--------------------------------------------------------
-# respond to user closing box
-#--------------------------------------------------------
-sub _respond_to_dialog_closing {
-    my $self   = shift;
-    my $answer = shift;
+# ----------------------------------------------------------------------------
+# add sections (simple)
+# ----------------------------------------------------------------------------
+sub _cmd_add_section {
+    my $self = shift;
 
-    if ( $answer eq 'Delete' ) {
+    my ( $section_names, $block_hours ) =
+      AddSectionDialogTk->new( $self->_tk_top_frame );
 
-        my $sure = $self->_tk_top_frame->DialogBox(
-            -title   => "Delete?",
-            -buttons => [ 'Yes', 'NO' ]
+    if ( $section_names && $block_hours ) {
+        $self->cb_add_sections_with_blocks->(
+            $self->course_id, $section_names, $block_hours
         );
-
-        $sure->Label( -text => "Are you Sure You\nWant To Delete?" )->pack;
-
-        my $answer2 = $sure->Show();
-        $answer2 = 'NO' unless $answer2;
-        return 'NO' if $answer2 eq 'NO';
-
-        $self->cb_remove_course_by_id->( $self->course_id );
-        return 'Close';
-    }
-
-    if ( $self->course_name ne $Txt_course_name ) {
-        $self->cb_change_course_name_by_id->(
-            $self->course_id, $Txt_course_name
-        );
-    }
-    if ( $self->course_number ne $Txt_course_num ) {
-        $self->cb_change_course_number_by_id->(
-            $self->course_id, $Txt_course_num
-        );
-    }
-    return 'Close';
-}
-
-# ================================================================
-# Validate that the course number is new/unique
-# (alway return true, just change input to red and disable close button)
-# ================================================================
-sub _cmd_validate_course_number {
-    my $self          = shift;
-    my $proposed_text = shift;
-
-    # returned to the original setting
-    return 1 if $self->course_number eq $proposed_text;
-
-    if ( $self->cb_is_course_num_unique->($proposed_text) ) {
-        $self->_tk_close_btn->configure( -state => 'normal' );
-        $self->_tk_entry_course_number->configure( -bg => 'white' );
+        $self->_tk_section_status->configure( -text => "Section(s) Added" );
+        $self->_tk_top_frame->bell;
     }
     else {
-        $self->_tk_close_btn->configure( -state => 'disabled' );
-        $self->_tk_entry_course_number->configure( -bg => 'red' );
-        $self->_tk_entry_course_number->bell;
+        $self->_tk_section_status->configure( -text => "" );
     }
+    $self->_tk_section_status->update;
+}
 
-    return 1;
+# ----------------------------------------------------------------------------
+# add section (advanced)
+# ----------------------------------------------------------------------------
+sub _cmd_add_section_advanced {
+    my $self = shift;
+
+    my $answer = $self->cb_edit_section->( $self->course_id );
+
+    $self->_tk_section_status->configure( -text => $answer );
+    $self->_tk_top_frame->bell if $answer;
+    $self->_tk_section_status->update;
+}
+
+# ----------------------------------------------------------------------------
+# add streams all sections
+# ----------------------------------------------------------------------------
+sub _cmd_add_stream_all_sections {
+    my $self = shift;
+    return unless $Txt_stream;
+    my $id = __get_id( $self->_choices_stream, $Txt_stream );
+    $self->cb_add_stream_to_course->( $self->course_id, $id );
+
+    $Txt_stream = "";
+    $self->_tk_stream_status->configure( -text => "Stream Added" );
+    $self->_tk_stream_status->update;
+    $self->_tk_stream_status->bell;
+}
+
+# ----------------------------------------------------------------------------
+# add teacher all sections
+# ----------------------------------------------------------------------------
+sub _cmd_add_teacher_to_all_sections {
+    my $self = shift;
+    return unless $Txt_teacher;
+    my $id = __get_id( $self->_choices_teacher, $Txt_teacher );
+    $self->cb_add_teacher_to_course->( $self->course_id, $id );
+
+    $Txt_teacher = "";
+    $self->_tk_teacher_status->configure( -text => "Teacher Added" );
+    $self->_tk_teacher_status->bell;
+    $self->_tk_teacher_status->update;
 }
 
 # ----------------------------------------------------------------------------
@@ -427,42 +488,6 @@ sub _cmd_edit_section {
 }
 
 # ----------------------------------------------------------------------------
-# add section (advanced)
-# ----------------------------------------------------------------------------
-sub _cmd_add_section_advanced {
-    my $self = shift;
-
-    my $answer = $self->cb_edit_section->( $self->course_id );
-
-    $self->_tk_section_status->configure( -text => $answer );
-    $self->_tk_top_frame->bell if $answer;
-    $self->_tk_section_status->update;
-}
-
-# ----------------------------------------------------------------------------
-# add sections (simple)
-# ----------------------------------------------------------------------------
-sub _cmd_add_section {
-    my $self = shift;
-
-    my $add_section_dialog = AddSectionDialogTk->new( $self->_tk_top_frame );
-
-    my ( $section_names, $block_hours ) = $add_section_dialog->Show();
-
-    if ( $section_names && $block_hours ) {
-        $self->cb_add_sections_with_blocks->(
-            $self->course_id, $section_names, $block_hours
-        );
-        $self->_tk_section_status->configure( -text => "Section(s) Added" );
-        $self->_tk_top_frame->bell;
-    }
-    else {
-        $self->_tk_section_status->configure( -text => "" );
-    }
-    $self->_tk_section_status->update;
-}
-
-# ----------------------------------------------------------------------------
 # remove section
 # ----------------------------------------------------------------------------
 sub _cmd_remove_section {
@@ -474,21 +499,6 @@ sub _cmd_remove_section {
     $self->_tk_section_status->configure( -text => "Section Removed" );
     $self->_tk_section_status->bell;
     $self->_tk_section_status->update;
-}
-
-# ----------------------------------------------------------------------------
-# add teacher all sections
-# ----------------------------------------------------------------------------
-sub _cmd_add_teacher_to_all_sections {
-    my $self = shift;
-    return unless $Txt_teacher;
-    my $id = __get_id( $self->_choices_teacher, $Txt_teacher );
-    $self->cb_add_teacher_to_course->( $self->course_id, $id );
-
-    $Txt_teacher = "";
-    $self->_tk_teacher_status->configure( -text => "Teacher Added" );
-    $self->_tk_teacher_status->bell;
-    $self->_tk_teacher_status->update;
 }
 
 # ----------------------------------------------------------------------------
@@ -508,21 +518,6 @@ sub _cmd_remove_teacher_all_sections {
 }
 
 # ----------------------------------------------------------------------------
-# add streams all sections
-# ----------------------------------------------------------------------------
-sub _cmd_add_stream_all_sections {
-    my $self = shift;
-    return unless $Txt_stream;
-    my $id = __get_id( $self->_choices_stream, $Txt_stream );
-    $self->cb_add_stream_to_course->( $self->course_id, $id );
-
-    $Txt_stream = "";
-    $self->_tk_stream_status->configure( -text => "Stream Added" );
-    $self->_tk_stream_status->update;
-    $self->_tk_stream_status->bell;
-}
-
-# ----------------------------------------------------------------------------
 # remove streams from all sections
 # ----------------------------------------------------------------------------
 sub _cmd_remove_stream_all_sections {
@@ -535,6 +530,82 @@ sub _cmd_remove_stream_all_sections {
     $self->_tk_stream_status->configure( -text => "Stream Removed" );
     $self->_tk_stream_status->update;
     $self->_tk_stream_status->bell;
+}
+
+# ================================================================
+# Validate that the course number is new/unique
+# (alway return true, just change input to red and disable close button)
+# ================================================================
+sub _cmd_validate_course_number {
+    my $self          = shift;
+    my $proposed_text = shift;
+
+    # blank is always invalid
+    if ( $proposed_text =~ /^\s*$/ ) {
+        $self->_tk_close_btn->configure( -state => 'disabled' );
+        $self->_tk_entry_course_number->configure( -bg => 'red' );
+        $self->_tk_entry_course_number->bell;
+        return 1;
+    }
+
+    # returned to the original setting
+    return 1 if $self->course_number eq $proposed_text;
+
+    # new course number
+    if ( $self->cb_is_course_num_unique->($proposed_text) ) {
+        $self->_tk_close_btn->configure( -state => 'normal' );
+        $self->_tk_entry_course_number->configure( -bg => 'white' );
+    }
+    else {
+        $self->_tk_close_btn->configure( -state => 'disabled' );
+        $self->_tk_entry_course_number->configure( -bg => 'red' );
+        $self->_tk_entry_course_number->bell;
+    }
+
+    return 1;
+}
+
+# --------------------------------------------------------
+# respond to user closing box
+# --------------------------------------------------------
+sub _respond_to_dialog_closing {
+    my $self   = shift;
+    my $answer = shift;
+
+    # if delete, make sure that user is ok with this
+    if ( $answer eq 'Delete' ) {
+
+        my $sure = $self->_tk_top_frame->DialogBox(
+            -title   => "Delete?",
+            -buttons => [ 'Yes', 'NO' ]
+        );
+
+        if ($Txt_course_number) {
+            $sure->Label( -text => "Are you Sure You\nWant To Delete?" )->pack;
+
+            my $answer2 = $sure->Show();
+            $answer2 = 'NO' unless $answer2;
+            return 'NO' if $answer2 eq 'NO';
+        }
+        $self->cb_remove_course_by_id->( $self->course_id );
+        return 'Close';
+
+    }
+
+    # change course name or number if necessary
+    if ( $self->course_name ne $Txt_course_name ) {
+        $self->cb_change_course_name_by_id->(
+            $self->course_id, $Txt_course_name
+        );
+    }
+    if ( $self->course_number ne $Txt_course_number ) {
+        $self->cb_change_course_number_by_id->(
+            $self->course_id, $Txt_course_number
+        );
+    }
+
+    # return
+    return 'Close';
 }
 
 # ----------------------------------------------------------------------------
@@ -555,13 +626,13 @@ sub __setup {
     # ------------------------------------------------------------------------
     # setter/getters for various properties
     # ------------------------------------------------------------------------
-    _create_setters_and_getters(
+    __create_setters_and_getters(
         -category   => "course",
         -properties => [qw(id name number)],
         -default    => ""
     );
 
-    _create_setters_and_getters(
+    __create_setters_and_getters(
         -category   => "_choices",
         -properties => [
             qw(stream_assigned stream teacher_assigned teacher
@@ -579,7 +650,7 @@ sub __setup {
           add_teacher_to_course add_sections_with_blocks edit_section
           is_course_num_unique set_allocation remove_section_from_course)
     );
-    _create_setters_and_getters(
+    __create_setters_and_getters(
         -category   => "cb",
         -properties => \@callbacks,
         -default    => sub { print "Caller: caller()\n\n\n", die }
@@ -593,7 +664,7 @@ sub __setup {
           stream_status teacher_assigned_dropdown teacher_dropdown teacher_status
           section_status entry_course_number close_btn )
     );
-    _create_setters_and_getters(
+    __create_setters_and_getters(
         -category   => "_tk",
         -properties => \@widgets,
         -default    => undef
@@ -607,7 +678,7 @@ sub __setup {
 # 1) cat_property
 # 2) cat_property_ptr
 # ============================================================================
-sub _create_setters_and_getters {
+sub __create_setters_and_getters {
 
     my %stuff   = @_;
     my $cat     = $stuff{-category};

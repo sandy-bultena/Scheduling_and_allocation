@@ -8,10 +8,21 @@ my $Schedule;
 my $Parent_presenter;
 
 # ============================================================================
+# Create dynamic menus (dependant on the state of the Schedule object)
+#
+# METHODS:
+#   create_tree_menus       # right-click popup menus for tree items
+#   show_scheduable_menu    # right-click popup menu for teacher/stream/labs lists
+#
+# NOTE: this module is dependent on functions in EditCourses
+# ============================================================================
+
+# ============================================================================
 # create popup menus for trees
 # - menus are dynamic, depending on the current schedule, and what
 #   tree item was selected
 # ============================================================================
+
 sub create_tree_menus {
     $Schedule = shift;
     my $sel_obj   = shift;    # selected object
@@ -25,11 +36,13 @@ sub create_tree_menus {
     # course
     # ------------------------------------------------------------------------
     if ( $type eq 'course' ) {
-        _edit_course($menu,$sel_obj,$tree_path);
+        _edit_course( $menu, $sel_obj, $tree_path );
         _remove_item( $menu, $sel_obj, $Schedule, $tree_path, "Remove Course" );
+        push @$menu, "separator";
+        _needs_allocation( $menu, $sel_obj, $tree_path );
         _add_teachers( $menu, $sel_obj, $tree_path );
         _add_section( $menu, $sel_obj, $tree_path );
-        _needs_allocation( $menu, $sel_obj, $tree_path );
+        push @$menu, "separator";
         _remove_teachers( $menu, $sel_obj, $tree_path );
         _remove_all( $menu, $sel_obj, $tree_path );
     }
@@ -38,11 +51,14 @@ sub create_tree_menus {
     # section
     # ------------------------------------------------------------------------
     elsif ( $type eq 'section' ) {
+        _edit_section( $menu, $sel_obj, $tree_path );
         _remove_item( $menu, $sel_obj, $par_obj, $tree_path, "Remove Section" );
+        push @$menu, "separator";
+        _add_blocks( $menu, $sel_obj, $tree_path );
         _add_teachers( $menu, $sel_obj, $tree_path );
         _add_labs( $menu, $sel_obj, $tree_path );
         _add_streams( $menu, $sel_obj, $tree_path );
-        _add_blocks_edit_section( $menu, $sel_obj, $tree_path );
+        push @$menu, "separator";
         _remove_blocks( $menu, $sel_obj, $tree_path );
         _remove_teachers( $menu, $sel_obj, $tree_path );
         _remove_labs( $menu, $sel_obj, $tree_path );
@@ -54,6 +70,7 @@ sub create_tree_menus {
     # block
     # ------------------------------------------------------------------------
     elsif ( $type eq 'block' ) {
+        _edit_block( $menu, $sel_obj, $par_obj, $tree_path );
         _remove_item( $menu, $sel_obj, $par_obj, $tree_path, "Remove Block" );
         _add_teachers( $menu, $sel_obj, $tree_path );
         _add_labs( $menu, $sel_obj, $tree_path );
@@ -90,9 +107,11 @@ sub show_scheduable_menu {
     my $courses = [];
 
     push @$menu,
-    ["command","Delete $type",
-    -command=>[\&EditCourses::remove_scheduable,$type,$sel_obj]];
-    
+      [
+        "command", "Delete $type",
+        -command => [ \&EditCourses::remove_scheduable, $type, $sel_obj ]
+      ];
+
     push @$menu,
       [
         'cascade', "Add $type to Course",
@@ -179,6 +198,22 @@ sub show_scheduable_menu {
 }
 
 # --------------------------------------------------------------------
+# add blocks,
+# --------------------------------------------------------------------
+sub _add_blocks {
+    my $menu      = shift;
+    my $sel_obj   = shift;
+    my $tree_path = shift;
+
+    push @$menu,
+      [
+        'command',
+        "Add Blocks",
+        -command => [ \&EditCourses::add_blocks_dialog, $sel_obj, $tree_path ]
+      ];
+}
+
+# --------------------------------------------------------------------
 # generic, adding multiple items
 # --------------------------------------------------------------------
 sub _add_items {
@@ -209,23 +244,6 @@ sub _add_items {
 }
 
 # --------------------------------------------------------------------
-# adding teachers
-# --------------------------------------------------------------------
-sub _add_teachers {
-    my $menu      = shift;
-    my $sel_obj   = shift;
-    my $tree_path = shift;
-    my $teachers  = [];
-    foreach
-      my $teacher ( sort { &_sort_by_teacher_name } $Schedule->all_teachers )
-    {
-        next if $sel_obj->has_teacher($teacher);
-        push @$teachers, { name => "$teacher", obj => $teacher };
-    }
-    _add_items( $menu, $sel_obj, $tree_path, $teachers, "Add Teacher" );
-}
-
-# --------------------------------------------------------------------
 # adding labs
 # --------------------------------------------------------------------
 sub _add_labs {
@@ -239,6 +257,21 @@ sub _add_labs {
         push @$labs, { name => "$lab", obj => $lab };
     }
     _add_items( $menu, $sel_obj, $tree_path, $labs, "Add Lab" );
+}
+
+# --------------------------------------------------------------------
+# add sections,
+# --------------------------------------------------------------------
+sub _add_section {
+    my $menu    = shift;
+    my $sel_obj = shift;
+    my $tree_path;
+    push @$menu,
+      [
+        'command',
+        "Add Sections(s)",
+        -command => [ \&EditCourses::add_section_dialog, $sel_obj, $tree_path ]
+      ];
 }
 
 # --------------------------------------------------------------------
@@ -258,51 +291,67 @@ sub _add_streams {
 }
 
 # --------------------------------------------------------------------
-# add blocks, edit section
+# adding teachers
 # --------------------------------------------------------------------
-sub _add_blocks_edit_section {
-    my $menu    = shift;
-    my $sel_obj = shift;
-    my $tree_path;
+sub _add_teachers {
+    my $menu      = shift;
+    my $sel_obj   = shift;
+    my $tree_path = shift;
+    my $teachers  = [];
+    foreach
+      my $teacher ( sort { &_sort_by_teacher_name } $Schedule->all_teachers )
+    {
+        next if $sel_obj->has_teacher($teacher);
+        push @$teachers, { name => "$teacher", obj => $teacher };
+    }
+    _add_items( $menu, $sel_obj, $tree_path, $teachers, "Add Teacher" );
+}
+
+# --------------------------------------------------------------------
+# edit block
+# --------------------------------------------------------------------
+sub _edit_block {
+    my $menu      = shift;
+    my $sel_obj   = shift;
+    my $par_obj   = shift;
+    my $tree_path = shift;
 
     push @$menu,
       [
         'command',
-        "Add Blocks",
-        -command => [ \&EditCourse::add_blocks_dialog, $sel_obj, $tree_path ]
+        "Edit Block",
+        -command =>
+          [ \&EditCourses::edit_block_dialog, $sel_obj, $tree_path ]
       ];
-    push @$menu,
-      [
-        'command',
-        "Edit Section",
-        -command => [ \&EditCourses::edit_section_dialog, $sel_obj, $tree_path ]
-      ];
-    push @$menu, "separator";
 }
 
 # --------------------------------------------------------------------
-# add sections, edit course
+# edit course
 # --------------------------------------------------------------------
-sub _add_section {
-    my $menu    = shift;
-    my $sel_obj = shift;
-    my $tree_path;
-    push @$menu,
-      [
-        'command',
-        "Add Sections(s)",
-        -command => [ \&EditCourses::add_section_dialog, $sel_obj, $tree_path ]
-      ];
-    push @$menu, "separator";
-}
 sub _edit_course {
-    my $menu = shift;
+    my $menu    = shift;
     my $sel_obj = shift;
     push @$menu,
       [
         'command',
         "Edit Course",
-        -command => [ \&EditCourses::edit_course_dialog, $sel_obj]
+        -command => [ \&EditCourses::edit_course_dialog, $sel_obj ]
+      ];
+}
+
+# --------------------------------------------------------------------
+# edit section
+# --------------------------------------------------------------------
+sub _edit_section {
+    my $menu      = shift;
+    my $sel_obj   = shift;
+    my $tree_path = shift;
+
+    push @$menu,
+      [
+        'command',
+        "Edit Section",
+        -command => [ \&EditCourses::edit_section_dialog, $sel_obj, $tree_path ]
       ];
 }
 
@@ -333,7 +382,52 @@ sub _needs_allocation {
             },
         ];
     }
-    push @$menu, "separator";
+}
+
+# --------------------------------------------------------------------
+# remove all resources menu
+# --------------------------------------------------------------------
+sub _remove_all {
+    my $menu      = shift;
+    my $sel_obj   = shift;
+    my $tree_path = shift;
+    push @$menu,
+      [
+        'command',
+        "Clear All Teachers, Labs, and Streams",
+        -command => [ \&EditCourses::clear_all_from_obj1, $sel_obj, $tree_path ]
+      ];
+}
+
+# --------------------------------------------------------------------
+# removing blocks
+# --------------------------------------------------------------------
+sub _remove_blocks {
+    my $menu      = shift;
+    my $sel_obj   = shift;
+    my $tree_path = shift;
+
+    my $blocks = [];
+    foreach my $block ( $sel_obj->blocks ) {
+        push @$blocks, { name => $block->short_description, obj => $block };
+    }
+    _remove_items( $menu, $sel_obj, $tree_path, $blocks, "Blocks", "block" );
+
+}
+
+# --------------------------------------------------------------------
+# Remove a single item
+# --------------------------------------------------------------------
+sub _remove_item {
+    my ( $menu, $obj1, $obj2, $path, $title ) = @_;
+
+    $path =~ s:^(.*)/.*$:$1:;
+    push @$menu,
+      [
+        "command", $title,
+        -command =>
+          [ \&EditCourses::remove_obj2_from_obj1, $obj2, $obj1, $path ]
+      ];
 }
 
 # --------------------------------------------------------------------
@@ -357,7 +451,6 @@ sub _remove_items {
             $sel_obj, $type, $tree_path
         ]
       ];
-    push @$menu_items, "separator";
 
     foreach my $item (@$items) {
         push @$menu_items,
@@ -379,36 +472,19 @@ sub _remove_items {
 }
 
 # --------------------------------------------------------------------
-# removing blocks
+# removing labs
 # --------------------------------------------------------------------
-
-sub _remove_blocks {
+sub _remove_labs {
     my $menu      = shift;
     my $sel_obj   = shift;
     my $tree_path = shift;
 
-    my $blocks = [];
-    foreach my $block ( $sel_obj->blocks ) {
-        push @$blocks, { name => $block->short_description, obj => $block };
+    my $labs = [];
+
+    foreach my $lab ( $sel_obj->labs ) {
+        push @$labs, { name => "$lab", obj => $labs };
     }
-    _remove_items( $menu, $sel_obj, $tree_path, $blocks, "Blocks", "block" );
-
-}
-
-# --------------------------------------------------------------------
-# removing teachers
-# --------------------------------------------------------------------
-sub _remove_teachers {
-    my $menu      = shift;
-    my $sel_obj   = shift;
-    my $tree_path = shift;
-
-    my $teachers = [];
-    foreach my $teacher ( $sel_obj->teachers ) {
-        push @$teachers, { name => "$teacher", obj => $teacher };
-    }
-    _remove_items( $menu, $sel_obj, $tree_path, $teachers, "Teachers",
-        "teacher" );
+    _remove_items( $menu, $sel_obj, $tree_path, $labs, "Labs", "lab" );
 }
 
 # --------------------------------------------------------------------
@@ -428,51 +504,19 @@ sub _remove_streams {
 }
 
 # --------------------------------------------------------------------
-# removing labs
+# removing teachers
 # --------------------------------------------------------------------
-sub _remove_labs {
+sub _remove_teachers {
     my $menu      = shift;
     my $sel_obj   = shift;
     my $tree_path = shift;
 
-    my $labs = [];
-
-    foreach my $lab ( $sel_obj->labs ) {
-        push @$labs, { name => "$lab", obj => $labs };
+    my $teachers = [];
+    foreach my $teacher ( $sel_obj->teachers ) {
+        push @$teachers, { name => "$teacher", obj => $teacher };
     }
-    _remove_items( $menu, $sel_obj, $tree_path, $labs, "Labs", "lab" );
-}
-
-# --------------------------------------------------------------------
-# remove all resources menu
-# --------------------------------------------------------------------
-sub _remove_all {
-    my $menu      = shift;
-    my $sel_obj   = shift;
-    my $tree_path = shift;
-    push @$menu,
-      [
-        'command',
-        "Clear All Teachers, Labs, and Streams",
-        -command => [ \&EditCourses::clear_all_from_obj1, $sel_obj, $tree_path ]
-      ];
-}
-
-# --------------------------------------------------------------------
-# Remove a single item
-# --------------------------------------------------------------------
-sub _remove_item {
-    my ( $menu, $obj1, $obj2, $path, $title ) = @_;
-    $path =~ s:^(.*)/.*$:$1:;
-    push @$menu,
-      [
-        "command",
-        $title,
-        -command => [
-            \&EditCourses::remove_obj2_from_obj1,
-            $Schedule, $obj2, $obj1, $path
-        ]
-      ];
+    _remove_items( $menu, $sel_obj, $tree_path, $teachers, "Teachers",
+        "teacher" );
 }
 
 ###################################################################
