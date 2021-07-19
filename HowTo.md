@@ -88,7 +88,7 @@ Right click any object on the tree, and a pop-up menu will appear, allowing the 
 Double click any Course, Section, Block object on the tree, and an appropriate dialog box will open, allowing the user to edit the object.
 
 #### Keyboard
-Navigate to any Course, Section, Block object on the tree, hit <return>, and an appropriate dialog box will open, allowing the user to edit the object.
+Navigate to any Course, Section, Block object on the tree, hit ```return```, and an appropriate dialog box will open, allowing the user to edit the object.
 
 ## _Creating Schedules_
 Once all the lab information, streams, courses, teachers, etc have been created (and hopefully saved in a YAML file), the user can now create schedules for moving blocks around on the views.
