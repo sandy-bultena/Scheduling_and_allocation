@@ -60,8 +60,8 @@ sub by_type {
     my $self = shift;
     my $type = shift;
     return $self->teachers if $type eq 'teacher';
-    return $self->labs if $type eq 'lab';
-    return $self->streams if $type eq 'stream';
+    return $self->labs     if $type eq 'lab';
+    return $self->streams  if $type eq 'stream';
 }
 
 sub teachers {
@@ -81,8 +81,9 @@ sub streams {
     $self->{-streams} = shift if @_;
     return $self->{-streams};
 }
+
 sub valid_types {
-    return ('teacher','stream','lab');
+    return ( 'teacher', 'stream', 'lab' );
 }
 
 sub valid_view_type {

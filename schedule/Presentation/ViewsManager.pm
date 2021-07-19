@@ -159,7 +159,7 @@ Get the dirty_flag for the schedule.
 
 sub dirty_flag {
     my @caller = caller();
-    my $self = shift;
+    my $self   = shift;
     $self->{-dirty} = shift if @_;
     return $self->{-dirty};
 }
@@ -172,9 +172,9 @@ Sets the dirty flag for changes to the schedule.
 
 sub set_dirty {
     my $self = shift;
-    my $d = $self->{-dirty_flag};
+    my $d    = $self->{-dirty_flag};
     $$d = 1;
- }
+}
 
 # =================================================================
 # Undo and redo
@@ -255,11 +255,8 @@ sub undo {
         # --------------------------------------------------------------------
         # make new undo/redo object as necessary
         # --------------------------------------------------------------------
-        my $redo_or_undo = Undo->new(
-                                      $block->id,  $block->start,
-                                      $block->day, $action->origin_obj,
-                                      $action->move_type
-        );
+        my $redo_or_undo = Undo->new( $block->id, $block->start,
+            $block->day, $action->origin_obj, $action->move_type );
 
         if ( $type eq 'undo' ) {
             $self->add_redo($redo_or_undo);
@@ -295,9 +292,8 @@ sub undo {
         # make new undo/redo object as necessary
         # --------------------------------------------------------------------
         my $redo_or_undo = Undo->new(
-                                      $action->block_id,  $block->start,
-                                      $block->day,        $action->new_obj,
-                                      $action->move_type, $action->origin_obj
+            $action->block_id, $block->start,      $block->day,
+            $action->new_obj,  $action->move_type, $action->origin_obj
         );
         if ( $type eq 'undo' ) {
             $self->add_redo($redo_or_undo);
@@ -451,7 +447,7 @@ Close the gui window, and remove view from list of 'open' views
 sub close_view {
     my $self = shift;
     my $view = shift;
-    
+
     $view->close();
     $self->_remove_view($view);
     delete $self->{-views}->{ $view->id };
@@ -614,7 +610,7 @@ An array of ScheduablesByType (see SharedData.pm)
 
 sub get_all_scheduables {
     my $self = shift;
-    return AllScheduables->new($self->schedule);
+    return AllScheduables->new( $self->schedule );
 }
 
 =head2 determine_button_colours 
@@ -633,8 +629,9 @@ sub determine_button_colours {
     my $self = shift;
     my $all_view_choices = shift || $self->get_all_scheduables();
 
-    foreach my $type (AllScheduables->valid_types) {
-        my $scheduable_objs = $all_view_choices->by_type($type)->scheduable_objs;
+    foreach my $type ( AllScheduables->valid_types ) {
+        my $scheduable_objs =
+          $all_view_choices->by_type($type)->scheduable_objs;
 
         # calculate conflicts
         $self->schedule->calculate_conflicts;
@@ -652,7 +649,7 @@ sub determine_button_colours {
             foreach my $block (@blocks) {
                 $view_conflict =
                   Conflict->most_severe( $view_conflict | $block->is_conflicted,
-                                         $type );
+                    $type );
                 last if $view_conflict == $Conflict::Sorted_Conflicts[0];
             }
 
@@ -745,7 +742,8 @@ sub create_new_view {
     my $open = $self->is_open( $scheduable_obj->id, $type );
 
     if ( not $open ) {
-        my $view = View->new( $self,$gui->mw, $self->schedule, $scheduable_obj );
+        my $view =
+          View->new( $self, $gui->mw, $self->schedule, $scheduable_obj );
         $self->add_view($view);
         $self->add_manager_to_views;
     }

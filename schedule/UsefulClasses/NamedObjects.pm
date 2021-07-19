@@ -10,7 +10,6 @@ package NamedObject;
 use FindBin;    # find which directory this executable is in
 use lib "$FindBin::Bin/../";
 
-
 sub new {
     my $class  = shift;
     my $name   = shift;

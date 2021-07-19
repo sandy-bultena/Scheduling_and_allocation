@@ -200,7 +200,7 @@ is asked to create a view
     sub draw_view_choices {
         my $self            = shift;
         my $default_tab     = shift;
-        my $all_scheduables = shift ;
+        my $all_scheduables = shift;
         my $btn_callback    = shift || sub { return; };
 
         my $f = $self->_pages->{ lc($default_tab) };
@@ -211,9 +211,10 @@ is asked to create a view
 
         $frame = $f->Frame->pack( -expand => 1, -fill => 'both' );
 
-        foreach my $type (AllScheduables->valid_types) {
+        foreach my $type ( AllScheduables->valid_types ) {
             my $view_choices_frame =
-              $frame->LabFrame( -label => $all_scheduables->by_type($type)->title, )
+              $frame->LabFrame(
+                -label => $all_scheduables->by_type($type)->title, )
               ->pack( -expand => 1, -fill => 'both' );
 
             my $view_choices_scrolled_frame =
@@ -221,8 +222,10 @@ is asked to create a view
               ->pack( -expand => 1, -fill => 'both' );
 
             $views_manager->gui->create_buttons_for_frame(
-                $view_choices_scrolled_frame, $all_scheduables->by_type($type),
-                $btn_callback );
+                $view_choices_scrolled_frame,
+                $all_scheduables->by_type($type),
+                $btn_callback
+            );
         }
 
     }

@@ -12,7 +12,7 @@ package ScheduablesByType;
 use FindBin;    # find which directory this executable is in
 use lib "$FindBin::Bin/../";
 use UsefulClasses::NamedObjects;
- 
+
 sub new {
     my $class           = shift;
     my $type            = shift; # what type of scheduables are these?
@@ -33,10 +33,10 @@ sub new {
     }
 
     my $self = {
-                 -type                  => $type,
-                 -title                 => $title,
-                 -scheduable_objs       => $scheduable_objs,
-                 -named_scheduable_objs => \@named_scheduable_objs,
+        -type                  => $type,
+        -title                 => $title,
+        -scheduable_objs       => $scheduable_objs,
+        -named_scheduable_objs => \@named_scheduable_objs,
     };
     return bless $self;
 }

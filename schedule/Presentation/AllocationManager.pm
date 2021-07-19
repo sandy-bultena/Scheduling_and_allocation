@@ -13,7 +13,7 @@ use lib "$FindBin::Bin/../Library";
 our $BinDir = "$FindBin::Bin/../";
 use Schedule::Schedule;
 use Presentation::EditCourses;
-use GuiSchedule::NumStudents;
+use Presentation::NumStudents;
 use Presentation::EditAllocation;
 use GUI::AllocationManagerTk;
 use PerlLib::Colours;
@@ -118,7 +118,12 @@ sub define_notebook_pages {
 
     @Required_pages = (
         NoteBookPageInfo->new( "Allocation", sub { draw_allocation() } ),
-        NoteBookPageInfo->new( "Student Numbers", \&update_overview ),
+        NoteBookPageInfo->new(
+            "Student Numbers",
+            sub {
+                draw_student_numbers();
+            }
+        ),
     );
 
     # one page for each semester
@@ -500,12 +505,12 @@ sub write_ini {
 # update_edit_courses
 # ==================================================================
 sub update_edit_courses {
- 
+
     my $semester = shift;
     my $label    = ucfirst($semester);
     die("update_edit_courses did not specify a semester\n")
       unless $semester;
-      
+
     eval {
         my $f = $Gui->get_notebook_page( $Pages_lookup{"$label Courses"}->id );
         EditCourses->new( $f, $Schedules{$semester}, \$Dirtyflag, undef );
@@ -528,6 +533,25 @@ sub update_edit_courses {
         }
     }
 
+}
+
+# ==================================================================
+# update student numbers
+# ==================================================================
+{
+    my $de;
+
+    sub draw_student_numbers {
+
+        if ($de) {
+            $de->refresh( \%Schedules );
+        }
+        else {
+            my $f =
+              $Gui->get_notebook_page( $Pages_lookup{"Student Numbers"}->id );
+            $de = NumStudents->new( $f, \%Schedules, \$Dirtyflag );
+        }
+    }
 }
 
 1;

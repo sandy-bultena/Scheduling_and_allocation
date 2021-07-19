@@ -23,7 +23,6 @@ use YAML;       # read / write YAML files
 $YAML::LoadBlessed = 1;    # reads and process perl objects from the YAML file
 use Cwd 'abs_path';        # get absolute path from relative path
 use File::Basename;        # separate path into directory and filename
-
 # libraries included with this source
 use Schedule::Schedule;    # the Model (Schedule data)
 use Export::PDF;           # write PDF schecdules
@@ -647,7 +646,7 @@ sub update_overview {
 sub update_edit_courses {
     my $self = shift;
     my $f    = $Gui->get_notebook_page( $Pages_lookup{Courses}->id );
-     EditCourses->new( $f, $Schedule, \$Dirtyflag, $Views_manager );
+    EditCourses->new( $f, $Schedule, \$Dirtyflag, $Views_manager );
 }
 
 # ==================================================================

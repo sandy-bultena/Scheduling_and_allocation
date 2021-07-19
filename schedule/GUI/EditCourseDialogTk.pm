@@ -54,6 +54,7 @@ use Carp;
 use lib "$FindBin::Bin/..";
 
 use GUI::AddSectionDialogTk;
+use Tk::JBrowseEntry;
 
 # =================================================================
 # variables bound to entry boxes
