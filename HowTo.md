@@ -93,9 +93,9 @@ Navigate to any Course, Section, Block object on the tree, hit ```return```, and
 ## _Creating Schedules_
 Once all the lab information, streams, courses, teachers, etc have been created (and hopefully saved in a YAML file), the user can now create schedules for moving blocks around on the views.
 1. Go to the ```Schedules``` tab
-1.1 There you will see a list of all possible 'Views', where each 'View' will be a schedule for that object.
-1.2 Click on a button to see the 'View' associated with that object.
-1.3 You can have as many 'Views' open as you would like.
+   1.1 There you will see a list of all possible 'Views', where each 'View' will be a schedule for that object.
+   1.2 Click on a button to see the 'View' associated with that object.
+   1.3 You can have as many 'Views' open as you would like.
 
 ### Modifying the Schedules
 
