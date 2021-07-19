@@ -398,8 +398,8 @@ sub _cmd_dragging_over_tree {
 # tree: <Key-Return>
 # =================================================================
 sub _cmd_return {
+    my $sender = shift;
     my $self = shift;
-    #### TODO: is this correct?
     return if $self->_tk_tree->infoAnchor;
     my $path = $self->_tk_tree->selectionGet();
     $self->_cmd_edit_selection($path) if $path;

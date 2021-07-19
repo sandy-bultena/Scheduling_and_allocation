@@ -139,7 +139,7 @@ sub setup_popup_menu {
                   -command => [ $toggle_movement_cb, $view ], );
 
     # create sub menu
-    my $mm = $pm->cascade( -label => 'Move Class to', -tearoff => 0 );
+    my $mm = $pm->cascade( -label => 'Move block(s) to ', -tearoff => 0 );
 
     foreach my $named_schedulable (@$named_schedulables) {
         $mm->command(

@@ -569,6 +569,11 @@ sub _cb_move_block_between_scheduable_objects {
         $guiblock->block->remove_lab($this_scheduable);
         $guiblock->block->assign_lab($that_scheduable);
     }
+    if ( $self->type eq 'stream' ) {
+        $guiblock->block->section->remove_stream($this_scheduable);
+        $guiblock->block->section->assign_stream($that_scheduable);
+    }
+
 
     # there was a change, redraw all views
     my $undo = Undo->new(
