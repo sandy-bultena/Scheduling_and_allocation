@@ -1,19 +1,17 @@
 use strict;
 use warnings;
 
-package SchedulerTk;
+package AllocationManagerTk;
 use FindBin;
 use lib "$FindBin::Bin/../";
-use GUI::MainPageBaseTk;
+use GUI::MainPageBaseTk; 
 use File::Basename;
 
 our @ISA = qw(MainPageBaseTk);
 
 =head1 NAME
 
-SchedulerTk - GUI code for the main application window 
-
-Inherits from MainPageBaseTk
+AllocationManagerTk - GUI code for the main application window 
 
 =head1 VERSION
 
@@ -44,13 +42,6 @@ Version 6.00
 
     $gui->define_exit_callback( \&_exit_schedule );
 
-    # create the views_manager (which shows all the schedule views etc.)
-    
-    my $views_manager = ViewsManager->new( $gui, \$Dirtyflag, \$Schedule );
-    $gui->set_views_manager($views_manager);
-
-    $gui->start_event_loop();
-
 =head1 METHODS 
 
 =cut
@@ -67,18 +58,13 @@ my $mw;
 
 =head1 ACCESS TO EXTERNAL DATA
 
-=head2 set_views_manager
+=head2 create_status_bar
 
-Sometimes this Tk class needs to access the views_manager.
+Create a status bar for current filename, and for the dirty pointer text
 
-This makes the views_manager available to this code
+B<Parameters>
 
-=cut
-
-sub set_views_manager {
-    my $self = shift;
-    $views_manager = shift;
-}
+- current_filename_ptr => pointer to a scalar containing the current filename
 
 =cut
 
@@ -91,140 +77,109 @@ Creates the very first page that is shown to the user
 sub create_front_page {
     my $self                   = shift;
     my $Preferences            = shift;
-    my $open_schedule_callback = shift;
+    my $semesters = shift;
+    my $open_schedules_callback = shift;
     my $new_schedule_callback  = shift;
+    my $open_schedule_callback = shift;
 
-    my $logo_file    = Tk::FindImages::get_logo();
+use Data::Dumper;print Dumper $Preferences;
+    my $logo_file = Tk::FindImages::get_allocation_logo();
     my $option_frame = $self->SUPER::create_front_page($logo_file);
 
     my $button_width    = 50;
     my $short_file_name = 25;
 
     # --------------------------------------------------------------
-    # open previous schedule file option
+    # create "open previous allocation files"" button
     # --------------------------------------------------------------
-    if ( $Preferences->{-current_file} && -e $Preferences->{-current_file} ) {
 
-        # make sure name displayed is not too long
-        my $file     = $Preferences->{-current_file};
-        my $basename = basename($file);
-        if ( length($basename) > $short_file_name ) {
-            $basename = "(...) " . substr( $basename, -$short_file_name );
+    # do all the files stored in the 'ini' file still exist?
+    my $flag = 1;    # true
+    foreach my $semester (@$semesters) {
+        $flag = 0
+          unless $Preferences->{ "-current_$semester" . "_file" }
+          && -e $Preferences->{ "-current_$semester" . "_file" };
+    }
+
+        my %files = ();
+        my %short_files = ();
+    
+    # yes, all files stored in ini file still exists, 
+    # make button
+    if ($flag) {
+
+
+        foreach my $semester (@$semesters) {
+
+            $files{$semester} =
+              $Preferences->{ "-current_$semester" . "_file" };
+
+            # make sure displayed names are not too long
+            if ( defined $files{$semester}
+                && length( $files{$semester} ) > $short_file_name )
+            {
+                $short_files{$semester} =
+                  "(...) " . substr( $files{$semester}, -$short_file_name );
+            }
+
         }
 
+        # make button for opening all files
+        my $text = "Open";
+        foreach my $semester (@$semesters) { $text .= "\n$short_files{$semester}"; }
         $option_frame->Button(
-            -text        => "Open $basename",
-            -justify     => 'right',
+            -text        => $text,
             -font        => $self->fonts->{big},
             -borderwidth => 0,
             -bg          => $self->colours->{DataBackground},
-            -command =>
-              [ $open_schedule_callback, $Preferences->{-current_file} ],
+            -command     => [$open_schedules_callback,\%files], 
+            -width  => $button_width,
+            -height => 6,
+        )->pack( -side => 'top', -fill => 'y', -expand => 0 );
+
+    }
+
+    # --------------------------------------------------------------
+    # create new allocation files
+    # --------------------------------------------------------------
+    foreach my $semester (@$semesters) {
+        $option_frame->Button(
+            -text        => "Create NEW $semester Schedule File",
+            -font        => $self->fonts->{big},
+            -borderwidth => 0,
+            -bg          => $self->colours->{DataBackground},
+            -command     => [$new_schedule_callback, $semester],
             -width  => $button_width,
             -height => 3,
         )->pack( -side => 'top', -fill => 'y', -expand => 0 );
     }
 
     # --------------------------------------------------------------
-    # create new schedule file option
+    # open schedule file
     # --------------------------------------------------------------
-    $option_frame->Button(
-        -text        => "Create NEW Schedule File",
-        -font        => $self->fonts->{big},
-        -borderwidth => 0,
-        -bg          => $self->colours->{DataBackground},
-        -command     => sub {
-            $new_schedule_callback->();
-        },
-        -width  => $button_width,
-        -height => 3,
-    )->pack( -side => 'top', -fill => 'y', -expand => 0 );
 
-    # --------------------------------------------------------------
-    # open schedule file option
-    # --------------------------------------------------------------
-    $option_frame->Button(
-        -text        => "Browse for Schedule File",
-        -font        => $self->fonts->{big},
-        -borderwidth => 0,
-        -bg          => $self->colours->{DataBackground},
-        -command     => $open_schedule_callback,
-        -width       => $button_width,
-        -height      => 3,
-    )->pack( -side => 'top', -fill => 'y', -expand => 0 );
+    foreach my $semester (@$semesters) {
+        $option_frame->Button(
+            -text        => "Browse for $semester Schedule File",
+            -font        => $self->fonts->{big},
+            -borderwidth => 0,
+            -bg          => $self->colours->{DataBackground},
+            -command     => [ $open_schedule_callback, $semester ],
+            -width       => $button_width,
+            -height      => 3,
+        )->pack( -side => 'top', -fill => 'y', -expand => 0 );
 
+    }
     $option_frame->Frame( -bg => $self->colours->{DataBackground} )->pack(
         -expand => 1,
         -fill   => 'both',
     );
 }
 
-=head2 update_for_new_schedule_and_show_page
-
-Schedule has changed, so we need to update the view
-
-=cut
-
 sub update_for_new_schedule_and_show_page {
-    my $self = shift;
-    $views_manager->destroy_all();
+    print "update_for_new_schedule\n";
+    my $self =shift;
     $self->SUPER::update_for_new_schedule_and_show_page(@_);
-}
-
-# ============================================================================
-
-=head2 draw_view_choices
-
-The ViewsManager can create schedule views for all teachers/labs etc.
-
-The I<allowable> views depend on the schedules, so this function needs to
-be called whenever the schedule changes.
-
-Draws the buttons to access any of the available views
-
-B<Parameters>
-
-- default_tab => name of notebook tab to draw on
-
-- all_view_choices => a list of schedulable objects (teachers/labs etc.)
-
-- btn_callback => a function that will be called whenever the ViewsManager
-is asked to create a view
-
-=cut
-
-{
-    my $frame;
-
-    sub draw_view_choices {
-        my $self            = shift;
-        my $default_tab     = shift;
-        my $all_scheduables = shift || [];
-        my $btn_callback    = shift || sub { return; };
-
-        my $f = $self->_pages->{ lc($default_tab) };
-
-        $views_manager->gui->reset_button_refs();
-
-        $frame->destroy if $frame;
-
-        $frame = $f->Frame->pack( -expand => 1, -fill => 'both' );
-
-        foreach my $scheduables_by_type (@$all_scheduables) {
-            my $view_choices_frame =
-              $frame->LabFrame( -label => $scheduables_by_type->title, )
-              ->pack( -expand => 1, -fill => 'both' );
-
-            my $view_choices_scrolled_frame =
-              $view_choices_frame->Scrolled( 'Frame', -scrollbars => "osoe" )
-              ->pack( -expand => 1, -fill => 'both' );
-
-            $views_manager->gui->create_buttons_for_frame(
-                $view_choices_scrolled_frame, $scheduables_by_type,
-                $btn_callback );
-        }
-
-    }
 }
 
 =head2 draw_overview
@@ -255,7 +210,7 @@ B<Parameters>
         my $course_text  = shift;
         my $teacher_text = shift;
 
-        my $f = $self->_pages->{ lc($default_page) };
+        my $f = $self->pages->{ lc($default_page) };
 
         unless ($OverviewNotebook) {
             $OverviewNotebook =

@@ -2,7 +2,47 @@
 use strict;
 use warnings;
 
-package AllocationGrid;
+# =================================================================
+# Allocation Grid
+# -----------------------------------------------------------------
+# INPUTS:
+#   frame
+#   rows            - number of rows in the grid
+#   col_merge       - array of numbers, where each item is used to
+#                     represent a group of columns (affects colouring)
+#   totals_merge    - array of numbers, where each item is used to
+#                     represent a group of columns in the 'totals'
+#                     section
+#   fonts           - hash of fonts,
+#                     required: small
+#   cb_data_entry               - event handler
+#   cb_process_data_change      - event handler
+#   cb_bottom_row_ok            - event handler
+#
+# METHODS:
+#   populate        - sets text variables to entry widgets
+#                     ... in other words, all data info is available outside of this class
+#    - header_text        array containing the main category texts
+#    - balloon_text       array of mouse over text for headers
+#    - sub_header_text    array of text for each sub header
+#    - row_header_text    array of text for each row header
+#    - data_vars          array of arrays for each data entry widget
+#    - total_header_texts array of texts for totals column titles
+#    - total_sub_texts    array of texts for totals sub column titles
+#    - total_vars         array of arrays for each total data entry widget
+#    - bottom_header_text last bottom row text
+#    - bottom_row_vars    array for each bottom data entry widget
+#
+# RETURNS:
+#   - nothing -
+#
+# REQUIRED EVENT HANDLERS:
+#    cb_data_entry              (row, col, proposed_new_text)->bool
+#    cb_process_data_change     (row, col)
+#    cb_bottom_row_ok           (text_of_entry_widget)->bool
+# =================================================================
+
+package AllocationGridTk;
 use FindBin;
 use Carp;
 use Tk;
@@ -17,7 +57,6 @@ use Tk::Pane;
 # globals
 # ============================================================================
 our $Fonts;
-our $Colours;
 
 my $header_colour1           = "#abcdef";
 my $header_colour2           = Colour->lighten( 5, $header_colour1 );
@@ -84,17 +123,17 @@ sub new {
     my $rows         = shift;
     my $col_merge    = shift;
     my $totals_merge = shift;
-    my $Colours      = shift;
     $Fonts = shift;
-
+ 
     my @col_merge              = @$col_merge;
-    my $data_entry_callback    = shift || sub { return 1; };
-    my $process_data_entry  = shift || sub{return 1};
-    my $bottom_row_ok_callback = shift || sub { return 1; };
+    my $cb_data_entry          = shift;
+    my $cb_process_data_change = shift;
+    my $cb_bottom_row_ok       = shift;
 
     my $self = bless {}, $class;
-    $self->process_data_change($process_data_entry);
-
+    $self->cb_data_entry($cb_data_entry);
+    $self->cb_process_data_change($cb_process_data_change);
+    $self->cb_bottom_row_ok($cb_bottom_row_ok);
 
     # ------------------------------------------------------------------------
     # entry widget properties
@@ -223,10 +262,10 @@ sub new {
     # ------------------------------------------------------------------------
     $self->make_header_columns($col_merge);
     $self->make_row_titles($rows);
-    $self->make_data_grid( $rows, $col_merge, $data_entry_callback );
+    $self->make_data_grid( $rows, $col_merge );
     $self->make_total_grid( $rows, $totals_merge );
     $self->make_bottom_header();
-    $self->make_bottom( $col_merge, $bottom_row_ok_callback );
+    $self->make_bottom($col_merge);
 
     return $self;
 
@@ -298,7 +337,6 @@ sub make_header_columns {
 sub make_bottom {
     my $self      = shift;
     my $col_merge = shift;
-    my $is_ok     = shift;
 
     # merged header
     foreach my $header ( 0 .. @$col_merge - 1 ) {
@@ -314,8 +352,8 @@ sub make_bottom {
                 -validate           => 'key',
                 -validatecommand    => sub {
                     my $n = shift;
-                    if ( $is_ok->($n) ) {
-                       $se->configure( -disabledbackground => $totals_colour );
+                    if ( $self->cb_bottom_row_ok->($n) ) {
+                        $se->configure( -disabledbackground => $totals_colour );
                     }
                     else {
                         $se->configure( -disabledbackground => $not_ok_colour );
@@ -456,10 +494,9 @@ sub make_total_grid {
 # data grid
 # ============================================================================
 sub make_data_grid {
-    my $self                = shift;
-    my $rows                = shift;
-    my $col_merge           = shift;
-    my $data_entry_callback = shift;
+    my $self      = shift;
+    my $rows      = shift;
+    my $col_merge = shift;
 
     my %data;
     my $col = 0;
@@ -479,10 +516,14 @@ sub make_data_grid {
                 $de = $df1->Entry(
                     %entry_props,
                     -validate        => 'key',
-                    -validatecommand => [sub {
-                        $de->configure( -bg => $needs_update_colour );
-                        return $data_entry_callback->(  @_ );
-                    },$row,$col],
+                    -validatecommand => [
+                        sub {
+                            $de->configure( -bg => $needs_update_colour );
+                            return $self->cb_data_entry->(@_);
+                        },
+                        $row,
+                        $col
+                    ],
                     -invalidcommand => sub { $df1->bell },
                 )->pack( -side => 'left' );
 
@@ -655,10 +696,10 @@ sub set_focus {
     my $self = shift;
     my $e    = shift;
     if ($e) {
-        my ($r,$c) = $self->get_row_col($e);
+        my ( $r, $c ) = $self->get_row_col($e);
         $self->header_frame->see($e);
         $self->data_frame->see($e);
-        $self->bottom_frame->see($self->bottom_widgets->[$c]);
+        $self->bottom_frame->see( $self->bottom_widgets->[$c] );
         $e->focus();
     }
 }
@@ -780,7 +821,7 @@ foreach my $widget (
 # ----------------------------------------------------------------------------
 # other getters and setters
 # ----------------------------------------------------------------------------
-sub process_data_change {
+sub cb_process_data_change {
     my $self = shift;
     $self->{-process_data_change} = sub { return 1; }
       unless $self->{-process_data_change};
@@ -788,11 +829,27 @@ sub process_data_change {
     return $self->{-process_data_change};
 }
 
+sub cb_data_entry {
+    my $self = shift;
+    $self->{-process_data_entry} = sub { return 1; }
+      unless $self->{-process_data_entry};
+    $self->{-process_data_entry} = shift if @_;
+    return $self->{-process_data_entry};
+}
+
+sub cb_bottom_row_ok {
+    my $self = shift;
+    $self->{-bottom_row_ok} = sub { return 1; }
+      unless $self->{-bottom_row_ok};
+    $self->{-bottom_row_ok} = shift if @_;
+    return $self->{-bottom_row_ok};
+}
+
 sub update_data {
     my $self = shift;
     my $row  = shift;
     my $col  = shift;
-    $self->process_data_change->( $row, $col );
+    $self->cb_process_data_change->( $row, $col );
 }
 
 sub column_colours {

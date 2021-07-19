@@ -157,6 +157,7 @@ Get the dirty_flag for the schedule.
 =cut
 
 sub dirty_flag {
+    my @caller = caller();
     my $self = shift;
     $self->{-dirty} = shift if @_;
     return $self->{-dirty};
@@ -170,8 +171,9 @@ Sets the dirty flag for changes to the schedule.
 
 sub set_dirty {
     my $self = shift;
-    ${ $self->{-dirty} } = 1;
-}
+    my $d = $self->{-dirty_flag};
+    $$d = 1;
+ }
 
 # =================================================================
 # Undo and redo

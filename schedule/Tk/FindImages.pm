@@ -61,7 +61,7 @@ sub get_image_dir {
 }
 
 sub get_allocation_logo {
-    return "$Allocation::BinDir/AllocationLogo.gif";
+    return "$AllocationManagerTk::BinDir/AllocationLogo.gif";
 }
 
 sub get_logo {

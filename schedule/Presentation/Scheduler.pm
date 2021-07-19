@@ -35,6 +35,7 @@ use Presentation::DataEntry;
 use Presentation::EditCourses;
 use SharedData;
 use GUI::FontsAndColoursTk;
+use UsefulClasses::NoteBookPageInfo;
 
 # ==================================================================
 # global vars
@@ -44,16 +45,27 @@ my $Preferences = {};
 my $Schedule;                 # the current schedule
 my $Current_schedule_file;    # will save to this file...
                               # ... when save is requested
-my $Current_directory = $Preferences->{-current_dir} || $User_base_dir;
+my $Current_directory;
 my $Filetypes = [ [ "Schedules", ".yaml" ], [ "All Files", "*" ] ];
 my $Dirtyflag;
 my $Gui;
 my $Views_manager;
 
 # ==================================================================
-# external.  Defined in SharedData.pm
+# required Notebook pages
 # ==================================================================
-our %Pages_lookup;
+my @Required_pages = (
+    NoteBookPageInfo->new( "Schedules", \&update_choices_of_schedulable_views ),
+    NoteBookPageInfo->new( "Overview",  \&update_overview ),
+    NoteBookPageInfo->new( "Courses",   \&update_edit_courses ),
+    NoteBookPageInfo->new( "Teachers",  \&update_edit_teachers ),
+    NoteBookPageInfo->new( "Labs",      \&update_edit_labs ),
+    NoteBookPageInfo->new( "Streams",   \&update_edit_streams ),
+);
+my %Pages_lookup;
+foreach my $page (@Required_pages) {
+    $Pages_lookup{ $page->name } = $page;
+}
 
 # ==================================================================
 # main
@@ -109,11 +121,11 @@ sub create_main_window() {
 # ==================================================================
 sub pre_process_stuff {
     $Gui->bind_dirty_flag( \$Dirtyflag );
-    $Gui->define_notebook_tabs( \@Scheduler::Required_pages );
+    $Gui->define_notebook_tabs( \@Required_pages );
 
     $Gui->define_exit_callback( \&exit_schedule );
 
-    # create the  (which shows all the schedule views etc.)
+    # create the view manager (which shows all the schedule views etc.)
     $Views_manager = ViewsManager->new( $Gui, \$Dirtyflag, \$Schedule );
     $Gui->set_views_manager($Views_manager);
 }
@@ -129,6 +141,8 @@ sub read_ini {
         eval { $Preferences = Load(<$fh>) };
         close $fh;
     }
+    $Current_directory = $Preferences->{-current_dir} || $User_base_dir;
+
 }
 
 # ==================================================================
@@ -415,7 +429,7 @@ sub _schedule_file_changed {
 
     # update for new schedule
     $Gui->update_for_new_schedule_and_show_page(
-        $Scheduler::Pages_lookup{Schedules}->name );
+        $Pages_lookup{Schedules}->name );
 
     $Dirtyflag = 0;
     return;
@@ -499,7 +513,7 @@ sub update_choices_of_schedulable_views {
 
     my $btn_callback     = $Views_manager->get_create_new_view_callback;
     my $all_view_choices = $Views_manager->get_all_scheduables();
-    my $page_name        = $Scheduler::Pages_lookup{Schedules}->name;
+    my $page_name        = $Pages_lookup{Schedules}->name;
     $Gui->draw_view_choices( $page_name, $all_view_choices, $btn_callback );
 
     $Views_manager->determine_button_colours($all_view_choices);
@@ -569,8 +583,7 @@ sub update_overview {
         sub update_edit_teachers {
 
             my $notebook_page =
-              $Gui->get_notebook_page(
-                $Scheduler::Pages_lookup{Teachers}->name );
+              $Gui->get_notebook_page( $Pages_lookup{Teachers}->id );
             if ($de) {
                 $de->refresh( $Schedule->teachers );
             }
@@ -583,7 +596,7 @@ sub update_overview {
 }
 
 # ==================================================================
-# draw_edit_streams
+# update_edit_streams
 # - A page where streams can be added/modified or deleted
 # ==================================================================
 {
@@ -591,8 +604,7 @@ sub update_overview {
 
     sub update_edit_streams {
 
-        my $f =
-          $Gui->get_notebook_page( $Scheduler::Pages_lookup{Streams}->name );
+        my $f = $Gui->get_notebook_page( $Pages_lookup{Streams}->id );
         if ($de) {
             $de->refresh( $Schedule->streams );
         }
@@ -615,8 +627,7 @@ sub update_overview {
 
         sub update_edit_labs {
 
-            my $f =
-              $Gui->get_notebook_page( $Scheduler::Pages_lookup{Labs}->name );
+            my $f = $Gui->get_notebook_page( $Pages_lookup{Labs}->id );
             if ($de) {
                 $de->refresh( $Schedule->labs );
             }
@@ -636,8 +647,8 @@ sub update_overview {
 # ==================================================================
 sub update_edit_courses {
     my $self = shift;
-    my $f = $Gui->get_notebook_page( $Scheduler::Pages_lookup{Courses}->name );
-    EditCourses->new( $f, $Schedule, \$Dirtyflag, $Views_manager );
+    my $f    = $Gui->get_notebook_page( $Pages_lookup{Courses}->id );
+     EditCourses->new( $f, $Schedule, \$Dirtyflag, $Views_manager );
 }
 
 # ==================================================================
@@ -710,8 +721,14 @@ sub print_views {
 # exit_schedule
 # ==================================================================
 sub exit_schedule {
-    save_schedule();
+    if ($Dirtyflag) {
+        my $answer = $Gui->question( "Save Schedule",
+            "Do you want to save your changes?" );
+        save_schedule() if $answer eq 'Yes';
+        return if $answer eq 'Cancel';
+    }
     write_ini();
+    Tk::exit();
 }
 
 1;

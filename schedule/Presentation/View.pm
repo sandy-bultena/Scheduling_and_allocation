@@ -748,7 +748,7 @@ sub cb_update_after_moving_block {
     # calculate new conflicts and update other views to show these conflicts
     $self->schedule->calculate_conflicts;
     $views_manager->update_for_conflicts;
-    $views_manager->set_dirty( $views_manager->dirty_flag );
+    $views_manager->set_dirty();
 
     # set colour for all buttons on main window, "Schedules" tab
     $self->_set_view_button_colours();
