@@ -8,6 +8,7 @@ use lib "$FindBin::Bin/..";
 use Presentation::View;
 use Schedule::Undo;
 use GUI::ViewsManagerTk;
+use UsefulClasses::AllScheduables;
 
 =head1 NAME
 
@@ -613,7 +614,7 @@ An array of ScheduablesByType (see SharedData.pm)
 
 sub get_all_scheduables {
     my $self = shift;
-    return SharedRoutines->get_all_scheduables($self->schedule);
+    return AllScheduables->new($self->schedule);
 }
 
 =head2 determine_button_colours 
@@ -632,9 +633,8 @@ sub determine_button_colours {
     my $self = shift;
     my $all_view_choices = shift || $self->get_all_scheduables();
 
-    foreach my $view_choice (@$all_view_choices) {
-        my $scheduable_objs = $view_choice->scheduable_objs;
-        my $type            = $view_choice->type;
+    foreach my $type (AllScheduables->valid_types) {
+        my $scheduable_objs = $all_view_choices->by_type($type)->scheduable_objs;
 
         # calculate conflicts
         $self->schedule->calculate_conflicts;

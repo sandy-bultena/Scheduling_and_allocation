@@ -15,8 +15,8 @@ use Schedule::Conflict;
 use Schedule::Blocks;
 use Export::DrawView;
 use List::Util qw( min max );
-use SharedData;
-use Presentation::AssignToResource;
+use Presentation::AssignToResource; 
+use UsefulClasses::AllScheduables;
 
 =head1 NAME
 
@@ -858,13 +858,10 @@ sub _get_named_scheduable_for_popup {
     my $type = shift;
 
     # get all scheduables
-    my $all_scheduables = SharedRoutines->get_all_scheduables( $self->schedule );
+    my $all_scheduables = AllScheduables->new( $self->schedule );
 
     # get only the scheduables that match the type of this view
-    my $scheduables_by_type = [];
-    foreach my $v (@$all_scheduables) {
-        $scheduables_by_type = $v if $v->type eq $type;
-    }
+    my $scheduables_by_type = $all_scheduables->by_type($type);
  
     # remove the scheduable object that is associated with this view
     my @named_schedulable_objects =

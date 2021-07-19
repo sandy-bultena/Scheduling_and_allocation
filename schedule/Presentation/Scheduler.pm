@@ -33,7 +33,6 @@ use GUI::SchedulerTk;      # gui code
 use Presentation::ViewsManager;
 use Presentation::DataEntry;
 use Presentation::EditCourses;
-use SharedData;
 use GUI::FontsAndColoursTk;
 use UsefulClasses::NoteBookPageInfo;
 
@@ -516,7 +515,7 @@ sub update_choices_of_schedulable_views {
     my $page_name        = $Pages_lookup{Schedules}->name;
     $Gui->draw_view_choices( $page_name, $all_view_choices, $btn_callback );
 
-    $Views_manager->determine_button_colours($all_view_choices);
+    $Views_manager->determine_button_colours();
 }
 
 # ==================================================================
