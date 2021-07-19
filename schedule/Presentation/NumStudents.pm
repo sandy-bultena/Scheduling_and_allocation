@@ -67,26 +67,26 @@ sub refresh {
     foreach my $semester ( @semesters) {
         my $schedule = $Schedules{$semester};
         
-        my $student_by_semester = {-semester=>$semester,-courses=>{}};
-        push @student_info,$student_by_semester;
+        my $info_by_semester = {-semester=>$semester,-courses=>{}};
+        push @student_info,$info_by_semester;
 
         my @courses =
-          sort { $a->number cmp $b->number }
           grep { $_->needs_allocation } $schedule->all_courses();
 
         my $row = 0;
         foreach my $course (@courses) {
 
-            $student_by_semester->{-courses}
+            $info_by_semester->{-courses}
               ->{ $course->short_description } = {};
+            
             foreach my $section ( sort { $a->number cmp $b->number }
                 $course->sections )
             {
                 my $student_number = $section->num_students;
-                $student_by_semester->{-courses}
+                $info_by_semester->{-courses}
                   ->{ $course->short_description }
                   ->{ $section->number } = {
-                    -student_number => $student_number,
+                    -student_number => \$student_number,
                     -validate_sub   => [ \&validate, $section ]
                   };
             }
