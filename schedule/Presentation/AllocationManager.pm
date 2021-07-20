@@ -411,7 +411,7 @@ sub exit_schedule {
         return if $answer eq 'Cancel';
     }
     write_ini();
-    CORE::exit();
+    Tk::exit();
 
 }
 
