@@ -243,3 +243,26 @@ class TimeSlot:
         day = min_day if not day else day
         day = max_day if day > max_day else day
         return day
+
+    # =================================================================
+    # conflicts
+    # =================================================================
+    def conflicts_time(self, rhs):
+        """
+        Tests that the current Time_Slot conflicts with another TimeSlot.
+        """
+        # Detect time collisions up to this error factor. Also useful for graphical applications that require a small
+        # error threshold when moving a block into place.
+        delta = 0.05
+
+        # detect date collisions
+        if abs(self.day_number - rhs.day_number) >= 1 - delta:
+            return False
+        
+        # Calculate the start/end for each block with the error factor removed.
+        self_start = self.start_number + delta
+        self_end = self.start_number + self.duration - delta
+        rhs_end = rhs.start_number + rhs.duration - delta
+        rhs_start = rhs.start_number + delta
+
+        return (self_start < rhs_end) and (rhs_start < self_end)
