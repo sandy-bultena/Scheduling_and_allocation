@@ -9,6 +9,7 @@ class Conflict:
     Represents a scheduling conflict.
 
     Constant Attributes -> TIME, LUNCH, MINIMUM_DAYS, AVAILABILITY, TIME_TEACHER, TIME_LAB, TIME_STREAM
+    
     Constant Attributes represent the possible types of conflicts    
     """
 
@@ -79,13 +80,13 @@ class Conflict:
     @property
     def type(self) -> int:
         """ Gets the conflict's type """
-        return self.type
+        return self._type
 
-    @property
+    @type.setter
     def type(self, new_type : int) -> int:
         """ Sets the conflict's type """
-        self.type = new_type
-        return self.type
+        self._type = new_type
+        return self._type
     
     # --------------------------------------------------------
     # blocks
@@ -93,13 +94,13 @@ class Conflict:
     @property
     def blocks(self) -> list:
         """ Gets the conflict's blocks """
-        return self.blocks
+        return self._blocks
     
-    @property
+    @blocks.setter
     def blocks(self, new_blocks) -> list:
         """ Sets the conflict's blocks """
-        self.blocks = new_blocks
-        return self.blocks
+        self._blocks = new_blocks
+        return self._blocks
 
     # ========================================================
     # METHODS
