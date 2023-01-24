@@ -55,9 +55,9 @@ class TimeSlot:
     # ====================================
     @property
     def day(self):
-        "Get/set the day of the week for this TimeSlot."
+        """Get/set the day of the week for this TimeSlot."""
         return self.__day
-    
+
     @day.setter
     def day(self, new_day):
         if new_day in TimeSlot.week.keys():
@@ -70,7 +70,56 @@ class TimeSlot:
             self.__day = TimeSlot.default_day
             self.day_number = TimeSlot.week[new_day]
 
-            
+    # ====================================
+    # start
+    # ====================================
+    @property
+    def start(self):
+        """Get/set the start time of the TimeSlot, in 24hr clock."""
+        return self.__start
+
+    @start.setter
+    def start(self, new_value):
+        if not re.match("^[12]?[0-9]:(00|15|30|45)$", new_value):
+            print(f"<{new_value}>: invalid start time\nchanged to {TimeSlot.default_start}")
+            new_value = TimeSlot.default_start
+
+        self.start = new_value
+        hour, minute = re.split(":", new_value)
+        # TODO: Figure out what's going on here with self.start_number.
+
+    # ====================================
+    # end
+    # ====================================
+
+    def end(self):
+        """Gets the end time in 24-hour clock."""
+        current_start = self.start_number
+        end = current_start + self.__duration
+        hour = f"{int(end)}"
+        minute = f"{int((end * 60) % 60)}"
+        return f"{hour}:{minute}"
+
+    # ====================================
+    # duration
+    # ====================================
+    @property
+    def duration(self):
+        """Gets and sets the length of the TimeSlot, in hours."""
+        return self.__duration
+
+    @duration.setter
+    def duration(self, new_val):
+        if new_val < .25 and new_val > 0:
+            new_val = .5
+        else:
+            temp = 2 * new_val
+            rounded = int(temp + 0.5)
+            new_val = rounded/2
+        if new_val > 8:
+            new_val = 8
+        if new_val <= 0:
+            print(f"<{new_val}>: invalid duration\nchanged to {TimeSlot.default_duration}")
+        self.__duration = new_val
+
     
-
-
