@@ -115,11 +115,102 @@ class TimeSlot:
         else:
             temp = 2 * new_val
             rounded = int(temp + 0.5)
-            new_val = rounded/2
+            new_val = rounded / 2
         if new_val > 8:
             new_val = 8
         if new_val <= 0:
             print(f"<{new_val}>: invalid duration\nchanged to {TimeSlot.default_duration}")
         self.__duration = new_val
 
+    # ====================================
+    # movable
+    # ====================================
+    @property
+    def movable(self):
+        """Gets and sets the course section object which contains this time_slot."""
+        return self.__movable
+
+    @movable.setter
+    def movable(self, movable: bool):
+        self.__movable = movable
+
+    # ====================================
+    # start_number
+    # ====================================
+    @property
+    def start_number(self):
+        """
+        Sets or returns the start time in hours (i.e., 1:30 pm = 13.5 hours)
+        
+        This time info is set every time the start method is invoked on the object. Modifying it directly does NOT modify the values stored in 'day'.
+
+        To set the day according to the data in this hash, use the method "snap_to_time".
+        """
+        return self.start_number
+
+    @start_number.setter
+    def start_number(self, new_val):
+        self.start_number = new_val
+
+    # ====================================
+    # day_number
+    # ====================================
+    @property
+    def day_number(self):
+        return self.day_number
+
+    @day_number.setter
+    def day_number(self, new_val):
+        self.day_number = new_val
     
+    # ====================================
+    # snap_to_time
+    # ====================================
+    def snap_to_time(self, time):
+        """
+        Takes the start number, and converts it to the nearest fraction of an hour (if max_hour_div = 2, then snaps to every 1/2 hour).
+
+        Resets the 'start' property to the new clock time.
+
+        Returns true if the new time is different than the previous time.
+        """
+        hour = self._snap_to_time(time)
+        minute = int((hour - int(hour)) * 60)
+        start = f"{int(hour)}:{minute:2d}"
+
+        changed = False
+        if start != self.__start:
+            changed = True
+        self.start(start)
+        return changed
+
+    def _snap_to_time(self, time):
+        min_time = time if time else 8
+        max_time = time if time else 18
+
+        TimeSlot.max_hour_div = 1 if TimeSlot.max_hour_div < 1 else TimeSlot.max_hour_div
+
+        r_hour = self.start_number
+        start = ""
+
+        # Get hour and fractional hour
+        hour = int(r_hour)
+        frac = r_hour = hour
+
+        # Create array of allowed fractions.
+        fracs = []
+        for i in range(TimeSlot.max_hour_div + 1):
+            fracs.append(i / TimeSlot.max_hour_div)
+
+        # Sort according to which one is closest to our fraction. TODO: Come back to this part.
+        sorted_frac = sorted(fracs, )
+
+        # add hour fraction to hour.
+        hour = hour + sorted_frac[0]
+
+        # Adjust hour to minimum or maximum
+        hour = min_time if hour < min_time else hour
+        hour = max_time - self.__duration if hour > max_time - self.__duration else hour
+
+        return hour
+
