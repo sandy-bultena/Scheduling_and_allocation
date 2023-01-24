@@ -223,7 +223,6 @@ class TimeSlot:
 
         Resets the 'day' property to the appropriate string.
 
-        Returns true if the new time is different than the previous time.
         """
         day = self._snap_to_day(args)
 
@@ -231,7 +230,7 @@ class TimeSlot:
         if TimeSlot.reverse_week[day] != self.__day:
             changed = True
         self.day(TimeSlot.reverse_week[day])
-        return day  # TODO: Ask Sandy if this is the correct return type.
+        # return day  # TODO: Ask Sandy if this is the correct return type.
 
     def _snap_to_day(self, *args: int):
         min_day = args[0] if args[0] else 1
