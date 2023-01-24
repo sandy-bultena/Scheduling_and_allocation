@@ -1,4 +1,15 @@
 import re
+#
+# Synopsis
+#
+
+# 
+#    use Schedule::Time_slot;
+#    
+#    my $time_slot = Time_slot->new (-day=>"Wed",
+#                                    -start=>"9:30",
+#                                    -duration=>1.5,
+#                                    -movable=>1);
 
 
 class TimeSlot:
@@ -12,8 +23,8 @@ class TimeSlot:
     # =================================================================
     # Class/Global Variables
     # =================================================================
-    max_id = 0
-    week = {
+    _max_id = 0
+    _week = {
         "mon": 1,
         "tue": 2,
         "wed": 3,
@@ -46,8 +57,8 @@ class TimeSlot:
         self.__start = start
         self.__duration = duration
         self.__movable = movable
-        TimeSlot.max_id += 1
-        self.__id = TimeSlot.max_id
+        TimeSlot._max_id += 1
+        self.__id = TimeSlot._max_id
 
     # ====================================
     # id
@@ -67,15 +78,15 @@ class TimeSlot:
 
     @day.setter
     def day(self, new_day):
-        if new_day in TimeSlot.week.keys():
+        if new_day in TimeSlot._week.keys():
             self.__day = new_day
-            self.day_number = TimeSlot.week[new_day]
+            self.day_number = TimeSlot._week[new_day]
         elif new_day in range(1, 8):
             self.day_number = new_day
             self.__day = TimeSlot.reverse_week[new_day]
         else:
             self.__day = TimeSlot.default_day
-            self.day_number = TimeSlot.week[new_day]
+            self.day_number = TimeSlot._week[new_day]
 
     # ====================================
     # start
@@ -264,7 +275,7 @@ class TimeSlot:
         # detect date collisions
         if abs(self.day_number - rhs.day_number) >= 1 - delta:
             return False
-
+        
         # Calculate the start/end for each block with the error factor removed.
         self_start = self.start_number + delta
         self_end = self.start_number + self.duration - delta
