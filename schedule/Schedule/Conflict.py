@@ -2,7 +2,7 @@
 
 # FindBin -> find bin location where script is being run. unclear what it's used for; seemingly unnecessary
 # Colour -> custom package for handling colours - needs to be converted. below line is needed import statement
-#from ..PerlLib.Colour import *
+from ..PerlLib.Colour import *
 
 class ConflictMeta(type):
     """
@@ -64,25 +64,6 @@ class Conflict(metaclass=ConflictMeta):
     # ========================================================
     # PROPERTIES
     # ========================================================
-    
-    # --------------------------------------------------------
-    # static properties (colours, hash_descriptions)
-    # --------------------------------------------------------
-    @property
-    @staticmethod
-    def colours() -> list: return Conflict._colours
-
-    @property
-    @staticmethod
-    def _hash_descriptions() -> dict: return {
-        Conflict.TIME : "indirect time overlap",
-        Conflict.LUNCH : "no lunch time",
-        Conflict.MINIMUM_DAYS : "too few days",
-        Conflict.TIME_TEACHER : "time overlap",
-        Conflict.TIME_LAB : "time overlap",
-        Conflict.TIME_STREAM  : "time overlap",
-        Conflict.AVAILABILITY : "not available"
-    }
 
     # --------------------------------------------------------
     # type
@@ -96,7 +77,7 @@ class Conflict(metaclass=ConflictMeta):
     def type(self, new_type : int) -> int:
         """ Sets the conflict's type """
         self._type = new_type
-        return self._type
+        return self.type
     
     # --------------------------------------------------------
     # blocks
@@ -110,31 +91,50 @@ class Conflict(metaclass=ConflictMeta):
     def blocks(self, new_blocks) -> list:
         """ Sets the conflict's blocks """
         self._blocks = new_blocks
-        return self._blocks
+        return self.blocks
 
     # ========================================================
     # METHODS
     # ========================================================
 
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+    # Static Methods
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
     # --------------------------------------------------------
-    # get_description
+    # colours
     # --------------------------------------------------------
-    def get_description(self, type): return Conflict._hash_descriptions[type]
+    @staticmethod
+    def colours() -> dict[int, str]:
+        """ Returns the colours used by each conflict type """
+        return Conflict._colours
     
     # --------------------------------------------------------
-    # type checking methods
+    # _hash_descriptions
     # --------------------------------------------------------
-    def is_time(self, type): return type & Conflict.TIME
-    def is_time_lab(self, type): return type & Conflict.TIME_LAB
-    def is_time_teacher(self, type): return type & Conflict.TIME_TEACHER
-    def is_time_stream(self, type): return type & Conflict.TIME_STREAM
-    def is_lunch(self, type): return type & Conflict.LUNCH
-    def is_minimum_days(self, type): return type & Conflict.MINIMUM_DAYS
-    def is_availability(self, type): return type & Conflict.AVAILABILITY
+    @staticmethod
+    def _hash_descriptions() -> dict: return {
+        Conflict.TIME : "indirect time overlap",
+        Conflict.LUNCH : "no lunch time",
+        Conflict.MINIMUM_DAYS : "too few days",
+        Conflict.TIME_TEACHER : "time overlap",
+        Conflict.TIME_LAB : "time overlap",
+        Conflict.TIME_STREAM  : "time overlap",
+        Conflict.AVAILABILITY : "not available"
+    }
+
+    # --------------------------------------------------------
+    # list
+    # --------------------------------------------------------
+    @staticmethod
+    def list() -> list:
+        """Returns reference to list of Conflict objects"""
+        return Conflict._conflicts
 
     # --------------------------------------------------------
     # most_severe
     # --------------------------------------------------------
+    @staticmethod
     def most_severe(self, conflict_number : int, view_type : str):
         """
         Identify the most severe conflict type in a conflict
@@ -159,6 +159,19 @@ class Conflict(metaclass=ConflictMeta):
                 break
         
         return severest
+    
+    # --------------------------------------------------------
+    # get_description
+    # --------------------------------------------------------
+    @staticmethod
+    def get_description(self, type):
+        """ Returns the description of the provided conflict type """
+        return Conflict._hash_descriptions()[type]
+
+
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+    # Instance Methods
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
     
     # --------------------------------------------------------
     # add_block
