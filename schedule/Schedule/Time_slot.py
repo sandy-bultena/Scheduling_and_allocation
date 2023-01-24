@@ -162,7 +162,7 @@ class TimeSlot:
     @day_number.setter
     def day_number(self, new_val):
         self.day_number = new_val
-    
+
     # ====================================
     # snap_to_time
     # ====================================
@@ -214,3 +214,32 @@ class TimeSlot:
 
         return hour
 
+    # =================================================================
+    # snap_to_day
+    # =================================================================
+    def snap_to_day(self, *args: int):
+        """
+        Takes the start_day and converts it to the nearest day.
+
+        Resets the 'day' property to the appropriate string.
+
+        Returns true if the new time is different than the previous time.
+        """
+        day = self._snap_to_day(args)
+
+        changed = False
+        if TimeSlot.reverse_week[day] != self.__day:
+            changed = True
+        self.day(TimeSlot.reverse_week[day])
+        return day  # TODO: Ask Sandy if this is the correct return type.
+
+    def _snap_to_day(self, *args: int):
+        min_day = args[0] if args[0] else 1
+        max_day = args[1] if args[1] else 7
+
+        r_day = self.day_number
+
+        day = r_day if r_day == int(r_day) else int(r_day + 0.5)
+        day = min_day if not day else day
+        day = max_day if day > max_day else day
+        return day
