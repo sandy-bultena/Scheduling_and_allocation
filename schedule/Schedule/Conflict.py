@@ -4,7 +4,16 @@
 # Colour -> custom package for handling colours - needs to be converted. below line is needed import statement
 #from ..PerlLib.Colour import *
 
-class Conflict:
+class ConflictMeta(type):
+    """
+    Metaclass for Conflict, making it iterable
+    """
+    _conflicts = []
+    
+    def __iter__(self):
+        return iter(getattr(self, '_conflicts', []))
+
+class Conflict(metaclass=ConflictMeta):
     """
     Represents a scheduling conflict.
 
@@ -50,6 +59,7 @@ class Conflict:
         
         self.type = type
         self.blocks = blocks
+        Conflict._conflicts.append(self)
 
     # ========================================================
     # PROPERTIES
@@ -160,3 +170,13 @@ class Conflict:
         Parameter new_block -> the new block to be added.
         """
         self.blocks.append(new_block)
+    
+    # --------------------------------------------------------
+    # delete
+    # --------------------------------------------------------
+    def delete(self):
+        """
+        Deletes the conflict from the conflict list
+        """
+        Conflict._conflicts.remove(self)
+        return self
