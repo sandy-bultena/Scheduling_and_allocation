@@ -141,7 +141,7 @@ class Block(TimeSlot):
     # =================================================================
     def assign_lab(self, lab: Lab):
         """Assign a lab to this block."""
-        
+
         # If the Block doesn't already have a labs dict, create one.
         if not hasattr(self, '_labs'):
             self._labs = {}
@@ -175,3 +175,27 @@ class Block(TimeSlot):
             del self._labs[lab.id]
         
         return self
+
+    # =================================================================
+    # remove_all_labs
+    # =================================================================
+    def remove_all_labs(self):
+        """Removes ALL Labs from this Block.
+        
+        Returns the Block object."""
+        for lab in self._labs:
+            self.remove_lab(lab)
+
+        return self
+
+    # =================================================================
+    # labs
+    # =================================================================
+    def labs(self):
+        """Returns a list of the labs assigned to this block."""
+
+        # If the Block doesn't already have a labs dict, create one.
+        if not hasattr(self, '_labs'):
+            self._labs = {}
+
+        return list(self._labs.values())
