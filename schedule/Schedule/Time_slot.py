@@ -12,7 +12,16 @@ import re
 #                                    -movable=>1);
 
 
-class TimeSlot:
+class TimeSlotMeta(type):
+    """Metaclass for TimeSlot, making the latter iterable."""
+    # _counter = 0
+    _instances = []
+
+    def __iter__(self):
+        return iter(getattr(self, '_instances', []))
+
+
+class TimeSlot(metaclass=TimeSlotMeta):
     """
     A time slot is specified by a day of the week, start time, length (in hours), and whether or not it is allowed to
     move.
@@ -59,6 +68,7 @@ class TimeSlot:
         self.__movable = movable
         TimeSlot._max_id += 1
         self.__id = TimeSlot._max_id
+        TimeSlot._instances.append(self)
 
     # ====================================
     # id
