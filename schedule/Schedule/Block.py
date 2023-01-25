@@ -1,6 +1,7 @@
 from Time_slot import TimeSlot
 from Conflict import Conflict
 from Lab import Lab
+from Section import Section
 
 
 # SYNOPSIS:
@@ -128,13 +129,12 @@ class Block(TimeSlot):
         return self.__section
 
     @section.setter
-    def section(self, section):
+    def section(self, section: Section):
         pass
-        # # TODO: check whether this is a Section object. Section class must be written first.
-        # if isinstance(section, Section):
-        #     self.__section = section
-        # else:
-        #     raise f"<{section}>: invalid section - must be a Section object."
+        if isinstance(section, Section):
+            self.__section = section
+        else:
+            raise f"<{section}>: invalid section - must be a Section object."
 
     # =================================================================
     # assign_lab
@@ -400,11 +400,18 @@ class Block(TimeSlot):
         """Returns a list of the conflicts related to this Block."""
         if not hasattr(self, '_conflicts'):
             self._conflicts = []
-        
+
         return self._conflicts
 
-    #===================================
+    # ===================================
     # Refresh Number
-    #===================================
+    # ===================================
     def refresh_number(self):
+        """Assigns a number to a Block that doesn't have one."""
+        # NOTE: Honestly not sure why this function is necessary.
+        number = self.number
+        section = self.section
+
+        if number == 0:
+            self.number = section.get_new_number()
         pass
