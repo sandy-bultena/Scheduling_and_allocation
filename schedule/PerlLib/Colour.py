@@ -1,13 +1,12 @@
 """
-Allows the user to manipulate colours
+Allows the user to manipulate colours.
 
-- rgb-hsl conversion (both ways)
+- rgb-hsl conversion (both ways).
+- modifying colours by fading, lightening and darknening.
+- obtaining colour information (hue, saturation, light, etc).
+- determining luminosity.
 
-- modifying colours by fading, lightening and darknening
-
-- obtaining colour information (hue, saturation, light, etc)
-
-- determining luminosity
+RGB is in readable format (#......) unless specified otherwise.
 """
 import re
 
@@ -16,33 +15,242 @@ _colour_list = {}
 MAX_COLOUR = 255
 LEN = 2
 
+# --------------------------------------------------------
+# _initialize_colours
+# --------------------------------------------------------
 def __initialize_colours():
-    if _colour_list: return
+  if _colour_list: return
 
-    colour_list = __colour_data.split("\n")
-    for c in colour_list:
-        # ERROR WITH SPLIT HERE
-        r, g, b, name = re.split("\s+", c, 3)
-        if not name: continue
-        name = name.strip()
-        _colour_list[name] = [int(r), int(g), int(b)]
+  colour_list = __colour_data.split("\n")
+  for c in colour_list:
+    r, g, b, name = re.split("\s+", c.strip(), 3)
+    if not name: continue
+    name = name.strip()
+    _colour_list[name] = [int(r), int(g), int(b)]
 
-def string(colour : str):
+# --------------------------------------------------------
+# _rgb2hsl
+# Source:
+# http://www.mathworks.com/matlabcentral/fileexchange/loadFile.do?objectId=3360&objectType=file#review_submission
+# --------------------------------------------------------
+def _rgb2hsl(r : int, g : int, b : int) -> tuple[int, int, int]:
+  """
+  Converts a percentage-based (0-1) RGB value to a percentage-based HSL value
+  - Parameter r -> Red content of colour.
+  - Parameter g -> Green content of colour.
+  - Parameter b -> Blue content of colour.
+  """
+  mini = min(r, g, b)
+  maxi = max(r, g, b)
+
+  # luminescence
+  l = (maxi + mini) / 2
+
+  # saturation
+  if maxi == mini: return 0, 0, l
+  elif l < 0.5: s = (maxi - mini) / (maxi + mini)
+  else: s = (maxi - mini) / (2 - (maxi + mini))
+  
+  # hue (based on offset of maximum colour)
+  if r == maxi: h = (g - b) / (maxi - mini)
+  elif g == maxi: h = 2 + (b - r) / (maxi - mini)
+  else: h = 4 + (r - g) / (maxi - mini)
+
+  h /= 6
+  h = h + 1 if h < 0 else h
+  return h, s, l
+
+# --------------------------------------------------------
+# _hsl2rgb
+# Source:
+# http://www.easyrgb.com/math.php?MATH=M19#text19
+# --------------------------------------------------------
+def _hsl2rgb(h : int, s : int, l : int) -> tuple[int, int, int]:
+  """
+  Converts a percentage-based (0-1) HSL value to a percentage-based RGB value
+  - Parameter h -> Hue of colour.
+  - Parameter s -> Saturation of colour.
+  - Parameter l -> Luminescence of colour.
+  """
+  if s == 0: return l, l, l
+  elif l < 0.5: t1 = l * (s + 1)
+  else: t1 = (l + s) - (s * l)
+
+  t2 = 2 * l - t1
+
+  r = _hue2rgb(t2, t1, h + (1/3))
+  g = _hue2rgb(t2, t1, h)
+  b = _hue2rgb(t2, t1, h - (1/3))
+  return r, g, b
+
+# --------------------------------------------------------
+# _hue2rgb
+# Source:
+# http://www.easyrgb.com/math.php?MATH=M19#text19
+# --------------------------------------------------------
+def _hue2rgb(v1 : int, v2 : int, vH : int):
+  vH += 1 if vH < 0 else 0
+  vH -= 1 if vH > 1 else 0
+  if (6 * vH) < 1: return v1 + (v2 - v1) * 6 * vH
+  elif (2 * vH) < 1: return v2
+  elif (3 * vH) < 2: return v1 + (v2 - v1) * ((2/3) - vH) * 6
+  else: return v1
+
+# --------------------------------------------------------
+# string
+# --------------------------------------------------------
+def string(colour : str) -> str:
+  """
+  Returns the RGB value of a given colour.
+  - Parameter colour -> The colour to return. Supports giving a colour name, as long as the colour appears in the *nix 'showrgb' command.
+  """
+  if colour[0] != "#":
     string = "#000000"
-    if colour[0] != "#":
-        if _colour_list and _colour_list[colour]:
-            print(setcolour_rgb(
-                _colour_list[colour][0]/255,
-                _colour_list[colour][1]/255,
-                _colour_list[colour][2]/255,
-            ))
+    if _colour_list and colour in _colour_list:
+      string = rgb_from_percent(
+        _colour_list[colour][0]/255,
+        _colour_list[colour][1]/255,
+        _colour_list[colour][2]/255,
+      )
+  else: string = colour
+  
+  LEN = int(len(string[1::])/3)
+  MAX_COLOUR = int("F" * LEN, 16)
 
-def setcolour_rgb(r : int, g : int, b : int):
-    r = int(r * MAX_COLOUR + .5)
-    b = int(b * MAX_COLOUR + .5)
-    g = int(g * MAX_COLOUR + .5)
+  return string
 
-    return "#%2.2X%2.2X%2.2X".format(r, b, g)
+# --------------------------------------------------------
+# rgb_from_percent
+# --------------------------------------------------------
+def rgb_from_percent(r : int, g : int, b : int) -> str:
+  """
+  Converts a percentage-based (0-1) RGB into a readable value.
+  - Parameter r -> Red content of colour.
+  - Parameter g -> Green content of colour.
+  - Parameter b -> Blue content of colour.
+  """
+  r = int(r * MAX_COLOUR + .5)
+  b = int(b * MAX_COLOUR + .5)
+  g = int(g * MAX_COLOUR + .5)
+
+  return "#{:02X}{:02X}{:02X}".format(r, g, b)
+
+# --------------------------------------------------------
+# hsl_from_percent
+# --------------------------------------------------------
+def hsl_from_percent(h : int, s : int, l : int) -> str:
+  """
+  Converts a percentage-based (0-1) HSL into a readable RGB value.
+  - Parameter h -> Hue of colour.
+  - Parameter s -> Saturation of colour.
+  - Parameter l -> Luminescence of colour.
+  """
+  r, g, b = _hsl2rgb(h, s, l)
+  c = rgb_from_percent(r, g, b)
+  return string(c)
+
+# --------------------------------------------------------
+# rgb
+# --------------------------------------------------------
+def rgb(colour : str) -> tuple[str, str, str]:
+  """
+  Converts a given colour into a percentage-based RGB value.
+  - Parameter colour -> Name or RGB of given colour.
+  """
+  r = int(string(colour)[1:LEN + 1:], 16) / MAX_COLOUR
+  g = int(string(colour)[LEN + 1:LEN * 2 + 1:], 16) / MAX_COLOUR
+  b = int(string(colour)[LEN * 2 + 1:LEN * 3 + 1:], 16) / MAX_COLOUR
+  return r, g, b
+
+# --------------------------------------------------------
+# hsl
+# --------------------------------------------------------
+def hsl(colour: str) -> tuple[int, int, int]:
+  """
+  Converts a given colour into a hue/saturation/light value
+  - Parameter colour -> Name or RGB of given colour.
+  """
+  r, g, b  = rgb(colour)
+  return _rgb2hsl(r, g, b)
+
+# --------------------------------------------------------
+# darken
+# --------------------------------------------------------
+def darken(colour : str, amount : int = 10) -> str:
+  """
+  Darkens a colour. Equivalent to lighten(colour, -amount)
+  - Parameter colour -> The colour to darken.
+  - Parameter amount -> How much to darken by. Defaults to 10.
+  """
+  # get HSL
+  h, s, l = hsl(string(colour))
+
+  # reduce light
+  l = l - amount/100
+  l = max(0, min(1, l))
+
+  # convert to colour string
+  return hsl_from_percent(h, s, l)
+
+# --------------------------------------------------------
+# lighten
+# --------------------------------------------------------
+def lighten(colour : str, amount : int = 10) -> str:
+  """
+  Lightens a colour. Equivalent to darken(colour, -amount)
+  - Parameter colour -> The colour to lighten.
+  - Parameter amount -> How much to lighten by. Defaults to 10.
+  """
+  return darken(colour, -amount)
+
+# --------------------------------------------------------
+# is_light
+# --------------------------------------------------------
+def is_light(colour : str) -> bool:
+  """
+  Determines if the colour is light or dark, based on visual luminosity
+  - Parameter colour -> The colour to be determined
+  """
+  l = luminosity(string(colour))
+  return l > 0.5
+
+# --------------------------------------------------------
+# luminosity
+# --------------------------------------------------------
+def luminosity(colour : str) -> float:
+  """
+  Returns the visual luminosity of a given colour
+  - Parameter colour -> The colour who's luminosity is returned
+  """
+  r, g, b = rgb(colour)
+  return (r*299 + g*587 + b*114)/1437 # visual luminosity
+
+# --------------------------------------------------------
+# add
+# --------------------------------------------------------
+def add(c1 : str, c2 : str) -> str:
+  """
+  Adds one colour to another, assuming that the light is shining through the colours
+  
+  White (clear) covered by black will return black
+
+  Black (opaque) covered by white will return black
+
+  50% grey covered by 50% grey will return 75% grey
+
+  - Parameter c1 -> The first colour to be added
+  - Parameter c1 -> The second colour to be added
+  """
+  c1 = string(c1)
+  c2 = string(c2)
+
+  # get the RGB
+  r1, g1, b1 = rgb(c1)
+  r2, g2, b2 = rgb(c2)
+
+  # add & convert to colour string
+  return rgb_from_percent(r1 * r2, g1 * g2, b1 * b2)
+
 
 
 __colour_data = """199  21 133		medium violet red
@@ -798,7 +1006,12 @@ __colour_data = """199  21 133		medium violet red
   0 205 205		cyan3
   0   0   0		black"""
 
-# DON'T CHECK __NAME__ - should run while being imported
+# DON'T CHECK __name__ - should run when being imported
 __initialize_colours()
 
-string("blue")
+print(string("dark red"))
+print(string("#44423d"))
+
+# removed functions (not converted):
+  # fade, due to unuse
+  # _min & _max, due to being built-in in Python
