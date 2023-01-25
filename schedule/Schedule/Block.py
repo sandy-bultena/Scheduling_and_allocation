@@ -141,15 +141,37 @@ class Block(TimeSlot):
     # =================================================================
     def assign_lab(self, lab: Lab):
         """Assign a lab to this block."""
+        
+        # If the Block doesn't already have a labs dict, create one.
         if not hasattr(self, '_labs'):
             self._labs = {}
 
         if not isinstance(lab, Lab):
             raise f"<{lab}>: invalid lab - must be a Lab object."
 
-        self._labs[lab.id] = lab    # TODO: Check if this function allows multiple labs to be assigned at once in the
+        # TODO: Check if this function allows multiple labs to be assigned at once in the
+        self._labs[lab.id] = lab
         # perl version.
 
         return self
 
-    
+    # =================================================================
+    # remove_lab
+    # =================================================================
+    def remove_lab(self, lab: Lab):
+        """Removes the specified Lab from this Block.
+
+        Returns the Block object."""
+
+        # If the Block doesn't already have a labs dict, create one.
+        if not hasattr(self, '_labs'):
+            self._labs = {}
+
+        if not isinstance(lab, Lab):
+            raise f"<{lab}>: invalid lab - must be a Lab object."
+
+        # If the labs dict contains an entry for the specified Lab, remove it.
+        if lab.id in self._labs.keys():
+            del self._labs[lab.id]
+        
+        return self
