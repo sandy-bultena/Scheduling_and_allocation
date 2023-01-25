@@ -1,5 +1,6 @@
 from Time_slot import TimeSlot
 from Conflict import Conflict
+from Lab import Lab
 
 
 # SYNOPSIS:
@@ -117,3 +118,38 @@ class Block(TimeSlot):
     def id(self):
         """Gets the Block id."""
         return self._block_id
+
+    # =================================================================
+    # section
+    # =================================================================
+    @property
+    def section(self):
+        """Gets and sets the course Section object which contains this Block."""
+        return self.__section
+
+    @section.setter
+    def section(self, section):
+        pass
+        # # TODO: check whether this is a Section object. Section class must be written first.
+        # if isinstance(section, Section):
+        #     self.__section = section
+        # else:
+        #     raise f"<{section}>: invalid section - must be a Section object."
+
+    # =================================================================
+    # assign_lab
+    # =================================================================
+    def assign_lab(self, lab: Lab):
+        """Assign a lab to this block."""
+        if not hasattr(self, '_labs'):
+            self._labs = {}
+
+        if not isinstance(lab, Lab):
+            raise f"<{lab}>: invalid lab - must be a Lab object."
+
+        self._labs[lab.id] = lab    # TODO: Check if this function allows multiple labs to be assigned at once in the
+        # perl version.
+
+        return self
+
+    
