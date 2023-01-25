@@ -1,7 +1,7 @@
 #!/user/bin/python
 
 # FindBin -> find bin location where script is being run. unclear what it's used for; seemingly unnecessary
-# Colour -> custom package for handling colours - needs to be converted. below line is needed import statement
+# importing *, so no need for Colour prefix
 from ..PerlLib.Colour import *
 
 class ConflictMeta(type):
@@ -16,8 +16,7 @@ class ConflictMeta(type):
 class Conflict(metaclass=ConflictMeta):
     """
     Represents a scheduling conflict.
-
-    Constant Attributes -> TIME, LUNCH, MINIMUM_DAYS, AVAILABILITY, TIME_TEACHER, TIME_LAB, TIME_STREAM
+    - Constant Attributes -> TIME, LUNCH, MINIMUM_DAYS, AVAILABILITY, TIME_TEACHER, TIME_LAB, TIME_STREAM
     
     Constant Attributes represent the possible types of conflicts    
     """
@@ -40,9 +39,7 @@ class Conflict(metaclass=ConflictMeta):
         AVAILABILITY : "mediumvioletred"
     }
 
-    _colours[TIME] = _colours[TIME_TEACHER]
-    # replace with below code when PerlLib/Colour.py has been completed
-    #_colours[TIME] = Colour(_colours[TIME_TEACHER]).lighten(30)
+    _colours[TIME] = lighten(_colours[TIME_TEACHER], 30)
 
     # ========================================================
     # CONSTRUCTOR
@@ -50,10 +47,8 @@ class Conflict(metaclass=ConflictMeta):
     def __init__(self, type : int, blocks : list):
         """
         Creates an instance of the Conflict class.
-
-        Parameter type -> defines the type of conflict. Integer.
-
-        Parameter blocks -> defines the list of blocks involved in the conflict. List of Block objects.
+        - Parameter type -> defines the type of conflict. Integer.
+        - Parameter blocks -> defines the list of blocks involved in the conflict. List of Block objects.
         """
         if not type or not blocks: raise "Bad inputs"
         
@@ -135,13 +130,11 @@ class Conflict(metaclass=ConflictMeta):
     # most_severe
     # --------------------------------------------------------
     @staticmethod
-    def most_severe(self, conflict_number : int, view_type : str):
+    def most_severe(conflict_number : int, view_type : str):
         """
         Identify the most severe conflict type in a conflict
-
-        Parameter conflict_number -> defines the types of conflicts. Integer
-
-        Parameter view_type -> defines the user's current view. String
+        - Parameter conflict_number -> defines the types of conflicts. Integer
+        - Parameter view_type -> defines the user's current view. String
         """
         severest = 0
         sorted_conflicts = Conflict._sorted_conflicts.copy()
@@ -164,7 +157,7 @@ class Conflict(metaclass=ConflictMeta):
     # get_description
     # --------------------------------------------------------
     @staticmethod
-    def get_description(self, type):
+    def get_description(type):
         """ Returns the description of the provided conflict type """
         return Conflict._hash_descriptions()[type]
 
@@ -179,8 +172,7 @@ class Conflict(metaclass=ConflictMeta):
     def add_block(self, new_block):
         """
         Adds a new affected block to the conflict.
-
-        Parameter new_block -> the new block to be added.
+        - Parameter new_block -> the new block to be added.
         """
         self.blocks.append(new_block)
     
