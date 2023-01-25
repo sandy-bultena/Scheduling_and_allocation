@@ -47,8 +47,8 @@ class Conflict(metaclass=ConflictMeta):
     def __init__(self, type : int, blocks : list):
         """
         Creates an instance of the Conflict class.
-        - Parameter type -> defines the type of conflict. Integer.
-        - Parameter blocks -> defines the list of blocks involved in the conflict. List of Block objects.
+        - Parameter type -> defines the type of conflict.
+        - Parameter blocks -> defines the list of blocks involved in the conflict.
         """
         if not type or not blocks: raise "Bad inputs"
         
@@ -69,10 +69,9 @@ class Conflict(metaclass=ConflictMeta):
         return self._type
 
     @type.setter
-    def type(self, new_type : int) -> int:
+    def type(self, new_type : int):
         """ Sets the conflict's type """
         self._type = new_type
-        return self.type
     
     # --------------------------------------------------------
     # blocks
@@ -83,10 +82,9 @@ class Conflict(metaclass=ConflictMeta):
         return self._blocks
     
     @blocks.setter
-    def blocks(self, new_blocks) -> list:
+    def blocks(self, new_blocks):
         """ Sets the conflict's blocks """
         self._blocks = new_blocks
-        return self.blocks
 
     # ========================================================
     # METHODS
