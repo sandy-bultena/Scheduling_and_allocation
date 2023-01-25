@@ -286,4 +286,47 @@ class Block(TimeSlot):
     def teachersObj(self):
         """Returns a list of teacher objects to this Block."""
         # NOTE: Not entirely sure what this is meant to be doing in the original Perl.
+        # ADDENDUM: There are no references to this method anywhere in the code beyond here. May get rid of it.
         return self._teachers
+
+    # =================================================================
+    # sync_block
+    # =================================================================
+    def sync_block(self, block):
+        """The new Block object will be synced with this one 
+        (i.e., changing the start time of this Block will change the start time of the synched block).
+        
+        Returns the Block object."""
+        if not isinstance(block, Block):
+            raise f"<{block}>: invalid block - must be a Block object."
+        
+        if not hasattr(self, '_sync'):
+            self._sync = []
+        self._sync.append(block)
+
+        return self
+
+    # =================================================================
+    # unsync_block
+    # =================================================================
+    def unsync_block(self, block):
+        """Removes syncing of Block from this Block.
+        
+        Returns this Block object."""
+
+        # This function was not finished or used in the Perl code, so I'm flying blind here.
+        self._sync.remove(block)
+
+        return self
+    
+    # =================================================================
+    # synced
+    # =================================================================
+    def synced(self):
+        """Returns an array ref of the Blocks which are synced to this Block."""
+
+        # If the sync array doesn't exist, create it.
+        if not hasattr(self, '_sync'):
+            self._sync = []
+
+        return self._sync
