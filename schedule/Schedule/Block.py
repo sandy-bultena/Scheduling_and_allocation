@@ -1,4 +1,5 @@
 from Time_slot import TimeSlot
+from Conflict import Conflict
 # SYNOPSIS:
 
 #    use Schedule::Course;
@@ -38,6 +39,22 @@ class Block(TimeSlot):
     # Constructor
     # =================================================================
 
-    def __init__(self, day: str, start: str, duration: float) -> None:
+    def __init__(self, day: str, start: str, duration: float, number) -> None:
         TimeSlot.__init__(self, day, start, duration)
-        pass
+        self.__number = number
+
+    # =================================================================
+    # number
+    # =================================================================
+
+    @property
+    def number(self):
+        """Gets and sets the Block number."""
+        return self.__number
+
+    @number.setter
+    def number(self, new_num: str):
+        if new_num is None or new_num == "":
+            # TODO: Raise an exception. f"<{new_num}>: section number cannot be a null string.""
+            pass
+        self.__number = new_num
