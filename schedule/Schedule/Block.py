@@ -392,3 +392,19 @@ class Block(TimeSlot):
         # text = ""
         text = f"{self.number} : {self.day}, {self.start} {self.duration} hour(s)"
         return text
+
+    # =================================================================
+    # conflicts
+    # =================================================================
+    def conflicts(self):
+        """Returns a list of the conflicts related to this Block."""
+        if not hasattr(self, '_conflicts'):
+            self._conflicts = []
+        
+        return self._conflicts
+
+    #===================================
+    # Refresh Number
+    #===================================
+    def refresh_number(self):
+        pass
