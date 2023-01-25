@@ -199,3 +199,70 @@ class Block(TimeSlot):
             self._labs = {}
 
         return list(self._labs.values())
+
+    # =================================================================
+    # has_lab
+    # =================================================================
+    def has_lab(self, lab: Lab):
+        """Returns true if the Block has the specified Lab."""
+        if not lab:
+            return False
+        
+        for l in self._labs:
+            if l.id == lab.id:
+                return True
+        
+        return False
+
+    # =================================================================
+    # assign_teacher
+    # =================================================================
+    def assign_teacher(self, teacher):
+        """Assigns a new teacher to this Block.
+        
+        Returns the Block object."""
+        # If this Block doesn't already contain a Teachers dict, create one.
+        if not hasattr(self, '_teachers'):
+            self._teachers = {}
+
+        # TODO: Come back to this once Teacher has been defined so we can validate.
+        self._teachers[teacher.id] = teacher
+
+        return self
+
+    # =================================================================
+    # remove_teacher
+    # =================================================================
+    def remove_teacher(self, teacher):
+        """Removes the specified Teacher from this Block.
+        
+        Returns the Block object."""
+
+        # Verify that the teacher is, in fact, a Teacher. 
+        # TODO: Come back to this once Teacher is implemented.
+
+        # If the teachers dict contains an entry for this Teacher, remove it.
+        if teacher.id in self._teachers.keys():
+            del self._teachers[teacher.id]
+
+        return self
+    
+    # =================================================================
+    # remove_all_teachers
+    # =================================================================
+    def remove_all_teachers(self):
+        """Removes ALL teachers from this Block.
+        
+        Returns the Block object."""
+        for teacher in self._teachers:
+            self.remove_teacher(teacher)
+        
+        return self
+
+    # =================================================================
+    # teachers
+    # =================================================================
+    def teachers(self):
+        """Returns a list of teachers assigned to this Block."""
+        # TODO: Feel like this should get the same sort of safeguards as Block.labs().
+        return list(self._teachers.values())
