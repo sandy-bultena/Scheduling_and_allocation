@@ -299,7 +299,7 @@ class Block(TimeSlot):
         Returns the Block object."""
         if not isinstance(block, Block):
             raise f"<{block}>: invalid block - must be a Block object."
-        
+
         if not hasattr(self, '_sync'):
             self._sync = []
         self._sync.append(block)
@@ -318,7 +318,7 @@ class Block(TimeSlot):
         self._sync.remove(block)
 
         return self
-    
+
     # =================================================================
     # synced
     # =================================================================
@@ -361,3 +361,34 @@ class Block(TimeSlot):
     def is_conflicted(self):
         """Returns true if there is a conflict with this Block, false otherwise."""
         return self.conflicted
+
+    # =================================================================
+    # print_description
+    # =================================================================
+    def print_description(self):
+        """Returns a text string that describes the Block.
+        
+        Includes information on any Section and Labs related to this Block."""
+        return self.__str__()
+
+    def __str__(self) -> str:
+        text = ""
+        i = 0
+
+        if self.section:
+            if self.section.course:
+                text += self.section.course.name + " "
+            text += self.section.number + " "
+
+        text += self.day + " " + self.start + " for " + self.duration + " hours, in "
+        text += ", ".join(self._labs)
+
+        return text
+
+    def print_description_2(self):
+        """Prints an alternate text string that describes this Block.
+        
+        Includes information which directly relates to this Block ONLY."""
+        text = ""
+        text += f"{self.number} : {self.day}, {self.start} {self.duration} hour(s)"
+        return text
