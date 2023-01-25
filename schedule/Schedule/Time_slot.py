@@ -62,10 +62,10 @@ class TimeSlot(metaclass=TimeSlotMeta):
 
     def __init__(self, day: str = default_day, start: str = default_start, duration: float = default_duration,
                  movable=True):
-        self.__day = day
-        self.__start = start
-        self.__duration = duration
-        self.__movable = movable
+        self.day = day
+        self.start = start
+        self.duration = duration
+        self.movable = movable
         TimeSlot._max_id += 1
         self.__id = TimeSlot._max_id
         TimeSlot._instances.append(self)
