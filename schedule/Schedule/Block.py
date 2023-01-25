@@ -173,7 +173,7 @@ class Block(TimeSlot):
         # If the labs dict contains an entry for the specified Lab, remove it.
         if lab.id in self._labs.keys():
             del self._labs[lab.id]
-        
+
         return self
 
     # =================================================================
@@ -207,11 +207,11 @@ class Block(TimeSlot):
         """Returns true if the Block has the specified Lab."""
         if not lab:
             return False
-        
-        for l in self._labs:
-            if l.id == lab.id:
+
+        for key in self._labs:
+            if self._labs[key].id == lab.id:
                 return True
-        
+
         return False
 
     # =================================================================
@@ -246,7 +246,7 @@ class Block(TimeSlot):
             del self._teachers[teacher.id]
 
         return self
-    
+
     # =================================================================
     # remove_all_teachers
     # =================================================================
@@ -256,7 +256,7 @@ class Block(TimeSlot):
         Returns the Block object."""
         for teacher in self._teachers:
             self.remove_teacher(teacher)
-        
+
         return self
 
     # =================================================================
@@ -266,3 +266,24 @@ class Block(TimeSlot):
         """Returns a list of teachers assigned to this Block."""
         # TODO: Feel like this should get the same sort of safeguards as Block.labs().
         return list(self._teachers.values())
+
+    # =================================================================
+    # has_teacher
+    # =================================================================
+    def has_teacher(self, teacher):
+        """Returns True if this Block has the specified Teacher."""
+        if not teacher:
+            return False
+
+        for key in self._teachers:
+            if self._teachers[key].id == teacher.id:
+                return True
+        return False
+
+    # =================================================================
+    # teachersObj
+    # =================================================================
+    def teachersObj(self):
+        """Returns a list of teacher objects to this Block."""
+        # NOTE: Not entirely sure what this is meant to be doing in the original Perl.
+        return self._teachers
