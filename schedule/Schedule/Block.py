@@ -44,6 +44,8 @@ class Block(TimeSlot):
     def __init__(self, day: str, start: str, duration: float, number) -> None:
         TimeSlot.__init__(self, day, start, duration)
         self.number = number
+        Block._max_id += 1
+        self._block_id = Block._max_id
 
     # =================================================================
     # number
@@ -91,4 +93,27 @@ class Block(TimeSlot):
     # =================================================================
     # day
     # =================================================================
+    @property
+    def day(self):
+        """Get/set the day of the block, in numeric format (1 for Monday, 7 for Sunday)."""
+        return super().day(self)
 
+    @day.setter
+    def day(self, new_day):
+        super().day = new_day
+
+        # If there are synchronized blocks, change them too.
+        # Once again, beware the infinite loop!
+        for other in self.synched:
+            old = super().day(other)
+            if old != super().day(self):
+                other.day = super().day(self)
+
+    # ==================================================================
+    # id //ALEX CODE
+    # ==================================================================
+
+    @property
+    def id(self):
+        """Gets the Block id."""
+        return self._block_id
