@@ -330,3 +330,34 @@ class Block(TimeSlot):
             self._sync = []
 
         return self._sync
+
+    # =================================================================
+    # reset_conflicted
+    # =================================================================
+    def reset_conflicted(self):
+        """Resets conflicted field."""
+        self._conflicted = False
+
+    # =================================================================
+    # conflicted
+    # =================================================================
+    @property
+    def conflicted(self):
+        """Gets and sets conflicted field."""
+        if not hasattr(self, '_conflicted'):
+            self._conflicted = False
+
+        return self._conflicted
+
+    @conflicted.setter
+    def conflicted(self, new_conf: bool):
+        if not hasattr(self, '_conflicted'):
+            self._conflicted = False
+        self._conflicted = new_conf
+
+    # =================================================================
+    # is_conflicted
+    # =================================================================
+    def is_conflicted(self):
+        """Returns true if there is a conflict with this Block, false otherwise."""
+        return self.conflicted
