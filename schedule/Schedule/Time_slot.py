@@ -62,6 +62,24 @@ class TimeSlot(metaclass=TimeSlotMeta):
 
     def __init__(self, day: str = default_day, start: str = default_start, duration: float = default_duration,
                  movable=True):
+        """
+        Creates a new TimeSlot object.
+
+        Parameters:
+        ----------
+
+        day: str
+            'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat' or 'Sun'.
+        
+        start: str
+            Start time using the 24hr clock (i.e., 1PM is "13:00")
+
+        duration: float
+            How long this class lasts, in hours.
+
+        movable: bool
+            Whether this time_slot can be moved or not.
+        """
         self.day = day
         self.start = start
         self.duration = duration
@@ -88,6 +106,10 @@ class TimeSlot(metaclass=TimeSlotMeta):
 
     @day.setter
     def day(self, new_day):
+        # Convert the string to lowercase and remove any extraneous characters beyond the ones we want.
+        new_day = new_day[0:3].lower()
+
+        # If this is one of the seven valid days, set it.
         if new_day in TimeSlot._week.keys():
             self.__day = new_day
             self.day_number = TimeSlot._week[new_day]
@@ -95,6 +117,7 @@ class TimeSlot(metaclass=TimeSlotMeta):
             self.day_number = new_day
             self.__day = TimeSlot.reverse_week[new_day]
         else:
+            # If it's not valid, set the day to the default value of Monday.
             self.__day = TimeSlot.default_day
             self.day_number = TimeSlot._week[new_day]
 
@@ -107,23 +130,23 @@ class TimeSlot(metaclass=TimeSlotMeta):
         return self.__start
 
     @start.setter
-    def start(self, new_value):
+    def start(self, new_value: str):
         if not re.match("^[12]?[0-9]:(00|15|30|45)$", new_value):
             print(f"<{new_value}>: invalid start time\nchanged to {TimeSlot.default_start}")
             new_value = TimeSlot.default_start
 
         self.start = new_value
-        hour, minute = re.split(":", new_value)
-        # TODO: Figure out what's going on here with self.start_number.
+        hour, minute = (int(x) for x in new_value.split(":"))
+        self.start_number = hour + minute / 60
 
     # ====================================
     # end
     # ====================================
 
     def end(self):
-        """Gets the end time in 24-hour clock."""
+        """Gets the end time in 24-hour clock format."""
         current_start = self.start_number
-        end = current_start + self.__duration
+        end = current_start + self.duration
         hour = f"{int(end)}"
         minute = f"{int((end * 60) % 60)}"
         return f"{hour}:{minute}"
@@ -137,18 +160,21 @@ class TimeSlot(metaclass=TimeSlotMeta):
         return self.__duration
 
     @duration.setter
-    def duration(self, new_val):
-        if new_val < .25 and new_val > 0:
-            new_val = .5
+    def duration(self, new_dur):
+        if .25 > new_dur > 0:
+            new_dur = .5
         else:
-            temp = 2 * new_val
+            temp = 2 * new_dur
             rounded = int(temp + 0.5)
-            new_val = rounded / 2
-        if new_val > 8:
-            new_val = 8
-        if new_val <= 0:
-            print(f"<{new_val}>: invalid duration\nchanged to {TimeSlot.default_duration}")
-        self.__duration = new_val
+            new_dur = rounded / 2
+        # No TimeSlot can be longer than 8 hours.
+        if new_dur > 8:
+            new_dur = 8
+        # TimeSlots can't have a negative duration.
+        if new_dur <= 0:
+            print(f"<{new_dur}>: invalid duration\nchanged to {TimeSlot.default_duration}")
+            new_dur = TimeSlot.default_duration
+        self.__duration = new_dur
 
     # ====================================
     # movable
@@ -177,7 +203,7 @@ class TimeSlot(metaclass=TimeSlotMeta):
         return self.start_number
 
     @start_number.setter
-    def start_number(self, new_val):
+    def start_number(self, new_val: float):
         self.start_number = new_val
 
     # ====================================
