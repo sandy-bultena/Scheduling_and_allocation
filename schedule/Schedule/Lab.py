@@ -11,6 +11,10 @@ class Lab:
     """
     max_id = 0
 
+    # -------------------------------------------------------------------
+    # new
+    # --------------------------------------------------------------------
+
     def __init__(self, number: int = 100, descr: str = ''):
         """Creates and returns a new Lab object."""
         self.__number = number
@@ -18,12 +22,22 @@ class Lab:
         Lab.max_id += 1
         self.__id = Lab.max_id
 
+    # =================================================================
+    # id
+    # =================================================================
+
     @property
     def id(self):
+        """Returns the unique ID for this Lab object."""
         return self.__id
+
+    # =================================================================
+    # number
+    # =================================================================
 
     @property
     def number(self):
+        """Sets/returns the room number for this Lab object."""
         return self.__number
 
     @number.setter

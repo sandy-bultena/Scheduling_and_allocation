@@ -389,6 +389,6 @@ class Block(TimeSlot):
         """Prints an alternate text string that describes this Block.
         
         Includes information which directly relates to this Block ONLY."""
-        text = ""
-        text += f"{self.number} : {self.day}, {self.start} {self.duration} hour(s)"
+        # text = ""
+        text = f"{self.number} : {self.day}, {self.start} {self.duration} hour(s)"
         return text
