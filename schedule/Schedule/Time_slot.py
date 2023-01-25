@@ -211,6 +211,12 @@ class TimeSlot(metaclass=TimeSlotMeta):
     # ====================================
     @property
     def day_number(self):
+        """Returns a real number that defines the day of the week, starting from Monday. E.g., tuesday = 2.0.
+        
+        This info is set every time the day property is called. Modifying this property directly does NOT modify the values
+        stored in 'day'.
+        
+        To set the day according to the data in this property, use the method snap_to_day()."""
         return self.day_number
 
     @day_number.setter
@@ -235,7 +241,7 @@ class TimeSlot(metaclass=TimeSlotMeta):
         changed = False
         if start != self.__start:
             changed = True
-        self.start(start)
+        self.start = start
         return changed
 
     def _snap_to_time(self, time):
@@ -249,15 +255,17 @@ class TimeSlot(metaclass=TimeSlotMeta):
 
         # Get hour and fractional hour
         hour = int(r_hour)
-        frac = r_hour = hour
+        frac = r_hour - hour
 
         # Create array of allowed fractions.
         fracs = []
         for i in range(TimeSlot.max_hour_div + 1):
             fracs.append(i / TimeSlot.max_hour_div)
 
-        # Sort according to which one is closest to our fraction. TODO: Come back to this part.
-        sorted_frac = sorted(fracs, )
+        # Sort according to which one is closest to our fraction. Based on experiments in the terminal, this should
+        # work...
+        # TODO: Then again, maybe not.
+        sorted_frac = sorted(fracs, key=lambda x: abs(x - frac))
 
         # add hour fraction to hour.
         hour = hour + sorted_frac[0]
