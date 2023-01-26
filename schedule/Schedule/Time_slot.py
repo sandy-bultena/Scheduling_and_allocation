@@ -226,15 +226,16 @@ class TimeSlot(metaclass=TimeSlotMeta):
     # ====================================
     # snap_to_time
     # ====================================
-    def snap_to_time(self, time):
+    def snap_to_time(self, *args: int):
         """
-        Takes the start number, and converts it to the nearest fraction of an hour (if max_hour_div = 2, then snaps to every 1/2 hour).
+        Takes the start number, and converts it to the nearest fraction of an hour (if max_hour_div = 2, then snaps
+        to every 1/2 hour).
 
         Resets the 'start' property to the new clock time.
 
         Returns true if the new time is different than the previous time.
         """
-        hour = self._snap_to_time(time)
+        hour = self._snap_to_time(args)
         minute = int((hour - int(hour)) * 60)
         start = f"{int(hour)}:{minute:2d}"
 
@@ -244,9 +245,9 @@ class TimeSlot(metaclass=TimeSlotMeta):
         self.start = start
         return changed
 
-    def _snap_to_time(self, time):
-        min_time = time if time else 8
-        max_time = time if time else 18
+    def _snap_to_time(self, *time: int):
+        min_time = time if time[0] else 8
+        max_time = time if time[1] else 18
 
         TimeSlot.max_hour_div = 1 if TimeSlot.max_hour_div < 1 else TimeSlot.max_hour_div
 
