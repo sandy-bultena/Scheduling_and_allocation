@@ -33,7 +33,7 @@ class TimeSlot(metaclass=TimeSlotMeta):
     # Class/Global Variables
     # =================================================================
     _max_id = 0
-    _week = {
+    WEEK = {
         "mon": 1,
         "tue": 2,
         "wed": 3,
@@ -42,8 +42,8 @@ class TimeSlot(metaclass=TimeSlotMeta):
         "sat": 6,
         "sun": 7
     }
-    max_hour_div = 2
-    reverse_week = {
+    MAX_HOUR_DIV = 2
+    REVERSE_WEEK = {
         1: "mon",
         2: "tue",
         3: "wed",
@@ -52,15 +52,15 @@ class TimeSlot(metaclass=TimeSlotMeta):
         6: "sat",
         7: "sun"
     }
-    default_day = "mon"
-    default_start = "8:00"
-    default_duration = 1.5
+    DEFAULT_DAY = "mon"
+    DEFAULT_START = "8:00"
+    DEFAULT_DURATION = 1.5
 
     # =================================================================
     # Constructor
     # =================================================================
 
-    def __init__(self, day: str = default_day, start: str = default_start, duration: float = default_duration,
+    def __init__(self, day: str = DEFAULT_DAY, start: str = DEFAULT_START, duration: float = DEFAULT_DURATION,
                  movable=True):
         """
         Creates a new TimeSlot object.
@@ -80,6 +80,8 @@ class TimeSlot(metaclass=TimeSlotMeta):
         movable: bool
             Whether this time_slot can be moved or not.
         """
+        self.day_number = 0
+        self.start_number = 0
         self.day = day
         self.start = start
         self.duration = duration
@@ -110,17 +112,17 @@ class TimeSlot(metaclass=TimeSlotMeta):
         new_day = new_day[0:3].lower()
 
         # If this is one of the seven valid days, set it.
-        if new_day in TimeSlot._week.keys():
+        if new_day in TimeSlot.WEEK.keys():
             self.__day = new_day
-            self.day_number = TimeSlot._week[new_day]
+            self.day_number = TimeSlot.WEEK[new_day]
         elif re.search("^[1-7]$", new_day):
             self.day_number = int(new_day)
-            self.__day = TimeSlot.reverse_week[int(new_day)]
+            self.__day = TimeSlot.REVERSE_WEEK[int(new_day)]
         else:
             # If it's not valid, set the day to the default value of Monday.
-            print(f"<{new_day}>: invalid day specified... setting to {TimeSlot.default_day}")
-            self.__day = TimeSlot.default_day
-            self.day_number = TimeSlot._week[TimeSlot.default_day]
+            print(f"<{new_day}>: invalid day specified... setting to {TimeSlot.DEFAULT_DAY}")
+            self.__day = TimeSlot.DEFAULT_DAY
+            self.day_number = TimeSlot.WEEK[TimeSlot.DEFAULT_DAY]
 
     # ====================================
     # start
@@ -133,8 +135,8 @@ class TimeSlot(metaclass=TimeSlotMeta):
     @start.setter
     def start(self, new_value: str):
         if not re.match("^[12]?[0-9]:(00|15|30|45)$", new_value):
-            print(f"<{new_value}>: invalid start time\nchanged to {TimeSlot.default_start}")
-            new_value = TimeSlot.default_start
+            print(f"<{new_value}>: invalid start time\nchanged to {TimeSlot.DEFAULT_START}")
+            new_value = TimeSlot.DEFAULT_START
 
         self.__start = new_value
         hour, minute = (int(x) for x in new_value.split(":"))
@@ -173,9 +175,15 @@ class TimeSlot(metaclass=TimeSlotMeta):
             new_dur = 8
         # TimeSlots can't have a negative duration.
         if new_dur <= 0:
-            print(f"<{new_dur}>: invalid duration\nchanged to {TimeSlot.default_duration}")
-            new_dur = TimeSlot.default_duration
+            print(f"<{new_dur}>: invalid duration\nchanged to {TimeSlot.DEFAULT_DURATION}")
+            new_dur = TimeSlot.DEFAULT_DURATION
         self.__duration = new_dur
+
+    # region movable, start_number & day_number
+
+    # NOTE: Supposedly, it is not Pythonic to have dedicated properties for instance attributes that don't require
+    # any special circumstances, such as having only a getter with no setter or requiring detailed input validation
+    # in the setter. Will ask Sandy about this to see what she thinks.
 
     # ====================================
     # movable
@@ -197,7 +205,8 @@ class TimeSlot(metaclass=TimeSlotMeta):
         """
         Sets or returns the start time in hours (i.e., 1:30 pm = 13.5 hours)
         
-        This time info is set every time the start method is invoked on the object. Modifying it directly does NOT modify the values stored in 'day'.
+        This time info is set every time the start method is invoked on the object. Modifying it directly does NOT
+        modify the values stored in 'day'.
 
         To set the day according to the data in this hash, use the method "snap_to_time".
         """
@@ -224,6 +233,7 @@ class TimeSlot(metaclass=TimeSlotMeta):
     def day_number(self, new_val: int):
         self.__day_number = new_val
 
+    # endregion
     # ====================================
     # snap_to_time
     # ====================================
@@ -251,7 +261,7 @@ class TimeSlot(metaclass=TimeSlotMeta):
         min_time = time[0] if time[0] else 8
         max_time = time[1] if time[1] else 18
 
-        TimeSlot.max_hour_div = 1 if TimeSlot.max_hour_div < 1 else TimeSlot.max_hour_div
+        TimeSlot.MAX_HOUR_DIV = 1 if TimeSlot.MAX_HOUR_DIV < 1 else TimeSlot.MAX_HOUR_DIV
 
         r_hour = self.start_number
 
@@ -261,8 +271,8 @@ class TimeSlot(metaclass=TimeSlotMeta):
 
         # Create array of allowed fractions.
         fracs = []
-        for i in range(TimeSlot.max_hour_div + 1):
-            fracs.append(i / TimeSlot.max_hour_div)
+        for i in range(TimeSlot.MAX_HOUR_DIV + 1):
+            fracs.append(i / TimeSlot.MAX_HOUR_DIV)
 
         # Sort according to which one is closest to our fraction. Based on experiments in the terminal, this should
         # works while the max_hour_div is 2.
@@ -293,7 +303,7 @@ class TimeSlot(metaclass=TimeSlotMeta):
         # changed = False
         # if TimeSlot.reverse_week[day] != self.day:
         #     changed = True
-        self.day = TimeSlot.reverse_week[day]
+        self.day = TimeSlot.REVERSE_WEEK[day]
         # return day
 
     def _snap_to_day(self, *args: int):
