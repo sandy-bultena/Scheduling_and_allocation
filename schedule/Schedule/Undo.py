@@ -1,6 +1,6 @@
 class Undo:
     """ Holds info about a block so that it can be used as an "undo" """
-    __max_id = 0
+    _max_id = 0
 
     # ========================================================
     # CONSTRUCTOR
@@ -15,8 +15,8 @@ class Undo:
         - Paremeter move_type -> defines the type of movement made (within schedule, across schedules, etc).
         - Parameter new_obj -> defines the object the Block is associated with after moving (Teacher/Lab/Stream).
         """
-        Undo.__max_id += 1
-        self._id = Undo.__max_id
+        Undo._max_id += 1
+        self._id = Undo._max_id
         self.block_id = block_id
         self.origin_start = origin_start
         self.origin_day = origin_day

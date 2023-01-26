@@ -43,7 +43,7 @@ class Block(TimeSlot):
     # Constructor
     # =================================================================
 
-    def __init__(self, day: str, start: str, duration: float, number: int) -> None:
+    def __init__(self, day: str, start: str, duration: float, number: int, **kwargs) -> None:
         """Creates a new Block object.
         
         - Parameter day: str -> 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'
@@ -55,6 +55,17 @@ class Block(TimeSlot):
         self.number = number # NOTE: Based on the code found in CSV.pm and Section.pm
         Block._max_id += 1
         self._block_id = Block._max_id
+        
+        # keep **kwargs and below code, allows YAML to work correctly
+        for k, v in kwargs.items():
+            try:
+                if hasattr(self, f"__{k}"): setattr(self, f"__{k}", v)
+                elif hasattr(self, f"_{k}"): setattr(self, f"_{k}", v)
+                elif hasattr(self, f"{k}"): setattr(self, f"{k}", v)
+                if k == "id": Block._max_id -= 1
+            except AttributeError: continue # hit get-only property
+
+        # two arguments in YAML that I can't find in code: start_number & day_number
 
     # =================================================================
     # number

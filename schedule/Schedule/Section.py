@@ -1,6 +1,5 @@
-from Block import *
-from Course import *
-from Stream import *
+from Course import Course
+from Stream import Stream
 import re
 
 # not sure what the equivalent to fallback overload is so going without it for now
@@ -10,28 +9,38 @@ class Section:
     """
     Describes a section (part of a course)
     """
-    __max_id = 0
+    _max_id = 0
 
     # ========================================================
     # CONSTRUCTOR
     # ========================================================
-    def __init__(self, number : str = "", hours = 1.5, name : str = ""):
+    def __init__(self, number : str = "", hours = 1.5, name : str = "", **kwargs):
         """
         Creates an instance of the Section class.
         - Parameter number -> The section's number.
         - Parameter hours -> The hours of class the section has per week.
         - Parameter name -> The section's name.
         """
-        self.name = name
-        self.number = number
-        self.hours = hours
-        Section.__max_id += 1
-        self.__id = Section.__max_id
         
         self._teachers = {}
         self._allocation = {}
         self._streams = {}
         self._blocks = {}
+
+        self.name = name
+        self.number = number
+        self.hours = hours
+        Section._max_id += 1
+        self.__id = Section._max_id
+
+        # keep **kwargs and below code, allows YAML to work correctly
+        for k, v in kwargs.items():
+            try:
+                if hasattr(self, f"__{k}"): setattr(self, f"__{k}", v)
+                elif hasattr(self, f"_{k}"): setattr(self, f"_{k}", v)
+                elif hasattr(self, f"{k}"): setattr(self, f"{k}", v)
+                if k == "id": Section._max_id -= 1
+            except AttributeError: continue # hit get-only property
     
     @staticmethod
     def __validate_hours(hours):
@@ -78,7 +87,7 @@ class Section:
     # blocks
     # --------------------------------------------------------
     @property
-    def blocks(self) -> list[Block]:
+    def blocks(self) -> list:
         """ Gets list of section's blocks """
         return self._blocks
 
@@ -166,7 +175,7 @@ class Section:
     # --------------------------------------------------------
     # get_block_by_id
     # --------------------------------------------------------
-    def get_block_by_id(self, id : int) -> Block:
+    def get_block_by_id(self, id : int):
         """
         Gets block with given ID from this section
         - Parameter id -> The ID of the block to find
@@ -177,7 +186,7 @@ class Section:
     # --------------------------------------------------------
     # get_block
     # --------------------------------------------------------
-    def get_block(self, number : int) -> Block:
+    def get_block(self, number : int):
         """
         Gets block with given block number from this section
         - Parameter number -> The number of the block to find
@@ -347,13 +356,15 @@ class Section:
     # --------------------------------------------------------
     # add_block
     # --------------------------------------------------------
-    def add_block(self, *blocks : Block):
+    def add_block(self, *blocks):
         """
         Assign blocks to this section
-        - Parameter blocks -> The block(s) to assign. Blocks can be added all at once
+        - Parameter blocks -> The block(s) to assign. Block(s) can be added all at once
         """
         for b in blocks:
-            if not isinstance(b, Block): raise f"{b}: invalid block - must be a Block object"
+            # removed check to avoid circular dependency
+            #if not isinstance(b, Block): raise f"{b}: invalid block - must be a Block object"
+            if not hasattr(b, 'id'): raise f"{b}: invalid block - no id found"
             self.blocks[b.id] = b
             b.section = self
         return self
@@ -361,12 +372,12 @@ class Section:
     # --------------------------------------------------------
     # remove_block
     # --------------------------------------------------------
-    def remove_block(self, block : Block):
+    def remove_block(self, block):
         """
         Remove a block from this section
         - Parameter block -> The block to remove
         """
-        if not isinstance(block, Block): raise f"{block}: invalid block - must be a Block object"
+        if not hasattr(block, 'id') or not hasattr(block, 'delete'): f"{block}: invalid block - must be a Block object"
         if block.id in self.blocks: del self.blocks[block.id]
         block.delete()
         return self
@@ -384,7 +395,7 @@ class Section:
     # --------------------------------------------------------
     # block
     # --------------------------------------------------------
-    def block(self, block_id : int) -> Block:
+    def block(self, block_id : int):
         """
         Get block by ID.
         - Parameter block_id -> ID of the block to retrieve.
@@ -404,7 +415,7 @@ class Section:
     # --------------------------------------------------------
     def is_conflicted(self) -> bool:
         """ Checks if there is a conflict with this section """
-        return len(filter(lambda b : b.is_conflicted, self.blocks))
+        return len(filter(lambda b : hasattr(b, 'is_conflicted') and b.is_conflicted, self.blocks))
     
     # --------------------------------------------------------
     # conflicts
@@ -413,7 +424,7 @@ class Section:
         """ Gets a list of conflicts related to this section """
         conflicts = []
         for b in self.blocks:
-            conflicts.extend(b.conflicts()) # assuming conflicts will be a method
+            if hasattr(b, 'conflicts'): conflicts.extend(b.conflicts())
         return conflicts
     
     # --------------------------------------------------------
