@@ -39,7 +39,7 @@ class LabMeta(type):
     # =================================================================
     def add(self, *args):
         """Adds a new Lab to the Labs object.
-        
+
         Returns the modified Labs object."""
         for lab in args:
             if not isinstance(lab, Lab):
@@ -62,7 +62,7 @@ class LabMeta(type):
             if lab.id == lab_id:
                 return lab
         return None
-    
+
     # =================================================================
     # get_by_number
     # =================================================================
@@ -70,12 +70,12 @@ class LabMeta(type):
         """Returns the Lab which matches this Lab number, if it exists."""
         if not number:
             return
-        
+
         for lab in self._instances:
             if lab.number == number:
                 return lab
         return None
-    
+
 
 class Lab(metaclass=LabMeta):
     """
