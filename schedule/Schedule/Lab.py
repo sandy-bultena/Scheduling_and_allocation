@@ -1,6 +1,37 @@
 from Time_slot import TimeSlot
+from Block import Block
 
-class Lab:
+
+class LabMeta(type):
+    """Metaclass for Lab, making the latter iterable."""
+    _instances = []
+
+    def __iter__(self):
+        return iter(getattr(self, '_instances', []))
+
+    # =================================================================
+    # share_blocks
+    # =================================================================
+
+    def share_blocks(self, block1: Block, block2: Block):
+        """Checks whether there are Labs which share the two specified Blocks."""
+
+        # Count occurrences in both sets and ensure that all values are < 2
+        occurrences = {}
+        for lab in block1.labs():
+            occurrences[lab.id] += 1
+        for lab in block2.labs():
+            occurrences[lab.id] += 1
+
+        # A count of 2 means that they are in both sets.
+        for lab_count in occurrences.values():
+            if lab_count >= 2:
+                return True
+
+        return False
+
+
+class Lab(metaclass=LabMeta):
     """
     Describes a distinct, contiguous course/section/class.
 
@@ -23,6 +54,7 @@ class Lab:
         self.descr = descr
         Lab._max_id += 1
         self.__id = Lab._max_id
+        Lab._instances.append(self)
 
     # =================================================================
     # id
