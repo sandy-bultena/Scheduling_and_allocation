@@ -19,8 +19,12 @@ class LabMeta(type):
         # Count occurrences in both sets and ensure that all values are < 2
         occurrences = {}
         for lab in block1.labs():
+            if lab.id not in occurrences.keys():
+                occurrences[lab.id] = 0
             occurrences[lab.id] += 1
         for lab in block2.labs():
+            if lab.id not in occurrences.keys():
+                occurrences[lab.id] = 0
             occurrences[lab.id] += 1
 
         # A count of 2 means that they are in both sets.
@@ -30,6 +34,48 @@ class LabMeta(type):
 
         return False
 
+    # =================================================================
+    # add
+    # =================================================================
+    def add(self, *args):
+        """Adds a new Lab to the Labs object.
+        
+        Returns the modified Labs object."""
+        for lab in args:
+            if not isinstance(lab, Lab):
+                raise TypeError(f"<{lab}>: invalid lab - must be a Lab object").with_traceback()
+
+            # Cannot have two distinct labs with the same room number.
+            my_obj = self.get_by_number(lab.number)
+            if my_obj and my_obj.id != lab.id:
+                # TODO: Raise some kind of Exception.
+                pass
+            self._instances[lab.id] = lab
+        return self
+
+    # =================================================================
+    # get
+    # =================================================================
+    def get(self, lab_id: int):
+        """Returns the Lab object matching the specified ID, if it exists."""
+        for lab in self._instances:
+            if lab.id == lab_id:
+                return lab
+        return None
+    
+    # =================================================================
+    # get_by_number
+    # =================================================================
+    def get_by_number(self, number: str):
+        """Returns the Lab which matches this Lab number, if it exists."""
+        if not number:
+            return
+        
+        for lab in self._instances:
+            if lab.number == number:
+                return lab
+        return None
+    
 
 class Lab(metaclass=LabMeta):
     """
