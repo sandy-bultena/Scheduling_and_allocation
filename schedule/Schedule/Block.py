@@ -37,15 +37,22 @@ class Block(TimeSlot):
     # =================================================================
 
     _max_id = 0
-    _default_day = 'mon'
+    _DEFAULT_DAY = 'mon'
 
     # =================================================================
     # Constructor
     # =================================================================
 
-    def __init__(self, day: str, start: str, duration: float, number) -> None:
+    def __init__(self, day: str, start: str, duration: float, number: int) -> None:
+        """Creates a new Block object.
+        
+        - Parameter day: str -> 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'
+        - Parameter start: str -> start time using 24 h clock (i.e 1pm is "13:00")
+        - Parameter duration: float -> how long does this class last, in hours
+        - Parameter number: int -> A number representing this specific Block.
+        """
         TimeSlot.__init__(self, day, start, duration)
-        self.number = number
+        self.number = number # NOTE: Based on the code found in CSV.pm and Section.pm
         Block._max_id += 1
         self._block_id = Block._max_id
 
@@ -61,8 +68,7 @@ class Block(TimeSlot):
     @number.setter
     def number(self, new_num: str):
         if new_num is None or new_num == "":
-            # TODO: Raise an exception. f"<{new_num}>: section number cannot be a null string.""
-            pass
+            raise Exception(f"<{new_num}>: section number cannot be a null string.")
         self.__number = new_num
 
     # =================================================================
@@ -70,7 +76,8 @@ class Block(TimeSlot):
     # =================================================================
     def delete(self):
         """Delete this Block object and all its dependents."""
-        self = None  # TODO: Verify that this works as intended.
+        # self = None  # TODO: Verify that this works as intended. NOTE: It does not.
+        del self    # NOTE: Neither does this.
 
     # =================================================================
     # start
@@ -86,7 +93,7 @@ class Block(TimeSlot):
 
         # If there are synchronized blocks, we must change them too.
         # Beware infinite loops!
-        for other in self.synched:
+        for other in self.synced(): 
             # TODO: Look into how to access superclass properties of another object in Python.
             old = super().start(other)
             if old != super().start(self):
