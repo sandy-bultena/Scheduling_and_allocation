@@ -1,5 +1,3 @@
-# Time_slot was being imported in the Perl version, but it doesn't seem to be used so I didn't include it
-
 class Stream:
     """
     Describes a group of students whose classes cannot overlap.
@@ -31,32 +29,6 @@ class Stream:
     def id(self) -> int:
         """ Gets the id of the stream. """
         return self.__id
-    
-    # --------------------------------------------------------
-    # number
-    # --------------------------------------------------------
-    @property
-    def number(self) -> str:
-        """ Gets the stream number. """
-        return self._number
-    
-    @number.setter
-    def number(self, val : str):
-        """ Sets the stream number. """
-        self._number = val
-    
-    # --------------------------------------------------------
-    # descr
-    # --------------------------------------------------------
-    @property
-    def descr(self) -> str:
-        """ Gets the stream description. """
-        return self._descr
-    
-    @descr.setter
-    def descr(self, val : str):
-        """ Sets the stream description. """
-        self._descr = val
     
     # ========================================================
     # METHODS

@@ -43,32 +43,6 @@ class Section:
     # ========================================================
     # PROPERTIES
     # ========================================================
-
-    # --------------------------------------------------------
-    # name
-    # --------------------------------------------------------
-    @property
-    def name(self) -> str:
-        """ Gets the section name """
-        return self._name
-    
-    @name.setter
-    def name(self, val : str):
-        """ Sets the section name """
-        self._name = val
-    
-    # --------------------------------------------------------
-    # number
-    # --------------------------------------------------------
-    @property
-    def number(self) -> str:
-        """ Gets the section number """
-        return self._number
-    
-    @number.setter
-    def number(self, val : str):
-        """ Sets the section number """
-        self._number = val
     
     # --------------------------------------------------------
     # hours
@@ -127,7 +101,7 @@ class Section:
     @course.setter
     def course(self, val : Course):
         """ Sets the course that contains this section """
-        if isinstance(val, Course): raise f"{type(val)}: invalid course - must be a Course object"
+        if not isinstance(val, Course): raise f"{type(val)}: invalid course - must be a Course object"
         self._course = val
 
     # --------------------------------------------------------
@@ -139,7 +113,8 @@ class Section:
         return self._num_students
     
     @num_students.setter
-    def num_students(self, val : int = 30): # left default value even though setter can't be called without argument
+    # left default value even though setter can't be called without argument, since it can act as a hint to users
+    def num_students(self, val : int = 30):
         """ Sets the number of students in this section """
         self._num_students = val
     
@@ -148,6 +123,7 @@ class Section:
     # --------------------------------------------------------
     @property
     def labs(self) -> set:
+        """ Gets all labs assigned to all blocks in this section """
         labs : set
         for b in self.blocks:
             for l in b.labs():
@@ -159,9 +135,7 @@ class Section:
     # --------------------------------------------------------
     @property
     def teachers(self) -> set:
-        """
-        Gets all teachers assigned to all blocks in this section
-        """
+        """ Gets all teachers assigned to all blocks in this section """
         teachers : set
         for b in self.blocks:
             for t in b.teachers(): teachers.add(t)
@@ -173,6 +147,7 @@ class Section:
     # --------------------------------------------------------
     @property
     def streams(self) -> set:
+        """ Gets all streams in this section """
         return set(self._streams.values)
 
     # ========================================================
@@ -183,6 +158,7 @@ class Section:
     # add_hours
     # --------------------------------------------------------
     def add_hours(self, val):
+        """ Adds hours to section's weekly total """
         val = Section.__validate_hours(val)        
         self.hours += val
         return self.hours
@@ -309,9 +285,7 @@ class Section:
     # remove_all_teachers
     # --------------------------------------------------------
     def remove_all_teachers(self):
-        """
-        Removes all teachers from all blocks in this section
-        """
+        """ Removes all teachers from all blocks in this section """
         for t in self.teachers: self.remove_teacher(t)
         return self
     
@@ -366,9 +340,7 @@ class Section:
     # remove_all_streams
     # --------------------------------------------------------
     def remove_all_streams(self):
-        """
-        Remove all streams from this section
-        """
+        """ Removes all streams from this section """
         for s in self.streams: self.remove_stream(s)
         return self
     
@@ -403,9 +375,7 @@ class Section:
     # delete
     # --------------------------------------------------------
     def delete(self) -> None:
-        """
-        Delete this object and all its dependants
-        """
+        """ Delete this object and all its dependants """
         # TODO: Confirm that Python objects can't be manually deleted
             # Relies on all references being gone, something we can't control from here
         for b in self.blocks:
@@ -433,18 +403,14 @@ class Section:
     # is_conflicted
     # --------------------------------------------------------
     def is_conflicted(self) -> bool:
-        """
-        Checks if there is a conflict with this section
-        """
+        """ Checks if there is a conflict with this section """
         return len(filter(lambda b : b.is_conflicted, self.blocks))
     
     # --------------------------------------------------------
     # conflicts
     # --------------------------------------------------------
     def conflicts(self) -> list:
-        """
-        Gets a list of conflicts related to this section
-        """
+        """ Gets a list of conflicts related to this section """
         conflicts = []
         for b in self.blocks:
             conflicts.extend(b.conflicts()) # assuming conflicts will be a method
@@ -454,9 +420,7 @@ class Section:
     # get_new_number
     # --------------------------------------------------------
     def get_new_number(self) -> int:
-        """
-        Gets the first unused block number
-        """
+        """ Gets the first unused block number """
         number = 1
         while (self.get_block(number)):
             number += 1
