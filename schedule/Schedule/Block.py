@@ -95,7 +95,7 @@ class Block(TimeSlot):
         # Beware infinite loops!
         for other in self.synced(): 
             # Bit finnicky, but it should do, I hope.
-            old = other.__start
+            old = other.start
             if old != super().start:
                 other.__start = super().start
 
