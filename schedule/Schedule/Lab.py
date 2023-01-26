@@ -4,10 +4,10 @@ from Block import Block
 
 class LabMeta(type):
     """Metaclass for Lab, making the latter iterable."""
-    _instances = []
+    _instances = {}
 
     def __iter__(self):
-        return iter(getattr(self, '_instances', []))
+        return iter(getattr(self, '_instances', {}))
 
     # =================================================================
     # share_blocks
@@ -58,7 +58,7 @@ class LabMeta(type):
     # =================================================================
     def get(self, lab_id: int):
         """Returns the Lab object matching the specified ID, if it exists."""
-        for lab in self._instances:
+        for lab in self._instances.values():
             if lab.id == lab_id:
                 return lab
         return None
@@ -71,7 +71,7 @@ class LabMeta(type):
         if not number:
             return
 
-        for lab in self._instances:
+        for lab in self.list():
             if lab.number == number:
                 return lab
         return None
@@ -87,8 +87,8 @@ class LabMeta(type):
             raise TypeError(f"<{lab_obj}>: invalid lab - must be a Lab object")
 
         # Remove the passed Lab object only if it's actually contained in the list of instances.
-        if lab_obj in self._instances:
-            self._instances.remove(lab_obj)
+        if lab_obj.id in self._instances.keys():
+            del self._instances[lab_obj.id]
         return self
 
     # =================================================================
@@ -96,7 +96,7 @@ class LabMeta(type):
     # =================================================================
     def list(self):
         """Returns the array of Lab objects."""
-        return self._instances
+        return list(self._instances.values())
 
 
 class Lab(metaclass=LabMeta):
@@ -122,7 +122,7 @@ class Lab(metaclass=LabMeta):
         self.descr = descr
         Lab._max_id += 1
         self.__id = Lab._max_id
-        Lab._instances.append(self)
+        Lab._instances[self.__id] = self
 
     # =================================================================
     # id
