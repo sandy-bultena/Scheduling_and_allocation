@@ -1,5 +1,4 @@
 from Time_slot import TimeSlot
-from Block import Block
 
 
 class LabMeta(type):
@@ -13,7 +12,7 @@ class LabMeta(type):
     # share_blocks
     # =================================================================
 
-    def share_blocks(self, block1: Block, block2: Block):
+    def share_blocks(self, block1, block2):
         """Checks whether there are Labs which share the two specified Blocks."""
 
         # Count occurrences in both sets and ensure that all values are < 2
@@ -116,13 +115,22 @@ class Lab(metaclass=LabMeta):
     # new
     # --------------------------------------------------------------------
 
-    def __init__(self, number: str = "100", descr: str = ''):
+    def __init__(self, number: str = "100", descr: str = '', **kwargs):
         """Creates and returns a new Lab object."""
         self.number = number
         self.descr = descr
         Lab._max_id += 1
         self.__id = Lab._max_id
         Lab._instances[self.__id] = self
+
+        # keep **kwargs and below code, allows YAML to work correctly
+        for k, v in kwargs.items():
+            try:
+                if hasattr(self, f"__{k}"): setattr(self, f"__{k}", v)
+                elif hasattr(self, f"_{k}"): setattr(self, f"_{k}", v)
+                elif hasattr(self, f"{k}"): setattr(self, f"{k}", v)
+                if k == "id": Lab._max_id -= 1
+            except AttributeError: continue # hit get-only property
 
     # =================================================================
     # id

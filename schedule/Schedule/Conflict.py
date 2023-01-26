@@ -1,13 +1,12 @@
-#!/user/bin/python
+import sys
 
-# FindBin -> find bin location where script is being run. unclear what it's used for; seemingly unnecessary
-# importing *, so no need for Colour prefix
-from ..PerlLib.Colour import *
+# kind of a hack-y way to import Colour, but forces PerlLib to be recognized as a valid import source
+sys.path.insert(0, "\\".join(sys.path[0].split("\\")[:-1]) + "\\PerlLib")
+
+import Colour
 
 class ConflictMeta(type):
-    """
-    Metaclass for Conflict, making it iterable
-    """
+    """ Metaclass for Conflict, making it iterable """
     _conflicts = []
     
     def __iter__(self):
@@ -18,7 +17,12 @@ class Conflict(metaclass=ConflictMeta):
     Represents a scheduling conflict.
     - Constant Attributes -> TIME, LUNCH, MINIMUM_DAYS, AVAILABILITY, TIME_TEACHER, TIME_LAB, TIME_STREAM
     
-    Constant Attributes represent the possible types of conflicts    
+    Constant Attributes represent the possible types of conflicts
+
+    ------
+
+    Instances of this class are automatically saved to a list, which can be iterated over by iterating over the class itself.
+    - To remove references to a Conflict object, call the .delete() method on the object
     """
 
     TIME = 1
@@ -39,22 +43,29 @@ class Conflict(metaclass=ConflictMeta):
         AVAILABILITY : "mediumvioletred"
     }
 
-    _colours[TIME] = lighten(_colours[TIME_TEACHER], 30)
+    _colours[TIME] = Colour.lighten(_colours[TIME_TEACHER], 30)
 
     # ========================================================
     # CONSTRUCTOR
     # ========================================================
-    def __init__(self, type : int, blocks : list):
+    def __init__(self, type : int, blocks : list, **kwargs):
         """
         Creates an instance of the Conflict class.
         - Parameter type -> defines the type of conflict.
         - Parameter blocks -> defines the list of blocks involved in the conflict.
         """
-        if not type or not blocks: raise "Bad inputs"
+        if not type or not blocks: raise TypeError("Bad inputs")
         
         self.type = type
         self.blocks = blocks
         Conflict._conflicts.append(self)
+
+        for k, v in kwargs.items():
+            try:
+                if hasattr(self, f"__{k}"): setattr(self, f"__{k}", v)
+                elif hasattr(self, f"_{k}"): setattr(self, f"_{k}", v)
+                elif hasattr(self, f"{k}"): setattr(self, f"{k}", v)
+            except AttributeError: continue # hit get-only property
 
     # ========================================================
     # METHODS

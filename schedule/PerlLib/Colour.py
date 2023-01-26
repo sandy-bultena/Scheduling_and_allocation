@@ -16,7 +16,7 @@ MAX_COLOUR = 255
 LEN = 2
 
 # --------------------------------------------------------
-# _initialize_colours
+# __initialize_colours
 # --------------------------------------------------------
 def __initialize_colours():
   if _colour_list: return
@@ -104,6 +104,8 @@ def string(colour : str) -> str:
   Returns the RGB value of a given colour.
   - Parameter colour -> The colour to return. Supports giving a colour name, as long as the colour appears in the *nix 'showrgb' command.
   """
+  global MAX_COLOUR
+  global LEN
   if colour[0] != "#":
     string = "#000000"
     if _colour_list and colour in _colour_list:
@@ -1008,9 +1010,6 @@ __colour_data = """199  21 133		medium violet red
 
 # DON'T CHECK __name__ - should run when being imported
 __initialize_colours()
-
-print(string("dark red"))
-print(string("#44423d"))
 
 # removed functions (not converted):
   # fade, due to unuse
