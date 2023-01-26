@@ -51,7 +51,7 @@ class Block(TimeSlot):
         - Parameter duration: float -> how long does this class last, in hours
         - Parameter number: int -> A number representing this specific Block.
         """
-        TimeSlot.__init__(self, day, start, duration)
+        super().__init__(day, start, duration)
         self.number = number # NOTE: Based on the code found in CSV.pm and Section.pm
         Block._max_id += 1
         self._block_id = Block._max_id
@@ -85,7 +85,7 @@ class Block(TimeSlot):
     @property
     def start(self):
         """Get/set the start time of the Block, in 24hr clock."""
-        return super().start(self)
+        return super().start
 
     @start.setter
     def start(self, new_start: str):
@@ -94,10 +94,10 @@ class Block(TimeSlot):
         # If there are synchronized blocks, we must change them too.
         # Beware infinite loops!
         for other in self.synced(): 
-            # TODO: Look into how to access superclass properties of another object in Python.
-            old = super().start(other)
-            if old != super().start(self):
-                other.start = super().start(self)
+            # Bit finnicky, but it should do, I hope.
+            old = other.__start
+            if old != super().start:
+                other.__start = super().start
 
     # =================================================================
     # day
@@ -113,7 +113,7 @@ class Block(TimeSlot):
 
         # If there are synchronized blocks, change them too.
         # Once again, beware the infinite loop!
-        for other in self.synched:
+        for other in self.synced():
             old = super().day(other)
             if old != super().day(self):
                 other.day = super().day(self)
