@@ -43,7 +43,7 @@ class LabMeta(type):
         Returns the modified Labs object."""
         for lab in args:
             if not isinstance(lab, Lab):
-                raise TypeError(f"<{lab}>: invalid lab - must be a Lab object").with_traceback()
+                raise TypeError(f"<{lab}>: invalid lab - must be a Lab object")
 
             # Cannot have two distinct labs with the same room number.
             my_obj = self.get_by_number(lab.number)
@@ -75,6 +75,28 @@ class LabMeta(type):
             if lab.number == number:
                 return lab
         return None
+
+    # =================================================================
+    # remove lab
+    # =================================================================
+    def remove(self, lab_obj):
+        """Removes the specified Lab from the Labs object.
+        
+        Returns the modified Labs."""
+        if not isinstance(lab_obj, Lab):
+            raise TypeError(f"<{lab_obj}>: invalid lab - must be a Lab object")
+
+        # Remove the passed Lab object only if it's actually contained in the list of instances.
+        if lab_obj in self._instances:
+            self._instances.remove(lab_obj)
+        return self
+
+    # =================================================================
+    # list
+    # =================================================================
+    def list(self):
+        """Returns the array of Lab objects."""
+        return self._instances
 
 
 class Lab(metaclass=LabMeta):
