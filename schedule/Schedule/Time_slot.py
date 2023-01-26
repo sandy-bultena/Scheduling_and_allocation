@@ -105,7 +105,7 @@ class TimeSlot(metaclass=TimeSlotMeta):
         return self.__day
 
     @day.setter
-    def day(self, new_day):
+    def day(self, new_day: str):
         # Convert the string to lowercase and remove any extraneous characters beyond the ones we want.
         new_day = new_day[0:3].lower()
 
@@ -113,13 +113,14 @@ class TimeSlot(metaclass=TimeSlotMeta):
         if new_day in TimeSlot._week.keys():
             self.__day = new_day
             self.day_number = TimeSlot._week[new_day]
-        elif new_day in range(1, 8):
-            self.day_number = new_day
-            self.__day = TimeSlot.reverse_week[new_day]
+        elif re.search("^[1-7]$", new_day):
+            self.day_number = int(new_day)
+            self.__day = TimeSlot.reverse_week[int(new_day)]
         else:
             # If it's not valid, set the day to the default value of Monday.
+            print(f"<{new_day}>: invalid day specified... setting to {TimeSlot.default_day}")
             self.__day = TimeSlot.default_day
-            self.day_number = TimeSlot._week[new_day]
+            self.day_number = TimeSlot._week[TimeSlot.default_day]
 
     # ====================================
     # start
@@ -135,7 +136,7 @@ class TimeSlot(metaclass=TimeSlotMeta):
             print(f"<{new_value}>: invalid start time\nchanged to {TimeSlot.default_start}")
             new_value = TimeSlot.default_start
 
-        self.start = new_value
+        self.__start = new_value
         hour, minute = (int(x) for x in new_value.split(":"))
         self.start_number = hour + minute / 60
 
@@ -144,7 +145,7 @@ class TimeSlot(metaclass=TimeSlotMeta):
     # ====================================
 
     def end(self):
-        """Gets the end time in 24-hour clock format."""
+        """Gets the TimeSlot's end time in 24-hour clock format."""
         current_start = self.start_number
         end = current_start + self.duration
         hour = f"{int(end)}"
@@ -200,11 +201,11 @@ class TimeSlot(metaclass=TimeSlotMeta):
 
         To set the day according to the data in this hash, use the method "snap_to_time".
         """
-        return self.start_number
+        return self.__start_number
 
     @start_number.setter
     def start_number(self, new_val: float):
-        self.start_number = new_val
+        self.__start_number = new_val
 
     # ====================================
     # day_number
@@ -213,15 +214,15 @@ class TimeSlot(metaclass=TimeSlotMeta):
     def day_number(self):
         """Returns a real number that defines the day of the week, starting from Monday. E.g., tuesday = 2.0.
         
-        This info is set every time the day property is called. Modifying this property directly does NOT modify the values
-        stored in 'day'.
+        This info is set every time the day property is called. Modifying this property directly does NOT modify the
+        values stored in 'day'.
         
         To set the day according to the data in this property, use the method snap_to_day()."""
-        return self.day_number
+        return self.__day_number
 
     @day_number.setter
-    def day_number(self, new_val):
-        self.day_number = new_val
+    def day_number(self, new_val: int):
+        self.__day_number = new_val
 
     # ====================================
     # snap_to_time
@@ -240,19 +241,19 @@ class TimeSlot(metaclass=TimeSlotMeta):
         start = f"{int(hour)}:{minute:2d}"
 
         changed = False
-        if start != self.__start:
+        if start != self.start:
             changed = True
         self.start = start
         return changed
 
     def _snap_to_time(self, *time: int):
-        min_time = time if time[0] else 8
-        max_time = time if time[1] else 18
+        # Classes can't start before 8 AM or after 6 PM.
+        min_time = time[0] if time[0] else 8
+        max_time = time[1] if time[1] else 18
 
         TimeSlot.max_hour_div = 1 if TimeSlot.max_hour_div < 1 else TimeSlot.max_hour_div
 
         r_hour = self.start_number
-        start = ""
 
         # Get hour and fractional hour
         hour = int(r_hour)
@@ -264,16 +265,15 @@ class TimeSlot(metaclass=TimeSlotMeta):
             fracs.append(i / TimeSlot.max_hour_div)
 
         # Sort according to which one is closest to our fraction. Based on experiments in the terminal, this should
-        # work...
-        # TODO: Then again, maybe not.
+        # works while the max_hour_div is 2.
         sorted_frac = sorted(fracs, key=lambda x: abs(x - frac))
 
         # add hour fraction to hour.
         hour = hour + sorted_frac[0]
 
-        # Adjust hour to minimum or maximum
+        # Adjust hour to minimum or maximum if necessary
         hour = min_time if hour < min_time else hour
-        hour = max_time - self.__duration if hour > max_time - self.__duration else hour
+        hour = max_time - self.duration if hour > max_time - self.duration else hour
 
         return hour
 
@@ -289,11 +289,12 @@ class TimeSlot(metaclass=TimeSlotMeta):
         """
         day = self._snap_to_day(args)
 
-        changed = False
-        if TimeSlot.reverse_week[day] != self.__day:
-            changed = True
-        self.day(TimeSlot.reverse_week[day])
-        # return day  # TODO: Ask Sandy if this is the correct return type.
+        # NOTE: Function's return value is not being used at all. Commenting out these lines of code.
+        # changed = False
+        # if TimeSlot.reverse_week[day] != self.day:
+        #     changed = True
+        self.day = TimeSlot.reverse_week[day]
+        # return day
 
     def _snap_to_day(self, *args: int):
         min_day = args[0] if args[0] else 1
@@ -317,7 +318,7 @@ class TimeSlot(metaclass=TimeSlotMeta):
         # error threshold when moving a block into place.
         delta = 0.05
 
-        # detect date collisions
+        # detect date collisions. If the dates differ, there's no conflict, and we can leave. Otherwise, continue.
         if abs(self.day_number - rhs.day_number) >= 1 - delta:
             return False
         
