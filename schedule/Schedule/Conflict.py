@@ -57,36 +57,6 @@ class Conflict(metaclass=ConflictMeta):
         Conflict._conflicts.append(self)
 
     # ========================================================
-    # PROPERTIES
-    # ========================================================
-
-    # --------------------------------------------------------
-    # type
-    # --------------------------------------------------------
-    @property
-    def type(self) -> int:
-        """ Gets the conflict's type """
-        return self._type
-
-    @type.setter
-    def type(self, new_type : int):
-        """ Sets the conflict's type """
-        self._type = new_type
-    
-    # --------------------------------------------------------
-    # blocks
-    # --------------------------------------------------------
-    @property
-    def blocks(self) -> list:
-        """ Gets the conflict's blocks """
-        return self._blocks
-    
-    @blocks.setter
-    def blocks(self, new_blocks):
-        """ Sets the conflict's blocks """
-        self._blocks = new_blocks
-
-    # ========================================================
     # METHODS
     # ========================================================
 
@@ -178,8 +148,6 @@ class Conflict(metaclass=ConflictMeta):
     # delete
     # --------------------------------------------------------
     def delete(self):
-        """
-        Deletes the conflict from the conflict list
-        """
+        """ Deletes the conflict from the conflict list """
         Conflict._conflicts.remove(self)
         return self
