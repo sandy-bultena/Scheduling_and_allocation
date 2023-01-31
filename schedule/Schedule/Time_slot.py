@@ -297,7 +297,7 @@ class TimeSlot(metaclass=TimeSlotMeta):
         Resets the 'day' property to the appropriate string.
 
         """
-        day = self._snap_to_day(args)
+        day = self._snap_to_day(*args)
 
         # NOTE: Function's return value is not being used at all. Commenting out these lines of code.
         # changed = False
@@ -307,8 +307,8 @@ class TimeSlot(metaclass=TimeSlotMeta):
         # return day
 
     def _snap_to_day(self, *args: int):
-        min_day = args[0] if args[0] else 1
-        max_day = args[1] if args[1] else 7
+        min_day = args[0] if len(args) >= 1 else 1
+        max_day = args[1] if len(args) >= 2 else 7
 
         r_day = self.day_number
 

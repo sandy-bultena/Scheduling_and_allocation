@@ -141,8 +141,24 @@ def test__snap_to_time_bad_value_to_minimum():
     assert slot.start == expected_start
 
 
-def test_snap_to_day():
-    assert False
+def test_snap_to_time_bad_value_to_maximum():
+    """Verifies that snap_to_time adjusts TimeSlot's start property to the maximum value of 18 minus duration if
+    start is set to something greater than 18. """
+    slot = TimeSlot()
+    slot.start = "19:00"
+    slot.snap_to_time()
+    expected_start = "16:30"
+    assert slot.start == expected_start
+
+
+def test_snap_to_day_with_args():
+    """Verifies that TimeSlot's snap_to_day method adjusts its day property to the correct value when it is outside a
+    specified date range."""
+    slot = TimeSlot()
+    slot.day = "sun"
+    slot.snap_to_day(3, 4)
+    expected_day = "thu"
+    assert slot.day == expected_day
 
 
 def test__snap_to_day():
