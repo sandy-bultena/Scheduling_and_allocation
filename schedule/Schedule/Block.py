@@ -4,6 +4,27 @@ from Lab import Lab
 from Section import Section
 
 
+class BlockMeta(type):
+    """Metaclass for Block, making it iterable."""
+    _instances = {}  # NOTE: May change this to a list.
+
+    def __iter__(self):
+        return iter(getattr(self, '_instances', {}))
+
+    # =================================================================
+    # get_day_blocks ($day, $blocks)
+    # =================================================================
+    def get_day_blocks(day, blocks: list):
+        """Returns an array of all blocks within a specific day.
+        
+        Parameter day: int -> day of the week (1=monday, 2=tuesday, etc.)
+        Parameter blocks: list -> An array of AssignBlocks."""
+        if not blocks:
+            return []
+        day_blocks = filter(lambda x: x.day == day, blocks)
+        return list(day_blocks)
+
+
 # SYNOPSIS:
 
 #    use Schedule::Course;
@@ -27,7 +48,7 @@ from Section import Section
 #    $block->labs();
 
 
-class Block(TimeSlot):
+class Block(TimeSlot, metaclass=BlockMeta):
     """
     Describes a block which is a specific time slot for teaching part of a section of a course.
     """
@@ -52,18 +73,23 @@ class Block(TimeSlot):
         - Parameter number: int -> A number representing this specific Block.
         """
         super().__init__(day, start, duration)
-        self.number = number # NOTE: Based on the code found in CSV.pm and Section.pm
+        self.number = number  # NOTE: Based on the code found in CSV.pm and Section.pm
         Block._max_id += 1
         self._block_id = Block._max_id
-        
+        Block._instances[self.id] = self
+
         # keep **kwargs and below code, allows YAML to work correctly
         for k, v in kwargs.items():
             try:
-                if hasattr(self, f"__{k}"): setattr(self, f"__{k}", v)
-                elif hasattr(self, f"_{k}"): setattr(self, f"_{k}", v)
-                elif hasattr(self, f"{k}"): setattr(self, f"{k}", v)
+                if hasattr(self, f"__{k}"):
+                    setattr(self, f"__{k}", v)
+                elif hasattr(self, f"_{k}"):
+                    setattr(self, f"_{k}", v)
+                elif hasattr(self, f"{k}"):
+                    setattr(self, f"{k}", v)
                 if k == "id": Block._max_id -= 1
-            except AttributeError: continue # hit get-only property
+            except AttributeError:
+                continue  # hit get-only property
 
         # two arguments in YAML that I can't find in code: start_number & day_number
 
@@ -88,7 +114,7 @@ class Block(TimeSlot):
     def delete(self):
         """Delete this Block object and all its dependents."""
         # self = None  # TODO: Verify that this works as intended. NOTE: It does not.
-        del self    # NOTE: Neither does this.
+        del self  # NOTE: Neither does this.
 
     # =================================================================
     # start
@@ -104,7 +130,7 @@ class Block(TimeSlot):
 
         # If there are synchronized blocks, we must change them too.
         # Beware infinite loops!
-        for other in self.synced(): 
+        for other in self.synced():
             # Bit finnicky, but it should do, I hope. NOTE: Seems to work, at least in the terminal.
             old = other.start
             if old != super().start:
@@ -116,7 +142,7 @@ class Block(TimeSlot):
     @property
     def day(self):
         """Get/set the day of the block, in numeric format (1 for Monday, 7 for Sunday)."""
-        return super().day(self)
+        return super().day
 
     @day.setter
     def day(self, new_day):
