@@ -2,6 +2,7 @@ from Time_slot import TimeSlot
 from Conflict import Conflict
 from Lab import Lab
 from Section import Section
+from Teacher import Teacher
 
 
 class BlockMeta(type):
@@ -269,7 +270,6 @@ class Block(TimeSlot, metaclass=BlockMeta):
         if not hasattr(self, '_teachers'):
             self._teachers = {}
 
-        # TODO: Come back to this once Teacher has been defined so we can validate.
         self._teachers[teacher.id] = teacher
 
         return self
@@ -283,7 +283,8 @@ class Block(TimeSlot, metaclass=BlockMeta):
         Returns the Block object."""
 
         # Verify that the teacher is, in fact, a Teacher. 
-        # TODO: Come back to this once Teacher is implemented.
+        if not isinstance(teacher, Teacher):
+            raise TypeError(f"<{teacher}>: invalid teacher - must be a Teacher object.")
 
         # If the teachers dict contains an entry for this Teacher, remove it.
         if teacher.id in self._teachers.keys():
@@ -308,7 +309,9 @@ class Block(TimeSlot, metaclass=BlockMeta):
     # =================================================================
     def teachers(self):
         """Returns a list of teachers assigned to this Block."""
-        # TODO: Feel like this should get the same sort of safeguards as Block.labs().
+        # If this Block doesn't already have a teachers dict, create one.
+        if not hasattr(self, '_teachers'):
+            self._teachers = {}
         return list(self._teachers.values())
 
     # =================================================================
@@ -359,7 +362,8 @@ class Block(TimeSlot, metaclass=BlockMeta):
         Returns this Block object."""
 
         # This function was not finished or used in the Perl code, so I'm flying blind here.
-        self._sync.remove(block)
+        if block in self._sync:
+            self._sync.remove(block)
 
         return self
 
@@ -417,14 +421,13 @@ class Block(TimeSlot, metaclass=BlockMeta):
 
     def __str__(self) -> str:
         text = ""
-        i = 0
 
         if self.section:
             if self.section.course:
                 text += self.section.course.name + " "
-            text += self.section.number + " "
+            text += f"{self.section.number} "
 
-        text += self.day + " " + self.start + " for " + self.duration + " hours, in "
+        text += f"{self.day} {self.start} for {self.duration} hours, in "
         text += ", ".join(self._labs)
 
         return text
@@ -433,7 +436,6 @@ class Block(TimeSlot, metaclass=BlockMeta):
         """Prints an alternate text string that describes this Block.
         
         Includes information which directly relates to this Block ONLY."""
-        # text = ""
         text = f"{self.number} : {self.day}, {self.start} {self.duration} hour(s)"
         return text
 
