@@ -145,6 +145,7 @@ class Teacher(metaclass=TeacherMeta):
         self.dept = dept
         Teacher._max_id += 1
         self.__id = Teacher._max_id
+        self.release = 0
 
         # keep **kwargs and below code, allows YAML to work correctly (kwargs should be last param)
         for k, v in kwargs.items():

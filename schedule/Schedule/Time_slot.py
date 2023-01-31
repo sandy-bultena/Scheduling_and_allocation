@@ -134,7 +134,7 @@ class TimeSlot(metaclass=TimeSlotMeta):
 
     @start.setter
     def start(self, new_value: str):
-        if not re.match("^[12]?[0-9]:(00|15|30|45)$", new_value):
+        if not re.match("^[12]?[0-9]:(00|15|30|45)$", str(new_value)):
             print(f"<{new_value}>: invalid start time\nchanged to {TimeSlot.DEFAULT_START}")
             new_value = TimeSlot.DEFAULT_START
 
@@ -195,7 +195,7 @@ class TimeSlot(metaclass=TimeSlotMeta):
 
     @movable.setter
     def movable(self, movable: bool):
-        self.__movable = movable
+        self.__movable = bool(movable)
 
     # ====================================
     # start_number

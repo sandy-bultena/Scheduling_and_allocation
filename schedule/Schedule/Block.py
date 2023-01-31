@@ -1,16 +1,13 @@
-from Time_slot import TimeSlot
+from Time_slot import TimeSlot, TimeSlotMeta
 from Conflict import Conflict
 from Lab import Lab
 from Section import Section
 from Teacher import Teacher
 
 
-class BlockMeta(type):
+class BlockMeta(TimeSlotMeta):
     """Metaclass for Block, making it iterable."""
-    _instances = []  # NOTE: May change this to a list.
-
-    def __iter__(self):
-        return iter(getattr(self, '_instances', []))
+    _instances = []
 
     # =================================================================
     # get_day_blocks ($day, $blocks)
@@ -78,6 +75,7 @@ class Block(TimeSlot, metaclass=BlockMeta):
         Block._max_id += 1
         self._block_id = Block._max_id
         Block._instances.append(self)
+        self.__section = None
 
         # keep **kwargs and below code, allows YAML to work correctly
         for k, v in kwargs.items():
@@ -127,7 +125,7 @@ class Block(TimeSlot, metaclass=BlockMeta):
 
     @start.setter
     def start(self, new_start: str):
-        super().start = new_start
+        super(Block, self.__class__).start.fset(self, new_start)
 
         # If there are synchronized blocks, we must change them too.
         # Beware infinite loops!
@@ -147,7 +145,7 @@ class Block(TimeSlot, metaclass=BlockMeta):
 
     @day.setter
     def day(self, new_day):
-        super().day = new_day
+        super(Block, self.__class__).day.fset(self, new_day)
 
         # If there are synchronized blocks, change them too.
         # Once again, beware the infinite loop!
@@ -175,7 +173,6 @@ class Block(TimeSlot, metaclass=BlockMeta):
 
     @section.setter
     def section(self, section: Section):
-        pass
         if isinstance(section, Section):
             self.__section = section
         else:
@@ -401,7 +398,7 @@ class Block(TimeSlot, metaclass=BlockMeta):
     def conflicted(self, new_conf: bool):
         if not hasattr(self, '_conflicted'):
             self._conflicted = False
-        self._conflicted = new_conf
+        self._conflicted = bool(new_conf)
 
     # =================================================================
     # is_conflicted
@@ -428,7 +425,8 @@ class Block(TimeSlot, metaclass=BlockMeta):
             text += f"{self.section.number} "
 
         text += f"{self.day} {self.start} for {self.duration} hours, in "
-        text += ", ".join(self._labs)
+        # not intended result, but stops it from crashing
+        text += ", ".join(str(self._labs.values()))
 
         return text
 
