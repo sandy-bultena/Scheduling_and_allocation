@@ -75,36 +75,70 @@ def test_duration_setter_changes_end():
     assert slot.end() == expected_end
 
 
-def test_movable():
-    assert False
+def test_movable_getter_default():
+    """Verifies that a TimeSlot with default values is movable."""
+    slot = TimeSlot()
+    assert slot.movable is True
 
 
-def test_movable():
-    assert False
+def test_movable_setter():
+    """Verifies that the TimeSlot's movable setter works."""
+    slot = TimeSlot()
+    slot.movable = False
+    assert slot.movable is False
 
 
-def test_start_number():
-    assert False
+def test_start_number_getter_default():
+    """Verifies that the start number for a TimeSlot with default values is 8."""
+    slot = TimeSlot()
+    expected_start_num = 8
+    assert slot.start_number == expected_start_num
 
 
-def test_start_number():
-    assert False
+def test_start_number_setter():
+    """Verifies that the TimeSlot's start_number setter works as intended: that it changes start_number ONLY,
+    without affecting start. """
+    slot = TimeSlot()
+    new_start_num = 12
+    slot.start_number = new_start_num
+    bad_start = "12:00"
+    assert slot.start_number == new_start_num and slot.start != bad_start
 
 
-def test_day_number():
-    assert False
+def test_day_number_getter_default():
+    """Verifies that a TimeSlot with default values will have a day_number of 1."""
+    slot = TimeSlot()
+    expected_day_num = 1
+    assert slot.day_number == expected_day_num
 
 
-def test_day_number():
-    assert False
+def test_day_number_setter():
+    """Verifies that the TimeSlot's day_number setter works as intended: that it changes day_number ONLY,
+    without affecting day. """
+    slot = TimeSlot()
+    new_day_num = 7
+    slot.day_number = new_day_num
+    bad_day = "fri"
+    assert slot.day_number == new_day_num and slot.day != bad_day
 
 
 def test_snap_to_time():
-    assert False
+    """Verifies that snap_to_time adjusts the TimeSlot's start property to the nearest half-hour."""
+    slot = TimeSlot()
+    slot.start = "13:15"
+    slot.snap_to_time()
+    expected_start = "13:00"
+    assert slot.start == expected_start
 
 
-def test__snap_to_time():
-    assert False
+def test__snap_to_time_bad_value_to_minimum():
+    """Verifies that snap_to_time adjusts TimeSlot's start property to the minimum value of 8 if start is set to
+    something less than 8. """
+    slot = TimeSlot()
+    slot.start = "5:00"
+    slot.snap_to_time()
+    expected_start = "8:00"
+    assert slot.start == expected_start
 
 
 def test_snap_to_day():

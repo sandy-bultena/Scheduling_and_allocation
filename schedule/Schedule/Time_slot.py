@@ -246,9 +246,9 @@ class TimeSlot(metaclass=TimeSlotMeta):
 
         Returns true if the new time is different than the previous time.
         """
-        hour = self._snap_to_time(args)
+        hour = self._snap_to_time(*args)
         minute = int((hour - int(hour)) * 60)
-        start = f"{int(hour)}:{minute:2d}"
+        start = f"{int(hour)}:{minute:02d}"
 
         changed = False
         if start != self.start:
@@ -258,8 +258,8 @@ class TimeSlot(metaclass=TimeSlotMeta):
 
     def _snap_to_time(self, *time: int):
         # Classes can't start before 8 AM or after 6 PM.
-        min_time = time[0] if time[0] else 8
-        max_time = time[1] if time[1] else 18
+        min_time = time[0] if len(time) >= 1 else 8
+        max_time = time[1] if len(time) >= 2 else 18
 
         TimeSlot.MAX_HOUR_DIV = 1 if TimeSlot.MAX_HOUR_DIV < 1 else TimeSlot.MAX_HOUR_DIV
 
