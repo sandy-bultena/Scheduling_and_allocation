@@ -64,7 +64,7 @@ class Schedule:
     def read_YAML(file : str):
         schedule = Schedule()
         if os.path.isfile(file):
-            #try:
+            try:
                 f = open(file, "r")
                 # regex substitution replaces - at the beginning of variable names, since they're not allowed in Python
                 # remove any lines in a list that are just aliases; classes are now iterators, so collection classes are no longer needed
@@ -77,22 +77,24 @@ class Schedule:
                     max_ids['section'], max_ids['teacher'], max_ids['timeslot'], max_ids['stream'] 
                 ) = yaml.safe_load_all(raw_yaml)
                 
+                # set max IDs so that there's no accidental overlap with automatic calculation & manual overwrite
                 Schedule.__set_max_ids(max_ids)
 
                 for c in yaml_contents['conflicts']['list']: Schedule.__create_conflict(c)
-                for c in yaml_contents['courses']['list']: Schedule.__create_course(c)
-                for l in yaml_contents['labs']['list']: Schedule.__create_lab(l)
-                for s in yaml_contents['streams']['list']: Schedule.__create_stream(s)
-                for t in yaml_contents['teachers']['list']: Schedule.__create_teacher(t)
+                for c in yaml_contents['courses']['list'].values(): Schedule.__create_course(c)
+                for l in yaml_contents['labs']['list'].values(): Schedule.__create_lab(l)
+                for s in yaml_contents['streams']['list'].values(): Schedule.__create_stream(s)
+                for t in yaml_contents['teachers']['list'].values(): Schedule.__create_teacher(t)
 
+                # set max IDs again so it now matches with the stored value
                 Schedule.__set_max_ids(max_ids)
-                for i in Conflict: print(i)
+                for i in Block: print(i)
                 return schedule
-            #except Exception as e:
+            except Exception as e:
                 print(f"Cannot read from file {file}: {str(e)}")
                 # should probably be replaced with tkinter error screen
                 return
-            #finally:
+            finally:
                 f.close()
         
         raise f"File {file} does not exist"
@@ -135,7 +137,7 @@ class Schedule:
         blocks = list(filter(lambda i : i.id == block.get('id', -1), Block))
         if len(blocks) == 0:
             b = Block(block.get('day', ''), block.get('start', ''), block.get('duration', 0), block.get('number', 0))
-            b._Block__id = block.get('id', b.id)
+            b._block_id = block.get('id', b.id)
             b.conflicted = block.get('conflicted', b.conflicted)
             # don't set day_number, its calculated based on day
             # don't set start_number, its calculated based on start
@@ -153,12 +155,12 @@ class Schedule:
         sections = list(filter(lambda i : i.id == section.get('id', -1), Section) )
         if len(sections) == 0:
             s = Section(section.get('number', ''), section.get('hours', 0), section.get('name', ''))
-            for k in section.get('blocks', {}).keys(): s.add_block(Schedule.__create_block(section.get('blocks', {})[k]))
             if section.get('course'): s.course = Schedule.__create_course(section.get('course'))
+            for k in section.get('blocks', {}).keys(): s.add_block(Schedule.__create_block(section.get('blocks', {})[k]))
             s._Section__id = section.get('id', s.id)
             s._allocation = section.get('allocation', s._allocation)
             s.num_students = section.get('num_students', s.num_students)
-            for st in section.get('streams', []): s.assign_stream(Schedule.__create_stream(st))
+            for k in section.get('streams', {}).keys(): s.assign_stream(Schedule.__create_stream(section.get('streams', {})[k]))
             for k in section.get('teachers', {}).keys(): s.assign_teacher(Schedule.__create_teacher(section.get('teachers', {})[k]))
             return s
         else: return sections[0]

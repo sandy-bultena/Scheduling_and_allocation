@@ -39,6 +39,7 @@ class Section(metaclass=SectionMeta):
         self.__id = Section._max_id
         Section._sections.append(self)
         self._num_students = 0
+        self._course = None
 
         # keep **kwargs and below code, allows YAML to work correctly
         for k, v in kwargs.items():
@@ -161,7 +162,7 @@ class Section(metaclass=SectionMeta):
     @property
     def streams(self) -> set:
         """ Gets all streams in this section """
-        return set(self._streams.values)
+        return set(self._streams.values())
 
     # ========================================================
     # METHODS
@@ -323,7 +324,7 @@ class Section(metaclass=SectionMeta):
         """
         for s in streams:
             if not isinstance(s, Stream): raise f"{s}: invalid stream - must be a Stream object"
-            self.streams[s.id] = s
+            self.streams.add(s)
         return self
     
     # --------------------------------------------------------
@@ -335,7 +336,7 @@ class Section(metaclass=SectionMeta):
         - Parameter stream -> The stream to remove.
         """
         if not isinstance(stream, Stream): raise f"{stream}: invalid stream - must be a Stream object"
-        if stream.id in self.streams: del self.streams[stream.id]
+        if stream.id in self.streams: self.streams.remove(stream)
         return self
     
     # --------------------------------------------------------

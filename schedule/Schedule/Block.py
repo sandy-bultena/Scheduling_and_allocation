@@ -417,6 +417,9 @@ class Block(TimeSlot, metaclass=BlockMeta):
         return self.__str__()
 
     def __str__(self) -> str:
+        """Returns a text string that describes the Block.
+        
+        Includes information on any Section and Labs related to this Block."""
         text = ""
 
         if self.section:
@@ -426,7 +429,7 @@ class Block(TimeSlot, metaclass=BlockMeta):
 
         text += f"{self.day} {self.start} for {self.duration} hours, in "
         # not intended result, but stops it from crashing
-        text += ", ".join(str(self._labs.values()))
+        text += ", ".join(str(l) for l in self._labs.values())
 
         return text
 
