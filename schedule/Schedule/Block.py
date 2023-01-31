@@ -7,15 +7,15 @@ from Teacher import Teacher
 
 class BlockMeta(type):
     """Metaclass for Block, making it iterable."""
-    _instances = {}  # NOTE: May change this to a list.
+    _instances = []  # NOTE: May change this to a list.
 
     def __iter__(self):
-        return iter(getattr(self, '_instances', {}))
+        return iter(getattr(self, '_instances', []))
 
     # =================================================================
     # get_day_blocks ($day, $blocks)
     # =================================================================
-    def get_day_blocks(day, blocks: list):
+    def get_day_blocks(self, day, blocks: list):
         """Returns an array of all blocks within a specific day.
         
         Parameter day: int -> day of the week (1=monday, 2=tuesday, etc.)
@@ -77,7 +77,7 @@ class Block(TimeSlot, metaclass=BlockMeta):
         self.number = number  # NOTE: Based on the code found in CSV.pm and Section.pm
         Block._max_id += 1
         self._block_id = Block._max_id
-        Block._instances[self.id] = self
+        Block._instances.append(self)
 
         # keep **kwargs and below code, allows YAML to work correctly
         for k, v in kwargs.items():
