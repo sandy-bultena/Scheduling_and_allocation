@@ -539,6 +539,7 @@ sub colour_block {
     my $guiblock = shift;
     my $type     = shift;
     my $conflict =
+      # NOTE: is_conflicted WAS STORED AS 4 OR 0. IN PY ITS A BOOL, SO THIS WONT WORK IN THE FUTURE
       Conflict->most_severe( $guiblock->block->is_conflicted, $type );
 
     # change the colour of the block to the most important conflict

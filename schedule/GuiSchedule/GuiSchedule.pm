@@ -699,6 +699,7 @@ sub determine_button_colours {
         # for every block
         foreach my $block (@blocks) {
             $view_conflict =
+              # NOTE: is_conflicted WAS STORED AS 4 OR 0. IN PY ITS A BOOL, SO THIS WONT WORK IN THE FUTURE
               Conflict->most_severe( $view_conflict | $block->is_conflicted, $type );
             last if $view_conflict == $Conflict::Sorted_Conflicts[0];
         }
