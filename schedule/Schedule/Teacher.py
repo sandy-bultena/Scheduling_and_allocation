@@ -3,7 +3,7 @@ class TeacherMeta(type):
     _instances = {}
 
     def __iter__(self):
-        return iter(getattr(self, '_instances'))
+        return iter(getattr(self, '_instances', {}))
 
     # =================================================================
     # share_blocks
@@ -198,6 +198,8 @@ class Teacher(metaclass=TeacherMeta):
             raise Exception("Last name cannot be an empty string")
         self.__lastname = new_name
 
+    # region dept & release properties
+
     # =================================================================
     # dept
     # =================================================================
@@ -223,10 +225,15 @@ class Teacher(metaclass=TeacherMeta):
     def release(self, new_rel: float):
         self._release = new_rel
 
+    # endregion
+
     # =================================================================
     # print_description
     # =================================================================
     def print_description(self):
         """Returns a text string that describes the Teacher."""
 
+        return self.__str__()
+
+    def __str__(self):
         return f"{self.firstname} {self.lastname}"
