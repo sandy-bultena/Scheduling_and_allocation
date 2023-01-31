@@ -2,10 +2,15 @@ from Course import Course
 from Stream import Stream
 import re
 
-# not sure what the equivalent to fallback overload is so going without it for now
-# '""' is an equivalent to ToString() in C# (?) and __str__ in Python
 
-class Section:
+class SectionMeta(type):
+    """ Metaclass for Conflict, making it iterable """
+    _sections = []
+    
+    def __iter__(self):
+        return iter(getattr(self, '_sections', []))
+
+class Section(metaclass=SectionMeta):
     """
     Describes a section (part of a course)
     """
@@ -32,6 +37,8 @@ class Section:
         self.hours = hours
         Section._max_id += 1
         self.__id = Section._max_id
+        Section._sections.append(self)
+        self._num_students = 0
 
         # keep **kwargs and below code, allows YAML to work correctly
         for k, v in kwargs.items():
@@ -58,15 +65,14 @@ class Section:
     # --------------------------------------------------------
     @property
     def hours(self) -> float:
-        """ Gets the number of hours per week of the section """
+        """
+        Gets and sets the number of hours per week of the section
+        - When setting, will automatically calculate the total hours if the section has blocks.
+        """
         return self._hours
     
     @hours.setter
     def hours(self, val):
-        """
-        Sets the section's hours per week.
-        - If the section has blocks, will automatically calculate the total hours.
-        """
         val = Section.__validate_hours(val)
         self._hours = val
 
@@ -87,7 +93,7 @@ class Section:
     # blocks
     # --------------------------------------------------------
     @property
-    def blocks(self) -> list:
+    def blocks(self) -> dict:
         """ Gets list of section's blocks """
         return self._blocks
 
@@ -104,12 +110,11 @@ class Section:
     # --------------------------------------------------------
     @property
     def course(self) -> Course:
-        """ Gets the course that contains this section """
+        """ Gets and sets the course that contains this section """
         return self._course
     
     @course.setter
     def course(self, val : Course):
-        """ Sets the course that contains this section """
         if not isinstance(val, Course): raise f"{type(val)}: invalid course - must be a Course object"
         self._course = val
 
@@ -118,13 +123,12 @@ class Section:
     # --------------------------------------------------------
     @property
     def num_students(self) -> int:
-        """ Gets the number of students in this section """
+        """ Gets and sets the number of students in this section """
         return self._num_students
     
     @num_students.setter
     # left default value even though setter can't be called without argument, since it can act as a hint to users
     def num_students(self, val : int = 30):
-        """ Sets the number of students in this section """
         self._num_students = val
     
     # --------------------------------------------------------
@@ -133,8 +137,8 @@ class Section:
     @property
     def labs(self) -> set:
         """ Gets all labs assigned to all blocks in this section """
-        labs : set
-        for b in self.blocks:
+        labs = set()
+        for b in self.blocks.values():
             for l in b.labs():
                 labs.add(l)
         return labs
@@ -145,8 +149,8 @@ class Section:
     @property
     def teachers(self) -> set:
         """ Gets all teachers assigned to all blocks in this section """
-        teachers : set
-        for b in self.blocks:
+        teachers = set()
+        for b in self.blocks.values():
             for t in b.teachers(): teachers.add(t)
         for t in self._teachers: teachers.add(t)
         return teachers
@@ -180,7 +184,7 @@ class Section:
         Gets block with given ID from this section
         - Parameter id -> The ID of the block to find
         """
-        f = filter(lambda a : a.id == id, self.blocks)
+        f = list(filter(lambda a : a.id == id, self.blocks.values()))
         return f[0] if len(f) > 0 else None
     
     # --------------------------------------------------------
@@ -191,7 +195,7 @@ class Section:
         Gets block with given block number from this section
         - Parameter number -> The number of the block to find
         """
-        for b in self.blocks:
+        for b in self.blocks.values():
             if not b.number: b.number = 0
             if b.number == number: return b
         return None
@@ -205,7 +209,7 @@ class Section:
         - Parameter lab -> The lab to assign
         """
         if lab:
-            for b in self.blocks: b.assign_lab(lab)
+            for b in self.blocks.values(): b.assign_lab(lab)
         return self
     
     # --------------------------------------------------------
@@ -216,7 +220,7 @@ class Section:
         Remove a lab from every block in the section
         - Parameter lab -> The lab to remove
         """
-        for b in self.blocks: b.remove_lab(lab)
+        for b in self.blocks.values(): b.remove_lab(lab)
         return self
     
     # --------------------------------------------------------
@@ -228,9 +232,9 @@ class Section:
         - Parameter teacher -> The teacher to be assigned
         """
         if teacher:
-            for b in self.blocks:
+            for b in self.blocks.values():
                 b.assign_teacher(teacher)
-            self.teachers[teacher.id] = teacher
+            self.teachers.add(teacher)
             self._allocation[teacher.id] = self.hours
         return self
     
@@ -284,8 +288,8 @@ class Section:
         Removes teacher from all blocks in this section
         - Parameter teacher -> The teacher to be removed
         """
-        for b in self.blocks: b.remove_teacher(teacher)
-        if teacher.id in self.teachers: del self.teachers[teacher.id]
+        for b in self.blocks.values(): b.remove_teacher(teacher)
+        if teacher in self.teachers: self.teachers.remove(teacher)
         if teacher.id in self._allocation: del self._allocation[teacher.id]
 
         return self
@@ -307,7 +311,7 @@ class Section:
         - Parameter teacher -> The teacher to check
         """
         if not teacher: return False
-        return len(filter(lambda a : a.id == teacher.id, self.teachers)) > 0
+        return len(list(filter(lambda a : a.id == teacher.id, self.teachers))) > 0
     
     # --------------------------------------------------------
     # assign_stream
@@ -343,7 +347,7 @@ class Section:
         - Parameter stream -> The stream to check
         """
         if not stream: return False
-        return len(filter(lambda a : a.id == stream.id, self.streams)) > 0
+        return len(list(filter(lambda a : a.id == stream.id, self.streams))) > 0
     
     # --------------------------------------------------------
     # remove_all_streams
@@ -389,7 +393,7 @@ class Section:
         """ Delete this object and all its dependants """
         # TODO: Confirm that Python objects can't be manually deleted
             # Relies on all references being gone, something we can't control from here
-        for b in self.blocks:
+        for b in self.blocks.values():
             self.remove_block(b)
     
     # --------------------------------------------------------
@@ -415,7 +419,7 @@ class Section:
     # --------------------------------------------------------
     def is_conflicted(self) -> bool:
         """ Checks if there is a conflict with this section """
-        return len(filter(lambda b : hasattr(b, 'is_conflicted') and b.is_conflicted, self.blocks))
+        return len(list(filter(lambda b : hasattr(b, 'is_conflicted') and b.is_conflicted, self.blocks.values())))
     
     # --------------------------------------------------------
     # conflicts
@@ -423,7 +427,7 @@ class Section:
     def conflicts(self) -> list:
         """ Gets a list of conflicts related to this section """
         conflicts = []
-        for b in self.blocks:
+        for b in self.blocks.values():
             if hasattr(b, 'conflicts'): conflicts.extend(b.conflicts())
         return conflicts
     
