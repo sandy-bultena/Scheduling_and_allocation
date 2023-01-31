@@ -151,7 +151,7 @@ class TimeSlot(metaclass=TimeSlotMeta):
         current_start = self.start_number
         end = current_start + self.duration
         hour = f"{int(end)}"
-        minute = f"{int((end * 60) % 60)}"
+        minute = f"{int((end * 60) % 60):02d}"
         return f"{hour}:{minute}"
 
     # ====================================
