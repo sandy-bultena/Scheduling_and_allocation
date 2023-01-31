@@ -161,9 +161,15 @@ def test_snap_to_day_with_args():
     assert slot.day == expected_day
 
 
-def test__snap_to_day():
-    assert False
-
-
 def test_conflicts_time():
-    assert False
+    """Verifies that conflicts_time works as intended."""
+    slot1 = TimeSlot()
+    slot2 = TimeSlot("monday", "9:00")
+    assert slot1.conflicts_time(slot2) is True
+
+
+def test_conflicts_time_different_days():
+    """Verifies that conflicts_time registers no conflict when two TimeSlots are on different days."""
+    slot1 = TimeSlot()
+    slot2 = TimeSlot("Tuesday")
+    assert slot1.conflicts_time(slot2) is False
