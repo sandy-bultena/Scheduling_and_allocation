@@ -105,7 +105,7 @@ class Block(TimeSlot):
         # If there are synchronized blocks, we must change them too.
         # Beware infinite loops!
         for other in self.synced(): 
-            # Bit finnicky, but it should do, I hope.
+            # Bit finnicky, but it should do, I hope. NOTE: Seems to work, at least in the terminal.
             old = other.start
             if old != super().start:
                 other.__start = super().start
@@ -125,9 +125,9 @@ class Block(TimeSlot):
         # If there are synchronized blocks, change them too.
         # Once again, beware the infinite loop!
         for other in self.synced():
-            old = super().day(other)
-            if old != super().day(self):
-                other.day = super().day(self)
+            old = other.day
+            if old != super().day:
+                other.__day = super().day
 
     # ==================================================================
     # id //ALEX CODE
