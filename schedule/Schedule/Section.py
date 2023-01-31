@@ -19,7 +19,7 @@ class Section(metaclass=SectionMeta):
     # ========================================================
     # CONSTRUCTOR
     # ========================================================
-    def __init__(self, number : str = "", hours = 1.5, name : str = "", **kwargs):
+    def __init__(self, number : str = "", hours = 1.5, name : str = ""):
         """
         Creates an instance of the Section class.
         - Parameter number -> The section's number.
@@ -40,15 +40,6 @@ class Section(metaclass=SectionMeta):
         Section._sections.append(self)
         self._num_students = 0
         self._course = None
-
-        # keep **kwargs and below code, allows YAML to work correctly
-        for k, v in kwargs.items():
-            try:
-                if hasattr(self, f"__{k}"): setattr(self, f"__{k}", v)
-                elif hasattr(self, f"_{k}"): setattr(self, f"_{k}", v)
-                elif hasattr(self, f"{k}"): setattr(self, f"{k}", v)
-                if k == "id": Section._max_id -= 1
-            except AttributeError: continue # hit get-only property
     
     @staticmethod
     def __validate_hours(hours):

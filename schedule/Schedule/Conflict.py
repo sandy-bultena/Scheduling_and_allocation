@@ -1,9 +1,10 @@
 import sys
 
 # kind of a hack-y way to import Colour, but forces PerlLib to be recognized as a valid import source
-sys.path.insert(0, "\\".join(sys.path[0].split("\\")[:-1]) + "\\PerlLib")
-
-import Colour
+try: from ..PerlLib import Colour
+except ImportError or ModuleNotFoundError:
+        sys.path.insert(0, "\\".join(sys.path[0].split("\\")[:-1]) + "\\PerlLib")
+        import Colour
 
 class ConflictMeta(type):
     """ Metaclass for Conflict, making it iterable """
@@ -48,7 +49,7 @@ class Conflict(metaclass=ConflictMeta):
     # ========================================================
     # CONSTRUCTOR
     # ========================================================
-    def __init__(self, type : int, blocks : list, **kwargs):
+    def __init__(self, type : int, blocks : list):
         """
         Creates an instance of the Conflict class.
         - Parameter type -> defines the type of conflict.
@@ -59,13 +60,6 @@ class Conflict(metaclass=ConflictMeta):
         self.type = type
         self.blocks = blocks
         Conflict._conflicts.append(self)
-
-        for k, v in kwargs.items():
-            try:
-                if hasattr(self, f"__{k}"): setattr(self, f"__{k}", v)
-                elif hasattr(self, f"_{k}"): setattr(self, f"_{k}", v)
-                elif hasattr(self, f"{k}"): setattr(self, f"{k}", v)
-            except AttributeError: continue # hit get-only property
 
     # ========================================================
     # METHODS

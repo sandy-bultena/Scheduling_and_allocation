@@ -30,6 +30,9 @@ class Schedule:
         Teacher._max_id = 0
         Course._max_id = 0
         Lab._max_id = 0
+        Block._max_id = 0
+        TimeSlot._max_id = 0
+        Section._max_id = 0
 
     # ========================================================
     # METHODS
@@ -88,7 +91,6 @@ class Schedule:
 
                 # set max IDs again so it now matches with the stored value
                 Schedule.__set_max_ids(max_ids)
-                for i in Block: print(i)
                 return schedule
             except Exception as e:
                 print(f"Cannot read from file {file}: {str(e)}")
@@ -208,5 +210,3 @@ class Schedule:
             s._Stream__id = stream.get('id', s.id)
             return s
         else: return streams[0]
-
-Schedule.read_YAML(r"C:\Users\profw\Desktop\Scheduler\FallSchedule.yaml")

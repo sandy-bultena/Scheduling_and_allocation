@@ -134,7 +134,7 @@ class Teacher(metaclass=TeacherMeta):
     # new
     # --------------------------------------------------------------------
 
-    def __init__(self, firstname: str, lastname: str, dept: str = "", **kwargs):
+    def __init__(self, firstname: str, lastname: str, dept: str = ""):
         """Creates a Teacher object.
         
         Parameter firstname: str -> first name of the teacher.
@@ -146,19 +146,6 @@ class Teacher(metaclass=TeacherMeta):
         Teacher._max_id += 1
         self.__id = Teacher._max_id
         self.release = 0
-
-        # keep **kwargs and below code, allows YAML to work correctly (kwargs should be last param)
-        for k, v in kwargs.items():
-            try:
-                if hasattr(self, f"__{k}"):
-                    setattr(self, f"__{k}", v)
-                elif hasattr(self, f"_{k}"):
-                    setattr(self, f"_{k}", v)
-                elif hasattr(self, f"{k}"):
-                    setattr(self, f"{k}", v)
-                # if k == "id": Teacher._max_id -= 1
-            except AttributeError:
-                continue  # hit get-only property
 
     # =================================================================
     # id

@@ -11,7 +11,7 @@ class Stream(metaclass=StreamMeta):
     # ========================================================
     # CONSTRUCTOR
     # ========================================================
-    def __init__(self, number : str = "A", descr : str = "", **kwargs):
+    def __init__(self, number : str = "A", descr : str = ""):
         """
         Creates an instance of the Stream class.
         - Parameter number -> defines the stream number.
@@ -21,15 +21,6 @@ class Stream(metaclass=StreamMeta):
         self.__id = Stream._max_id
         self.number = number
         self.descr = descr
-
-        # keep **kwargs and below code, allows YAML to work correctly
-        for k, v in kwargs.items():
-            try:
-                if hasattr(self, f"__{k}"): setattr(self, f"__{k}", v)
-                elif hasattr(self, f"_{k}"): setattr(self, f"_{k}", v)
-                elif hasattr(self, f"{k}"): setattr(self, f"{k}", v)
-                if k == "id": Stream._max_id -= 1
-            except AttributeError: continue # hit get-only property
     
     # ========================================================
     # PROPERTIES
