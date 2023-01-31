@@ -35,17 +35,17 @@ class BlockMeta(type):
 
 #    my $course = Course->new(-name=>"Basket Weaving");
 #    my $section = $course->create_section(-section_number=>1);
-#    $section->add_block($block);
+#    $section->add_block($block);                                   section.add_block(block)
 
-#    print "block belongs to section ",$block->section;
+#    print "block belongs to section ",$block->section;     // print(f"block belongs to section {block.section}")
 
-#    $block->assign_teacher($teacher);
-#    $block->remove_teacher($teacher);
-#    $block->teachers();
+#    $block->assign_teacher($teacher);  //  block.assign_teacher(teacher)
+#    $block->remove_teacher($teacher);      block.remove_teacher(teacher)
+#    $block->teachers();                    block.teachers()
 
-#    $block->add_lab("P327");
-#    $block->remove_lab("P325");
-#    $block->labs();
+#    $block->add_lab("P327");               block.add_lab("P327")
+#    $block->remove_lab("P325");            block.remove_lab("P325")
+#    $block->labs();                        block.labs()
 
 
 class Block(TimeSlot, metaclass=BlockMeta):
