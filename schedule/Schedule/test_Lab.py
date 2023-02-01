@@ -1,5 +1,6 @@
-from Lab import Lab
+from Lab import Lab, share_blocks
 from Time_slot import TimeSlot
+from Block import Block
 
 
 def test_id():
@@ -146,3 +147,22 @@ def test_print_description_short():
     lab = Lab(num)
     desc = lab.print_description()
     assert num in desc
+
+
+def test_share_blocks_true():
+    """Verifies that the static share_blocks() method returns true if two Blocks are sharing the same Lab."""
+    lab = Lab()
+    block_1 = Block("mon", "8:30", 1.5, 1)
+    block_2 = Block("wed", "8:30", 1.5, 2)
+    block_1.assign_lab(lab)
+    block_2.assign_lab(lab)
+    assert share_blocks(block_1, block_2) is True
+
+
+def test_share_blocks_false():
+    """Verifies that share_blocks() returns false if two Blocks are not sharing the same Lab."""
+    lab = Lab()
+    block_1 = Block("mon", "8:30", 1.5, 1)
+    block_2 = Block("wed", "8:30", 1.5, 2)
+    block_1.assign_lab(lab)
+    assert share_blocks(block_1, block_2) is False
