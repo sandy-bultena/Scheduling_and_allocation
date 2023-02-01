@@ -553,14 +553,43 @@ def test_unsync_block_no_crash_bad_input():
 
 
 def test_synced():
-    assert False
+    """Verifies that synced() returns a list of all the Blocks that are synced with this Block."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block1 = Block(day, start, dur, num)
+    block2 = Block("tue", start, dur, 2)
+    block1.sync_block(block2)
+    blocks = block1.synced()
+    assert len(blocks) == 1 and block2 in blocks
+
+
+def test_synced_empty_list():
+    """Verifies that synced() returns an empty list if called when no Blocks are synced with this Block."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block1 = Block(day, start, dur, num)
+    blocks = block1.synced()
+    assert len(blocks) == 0
 
 
 def test_reset_conflicted():
-    assert False
+    """Verifies that reset_conflicted works as intended."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block1 = Block(day, start, dur, num)
+    block1.reset_conflicted()
+    assert getattr(block1, '_conflicted') is False
 
 
-def test_conflicted():
+def test_conflicted_getter():
+    """Verifies that the conflicted getter works as intended."""
+
     assert False
 
 
