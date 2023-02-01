@@ -677,8 +677,24 @@ def test_print_description_2():
 
 
 def test_conflicts():
-    assert False
+    """Verifies that conflicts() returns an empty list when no Conflicts are assigned to this Block."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    conflicts = block.conflicts()
+    assert len(conflicts) == 0
 
 
 def test_refresh_number():
-    assert False
+    """Verifies that refresh_number gives the Block a new number if its number is 0."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 0
+    block = Block(day, start, dur, num)
+    sect = Section("42")
+    sect.add_block(block)
+    block.refresh_number()
+    assert block.number == 1
