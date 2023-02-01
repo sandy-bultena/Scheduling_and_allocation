@@ -322,7 +322,7 @@ class Block(TimeSlot, metaclass=BlockMeta):
     # =================================================================
     def has_teacher(self, teacher):
         """Returns True if this Block has the specified Teacher."""
-        if not teacher:
+        if not teacher or not isinstance(teacher, Teacher):
             return False
 
         for key in self._teachers:

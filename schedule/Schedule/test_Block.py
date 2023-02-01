@@ -448,8 +448,42 @@ def test_teachers_empty_list():
     assert len(teachers) == 0
 
 
-def test_has_teacher():
-    assert False
+def test_has_teacher_true():
+    """Verifies that has_teacher() returns true when the specified Teacher has been assigned to this Block."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    teach = Teacher("John", "Smith")
+    block.assign_teacher(teach)
+    assert block.has_teacher(teach)
+
+
+def test_has_teach_false():
+    """Verifies that has_teacher returns false when the specified Teacher isn't assigned to this Block."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    teach = Teacher("John", "Smith")
+    block.assign_teacher(teach)
+    other_teach = Teacher("Jane", "Doe")
+    assert block.has_teacher(other_teach) is False
+
+
+def test_has_teach_bad_input():
+    """Verifies that has_teacher() returns false when passed something that isn't a Teacher object."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    teach = Teacher("John", "Smith")
+    block.assign_teacher(teach)
+    bad_teach = "foo"
+    assert block.has_teacher(bad_teach) is False
 
 
 def test_teachers_obj():
