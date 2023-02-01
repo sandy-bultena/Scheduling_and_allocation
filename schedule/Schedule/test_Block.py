@@ -423,7 +423,29 @@ def test_remove_all_teachers_no_crash():
 
 
 def test_teachers():
-    assert False
+    """Verifies that teachers() returns a list of all the Teachers assigned to this Block."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    teach = Teacher("John", "Smith")
+    other_teach = Teacher("Jane", "Doe")
+    block.assign_teacher(teach)
+    block.assign_teacher(other_teach)
+    teachers = block.teachers()
+    assert len(teachers) == 2 and teach in teachers and other_teach in teachers
+
+
+def test_teachers_empty_list():
+    """Verifies that teachers() will return an empty list if no Teachers are assigned to this Block."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    teachers = block.teachers()
+    assert len(teachers) == 0
 
 
 def test_has_teacher():
