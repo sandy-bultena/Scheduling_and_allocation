@@ -167,7 +167,7 @@ class Block(TimeSlot, metaclass=BlockMeta):
         if isinstance(section, Section):
             self.__section = section
         else:
-            raise f"<{section}>: invalid section - must be a Section object."
+            raise TypeError("<{section}>: invalid section - must be a Section object.")
 
     # =================================================================
     # assign_lab

@@ -1,6 +1,7 @@
 import pytest
 
 from Block import Block
+from Section import Section
 
 
 def test_number_getter():
@@ -134,13 +135,42 @@ def test_id():
     assert False
 
 
-def test_section():
-    assert False
+def test_section_getter():
+    """Verifies that the section getter works as intended."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    """Since sections are not assigned to Blocks at initialization, the value of section will be None."""
+    assert block.section is None
 
 
-def test_section():
-    assert False
+def test_section_setter_good():
+    """Verifies that the section setter can set a valid section."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    sect = Section()
+    block.section = sect
+    assert block.section == sect
 
+def test_section_setter_bad():
+    """Verifies that the section setter throws a TypeError when receiving a value that isn't a Section."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    bad_sect = {
+        "foo": "foo",
+        "bar": "bar"
+    }
+    with pytest.raises(TypeError) as e:
+        block.section = bad_sect
+    assert "invalid section" in str(e.value).lower()
 
 def test_assign_lab():
     assert False
