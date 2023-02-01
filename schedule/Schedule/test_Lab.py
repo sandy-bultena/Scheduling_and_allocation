@@ -79,17 +79,70 @@ def test_remove_unavailable_no_crash():
     lab = Lab()
     lab.add_unavailable(day, start, dur)
     bad_id = 9999
+    slot_key = getattr(TimeSlot, '_max_id')
     lab.remove_unavailable(bad_id)
-    assert len(getattr(lab, '_unavailable')) == 1 and getattr(lab, '_unavailable')[1].start == start
+    assert len(getattr(lab, '_unavailable')) == 1 and getattr(lab, '_unavailable')[slot_key].start == start
 
 
-def test_get_unavailable():
-    assert False
+def test_get_unavailable_good():
+    """Verifies that get_unavailable() can retrieve a specified TimeSlot from the Lab."""
+    day = "mon"
+    start = "8:30"
+    dur = 2.0
+    lab = Lab()
+    lab.add_unavailable(day, start, dur)
+    slot_id = getattr(TimeSlot, '_max_id')
+    slot = lab.get_unavailable(slot_id)
+    assert slot.id == slot_id and slot.start == start and slot.day == day and slot.duration == dur
+
+
+def test_get_unavailable_bad_input():
+    """Verifies that get_unavailable returns None when trying to retrieve a nonexistent TimeSlot from the Lab."""
+    day = "mon"
+    start = "8:30"
+    dur = 2.0
+    lab = Lab()
+    lab.add_unavailable(day, start, dur)
+    bad_id = 999
+    no_slot = lab.get_unavailable(bad_id)
+    assert no_slot is None
 
 
 def test_unavailable():
-    assert False
+    """Verifies that unavailable() returns a list of all unavailable TimeSlots for this Lab."""
+    day_1 = "mon"
+    start_1 = "8:30"
+    dur_1 = 2.0
+    day_2 = "tue"
+    start_2 = "10:00"
+    dur_2 = 1.5
+    lab = Lab()
+    lab.add_unavailable(day_1, start_1, dur_1)
+    lab.add_unavailable(day_2, start_2, dur_2)
+    slots = lab.unavailable()
+    assert len(slots) == 2 and slots[0].day == day_1 and slots[1].day == day_2
 
 
-def test_print_description():
-    assert False
+def test_unavailable_no_slots():
+    """Verifies that unavailable() returns an empty list if no TimeSlots have been assigned to this Lab."""
+    lab = Lab()
+    slots = lab.unavailable()
+    assert type(slots) is list and len(slots) == 0
+
+
+def test_print_description_full():
+    """Verifies that print_description() returns a string containing the Lab's number and description attributes."""
+    num = "R-101"
+    desc = "Worst place in the world."
+    lab = Lab(num, desc)
+    to_string = lab.print_description()
+    assert f"{num}: {desc}" in to_string
+
+
+def test_print_description_short():
+    """Verifies that print_description() returns a string containing only the Lab's number if it lacks a description
+    attribute. """
+    num = "R-101"
+    lab = Lab(num)
+    desc = lab.print_description()
+    assert num in desc
