@@ -98,8 +98,13 @@ class Block(TimeSlot, metaclass=BlockMeta):
     # =================================================================
     def delete(self):
         """Delete this Block object and all its dependents."""
-        # self = None  # TODO: Verify that this works as intended. NOTE: It does not.
-        del self  # NOTE: Neither does this.
+        # self = None  # TODO: Verify that this works as intended. NOTE: It does not. del self  # NOTE: Neither does
+        #  this. NOTE: So far as I can tell, the only place this method is being called is in Section's remove_block(
+        #  ) method, to destroy the reference to a local Block parameter after said Block has already been removed
+        #  from Section's array/hash of Blocks. Because of this, and because it doesn't seem possible to make an
+        #  object delete itself in Python, I don't believe that this method is needed.
+        Block._instances.remove(self)
+        self = None
 
     # =================================================================
     # start
@@ -116,10 +121,10 @@ class Block(TimeSlot, metaclass=BlockMeta):
         # If there are synchronized blocks, we must change them too.
         # Beware infinite loops!
         for other in self.synced():
-            # Bit finnicky, but it should do, I hope. NOTE: Seems to work, at least in the terminal.
             old = other.start
             if old != super().start:
-                other.__start = super().start
+                other.start = super().start # Attempting to directly write to the backing field doesn't work.
+                # Fortunately, calling the property like this doesn't result in an infinite loop.
 
     # =================================================================
     # day

@@ -37,16 +37,70 @@ def test_number_setter_bad():
         block.number = bad_num
     assert "must be an integer and cannot be null" in str(e.value).lower()
 
-def test_delete():
-    assert False
+
+# def test_delete():
+#     """Verifies that the delete() method successfully destroys an instance of a Block."""
+#     day = "mon"
+#     start = "8:30"
+#     dur = 2
+#     num = 1
+#     block = Block(day, start, dur, num)
+#     block.delete()
+#     assert block is None
 
 
-def test_start():
-    assert False
+def test_start_getter():
+    """Verifies that the start getter works as intended. Same as TimeSlot.start getter."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    assert block.start == start
 
 
-def test_start():
-    assert False
+def test_start_setter_synced_2_blocks():
+    """Verifies that the start setter works as intended, and that it changes the start value of any Blocks synced to
+    the Block on which it was called. """
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block1 = Block(day, start, dur, num)
+    block2 = Block("wed", start, dur, 2)
+    block1.sync_block(block2)
+    block2.sync_block(block1)
+    new_start = "10:00"
+    block1.start = new_start
+    assert block2.start == new_start
+
+
+def test_start_setter_synced_4_blocks():
+    """Same as previous test, but with 4 blocks instead of 2."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block1 = Block(day, start, dur, num)
+    block2 = Block("wed", start, dur, 2)
+    block3 = Block("thu", start, dur, 3)
+    block4 = Block("sat", start, dur, 4)
+    block1.sync_block(block2)
+    block1.sync_block(block3)
+    block1.sync_block(block4)
+    block2.sync_block(block1)
+    block2.sync_block(block3)
+    block2.sync_block(block4)
+    block3.sync_block(block1)
+    block3.sync_block(block2)
+    block3.sync_block(block4)
+    block4.sync_block(block1)
+    block4.sync_block(block2)
+    block4.sync_block(block3)
+
+    new_start = "10:00"
+    block1.start = new_start
+    assert block2.start == new_start and block3.start == new_start and block4.start == new_start
 
 
 def test_day():
