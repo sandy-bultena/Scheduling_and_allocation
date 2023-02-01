@@ -1,8 +1,14 @@
 class StreamMeta(type):
     """ Metaclass for Stream, making it iterable """
-    _streams = []
+    _instances = {}
 
-    def __iter__(self): return iter(getattr(self, '_streams', []))
+    def __iter__(self): return iter(getattr(self, '_instances', []))
+
+    @staticmethod
+    def get(id : int):
+        """Returns the Stream object with matching ID"""
+        for i in Stream._instances.values():
+            if i.id == id: return i
 
 class Stream(metaclass=StreamMeta):
     """ Describes a group of students whose classes cannot overlap. """
@@ -21,6 +27,7 @@ class Stream(metaclass=StreamMeta):
         self.__id = Stream._max_id
         self.number = number
         self.descr = descr
+        Stream._instances[self.__id] = self
     
     # ========================================================
     # PROPERTIES
