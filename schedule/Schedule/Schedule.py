@@ -249,8 +249,361 @@ class Schedule:
             Stream._instances[s.id] = s
             return s
 
-Schedule.read_YAML(r"C:\\Users\\profw\\Desktop\\Scheduler\\FallSchedule.yaml")
-Schedule.write_YAML(r"C:\\Users\\profw\\Desktop\\Scheduler\\Fall.yaml")
+    # --------------------------------------------------------
+    # teachers
+    # --------------------------------------------------------
+    @staticmethod
+    def teachers() -> list[Teacher]:
+        """Returns the list of Teachers"""
+        return Teacher.list()
+
+    # --------------------------------------------------------
+    # streams
+    # --------------------------------------------------------
+    @staticmethod
+    def streams() -> list[Stream]:
+        """Returns the list of Streams"""
+        return Stream.list()
+
+    # --------------------------------------------------------
+    # courses
+    # --------------------------------------------------------
+    @staticmethod
+    def courses() -> list[Course]:
+        """Returns the list of Courses"""
+        return list() # uncomment following line & delete this when Course is done
+        #return Course.list()
+
+    # --------------------------------------------------------
+    # labs
+    # --------------------------------------------------------
+    @staticmethod
+    def labs() -> list[Lab]:
+        """Returns the list of Labs"""
+        return Lab.list()
+
+    # --------------------------------------------------------
+    # conflicts
+    # --------------------------------------------------------
+    @staticmethod
+    def conflicts() -> list[Conflict]:
+        """Returns the list of Conflicts"""
+        return Conflict.list()
+
+    # --------------------------------------------------------
+    # sections_for_teacher
+    # --------------------------------------------------------
+    @staticmethod
+    def sections_for_teacher(teacher : Teacher) -> list[Section]:
+        """
+        Returns a list of Sections that the given Teacher teaches
+        - Parameter teacher -> The Teacher who's Sections should be found
+        """
+        if not isinstance(teacher, Teacher): raise TypeError(f"{teacher} must be an object of type Teacher")
+        outp = []
+        for s in Section:
+            if teacher in s.teachers: outp.add(s)
+        return outp
+
+    # --------------------------------------------------------
+    # courses_for_teacher
+    # --------------------------------------------------------
+    @staticmethod
+    def courses_for_teacher(teacher : Teacher) -> list[Course]:
+        """
+        Returns a list of Courses that the given Teacher teaches
+        - Parameter teacher -> The Teacher who's Courses should be found
+        """
+        if not isinstance(teacher, Teacher): raise TypeError(f"{teacher} must be an object of type Teacher")
+        outp = []
+        for c in Course:
+            if c.has_teacher(teacher): outp.add(c)
+        return outp
+
+    # --------------------------------------------------------
+    # allocated_courses_for_teacher
+    # --------------------------------------------------------
+    @staticmethod
+    def allocated_courses_for_teacher(teacher : Teacher) -> list[Course]:
+        """
+        Returns a list of courses that this teacher teaches, which is an allocated type course
+        - Parameter teacher -> The Teacher to check
+        """
+        if not isinstance(teacher, Teacher): raise TypeError(f"{teacher} must be an object of type Teacher")
+        return list(filter(lambda c : c.needs_allocation, Schedule.courses_for_teacher(teacher)))
+
+    # --------------------------------------------------------
+    # blocks_for_teacher
+    # --------------------------------------------------------
+    @staticmethod
+    def blocks_for_teacher(teacher : Teacher) -> list[Block]:
+        """
+        Returns a list of Blocks that the given Teacher teaches
+        - Parameter teacher -> The Teacher who's Blocks should be found
+        """
+        if not isinstance(teacher, Teacher): raise TypeError(f"{teacher} must be an object of type Teacher")
+        outp = []
+        for b in Block:
+            if b.has_teacher(teacher): outp.add(b)
+        return outp
+
+    # --------------------------------------------------------
+    # blocks_in_lab
+    # --------------------------------------------------------
+    @staticmethod
+    def blocks_in_lab(lab : Lab) -> list[Lab]:
+        """
+        Returns a list of Blocks using the given Lab
+        - Parameter lab -> The Lab that should be found
+        """
+        if not isinstance(lab, Lab): raise TypeError(f"{lab} must be an object of type Lab")
+        outp = []
+        for b in Block:
+            if b.has_lab(lab): outp.add(b)
+        return outp
+
+    # --------------------------------------------------------
+    # sections_for_stream
+    # --------------------------------------------------------
+    @staticmethod
+    def sections_for_stream(stream : Stream) -> list[Section]:
+        """
+        Returns a list of Sections assigned to the given Stream
+        - Parameter stream -> The Stream that should be found
+        """
+        if not isinstance(stream, Stream): raise TypeError(f"{stream} must be an object of type Stream")
+        outp = []
+        for s in Section:
+            if s.has_stream(stream): outp.add(s)
+        return outp
+
+    # --------------------------------------------------------
+    # blocks_for_stream
+    # --------------------------------------------------------
+    @staticmethod
+    def blocks_for_stream(stream : Stream) -> list[Block]:
+        """
+        Returns a list of Blocks in the given Stream
+        - Parameter stream -> The Stream who's Blocks should be found
+        """
+        if not isinstance(stream, Stream): raise TypeError(f"{stream} must be an object of type Stream")
+        outp = []
+        for s in Schedule.sections_for_stream(stream): outp.extend(s)
+        return outp
+
+    # NOTE: all_x() methods have been removed, since they're now equivalent to x() methods
+
+    # --------------------------------------------------------
+    # remove_course
+    # --------------------------------------------------------
+    @staticmethod
+    def remove_course(course : Course):
+        """Removes Course from schedule"""
+        if not isinstance(course, Course): raise TypeError(f"{course} must be an object of type Course")
+        # uncomment when Course is implemented
+        #course.delete()
+
+    # --------------------------------------------------------
+    # remove_teacher
+    # --------------------------------------------------------
+    @staticmethod
+    def remove_teacher(teacher : Teacher):
+        """Removes Teacher from schedule"""
+        if not isinstance(teacher, Teacher): raise TypeError(f"{teacher} must be an object of type Teacher")
+        # potentially loop over Blocks and remove Teacher from all
+        Teacher.remove(teacher)
+
+    # --------------------------------------------------------
+    # remove_lab
+    # --------------------------------------------------------
+    @staticmethod
+    def remove_lab(lab : Lab):
+        """Removes Lab from schedule"""
+        if not isinstance(lab, Lab): raise TypeError(f"{lab} must be an object of type Lab")
+        # potentially loop over Blocks and remove Lab from all
+        Lab.remove(lab)
+
+    # --------------------------------------------------------
+    # calculate_conflicts
+    # --------------------------------------------------------
+    @staticmethod
+    def calculate_conflicts() -> list[Conflict]:
+        """Reviews the schedule, and creates a list of Conflict objects as necessary"""
+        # create list of all blocks -> no longer needed
+        # reset the conflict list
+        Conflict.reset()
+        # reset all blocks conflicted tags
+        for b in Block: b.reset_conflicted()
+
+        # ---------------------------------------------------------
+        # check all block pairs to see if there is a time overlap
+        for index, b in enumerate(Block.list()):
+            for bb in Block[index + 1:]:
+                # if the same block, skip (shouldn't happen)
+                if b == bb: continue
+
+                # if the blocks overlap in time
+                if b.conflicts_time(bb):
+                    is_conflict = False
+                    # if teachers/labs/streams share these blocks its a real conflict
+                    # and must be dealt with
+                    if (Teacher.share_blocks(b, bb)):
+                        is_conflict = True
+                        b.conflicted = bb.conflicted = Conflict.TIME_TEACHER
+                    if (Lab.share_blocks(b, bb)):
+                        is_conflict = True
+                        b.conflicted = bb.conflicted = Conflict.TIME_LAB
+                    if (Stream.share_blocks(b, bb)):
+                        is_conflict = True
+                        b.conflicted = bb.conflicted = Conflict.TIME_STREAM
+                    
+                    # create a conflict object and mark the blocks as conflicting
+                    if is_conflict: Schedule.__new_conflict(Conflict.TIME, blocks)
+
+        # ---------------------------------------------------------
+        # check for lunch break conflicts by teacher
+        start_lunch = 11
+        end_lunch = 14
+        lunch_periods = (i + .5 for i in range(start_lunch, end_lunch -1))
+        for t in Teacher:
+            # filter to only relevant blocks (that can possibly conflict)
+            relevant_blocks = list(
+                filter(lambda b : b.start_number < end_lunch and b.start_number + b.duration > start_lunch, Schedule.blocks_for_teacher(t)))
+            # collect blocks by day
+            blocks_by_day = { }
+            for b in relevant_blocks:
+                if not b.day_number in blocks_by_day: blocks_by_day[b.day_number] = []
+                blocks_by_day[b.day_number].append(b)
+            
+            for blocks in blocks_by_day.values():
+                # don't know how this could occur, in Python or Perl
+                if not blocks: continue
+
+                # check for the existence of a lunch break in any of the :30 periods
+                has_lunch = False
+                for start in lunch_periods:
+                    # is this period free?
+                    has_lunch = all(not Schedule._conflict_lunch(b, start) for b in blocks)
+                    if has_lunch: break
+                
+                # if no lunch, create a conflict obj and mark blocks as conflicted
+                if not has_lunch: Schedule.__new_conflict(Conflict.LUNCH, blocks)
+
+        # ---------------------------------------------------------
+        # check for 4 day schedule or 32 hrs max
+        for t in Teacher:
+            if t.release: continue
+
+            # collect blocks by day
+            blocks_by_day = { }
+            blocks = Schedule.blocks_for_teacher(t)
+            for b in blocks:
+                if not b.day_number in blocks_by_day: blocks_by_day[b.day_number] = []
+                blocks_by_day[b.day_number].append(b)
+
+            # if < 4 days, create a conflict and mark the blocks as conflicted
+            if len(blocks_by_day.keys()) < 4: Schedule.__new_conflict(Conflict.MINIMUM_DAYS, blocks)
+            
+            availability = 0
+            for day in blocks_by_day.keys():
+                day_start = min(map(lambda b: b.start_number, blocks_by_day[day]))
+                day_end = max(map(lambda b: b.start_number + b.duration, blocks_by_day[day]))
+                if day_end <= day_start: continue
+                availability += day_end - day_start - 0.5
+            
+            # if over limit, create conflict
+            if availability > 32: Schedule.__new_conflict(Conflict.AVAILABILITY, blocks)
+        
+        # Perl ver. returns self here
+
+    # --------------------------------------------------------
+    # __new_conflict - new to Python ver
+    # --------------------------------------------------------
+    @staticmethod
+    def __new_conflict(type, blocks):
+        Conflict(type, blocks)
+        for b in blocks: b.conflicted = type
+
+    # --------------------------------------------------------
+    # _calculate_conflicts
+    # --------------------------------------------------------
+    # NOTE: Perl ver. was defined | sub _conflictLunch($$) | - confirm what $$ means
+    @staticmethod
+    def _conflict_lunch(block : Block, lunch_start):
+        lunch_end = lunch_start + .5
+        block_end_number = block.start_number + block.duration
+        return (
+            (block.start_number < lunch_end and lunch_start < block_end_number) or
+            (lunch_start < block_end_number and block.start_number < lunch_end)
+        )
+
+    # --------------------------------------------------------
+    # teacher_stat
+    # --------------------------------------------------------
+    @staticmethod
+    def teacher_stat(teacher : Teacher) -> str:
+        """
+        Returns text that gives teacher statistics
+        Parameter teacher -> The teacher who's statistics will be returned
+        """
+        if not isinstance(teacher, Teacher): raise TypeError(f"{teacher} must be an object of type Teacher")
+        courses = Schedule.courses_for_teacher(teacher)
+        blocks = Schedule.blocks_for_teacher(teacher)
+        sections = Schedule.sections_for_teacher(teacher)
+
+        week = dict(
+            Monday = False,
+            Tuesday = False,
+            Wednesday = False,
+            Thursday = False,
+            Friday = False,
+            Saturday = False,
+            Sunday = False
+        )
+        hours_of_work = 0
+
+        for b in blocks:
+            hours_of_work += b.duration
+            match b.day.lower():
+                case 'monday': week['Monday'] = True
+                case 'tuesday': week['Tuesday'] = True
+                case 'wednesday': week['Wednesday'] = True
+                case 'thursday': week['Thursday'] = True
+                case 'friday': week['Friday'] = True
+                case 'saturday': week['Saturday'] = True
+                case 'sunday': week['Sunday'] = True
+        
+        message = f"""{teacher.firstname} {teacher.lastname}'s Stats.
+        
+        Days of the week working:
+        {"Monday " if week['Monday'] else ''}{"Tuesday " if week['Tuesday'] else ''}{"Wednesday " if week['Wednesday'] else ''}{"Thursday " if week['Thursday'] else ''}{"Friday " if week['Friday'] else ''}{"Saturday " if week['Saturday'] else ''}{"Sunday " if week['Sunday'] else ''}
+        
+        Hours of Work: {hours_of_work}
+        Courses being taught:
+        """
+        
+        for c in courses:
+            num_sections = 0
+            for s in sections:
+                if s.course is c: num_sections += 1
+            message += f"-> {c.print_description2} ({num_sections} Section(s))\n"
+        
+        return message
+
+    # --------------------------------------------------------
+    # teacher_details
+    # --------------------------------------------------------
+    @staticmethod
+    def teacher_details(teacher : Teacher) -> str:
+        """
+        Prints a schedule for a specific teacher
+        Parameter teacher -> The teacher who's schedule to print
+        """
+        if not isinstance(teacher, Teacher): raise TypeError(f"{teacher} must be an object of type Teacher")
+        head = "="*50
+        text = f"\n\n{head}\n{teacher}\n{head}\n"
+        # NOTE: INCOMPLETE
+
 
 # NOTE: As Course isn't yet implemented, the output YAML will be different from the input
 # Course objects default to { name = "C" } as a placeholder, so many teachers, labs, and streams

@@ -58,7 +58,7 @@ class Conflict(metaclass=ConflictMeta):
         if not type or not blocks: raise TypeError("Bad inputs")
         
         self.type = type
-        self.blocks = blocks
+        self.blocks = blocks.copy() # if list is changed, the Conflict won't be
         Conflict._conflicts.append(self)
 
     # ========================================================
@@ -133,6 +133,14 @@ class Conflict(metaclass=ConflictMeta):
     def get_description(type):
         """ Returns the description of the provided conflict type """
         return Conflict._hash_descriptions()[type]
+    
+    # --------------------------------------------------------
+    # reset | new to Python version
+    # --------------------------------------------------------
+    @staticmethod
+    def reset(type):
+        """ Resets the list of conflicts """
+        Conflict._conflicts.clear()
 
 
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
