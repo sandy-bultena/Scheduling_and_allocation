@@ -577,7 +577,7 @@ def test_synced_empty_list():
 
 
 def test_reset_conflicted():
-    """Verifies that reset_conflicted works as intended."""
+    """Verifies that reset_conflicted works as intended, setting the value of conflicted to False."""
     day = "mon"
     start = "8:30"
     dur = 2
@@ -588,17 +588,46 @@ def test_reset_conflicted():
 
 
 def test_conflicted_getter():
-    """Verifies that the conflicted getter works as intended."""
+    """Verifies that the conflicted getter works as intended, returning a default value of False."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block1 = Block(day, start, dur, num)
+    assert block1.conflicted is False
 
-    assert False
+
+def test_conflicted_setter_good():
+    """Verifies that the conflicted setter works as intended."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block1 = Block(day, start, dur, num)
+    block1.conflicted = True
+    assert block1.conflicted is True
 
 
-def test_conflicted():
-    assert False
+def test_conflicted_setter_bad():
+    """Verifies that the conflicted setter converts invalid input to a boolean value."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block1 = Block(day, start, dur, num)
+    block1.conflicted = "yes"
+    assert block1.conflicted is True
 
 
 def test_is_conflicted():
-    assert False
+    """Verifies that is_conflicted() returns the value of the conflicted property."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block1 = Block(day, start, dur, num)
+    block1.conflicted = True
+    assert block1.is_conflicted() is True
 
 
 def test_print_description():
