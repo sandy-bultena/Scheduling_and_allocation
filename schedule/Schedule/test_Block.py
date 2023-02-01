@@ -3,6 +3,7 @@ import pytest
 from Block import Block
 from Section import Section
 from Lab import Lab
+from Teacher import Teacher
 
 
 def test_number_getter():
@@ -326,8 +327,29 @@ def test_has_lab_bad_input():
     assert block.has_lab(bad_lab) is False
 
 
-def test_assign_teacher():
-    assert False
+def test_assign_teacher_good():
+    """Verifies that the assign_teacher() method works as intended."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    teach = Teacher("John", "Smith")
+    block.assign_teacher(teach)
+    assert getattr(block, '_teachers')[teach.id] == teach
+
+
+def test_assign_teacher_bad():
+    """Verifies that assign_teacher() throws an exception for bad input."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    bad_teach = "foo"
+    with pytest.raises(TypeError) as e:
+        block.assign_teacher(bad_teach)
+    assert "invalid teacher" in str(e.value).lower()
 
 
 def test_remove_teacher():

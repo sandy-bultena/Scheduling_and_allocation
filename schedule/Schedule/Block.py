@@ -262,6 +262,10 @@ class Block(TimeSlot, metaclass=BlockMeta):
         if not hasattr(self, '_teachers'):
             self._teachers = {}
 
+        # Verify that this teacher is, in fact, a Teacher. 
+        if not isinstance(teacher, Teacher):
+            raise TypeError(f"<{teacher}>: invalid teacher - must be a Teacher object.")
+
         self._teachers[teacher.id] = teacher
 
         return self
