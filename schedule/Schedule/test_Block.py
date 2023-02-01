@@ -139,7 +139,7 @@ def test_id():
     dur = 2
     num = 1
     block = Block(day, start, dur, num)
-    assert block.id == getattr(block, '_max_id') # Verifies that this Block has an ID equal to the current maximum ID.
+    assert block.id == getattr(block, '_max_id')  # Verifies that this Block has an ID equal to the current maximum ID.
 
 
 def test_section_getter():
@@ -290,8 +290,40 @@ def test_labs_empty():
     assert len(labs) == 0
 
 
-def test_has_lab():
-    assert False
+def test_has_lab_good():
+    """Verifies that has_lab() returns true when the specified Lab is assigned to this Block."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    lab = Lab()
+    block.assign_lab(lab)
+    assert block.has_lab(lab)
+
+
+def test_has_lab_false():
+    """"Verifies that has_lab() returns false when the Lab isn't assigned to this Block."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    lab = Lab()
+    assert block.has_lab(lab) is False
+
+
+def test_has_lab_bad_input():
+    """Verifies that has_lab() returns false when checking for something that isn't a Lab."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    lab = Lab()
+    block.assign_lab(lab)
+    bad_lab = "nonce"
+    assert block.has_lab(bad_lab) is False
 
 
 def test_assign_teacher():

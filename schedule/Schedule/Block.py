@@ -237,8 +237,13 @@ class Block(TimeSlot, metaclass=BlockMeta):
     # =================================================================
     def has_lab(self, lab: Lab):
         """Returns true if the Block has the specified Lab."""
-        if not lab:
+        if not lab or not isinstance(lab, Lab):
             return False
+
+        # If the Block doesn't already have a labs dict, create one.
+        if not hasattr(self, '_labs'):
+            self._labs = {}
+
 
         for key in self._labs:
             if self._labs[key].id == lab.id:
