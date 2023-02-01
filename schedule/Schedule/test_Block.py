@@ -265,7 +265,29 @@ def test_remove_all_labs():
 
 
 def test_labs():
-    assert False
+    """Verifies that labs() returns a list of all Lab objects assigned to this Block."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    this_lab = Lab("R-100", "the second-worst place in the world")
+    other_lab = Lab("R-101", "the worst place in the world")
+    block.assign_lab(this_lab)
+    block.assign_lab(other_lab)
+    labs = block.labs()
+    assert len(labs) == 2 and labs[0] == this_lab and labs[1] == other_lab
+
+
+def test_labs_empty():
+    """Verifies that labs() returns an empty list if called while no Labs are assigned to the Block."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    labs = block.labs()
+    assert len(labs) == 0
 
 
 def test_has_lab():
