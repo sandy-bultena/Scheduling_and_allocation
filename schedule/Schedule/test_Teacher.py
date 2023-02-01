@@ -73,13 +73,23 @@ def test_dept_setter():
     assert dept == teach.dept
 
 
-def test_release():
-    assert False
+def test_release_getter():
+    """Verifies that the release getter works as intended, returning a default value of 0."""
+    teach = Teacher("John", "Smith")
+    assert teach.release == 0
 
 
-def test_release():
-    assert False
+def test_release_setter():
+    """Verifies that the release setter can set a new value."""
+    teach = Teacher("John", "Smith")
+    new_release = 0.5
+    teach.release = new_release
+    assert new_release == teach.release
 
 
 def test_print_description():
-    assert False
+    """Verifies that print_description() returns a string containing the Teacher's full name."""
+    f_name = "John"
+    l_name = "Smith"
+    teach = Teacher(f_name, l_name)
+    assert f"{f_name} {l_name}" in teach.print_description()
