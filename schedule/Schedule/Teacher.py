@@ -1,36 +1,36 @@
-# =================================================================
-# share_blocks
-# =================================================================
-def share_blocks(block1, block2):
-    """Checks if there are teachers who share these two blocks."""
-    # Count occurrences in both sets to ensure that all values are < 2
-    occurrences: dict[int, int] = {}
-
-    # Get all the teachers in the first and second sets.
-    for teacher in block1.teachers():
-        if teacher.id not in occurrences.keys():
-            occurrences[teacher.id] = 0
-        occurrences[teacher.id] += 1
-
-    for teacher in block2.teachers():
-        if teacher.id not in occurrences.keys():
-            occurrences[teacher.id] = 0
-        occurrences[teacher.id] += 1
-
-    # A count of 2 means the teachers are in both sets.
-    for count in occurrences.values():
-        if count >= 2:
-            return True
-
-    return False
-
-
 class TeacherMeta(type):
     """Metaclass for Teacher, making it iterable."""
     _instances = {}
 
     def __iter__(self):
         return iter(getattr(self, '_instances', {}))
+
+    # =================================================================
+    # share_blocks
+    # =================================================================
+    @staticmethod
+    def share_blocks(block1, block2):
+        """Checks if there are teachers who share these two blocks."""
+        # Count occurrences in both sets to ensure that all values are < 2
+        occurrences: dict[int, int] = {}
+
+        # Get all the teachers in the first and second sets.
+        for teacher in block1.teachers():
+            if teacher.id not in occurrences.keys():
+                occurrences[teacher.id] = 0
+            occurrences[teacher.id] += 1
+
+        for teacher in block2.teachers():
+            if teacher.id not in occurrences.keys():
+                occurrences[teacher.id] = 0
+            occurrences[teacher.id] += 1
+
+        # A count of 2 means the teachers are in both sets.
+        for count in occurrences.values():
+            if count >= 2:
+                return True
+
+        return False
 
     # =================================================================
     # add

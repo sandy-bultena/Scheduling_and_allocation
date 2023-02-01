@@ -1,6 +1,6 @@
 import pytest
 
-from Teacher import Teacher, share_blocks
+from Teacher import Teacher, TeacherMeta
 from Block import Block
 
 
@@ -103,7 +103,7 @@ def test_share_blocks_true():
     block_2 = Block("mon", "10:00", 1.5, 2)
     block_1.assign_teacher(teach)
     block_2.assign_teacher(teach)
-    assert share_blocks(block_1, block_2) is True
+    assert TeacherMeta.share_blocks(block_1, block_2) is True
 
 
 def test_share_blocks_false():
@@ -112,4 +112,4 @@ def test_share_blocks_false():
     block_1 = Block("mon", "8:30", 1.5, 1)
     block_2 = Block("mon", "10:00", 1.5, 2)
     block_1.assign_teacher(teach)
-    assert share_blocks(block_1, block_2) is False
+    assert TeacherMeta.share_blocks(block_1, block_2) is False

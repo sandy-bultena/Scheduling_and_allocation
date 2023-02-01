@@ -1,4 +1,4 @@
-from Lab import Lab, share_blocks
+from Lab import Lab, LabMeta
 from Time_slot import TimeSlot
 from Block import Block
 
@@ -156,7 +156,7 @@ def test_share_blocks_true():
     block_2 = Block("wed", "8:30", 1.5, 2)
     block_1.assign_lab(lab)
     block_2.assign_lab(lab)
-    assert share_blocks(block_1, block_2) is True
+    assert LabMeta.share_blocks(block_1, block_2) is True
 
 
 def test_share_blocks_false():
@@ -165,4 +165,4 @@ def test_share_blocks_false():
     block_1 = Block("mon", "8:30", 1.5, 1)
     block_2 = Block("wed", "8:30", 1.5, 2)
     block_1.assign_lab(lab)
-    assert share_blocks(block_1, block_2) is False
+    assert LabMeta.share_blocks(block_1, block_2) is False
