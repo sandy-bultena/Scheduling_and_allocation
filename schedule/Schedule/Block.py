@@ -143,7 +143,7 @@ class Block(TimeSlot, metaclass=BlockMeta):
         for other in self.synced():
             old = other.day
             if old != super().day:
-                other.__day = super().day
+                other.day = super().day
 
     # ==================================================================
     # id //ALEX CODE

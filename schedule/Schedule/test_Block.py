@@ -103,12 +103,31 @@ def test_start_setter_synced_4_blocks():
     assert block2.start == new_start and block3.start == new_start and block4.start == new_start
 
 
-def test_day():
-    assert False
+def test_day_getter():
+    """Verifies that the day getter works as intended. Same as in TimeSlot."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block1 = Block(day, start, dur, num)
+    assert block1.day == day
 
 
 def test_day():
-    assert False
+    """Verifies that the day setter works as intended, changing the day property of any Block synced to the current
+    Block. """
+    day = "mon"
+    start1 = "8:00"
+    start2 = "12:00"
+    dur = 2
+    num1 = 1
+    num2 = 2
+    block1 = Block(day, start1, dur, num1)
+    block2 = Block(day, start2, dur, num2)
+    block1.sync_block(block2)
+    block2.sync_block(block1)
+    block1.day = "thu"
+    assert block2.day == "thu"
 
 
 def test_id():
