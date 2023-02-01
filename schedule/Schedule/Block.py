@@ -298,7 +298,11 @@ class Block(TimeSlot, metaclass=BlockMeta):
         """Removes ALL teachers from this Block.
         
         Returns the Block object."""
-        for teacher in self._teachers:
+        # If this Block doesn't already contain a Teachers dict, create one.
+        if not hasattr(self, '_teachers'):
+            self._teachers = {}
+
+        for teacher in list(self._teachers.values()):
             self.remove_teacher(teacher)
 
         return self

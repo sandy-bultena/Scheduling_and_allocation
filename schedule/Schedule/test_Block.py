@@ -395,8 +395,31 @@ def test_remove_teacher_no_crash():
     block.remove_teacher(other_teach)
     assert len(getattr(block, '_teachers')) == 1 and getattr(block, '_teachers')[teach.id] == teach
 
+
 def test_remove_all_teachers():
-    assert False
+    """Verifies that remove_all_teachers() works as intended."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    teach = Teacher("John", "Smith")
+    other_teach = Teacher("Jane", "Doe")
+    block.assign_teacher(teach)
+    block.assign_teacher(other_teach)
+    block.remove_all_teachers()
+    assert len(getattr(block, '_teachers')) == 0
+
+
+def test_remove_all_teachers_no_crash():
+    """Verifies that remove_all_teachers() won't crash the program when no teachers have been assigned yet."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    block.remove_all_teachers()
+    assert len(getattr(block, '_teachers')) == 0
 
 
 def test_teachers():
