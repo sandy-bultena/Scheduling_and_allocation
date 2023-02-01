@@ -215,7 +215,7 @@ class Block(TimeSlot, metaclass=BlockMeta):
         """Removes ALL Labs from this Block.
         
         Returns the Block object."""
-        for lab in self._labs:
+        for lab in list(self._labs.values()):
             self.remove_lab(lab)
 
         return self

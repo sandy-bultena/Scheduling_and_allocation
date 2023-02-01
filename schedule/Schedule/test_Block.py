@@ -133,7 +133,13 @@ def test_day():
 
 
 def test_id():
-    assert False
+    """Verifies that the id property works as intended."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    assert block.id == getattr(block, '_max_id') # Verifies that this Block has an ID equal to the current maximum ID.
 
 
 def test_section_getter():
@@ -244,7 +250,18 @@ def test_remove_lab_no_crash():
 
 
 def test_remove_all_labs():
-    assert False
+    """Verifies that remove_all_labs works as intended, removing all Labs from the current Block."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    this_lab = Lab("R-100", "the second-worst place in the world")
+    other_lab = Lab("R-101", "the worst place in the world")
+    block.assign_lab(this_lab)
+    block.assign_lab(other_lab)
+    block.remove_all_labs()
+    assert len(getattr(block, '_labs')) == 0
 
 
 def test_labs():
