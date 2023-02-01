@@ -180,11 +180,10 @@ class Block(TimeSlot, metaclass=BlockMeta):
             self._labs = {}
 
         if not isinstance(lab, Lab):
-            raise f"<{lab}>: invalid lab - must be a Lab object."
+            raise TypeError(f"<{lab}>: invalid lab - must be a Lab object.")
 
-        # TODO: Check if this function allows multiple labs to be assigned at once in the
+        # TODO: Check if this function allows multiple labs to be assigned at once in the perl version
         self._labs[lab.id] = lab
-        # perl version.
 
         return self
 

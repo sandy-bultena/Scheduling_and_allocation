@@ -2,6 +2,7 @@ import pytest
 
 from Block import Block
 from Section import Section
+from Lab import Lab
 
 
 def test_number_getter():
@@ -157,6 +158,7 @@ def test_section_setter_good():
     block.section = sect
     assert block.section == sect
 
+
 def test_section_setter_bad():
     """Verifies that the section setter throws a TypeError when receiving a value that isn't a Section."""
     day = "mon"
@@ -172,8 +174,30 @@ def test_section_setter_bad():
         block.section = bad_sect
     assert "invalid section" in str(e.value).lower()
 
-def test_assign_lab():
-    assert False
+
+def test_assign_lab_good():
+    """Verifies that the assign_lab method can assign a valid Lab object to the Block."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    lab = Lab()
+    block.assign_lab(lab)
+    assert getattr(block, '_labs', {})[lab.id] == lab
+
+
+def test_assign_lab_bad():
+    """Verifies that assign_lab will reject an input that isn't a Lab object."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    bad_lab = "baz"
+    with pytest.raises(TypeError) as e:
+        block.assign_lab(bad_lab)
+    assert "invalid lab" in str(e.value).lower()
 
 
 def test_remove_lab():
