@@ -277,6 +277,9 @@ class Block(TimeSlot, metaclass=BlockMeta):
         """Removes the specified Teacher from this Block.
         
         Returns the Block object."""
+        # If this Block doesn't already contain a Teachers dict, create one.
+        if not hasattr(self, '_teachers'):
+            self._teachers = {}
 
         # Verify that the teacher is, in fact, a Teacher. 
         if not isinstance(teacher, Teacher):

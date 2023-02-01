@@ -352,9 +352,48 @@ def test_assign_teacher_bad():
     assert "invalid teacher" in str(e.value).lower()
 
 
-def test_remove_teacher():
-    assert False
+def test_remove_teacher_good():
+    """Verifies that remove_teacher() works as intended."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    teach = Teacher("John", "Smith")
+    block.assign_teacher(teach)
+    block.remove_teacher(teach)
+    assert len(getattr(block, '_teachers')) == 0
 
+
+def test_remove_teacher_bad():
+    """Verifies that remove_teacher() throws an exception when trying to remove something that isn't a Teacher
+    object. """
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    teach = Teacher("John", "Smith")
+    block.assign_teacher(teach)
+    bad_teach = "foo"
+    with pytest.raises(TypeError) as e:
+        block.remove_teacher(bad_teach)
+    assert "invalid teacher" in str(e.value).lower()
+
+
+def test_remove_teacher_no_crash():
+    """Verifies that remove_teacher() doesn't crash the program when attempting to remove a Teacher that isn't
+    assigned to this Block. """
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    teach = Teacher("John", "Smith")
+    block.assign_teacher(teach)
+    other_teach = Teacher("Jane", "Doe")
+    block.remove_teacher(other_teach)
+    assert len(getattr(block, '_teachers')) == 1 and getattr(block, '_teachers')[teach.id] == teach
 
 def test_remove_all_teachers():
     assert False
