@@ -146,6 +146,7 @@ class Teacher(metaclass=TeacherMeta):
         Teacher._max_id += 1
         self.__id = Teacher._max_id
         self.release = 0
+        Teacher._instances[self.__id] = self
 
     # =================================================================
     # id

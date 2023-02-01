@@ -39,3 +39,6 @@ __pycache__/
 
 # VSCode files
 .vscode/
+
+# PyTest cache
+.pytest_cache/

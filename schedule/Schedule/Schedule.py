@@ -61,7 +61,7 @@ class Schedule:
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
     # --------------------------------------------------------
-    # read (YAML)
+    # read_YAML
     # --------------------------------------------------------
     @staticmethod
     def read_YAML(file : str):
@@ -69,9 +69,12 @@ class Schedule:
         if os.path.isfile(file):
             try:
                 f = open(file, "r")
-                # regex substitution replaces - at the beginning of variable names, since they're not allowed in Python
-                # remove any lines in a list that are just aliases; classes are now iterators, so collection classes are no longer needed
-                raw_yaml = re.sub('!.*$', '', re.sub("^(\s*)-([^- ])", r"\1\2", f.read(), flags=re.MULTILINE), flags=re.MULTILINE)
+                # same as below -_ substitution, but specifically for mangled names (_Class__var)
+                raw_yaml = re.sub("^(\s*)_[a-zA-Z]*?__", "", f.read())
+                # regex substitution replaces - or _ at the beginning of variable names, since the manual casting assumes clean var names
+                # take out any tags, since we're bypassing them and initializing classes manually
+                    # this is a terrible thing and should NOT be done in a long-term project, absolutely not scalable
+                raw_yaml = re.sub('!.*$', '', re.sub("^(\s*)[_-]([^- ])", r"\1\2", raw_yaml, flags=re.MULTILINE), flags=re.MULTILINE)
                 # enclose timestamps in single quotes to avoid sexagesimal conversion (9:00 -> 540 seconds)
                 raw_yaml = re.sub('(\s)(\d+):(\d+)(\s)', r"\1'\2:\3'\4", raw_yaml)
                 max_ids = {}
@@ -103,11 +106,35 @@ class Schedule:
         # should probably be replaced with tkinter error screen
 
     # --------------------------------------------------------
-    # write (YAML)
+    # write_YAML
     # --------------------------------------------------------
     @staticmethod
-    def write_YAML():
-        pass
+    def write_YAML(file : str) -> bool:
+        """
+        Writes all schedule data to specified YAML file
+        - Parameter file -> The file to output to
+        """
+        if os.path.isfile(file):
+            try:
+                f = open(file, "w")
+                dic = dict(
+                    conflicts = dict( list = Conflict.list() ),
+                    courses = dict( list = Course._instances ),
+                    labs = dict( list = Lab._instances ),
+                    streams = dict( list = Stream._instances ),
+                    teachers = dict( list = Teacher._instances )
+                )
+                yam = yaml.dump_all([
+                    dic, Block._max_id, Course._max_id, Lab._max_id, Section._max_id,
+                    Teacher._max_id, TimeSlot._max_id, Stream._max_id
+                    ], explicit_start=True)
+                f.write(yam)
+                return True
+            except Exception as e:
+                print(f"Cannot write to file {file}: {str(e)}")
+                # should probably be replaced with tkinter error screen
+                return False
+            finally: f.close()
 
     # ========================================================
     # BAD METHODS - TEMPORARY FOR YAML FILE
@@ -172,7 +199,10 @@ class Schedule:
         if Lab.get(lab.get('id', -1)): return Lab.get(lab.get('id', -1))
         else:
             l =  Lab(lab.get('number', ''), lab.get('descr', ''))
+            old_id = l.id
             l._Lab__id = lab.get('id', l.id)
+            del Lab._instances[old_id]
+            Lab._instances[l.id] = l
             return l
 
     @staticmethod
@@ -181,7 +211,10 @@ class Schedule:
         else:
             t = Teacher(teacher.get('fname', ''), teacher.get('lname', ''), teacher.get('dept', ''))
             t.release = teacher.get('release', t.release)
+            old_id = t.id
             t._Teacher__id = teacher.get('id', t.id)
+            del Teacher._instances[old_id]
+            Teacher._instances[t.id] = t
             return t
 
     @staticmethod
@@ -197,16 +230,34 @@ class Schedule:
             c = Course(number = course.get('number', ''), name = course.get('name', ''), semester = course.get('semester', ''))
             # uncomment following 3 lines when Course is implemented
             #c._allocation = course.get('allocation', c.allocation)
+            #old_id = c.id
             #c._Course__id = course.get('id', c.id)
+            #del Course._instances[old_id]
+            #Course._instances[c.id] = c
             #for k in course.get('sections', {}).keys(): c.assign_section(Schedule.__create_section(course.get('sections', {})[k]))
             return c
         else: return courses[0]
 
     @staticmethod
     def __create_stream(stream : dict) -> Stream:
-        streams = list(filter(lambda i : i.id == stream.get('id', -1), Stream) )
-        if len(streams) == 0:
+        if Stream.get(stream.get('id', -1)): return Stream.get(stream.get('id', -1))
+        else:
             s = Stream(stream.get('number', 'A'), stream.get('descr', ''))
+            old_id = s.id
             s._Stream__id = stream.get('id', s.id)
+            del Stream._instances[old_id]
+            Stream._instances[s.id] = s
             return s
-        else: return streams[0]
+
+Schedule.read_YAML(r"C:\\Users\\profw\\Desktop\\Scheduler\\FallSchedule.yaml")
+Schedule.write_YAML(r"C:\\Users\\profw\\Desktop\\Scheduler\\Fall.yaml")
+
+# NOTE: As Course isn't yet implemented, the output YAML will be different from the input
+# Course objects default to { name = "C" } as a placeholder, so many teachers, labs, and streams
+# won't appear in normal output and will only appear in the respective list sections
+# this shouldn't affect functionality (outside of Course not being saved)
+
+# NOTE: The sample FallSchedule.yaml given by Aref has an error in it;
+# Teacher max_id is written as 16, despite there being teachers with IDs up to 29
+# this causes bugs with teachers being overwritten by each other and should be manually fixed in the YAML file
+# if more teachers are added in the Perl version, the old ones with higher IDs would be overwritten

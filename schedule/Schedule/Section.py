@@ -383,10 +383,10 @@ class Section(metaclass=SectionMeta):
     # --------------------------------------------------------
     def delete(self) -> None:
         """ Delete this object and all its dependants """
-        # TODO: Confirm that Python objects can't be manually deleted
-            # Relies on all references being gone, something we can't control from here
         for b in self.blocks.values():
             self.remove_block(b)
+        Section._sections.remove(self)
+        return self
     
     # --------------------------------------------------------
     # block
