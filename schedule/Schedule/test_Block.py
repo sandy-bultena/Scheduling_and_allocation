@@ -188,7 +188,7 @@ def test_assign_lab_good():
 
 
 def test_assign_lab_bad():
-    """Verifies that assign_lab will reject an input that isn't a Lab object."""
+    """Verifies that assign_lab() will reject an input that isn't a Lab object."""
     day = "mon"
     start = "8:30"
     dur = 2
@@ -200,8 +200,47 @@ def test_assign_lab_bad():
     assert "invalid lab" in str(e.value).lower()
 
 
-def test_remove_lab():
-    assert False
+def test_remove_lab_good():
+    """Verifies that remove_lab() can successfully remove a valid Lab object from this Block."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    lab = Lab()
+    block.assign_lab(lab)
+    block.remove_lab(lab)
+    assert lab not in getattr(block, '_labs').values()
+
+
+def test_remove_lab_bad():
+    """Verifies that remove_lab() throws an exception if asked to remove something that isn't a Lab from this Block."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    lab = Lab()
+    block.assign_lab(lab)
+    bad_lab = "tesla"
+    with pytest.raises(TypeError) as e:
+        block.remove_lab(bad_lab)
+    assert "invalid lab" in str(e.value).lower()
+
+
+def test_remove_lab_no_crash():
+    """Verifies that remove_lab won't crash the program if the Block doesn't contain
+    the specified valid Lab. """
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    lab = Lab()
+    block.assign_lab(lab)
+    other_lab = Lab("R-101", "dummy")
+    block.remove_lab(other_lab)
+    assert lab in getattr(block, "_labs").values()
 
 
 def test_remove_all_labs():

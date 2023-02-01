@@ -200,7 +200,7 @@ class Block(TimeSlot, metaclass=BlockMeta):
             self._labs = {}
 
         if not isinstance(lab, Lab):
-            raise f"<{lab}>: invalid lab - must be a Lab object."
+            raise TypeError(f"<{lab}>: invalid lab - must be a Lab object.")
 
         # If the labs dict contains an entry for the specified Lab, remove it.
         if lab.id in self._labs.keys():
