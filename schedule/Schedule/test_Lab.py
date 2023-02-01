@@ -1,4 +1,5 @@
 from Lab import Lab
+from Time_slot import TimeSlot
 
 
 def test_id():
@@ -46,11 +47,40 @@ def test_descr_setter():
 
 
 def test_add_unavailable():
-    assert False
+    """Verifies that add_unavailable() creates a TimeSlot object with the passed-in values, which is stored in the
+    Lab's _unavailable attribute. """
+    day = "mon"
+    start = "8:30"
+    dur = 2.0
+    lab = Lab()
+    lab.add_unavailable(day, start, dur)
+    slot = getattr(lab, '_unavailable')[1]
+    assert type(slot) is TimeSlot and slot.day == day and slot.start == start and slot.duration == dur
 
 
-def test_remove_unavailable():
-    assert False
+def test_remove_unavailable_good():
+    """Verifies that remove_unavailable() can remove a TimeSlot from Lab based on the received TimeSlot ID."""
+    day = "mon"
+    start = "8:30"
+    dur = 2.0
+    lab = Lab()
+    lab.add_unavailable(day, start, dur)
+    slot_id = getattr(TimeSlot, '_max_id')
+    lab.remove_unavailable(slot_id)
+    assert len(getattr(lab, '_unavailable')) == 0
+
+
+def test_remove_unavailable_no_crash():
+    """Verifies that remove_unavailable will not crash the program when attempting to remove a TimeSlot which doesn't
+    exist. """
+    day = "mon"
+    start = "8:30"
+    dur = 2.0
+    lab = Lab()
+    lab.add_unavailable(day, start, dur)
+    bad_id = 9999
+    lab.remove_unavailable(bad_id)
+    assert len(getattr(lab, '_unavailable')) == 1 and getattr(lab, '_unavailable')[1].start == start
 
 
 def test_get_unavailable():
