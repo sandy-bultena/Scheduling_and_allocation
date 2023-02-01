@@ -58,12 +58,19 @@ def test_lastname_setter_bad():
     assert "last name cannot be an empty string" in str(e.value).lower()
 
 
-def test_dept():
-    assert False
+def test_dept_getter():
+    """Verifies that dept getter works as intended."""
+    dept = "Computer Science"
+    teach = Teacher("John", "Smith", dept)
+    assert dept == teach.dept
 
 
-def test_dept():
-    assert False
+def test_dept_setter():
+    """Verifies that dept setter can set a new department name."""
+    teach = Teacher("John", "Smith")
+    dept = "Computer Science"
+    teach.dept = dept
+    assert dept == teach.dept
 
 
 def test_release():
