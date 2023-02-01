@@ -348,7 +348,7 @@ class Block(TimeSlot, metaclass=BlockMeta):
         
         Returns the Block object."""
         if not isinstance(block, Block):
-            raise f"<{block}>: invalid block - must be a Block object."
+            raise TypeError(f"<{block}>: invalid block - must be a Block object.")
 
         if not hasattr(self, '_sync'):
             self._sync = []

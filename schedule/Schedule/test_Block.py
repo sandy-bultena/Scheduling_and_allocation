@@ -487,11 +487,43 @@ def test_has_teach_bad_input():
 
 
 def test_teachers_obj():
-    assert False
+    """Verifies that teachersObj() returns a dict of teachers."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    teach = Teacher("John", "Smith")
+    other_teach = Teacher("Jane", "Doe")
+    block.assign_teacher(teach)
+    block.assign_teacher(other_teach)
+    teachers = block.teachersObj()
+    assert type(teachers) is dict
 
 
-def test_sync_block():
-    assert False
+def test_sync_block_good():
+    """Verifies that sync_block() synchronizes a passed Block with this Block."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block1 = Block(day, start, dur, num)
+    block2 = Block("tue", start, dur, 2)
+    block1.sync_block(block2)
+    assert len(getattr(block1, '_sync')) == 1 and block2 in getattr(block1, '_sync')
+
+
+def test_sync_block_bad():
+    """Verifies that sync_block() throws an exception when receiving something that isn't a Block."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    bad_block = "foo"
+    with pytest.raises(TypeError) as e:
+        block.sync_block(bad_block)
+    assert "invalid block" in str(e.value).lower()
 
 
 def test_unsync_block():
