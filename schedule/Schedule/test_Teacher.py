@@ -1,6 +1,7 @@
 import pytest
 
-from Teacher import Teacher
+from Teacher import Teacher, share_blocks
+from Block import Block
 
 
 def test_id():
@@ -93,3 +94,22 @@ def test_print_description():
     l_name = "Smith"
     teach = Teacher(f_name, l_name)
     assert f"{f_name} {l_name}" in teach.print_description()
+
+
+def test_share_blocks_true():
+    """Verifies that the static share_blocks() method returns true if two blocks are sharing a teacher."""
+    teach = Teacher("John", "Smith")
+    block_1 = Block("mon", "8:30", 1.5, 1)
+    block_2 = Block("mon", "10:00", 1.5, 2)
+    block_1.assign_teacher(teach)
+    block_2.assign_teacher(teach)
+    assert share_blocks(block_1, block_2) is True
+
+
+def test_share_blocks_false():
+    """Verifies that the static share_blocks() method returns false if two blocks are not sharing any Teachers."""
+    teach = Teacher("John", "Smith")
+    block_1 = Block("mon", "8:30", 1.5, 1)
+    block_2 = Block("mon", "10:00", 1.5, 2)
+    block_1.assign_teacher(teach)
+    assert share_blocks(block_1, block_2) is False
