@@ -630,12 +630,50 @@ def test_is_conflicted():
     assert block1.is_conflicted() is True
 
 
-def test_print_description():
-    assert False
+def test_print_description_full():
+    """Verifies that print_description returns a description containing info about the Block, its assigned Labs,
+    and its Section. """
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    sect = Section("42", 2, "Section 42")
+    lab1 = Lab("R-101", "Worst place in the world")
+    lab2 = Lab("R-102", "Second-worst place in the world")
+    block.section = sect
+    block.assign_lab(lab1)
+    block.assign_lab(lab2)
+    desc = block.print_description()
+    assert str(sect.number) in desc and day in desc and start in desc and lab1.number in desc and lab2.number in desc
+
+
+def test_print_description_short():
+    """Verifies that print_description returns information about just the Block if it has no assigned Section."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    lab1 = Lab("R-101", "Worst place in the world")
+    lab2 = Lab("R-102", "Second-worst place in the world")
+    block.assign_lab(lab1)
+    block.assign_lab(lab2)
+    desc = block.print_description()
+    assert day in desc \
+           and start in desc and lab1.number in desc and lab1.descr in desc \
+           and lab2.number in desc and lab2.descr in desc
 
 
 def test_print_description_2():
-    assert False
+    """Verifies that print_description_2() works as intended: returning information about just the Block itself."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    desc = block.print_description_2()
+    assert f"{num} : {day}, {start} {dur:.1f} hour(s)" in desc
 
 
 def test_conflicts():
