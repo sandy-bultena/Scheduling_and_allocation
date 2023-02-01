@@ -584,7 +584,7 @@ def test_reset_conflicted():
     num = 1
     block1 = Block(day, start, dur, num)
     block1.reset_conflicted()
-    assert getattr(block1, '_conflicted') is False
+    assert getattr(block1, '_conflicted') is 0
 
 
 def test_conflicted_getter():
@@ -594,7 +594,7 @@ def test_conflicted_getter():
     dur = 2
     num = 1
     block1 = Block(day, start, dur, num)
-    assert block1.conflicted is False
+    assert block1.conflicted is 0
 
 
 def test_conflicted_setter_good():
@@ -604,19 +604,19 @@ def test_conflicted_setter_good():
     dur = 2
     num = 1
     block1 = Block(day, start, dur, num)
-    block1.conflicted = True
-    assert block1.conflicted is True
+    block1.conflicted = 1
+    assert block1.conflicted is 1
 
 
-def test_conflicted_setter_bad():
-    """Verifies that the conflicted setter converts invalid input to a boolean value."""
-    day = "mon"
-    start = "8:30"
-    dur = 2
-    num = 1
-    block1 = Block(day, start, dur, num)
-    block1.conflicted = "yes"
-    assert block1.conflicted is True
+# def test_conflicted_setter_bad():
+#     """Verifies that the conflicted setter converts invalid input to a boolean value."""
+#     day = "mon"
+#     start = "8:30"
+#     dur = 2
+#     num = 1
+#     block1 = Block(day, start, dur, num)
+#     block1.conflicted = "yes"
+#     assert block1.conflicted is True
 
 
 def test_is_conflicted():

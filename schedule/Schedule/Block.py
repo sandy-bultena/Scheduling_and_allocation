@@ -387,7 +387,7 @@ class Block(TimeSlot, metaclass=BlockMeta):
     # =================================================================
     def reset_conflicted(self):
         """Resets conflicted field."""
-        self._conflicted = False
+        self._conflicted = 0
 
     # =================================================================
     # conflicted
@@ -396,22 +396,24 @@ class Block(TimeSlot, metaclass=BlockMeta):
     def conflicted(self):
         """Gets and sets conflicted field."""
         if not hasattr(self, '_conflicted'):
-            self._conflicted = False
+            self._conflicted = 0
 
         return self._conflicted
 
     @conflicted.setter
-    def conflicted(self, new_conf: bool):
+    def conflicted(self, new_conf: int):
         if not hasattr(self, '_conflicted'):
-            self._conflicted = False
-        self._conflicted = bool(new_conf)
+            self._conflicted = 0
+        self._conflicted = new_conf
 
     # =================================================================
     # is_conflicted
     # =================================================================
     def is_conflicted(self):
-        """Returns true if there is a conflict with this Block, false otherwise."""
-        return self.conflicted
+        """Returns true if there is a conflict with this Block, false otherwise.
+
+        Returns a number representing the type of conflict with this Block, or 0 if there are no conflicts."""
+        return self.conflicted != 0
 
     # =================================================================
     # print_description
