@@ -86,9 +86,11 @@ class Block(TimeSlot, metaclass=BlockMeta):
         return self.__number
 
     @number.setter
-    def number(self, new_num: str):
-        if new_num is None or new_num == "":
-            raise Exception(f"<{new_num}>: section number cannot be a null string.")
+    def number(self, new_num: int):
+        # NOTE: The reason it checks for strings in the Perl code is because Perl doesn't distinguish between strings
+        # and numbers: A value of "0" registers as 0, and vice versa.
+        if new_num is None or not isinstance(new_num, int):
+            raise Exception(f"<{new_num}>: section number must be an integer and cannot be null.")
         self.__number = new_num
 
     # =================================================================

@@ -1,3 +1,5 @@
+import pytest
+
 from Block import Block
 
 
@@ -8,12 +10,32 @@ def test_number_getter():
     dur = 2
     num = 1
     block = Block(day, start, dur, num)
-    assert block.number == str(num)
+    assert block.number == num
 
 
-def test_number():
-    assert False
+def test_number_setter_good():
+    """Verifies that the number setter can set an appropriate value."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    new_num = 4
+    block.number = new_num
+    assert block.number == new_num
 
+
+def test_number_setter_bad():
+    """Verifies that the number setter throws an exception when receiving bad input."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    bad_num = "foo"
+    with pytest.raises(Exception) as e:
+        block.number = bad_num
+    assert "must be an integer and cannot be null" in str(e.value).lower()
 
 def test_delete():
     assert False
