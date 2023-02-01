@@ -365,7 +365,7 @@ class Block(TimeSlot, metaclass=BlockMeta):
         Returns this Block object."""
 
         # This function was not finished or used in the Perl code, so I'm flying blind here.
-        if block in self._sync:
+        if hasattr(self, '_sync') and block in self._sync:
             self._sync.remove(block)
 
         return self

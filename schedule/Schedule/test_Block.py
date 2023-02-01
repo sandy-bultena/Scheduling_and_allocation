@@ -526,8 +526,30 @@ def test_sync_block_bad():
     assert "invalid block" in str(e.value).lower()
 
 
-def test_unsync_block():
-    assert False
+def test_unsync_block_good():
+    """Verifies that unsync_block() works as intended."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block1 = Block(day, start, dur, num)
+    block2 = Block("tue", start, dur, 2)
+    block1.sync_block(block2)
+    block1.unsync_block(block2)
+    assert len(getattr(block1, '_sync')) == 0
+
+
+def test_unsync_block_no_crash_bad_input():
+    """Verifies that unsync_block will not crash the program when receiving bad input."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block1 = Block(day, start, dur, num)
+    block2 = Block("tue", start, dur, 2)
+    block1.sync_block(block2)
+    block1.unsync_block("foo")
+    assert len(getattr(block1, '_sync')) == 1 and block2 in getattr(block1, '_sync')
 
 
 def test_synced():
