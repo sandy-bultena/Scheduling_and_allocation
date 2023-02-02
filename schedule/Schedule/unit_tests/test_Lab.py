@@ -1,6 +1,6 @@
-from Lab import Lab, LabMeta
-from Time_slot import TimeSlot
-from Block import Block
+from ..Lab import Lab, LabMeta
+from ..Time_slot import TimeSlot
+from ..Block import Block
 
 
 def test_id():

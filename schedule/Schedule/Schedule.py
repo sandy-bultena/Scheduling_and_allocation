@@ -400,8 +400,7 @@ class Schedule:
     def remove_course(course : Course):
         """Removes Course from schedule"""
         if not isinstance(course, Course): raise TypeError(f"{course} must be an object of type Course")
-        # uncomment when Course is implemented
-        #course.delete()
+        course.delete()
 
     # --------------------------------------------------------
     # remove_teacher
@@ -422,6 +421,16 @@ class Schedule:
         if not isinstance(lab, Lab): raise TypeError(f"{lab} must be an object of type Lab")
         # potentially loop over Blocks and remove Lab from all
         Lab.remove(lab)
+
+    # --------------------------------------------------------
+    # remove_stream
+    # --------------------------------------------------------
+    @staticmethod
+    def remove_stream(stream : Stream):
+        """Removes Stream from schedule"""
+        if not isinstance(stream, Stream): raise TypeError(f"{stream} must be an object of type Stream")
+        # potentially loop over Sections and remove Stream from all
+        Stream.remove(stream)
 
     # --------------------------------------------------------
     # calculate_conflicts

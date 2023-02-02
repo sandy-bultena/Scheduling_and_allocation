@@ -23,6 +23,11 @@ class StreamMeta(type):
         for s in b2.section.streams:
             if s.id in occurences: return True
         return False
+    
+    @staticmethod
+    def remove(st):
+        """Removes a stream from the list"""
+        if st.id in Stream._instances: del Stream._instances[st.id]
 
 class Stream(metaclass=StreamMeta):
     """ Describes a group of students whose classes cannot overlap. """

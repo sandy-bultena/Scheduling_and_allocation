@@ -1,4 +1,4 @@
-from Time_slot import TimeSlot
+from .Time_slot import TimeSlot
 
 
 class LabMeta(type):

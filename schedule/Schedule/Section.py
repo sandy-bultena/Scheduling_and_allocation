@@ -1,5 +1,5 @@
-from Course import Course
-from Stream import Stream
+from .Course import Course
+from .Stream import Stream
 import re
 
 
@@ -403,7 +403,7 @@ class Section(metaclass=SectionMeta):
     # --------------------------------------------------------
     def __str__(self) -> str:
         """ Returns a text string that describes the section """
-        if self.name and not re.match("Section\s*\d*$", self.name): return f"Section {self.number}: {self.name}"
+        if self.name and not re.match(r"Section\s*\d*$", self.name): return f"Section {self.number}: {self.name}"
         else: return f"Section {self.number}"
     
     # --------------------------------------------------------

@@ -138,7 +138,7 @@ class Conflict(metaclass=ConflictMeta):
     # reset | new to Python version
     # --------------------------------------------------------
     @staticmethod
-    def reset(type):
+    def reset():
         """ Resets the list of conflicts """
         Conflict._conflicts.clear()
 

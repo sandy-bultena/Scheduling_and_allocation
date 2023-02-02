@@ -1,7 +1,7 @@
 import pytest
 
-from Teacher import Teacher, TeacherMeta
-from Block import Block
+from ..Teacher import Teacher, TeacherMeta
+from ..Block import Block
 
 
 def test_id():

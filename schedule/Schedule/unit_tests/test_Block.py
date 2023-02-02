@@ -1,9 +1,9 @@
 import pytest
 
-from Block import Block
-from Section import Section
-from Lab import Lab
-from Teacher import Teacher
+from ..Block import Block
+from ..Section import Section
+from ..Lab import Lab
+from ..Teacher import Teacher
 
 
 def test_number_getter():

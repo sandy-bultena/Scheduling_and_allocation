@@ -26,7 +26,7 @@ def test_conflict_created_success():
     blocks = [5, 6]
     c = Conflict(Conflict.AVAILABILITY, blocks)
     assert c.type is Conflict.AVAILABILITY
-    assert c.blocks is blocks
+    assert c.blocks == blocks
 
 def test_confirm_Conflict_can_be_iterated():
     """Confirm that Conflict can be iterated over"""
