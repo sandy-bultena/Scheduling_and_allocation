@@ -432,7 +432,7 @@ class Schedule:
     def remove_stream(stream : Stream):
         """Removes Stream from schedule"""
         if not isinstance(stream, Stream): raise TypeError(f"{stream} must be an object of type Stream")
-        # go through all blocks, and remove teacher from each
+        # go through all sections, and remove stream from each
         for s in Section: s.remove_stream(stream)
         Stream.remove(stream)
 
