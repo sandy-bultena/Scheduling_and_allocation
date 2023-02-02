@@ -36,7 +36,7 @@ class Course(metaclass=CourseMeta):
 
     # -------------------------------------------------------------------
     # new
-    #--------------------------------------------------------------------
+    # --------------------------------------------------------------------
     def __init__(self, number, name: str = "", semester: str = "", **kwargs):
         self.name = "C"  # temp assignment to avoid crashes in Block __str__
         Course._max_id += 1
@@ -98,7 +98,7 @@ class Course(metaclass=CourseMeta):
             warn(f"invalid semester for course; {semester}", Warning, stacklevel=2)
             semester = ""
         self.__semester = semester
-    
+
     # =================================================================
     # number
     # =================================================================
@@ -120,7 +120,7 @@ class Course(metaclass=CourseMeta):
         Returns the modified Course object."""
         if not hasattr(self, '_sections'):
             self._sections: dict[str, Section] = {}
-        
+
         # In Perl, this function is structured in a way that allows it to take multiple sections and add them all to
         # the Course, one at a time. However, it is never actually used that way. I am preserving the original
         # structure just in case.
@@ -128,7 +128,7 @@ class Course(metaclass=CourseMeta):
             # Verify that this is actually a Section object.
             if not isinstance(section, Section):
                 raise TypeError(f"<{section}>: invalid section - must be a Section object.")
-            
+
             # -------------------------------------------------------
             # Section numbers must be unique for this Course.
             # -------------------------------------------------------
@@ -139,13 +139,13 @@ class Course(metaclass=CourseMeta):
                     break
             if duplicate:
                 raise Exception(f"<{section.number}>: section number is not unique for this Course.")
-            
+
             # ----------------------------------------------------------
             # save section for this course, save course for this section
             # ----------------------------------------------------------
             self._sections[section.number] = section
             section.course = self
-        
+
         return self
 
     # =================================================================
@@ -161,18 +161,18 @@ class Course(metaclass=CourseMeta):
     # =================================================================
     # get_section_by_id
     # =================================================================
-    def get_section_by_id(self, id):
+    def get_section_by_id(self, sect_id):
         """Gets the Section from this Course that matches the passed section ID, if it exists.
         
         Returns the Section if found, or None otherwise."""
         if hasattr(self, '_sections'):
             sections = self.sections()
             for i in sections:
-                if i.id == id:
+                if i.id == sect_id:
                     return i
-        
+
         return None
-    
+
     # =================================================================
     # get_section_by_name
     # =================================================================
@@ -201,12 +201,12 @@ class Course(metaclass=CourseMeta):
         # Verify that the section is indeed a Section object.
         if not isinstance(section, Section):
             raise TypeError(f"<{section}>: invalid section - must be a Section object")
-        
+
         if hasattr(self, '_sections') and section.number in getattr(self, '_sections', {}):
             del self._sections[section.number]
-        
+
         section.delete()
-        
+
         return self
 
     # =================================================================
@@ -246,15 +246,15 @@ class Course(metaclass=CourseMeta):
             for teacher_id in section.teachers():
                 if teacher.id == teacher_id:
                     sections.append(section)
-        
+
         return sections
-    
+
     # =================================================================
     # max_section_number
     # =================================================================
     def max_section_number(self):
         """Returns the maximum Section number from the Sections assigned to this Course."""
-        sections = self.sections().sort(key=lambda s: s.number)
+        sections = sorted(self.sections(), key=lambda s: s.number)
         return sections[-1].number if len(sections) > 0 else 0
 
     # =================================================================
@@ -266,7 +266,7 @@ class Course(metaclass=CourseMeta):
 
         for section in self.sections():
             blocks.append(section.blocks)
-        
+
         return blocks
 
     # =================================================================
@@ -300,9 +300,9 @@ class Course(metaclass=CourseMeta):
                 text += "\tteachers: "
                 text += ", ".join(b.teachers())
                 text += "\n"
-        
+
         return text
-    
+
     # =================================================================
     # print_description2
     # =================================================================
@@ -311,7 +311,7 @@ class Course(metaclass=CourseMeta):
         return self.__str__()
 
     def __str__(self) -> str:
-            return f"{self.number}: {self.name}"
+        return f"{self.number}: {self.name}"
 
     # =================================================================
     # teachers
@@ -323,7 +323,7 @@ class Course(metaclass=CourseMeta):
         for section in self.sections():
             for teacher in section.teachers():
                 teachers[teacher] = teacher
-        
+
         return list(teachers.values())
 
     # =================================================================
@@ -347,7 +347,7 @@ class Course(metaclass=CourseMeta):
         for section in self.sections():
             for stream in section.streams():
                 streams[stream] = stream
-        
+
         return list(streams.values())
 
     # =================================================================
@@ -359,9 +359,9 @@ class Course(metaclass=CourseMeta):
 
         for s in self.streams():
             if s.id == stream.id: return True
-        
+
         return False
-    
+
     # =================================================================
     # assign_teacher
     # =================================================================
@@ -372,9 +372,9 @@ class Course(metaclass=CourseMeta):
         if teacher:
             for section in self.sections():
                 section.assign_teacher(teacher)
-        
+
         return self
-    
+
     # =================================================================
     # assign_lab
     # =================================================================
@@ -385,7 +385,7 @@ class Course(metaclass=CourseMeta):
         if lab:
             for section in self.sections():
                 section.assign_lab(lab)
-        
+
         return self
 
     # =================================================================
@@ -410,7 +410,7 @@ class Course(metaclass=CourseMeta):
         Returns the modified Course object."""
         for section in self.sections():
             section.remove_teacher(teacher)
-        
+
         return self
 
     # =================================================================
@@ -422,5 +422,38 @@ class Course(metaclass=CourseMeta):
         Returns the modified Course object."""
         for teacher in self.teachers():
             self.remove_teacher(teacher)
-        
+
         return self
+
+    # =================================================================
+    # remove_stream
+    # =================================================================
+    def remove_stream(self, stream):
+        """Removes the specified Stream from this Course.
+        
+        Returns the modified Course object."""
+        for section in self.sections():
+            section.remove_stream(stream)
+
+        return self
+
+    # =================================================================
+    # remove_all_streams
+    # =================================================================
+    def remove_all_streams(self):
+        """Removes all Streams from all Sections of this Course.
+        
+        Returns the modified Course object."""
+        for stream in self.streams():
+            self.remove_stream(stream)
+
+        return self
+
+    # =======================================
+    # Get unused section number (Alex Code)
+    # =======================================
+    def get_new_number(self, number: int):
+        """Returns the first unused Section Number."""
+        while self.get_section(number):
+            number += 1
+        return number
