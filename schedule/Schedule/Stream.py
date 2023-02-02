@@ -5,10 +5,24 @@ class StreamMeta(type):
     def __iter__(self): return iter(getattr(self, '_instances', []))
 
     @staticmethod
-    def get(id : int):
+    def get_by_id(id : int):
         """Returns the Stream object with matching ID"""
         for i in Stream._instances.values():
             if i.id == id: return i
+    
+    @staticmethod
+    def list():
+        """Returns the list of Stream objects"""
+        return list(Stream._instances.values())
+    
+    @staticmethod
+    def share_blocks(b1, b2):
+        """Checks if there's a stream who share the two blocks provided"""
+        occurences = {}
+        for s in b1.section.streams: occurences[s.id] = 1
+        for s in b2.section.streams:
+            if s.id in occurences: return True
+        return False
 
 class Stream(metaclass=StreamMeta):
     """ Describes a group of students whose classes cannot overlap. """

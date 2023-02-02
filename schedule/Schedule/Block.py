@@ -20,6 +20,11 @@ class BlockMeta(TimeSlotMeta):
             return []
         day_blocks = filter(lambda x: x.day == day, blocks)
         return list(day_blocks)
+    
+    @staticmethod
+    def list():
+        """Returns the list of all Blocks"""
+        return Block._instances
 
 
 # SYNOPSIS:
@@ -404,7 +409,7 @@ class Block(TimeSlot, metaclass=BlockMeta):
     def conflicted(self, new_conf: int):
         if not hasattr(self, '_conflicted'):
             self._conflicted = 0
-        self._conflicted = new_conf
+        self._conflicted = self.conflicted | new_conf
 
     # =================================================================
     # is_conflicted

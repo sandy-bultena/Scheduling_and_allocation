@@ -104,3 +104,13 @@ def test_confirm_conflict_is_deleted():
     assert c in Conflict.list()
     c.delete()
     assert c not in Conflict.list()
+
+def test_reset_works():
+    """Confirms Conflict.reset() works correctly"""
+    Conflict._conflicts.clear()
+    c1 = Conflict(Conflict.TIME_LAB, [1])
+    c2 = Conflict(Conflict.TIME_TEACHER, [2])
+    c3 = Conflict(Conflict.TIME_STREAM, [3])
+    assert len(Conflict.list()) > 0
+    Conflict.reset()
+    assert len(Conflict.list()) == 0
