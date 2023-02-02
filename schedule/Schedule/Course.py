@@ -1,6 +1,7 @@
 import re
 from warnings import warn
 from Section import Section
+from Teacher import Teacher
 
 
 # SYNOPSIS
@@ -347,4 +348,30 @@ class Course(metaclass=CourseMeta):
         
         return list(streams.values())
 
+    # =================================================================
+    # has_stream
+    # =================================================================
+    def has_stream(self, stream):
+        """Returns true if this Course has the specified Stream."""
+        if not stream: return False
+
+        for s in self.streams():
+            if s.id == stream.id: return True
         
+        return False
+    
+    # =================================================================
+    # assign_teacher
+    # =================================================================
+    def assign_teacher(self, teacher: Teacher):
+        """Assigns a Teacher to all Sections of this Course.
+        
+        Returns the modified Course object."""
+        if teacher:
+            for section in self.sections():
+                section.assign_teacher(teacher)
+        
+        return self
+    
+    
+
