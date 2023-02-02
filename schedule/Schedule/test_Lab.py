@@ -5,6 +5,8 @@ from Block import Block
 
 def test_id():
     """Verifies that the ID property automatically increments as Labs are created."""
+    # Set Lab's max_id to 0 just to avoid shenanigans with simultaneously running tests.
+    Lab._max_id = 0
     lab = Lab()
     assert lab.id == 1  # The first Lab created will always have an ID of 1.
 
@@ -50,6 +52,8 @@ def test_descr_setter():
 def test_add_unavailable():
     """Verifies that add_unavailable() creates a TimeSlot object with the passed-in values, which is stored in the
     Lab's _unavailable attribute. """
+    # Reset the TimeSlot class's max_id to 0 to avoid KeyErrors when all tests are run simultaneously.
+    TimeSlot._max_id = 0
     day = "mon"
     start = "8:30"
     dur = 2.0
