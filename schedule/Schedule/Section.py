@@ -1,5 +1,6 @@
 from .Course import Course
 from .Stream import Stream
+from .Teacher import Teacher
 import re
 
 
@@ -9,6 +10,14 @@ class SectionMeta(type):
     
     def __iter__(self):
         return iter(getattr(self, '_sections', []))
+    
+    # --------------------------------------------------------
+    # reset
+    # --------------------------------------------------------
+    @staticmethod
+    def reset():
+        """Resets the list of sections"""
+        Section._sections.clear()
 
 class Section(metaclass=SectionMeta):
     """
@@ -44,8 +53,8 @@ class Section(metaclass=SectionMeta):
     @staticmethod
     def __validate_hours(hours):
         try: hours = float(hours)
-        except ValueError or TypeError: raise f"{hours}: hours must be a number"
-        if hours <= 0: raise f"{hours}: hours must be > 0"
+        except ValueError or TypeError: raise TypeError(f"{hours}: hours must be a number")
+        if hours <= 0: raise TypeError(f"{hours}: hours must be larger than 0")
         return hours
 
     # ========================================================
@@ -70,7 +79,7 @@ class Section(metaclass=SectionMeta):
 
         if self.blocks:
             self._hours = 0
-            for b in self.blocks:
+            for b in self.blocks.values():
                 self._hours += b.duration
 
     # --------------------------------------------------------
@@ -107,7 +116,7 @@ class Section(metaclass=SectionMeta):
     
     @course.setter
     def course(self, val : Course):
-        if not isinstance(val, Course): raise f"{type(val)}: invalid course - must be a Course object"
+        if not isinstance(val, Course): raise TypeError(f"{type(val)}: invalid course - must be a Course object")
         self._course = val
 
     # --------------------------------------------------------
@@ -119,8 +128,7 @@ class Section(metaclass=SectionMeta):
         return self._num_students
     
     @num_students.setter
-    # left default value even though setter can't be called without argument, since it can act as a hint to users
-    def num_students(self, val : int = 30):
+    def num_students(self, val : int):
         self._num_students = val
     
     # --------------------------------------------------------
@@ -133,6 +141,7 @@ class Section(metaclass=SectionMeta):
         for b in self.blocks.values():
             for l in b.labs():
                 labs.add(l)
+        print(labs)
         return labs
     
     # --------------------------------------------------------
@@ -144,7 +153,7 @@ class Section(metaclass=SectionMeta):
         teachers = set()
         for b in self.blocks.values():
             for t in b.teachers(): teachers.add(t)
-        for t in self._teachers: teachers.add(t)
+        for t in self._teachers.values(): teachers.add(t)
         return teachers
 
     # --------------------------------------------------------
@@ -154,6 +163,16 @@ class Section(metaclass=SectionMeta):
     def streams(self) -> set:
         """ Gets all streams in this section """
         return set(self._streams.values())
+    
+    # --------------------------------------------------------
+    # allocated_hours
+    # --------------------------------------------------------
+    @property
+    def allocated_hours(self) -> float:
+        """
+        Gets the total number of hours that have been allocated
+        """
+        return sum(self.get_teacher_allocation(t) for t in self.teachers)
 
     # ========================================================
     # METHODS
@@ -223,10 +242,11 @@ class Section(metaclass=SectionMeta):
         Assign a teacher to the section
         - Parameter teacher -> The teacher to be assigned
         """
+        if not isinstance(teacher, Teacher): raise TypeError(f"{type(teacher)}: invalid teacher - must be a Teacher object")
         if teacher:
             for b in self.blocks.values():
                 b.assign_teacher(teacher)
-            self.teachers.add(teacher)
+            self._teachers[teacher.id] = teacher
             self._allocation[teacher.id] = self.hours
         return self
     
@@ -235,14 +255,14 @@ class Section(metaclass=SectionMeta):
     # --------------------------------------------------------
     def set_teacher_allocation(self, teacher, hours):
         """
-        Assign number of hours to teacher for this section
+        Assign number of hours to teacher for this section. Set hours to 0 to remove teacher from this section
         - Parameter teacher -> The teacher to allocate hours to
         - Parameter hours -> The number of hours to allocate
         """
         if (hours):
             hours = Section.__validate_hours(hours)
             if not self.has_teacher(teacher): self.assign_teacher(teacher)
-            self._allocation[teacher.id] = hours
+            self._allocation[teacher.id] = float(hours)
         else:
             self.remove_teacher(teacher)
 
@@ -264,15 +284,6 @@ class Section(metaclass=SectionMeta):
         else: return self.hours
     
     # --------------------------------------------------------
-    # allocated_hours
-    # --------------------------------------------------------
-    def allocated_hours(self) -> float:
-        """
-        Gets the total number of hours that have been allocated
-        """
-        return sum(self.get_teacher_allocation(t) for t in self.teachers)
-    
-    # --------------------------------------------------------
     # remove_teacher
     # --------------------------------------------------------
     def remove_teacher(self, teacher):
@@ -280,8 +291,9 @@ class Section(metaclass=SectionMeta):
         Removes teacher from all blocks in this section
         - Parameter teacher -> The teacher to be removed
         """
+        if not isinstance(teacher, Teacher): raise TypeError(f"{type(teacher)}: invalid teacher - must be a Teacher object")
         for b in self.blocks.values(): b.remove_teacher(teacher)
-        if teacher in self.teachers: self.teachers.remove(teacher)
+        if teacher in self.teachers: del self._teachers[teacher.id]
         if teacher.id in self._allocation: del self._allocation[teacher.id]
 
         return self
@@ -302,6 +314,7 @@ class Section(metaclass=SectionMeta):
         Checks if section has teacher
         - Parameter teacher -> The teacher to check
         """
+        if not isinstance(teacher, Teacher): raise TypeError(f"{type(teacher)}: invalid teacher - must be a Teacher object")
         if not teacher: return False
         return len(list(filter(lambda a : a.id == teacher.id, self.teachers))) > 0
     
@@ -314,7 +327,7 @@ class Section(metaclass=SectionMeta):
         - Parameter streams -> The stream(s) to be added. Streams can be added all at once
         """
         for s in streams:
-            if not isinstance(s, Stream): raise f"{s}: invalid stream - must be a Stream object"
+            if not isinstance(s, Stream): raise TypeError(f"{s}: invalid stream - must be a Stream object")
             self._streams[s.id] = (s)
         return self
     
@@ -326,8 +339,8 @@ class Section(metaclass=SectionMeta):
         Remove stream from this section.
         - Parameter stream -> The stream to remove.
         """
-        if not isinstance(stream, Stream): raise f"{stream}: invalid stream - must be a Stream object"
-        if stream.id in self.streams: self.streams.remove(stream)
+        if not isinstance(stream, Stream): raise TypeError(f"{stream}: invalid stream - must be a Stream object")
+        if stream.id in self._streams: del self._streams[stream.id]
         return self
     
     # --------------------------------------------------------
@@ -338,6 +351,7 @@ class Section(metaclass=SectionMeta):
         Check if a section has a stream
         - Parameter stream -> The stream to check
         """
+        if not isinstance(stream, Stream): raise TypeError(f"{stream}: invalid stream - must be a Stream object")
         if not stream: return False
         return len(list(filter(lambda a : a.id == stream.id, self.streams))) > 0
     
@@ -360,7 +374,7 @@ class Section(metaclass=SectionMeta):
         for b in blocks:
             # removed check to avoid circular dependency
             #if not isinstance(b, Block): raise f"{b}: invalid block - must be a Block object"
-            if not hasattr(b, 'id'): raise f"{b}: invalid block - no id found"
+            if not hasattr(b, 'id'): raise TypeError(f"{b}: invalid block - no id found")
             self.blocks[b.id] = b
             b.section = self
         return self
@@ -373,7 +387,7 @@ class Section(metaclass=SectionMeta):
         Remove a block from this section
         - Parameter block -> The block to remove
         """
-        if not hasattr(block, 'id') or not hasattr(block, 'delete'): f"{block}: invalid block - must be a Block object"
+        if not hasattr(block, 'id') or not hasattr(block, 'delete'): raise TypeError(f"{block}: invalid block - must be a Block object")
         if block.id in self.blocks: del self.blocks[block.id]
         block.delete()
         return self
@@ -383,20 +397,12 @@ class Section(metaclass=SectionMeta):
     # --------------------------------------------------------
     def delete(self) -> None:
         """ Delete this object and all its dependants """
-        for b in self.blocks.values():
+        for b in list(self.blocks.values()):
             self.remove_block(b)
         Section._sections.remove(self)
         return self
     
-    # --------------------------------------------------------
-    # block
-    # --------------------------------------------------------
-    def block(self, block_id : int):
-        """
-        Get block by ID.
-        - Parameter block_id -> ID of the block to retrieve.
-        """
-        return self.blocks[block_id]
+    # NOTE: There's another method here called "block" in the Perl version, but from what I can tell it's the same thing as get_block_by_id with a different implementation
     
     # --------------------------------------------------------
     # __str__
@@ -411,17 +417,19 @@ class Section(metaclass=SectionMeta):
     # --------------------------------------------------------
     def is_conflicted(self) -> bool:
         """ Checks if there is a conflict with this section """
-        return len(list(filter(lambda b : hasattr(b, 'is_conflicted') and b.is_conflicted, self.blocks.values())))
+        for b in self.blocks.values():
+            if b.conflicted: return True
+        return False
     
     # --------------------------------------------------------
-    # conflicts
+    # conflicts - seemingly unused and/or abandoned
     # --------------------------------------------------------
-    def conflicts(self) -> list:
+    #def conflicts(self) -> list:
         """ Gets a list of conflicts related to this section """
-        conflicts = []
+        """conflicts = []
         for b in self.blocks.values():
             if hasattr(b, 'conflicts'): conflicts.extend(b.conflicts())
-        return conflicts
+        return conflicts"""
     
     # --------------------------------------------------------
     # get_new_number
@@ -429,6 +437,7 @@ class Section(metaclass=SectionMeta):
     def get_new_number(self) -> int:
         """ Gets the first unused block number """
         number = 1
+        if not self.blocks: return number
         while (self.get_block(number)):
             number += 1
         return number

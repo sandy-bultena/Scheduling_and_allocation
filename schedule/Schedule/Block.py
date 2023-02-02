@@ -442,7 +442,7 @@ class Block(TimeSlot, metaclass=BlockMeta):
 
         text += f"{self.day} {self.start} for {self.duration} hours, in "
         # not intended result, but stops it from crashing
-        text += ", ".join(str(l) for l in self._labs.values())
+        text += ", ".join(str(l) for l in self.labs())
 
         return text
 
