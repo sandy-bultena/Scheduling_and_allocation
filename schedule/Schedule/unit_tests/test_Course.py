@@ -145,13 +145,43 @@ def test_get_section_by_id_bad():
     assert course.get_section_by_id(bad_id) is None
 
 
-def test_get_section_by_name():
-    assert False
+def test_get_section_by_name_good():
+    """Verifies that get_section_by_name() returns a list with the correct section when given a valid name as input."""
+    course = Course(1)
+    name = "test"
+    section = Section("", 1.5, name)
+    course.add_section(section)
+    sections = course.get_section_by_name(name)
+    assert len(sections) == 1 and sections[0] == section
 
 
-def test_remove_section():
-    assert False
+def test_get_section_by_name_bad():
+    """Verifies that get_section_by_name() returns an empty list when given an invalid section name."""
+    course = Course(1)
+    section = Section("", 1.5, "test")
+    bad_name = "foo"
+    course.add_section(section)
+    sections = course.get_section_by_name(bad_name)
+    assert len(sections) == 0
 
+
+def test_remove_section_good():
+    """Verifies that remove_section() works as intended when asked to remove a legitimate Section."""
+    course = Course(1)
+    section = Section()
+    course.add_section(section)
+    course.remove_section(section)
+    assert len(course.sections()) == 0
+
+
+def test_remove_section_no_crash():
+    """Verifies that remove_section() will not crash the program if asked to remove a Section that doesn't exist."""
+    course = Course(1)
+    section_1 = Section("420")
+    course.add_section(section_1)
+    bad_section = Section("421")
+    course.remove_section(bad_section)
+    assert len(course.sections()) == 1 and section_1 in course.sections()
 
 def test_delete():
     assert False

@@ -270,13 +270,15 @@ class Course(metaclass=CourseMeta):
         """Removes the passed Section from this Course, if it exists.
         
         Returns the modified Course object."""
-        # Verify that the section is indeed a Section object. NOTE: the Section import has been taken out to avoid a circular dependency.
+        # Verify that the section is indeed a Section object. NOTE: the Section import has been taken out to avoid a
+        # circular dependency. #TODO: Reinstate the right validation. Anything can get in now.
         if not isinstance(section, object):
             raise TypeError(f"<{section}>: invalid section - must be a Section object")
 
         if hasattr(self, '_sections') and section.number in getattr(self, '_sections', {}):
             del self._sections[section.number]
 
+        # TODO: Decide whether this should be in the if statement. If it's invalid, we may not want to delete it.
         section.delete()
 
         return self
