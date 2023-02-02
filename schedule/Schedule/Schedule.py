@@ -410,7 +410,8 @@ class Schedule:
     def remove_teacher(teacher : Teacher):
         """Removes Teacher from schedule"""
         if not isinstance(teacher, Teacher): raise TypeError(f"{teacher} must be an object of type Teacher")
-        # potentially loop over Blocks and remove Teacher from all
+        # go through all blocks, and remove teacher from each
+        for b in Block: b.remove_teacher(teacher)
         Teacher.remove(teacher)
 
     # --------------------------------------------------------
@@ -420,7 +421,8 @@ class Schedule:
     def remove_lab(lab : Lab):
         """Removes Lab from schedule"""
         if not isinstance(lab, Lab): raise TypeError(f"{lab} must be an object of type Lab")
-        # potentially loop over Blocks and remove Lab from all
+        # go through all blocks, and remove lab from each
+        for b in Block: b.remove_lab(lab)
         Lab.remove(lab)
 
     # --------------------------------------------------------
@@ -430,7 +432,8 @@ class Schedule:
     def remove_stream(stream : Stream):
         """Removes Stream from schedule"""
         if not isinstance(stream, Stream): raise TypeError(f"{stream} must be an object of type Stream")
-        # potentially loop over Sections and remove Stream from all
+        # go through all blocks, and remove teacher from each
+        for s in Section: s.remove_stream(stream)
         Stream.remove(stream)
 
     # --------------------------------------------------------
