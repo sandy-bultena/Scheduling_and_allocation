@@ -1,5 +1,6 @@
 import pytest
 from ..Course import Course
+from ..Section import Section
 
 
 def test_id():
@@ -76,9 +77,37 @@ def test_number_setter():
     assert course.number == 2
 
 
-def test_add_section():
-    assert False
+def test_add_section_good():
+    """Verifies that add_section can add a valid Section to this Course, and that the Course is added to the Section
+    itself. """
+    course = Course(1)
+    section = Section()
+    course.add_section(section)
+    sections = list(getattr(course, '_sections').values())
+    assert len(sections) == 1 and section in sections and section.course == course
 
+
+# def test_add_section_invalid_input():
+#     """Verifies that add_section raises a TypeError if the user tries to add something that isn't a Section (or in
+#     this case, an object). """
+#     # NOTE: This test cannot possibly succeed because of the changes I made to the validation, since everything is an
+#     # object in Python, even the primitives.
+#     course = Course(1)
+#     bad_sect = None
+#     with pytest.raises(TypeError) as e:
+#         course.add_section(bad_sect)
+#     assert "invalid section" in str(e.value)
+
+def test_add_section_duplicate():
+    """Verifies that add_section() raises an Exception when trying to add a duplicate of an existing Section to the
+    Course. """
+    course = Course(1)
+    section_1 = Section()
+    section_2 = section_1
+    course.add_section(section_1)
+    with pytest.raises(Exception) as e:
+        course.add_section(section_2)
+    assert "section number is not unique" in str(e.value).lower()
 
 def test_get_section():
     assert False

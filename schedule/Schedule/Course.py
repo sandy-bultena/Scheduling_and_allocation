@@ -196,7 +196,8 @@ class Course(metaclass=CourseMeta):
         # the Course, one at a time. However, it is never actually used that way. I am preserving the original
         # structure just in case.
         for section in sections:
-            # Verify that this is actually a Section object. NOTE: the Section import has been taken out to avoid a circular dependency.
+            # Verify that this is actually a Section object. NOTE: the Section import has been taken out to avoid a
+            # circular dependency. TODO: Fix validation; this will let anything in now.
             if not isinstance(section, object):
                 raise TypeError(f"<{section}>: invalid section - must be a Section object.")
 
