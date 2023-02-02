@@ -116,7 +116,7 @@ class Course(metaclass=CourseMeta):
         
         Returns the modified Course object."""
         if not hasattr(self, '_sections'):
-            self._sections = {}
+            self._sections: dict[str, Section] = {}
         
         # In Perl, this function is structured in a way that allows it to take multiple sections and add them all to
         # the Course, one at a time. However, it is never actually used that way. I am preserving the original
@@ -145,6 +145,47 @@ class Course(metaclass=CourseMeta):
         
         return self
 
+    # =================================================================
+    # get_section
+    # =================================================================
+    def get_section(self, number):
+        """Gets the Section from this Course that has the passed section number, if it exists. Otherwise,
+        returns None. """
+        if hasattr(self, '_sections') and number in self._sections.keys():
+            return self._sections[number]
+        return None
 
+    # =================================================================
+    # get_section_by_id
+    # =================================================================
+    def get_section_by_id(self, id):
+        """Gets the Section from this Course that matches the passed section ID, if it exists.
+        
+        Returns the Section if found, or None otherwise."""
+        if hasattr(self, '_sections'):
+            sections = self.sections()
+            for i in sections:
+                if i.id == id:
+                    return i
+        
+        return None
+    
+    # =================================================================
+    # get_section_by_name
+    # =================================================================
+    def get_section_by_name(self, name: str):
+        """Gets the Section from this Course that has the passed section name, if it exists.
+        
+        Returns the Section if found, or None otherwise."""
+        # NOTE: This method is coded to return an array in the Perl code. However, the one place where this function
+        # is being called--AssignToResource.pm--only cares about the first element of the returned array.
+        # I'm keeping the structure as-is, but this will probably need revision.
+        to_return = []
+        if name:
+            sections = self.sections()
+            for i in sections:
+                if i.name == name:
+                    to_return.append(i)
+        return to_return
 
 
