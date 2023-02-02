@@ -286,7 +286,7 @@ class Course(metaclass=CourseMeta):
         text += '=' * 50 + "\n"
 
         # Sections
-        for s in self.sections().sort(key=lambda x: x.number):
+        for s in sorted(self.sections(), key=lambda x: x.number):
             text += f"\n{s}\n"
             text += "-" * 50 + "\n"
 
@@ -309,3 +309,42 @@ class Course(metaclass=CourseMeta):
 
     def __str__(self) -> str:
             return f"{self.number}: {self.name}"
+
+    # =================================================================
+    # teachers
+    # =================================================================
+    def teachers(self):
+        """Returns a list of the Teachers assigned to all Sections of this Course."""
+        teachers = {}
+
+        for section in self.sections():
+            for teacher in section.teachers():
+                teachers[teacher] = teacher
+        
+        return list(teachers.values())
+
+    # =================================================================
+    # has teacher
+    # =================================================================
+    def has_teacher(self, teacher):
+        """Returns true if the passed Teacher is assigned to this Course."""
+        if not teacher: return False
+
+        for t in self.teachers():
+            if t.id == teacher.id: return True
+        return False
+
+    # =================================================================
+    # streams
+    # =================================================================
+    def streams(self):
+        """Returns a list of Streams assigned to all Sections of this Course."""
+        streams = {}
+
+        for section in self.sections():
+            for stream in section.streams():
+                streams[stream] = stream
+        
+        return list(streams.values())
+
+        
