@@ -676,15 +676,15 @@ def test_print_description_2():
     assert f"{num} : {day}, {start} {dur:.1f} hour(s)" in desc
 
 
-def test_conflicts():
-    """Verifies that conflicts() returns an empty list when no Conflicts are assigned to this Block."""
-    day = "mon"
-    start = "8:30"
-    dur = 2
-    num = 1
-    block = Block(day, start, dur, num)
-    conflicts = block.conflicts()
-    assert len(conflicts) == 0
+# def test_conflicts():
+#     """Verifies that conflicts() returns an empty list when no Conflicts are assigned to this Block."""
+#     day = "mon"
+#     start = "8:30"
+#     dur = 2
+#     num = 1
+#     block = Block(day, start, dur, num)
+#     conflicts = block.conflicts()
+#     assert len(conflicts) == 0
 
 
 def test_refresh_number():

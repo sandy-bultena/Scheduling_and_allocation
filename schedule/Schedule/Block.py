@@ -456,12 +456,14 @@ class Block(TimeSlot, metaclass=BlockMeta):
     # =================================================================
     # conflicts
     # =================================================================
-    def conflicts(self):
-        """Returns a list of the conflicts related to this Block."""
-        if not hasattr(self, '_conflicts'):
-            self._conflicts = []
-
-        return self._conflicts
+    # def conflicts(self):
+    #     """Returns a list of the conflicts related to this Block."""
+    #     # NOTE: This function appears to be unfinished. There is no way to actually assign anything to Block's
+    #     # -conflicts attributes in the original Perl code.
+    #     if not hasattr(self, '_conflicts'):
+    #         self._conflicts = []
+    #
+    #     return self._conflicts
 
     # ===================================
     # Refresh Number
