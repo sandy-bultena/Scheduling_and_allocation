@@ -108,7 +108,7 @@ class Course(metaclass=CourseMeta):
     # -------------------------------------------------------------------
     # new
     # --------------------------------------------------------------------
-    def __init__(self, number, name: str = "", semester: str = "", **kwargs):
+    def __init__(self, number, name: str = "", semester: str = ""):
         # self.name = "C"  # temp assignment to avoid crashes in Block __str__
         Course._max_id += 1
         self.__id = Course._max_id
@@ -165,7 +165,7 @@ class Course(metaclass=CourseMeta):
     @semester.setter
     def semester(self, semester: str):
         semester = semester.lower()
-        if not re.match("^(summer|winter|fall)"):
+        if not re.match("^(summer|winter|fall)", semester):
             warn(f"invalid semester for course; {semester}", Warning, stacklevel=2)
             semester = ""
         self.__semester = semester
