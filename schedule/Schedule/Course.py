@@ -1,6 +1,6 @@
 import re
 from warnings import warn
-from Section import Section
+# from Section import Section
 from Stream import Stream
 from Teacher import Teacher
 from Lab import Lab
@@ -28,6 +28,16 @@ class CourseMeta(type):
 
     def __iter__(self):
         return iter(getattr(self, '_instances', {}))
+
+    # =================================================================
+    # add
+    # =================================================================
+    def add(self, course):
+        
+        if not isinstance(course, Course):
+            raise TypeError(f"<{course}>: invalid course - must be a Course object")
+        self._instances[course.id] = course
+
 
 
 class Course(metaclass=CourseMeta):
@@ -114,19 +124,19 @@ class Course(metaclass=CourseMeta):
     # =================================================================
     # add_ section
     # =================================================================
-    def add_section(self, *sections: Section):
+    def add_section(self, *sections):
         """Assign a Section to this Course.
         
         Returns the modified Course object."""
         if not hasattr(self, '_sections'):
-            self._sections: dict[str, Section] = {}
+            self._sections = {}
 
         # In Perl, this function is structured in a way that allows it to take multiple sections and add them all to
         # the Course, one at a time. However, it is never actually used that way. I am preserving the original
         # structure just in case.
         for section in sections:
-            # Verify that this is actually a Section object.
-            if not isinstance(section, Section):
+            # Verify that this is actually a Section object. NOTE: the Section import has been taken out to avoid a circular dependency.
+            if not isinstance(section, object):
                 raise TypeError(f"<{section}>: invalid section - must be a Section object.")
 
             # -------------------------------------------------------
@@ -194,12 +204,12 @@ class Course(metaclass=CourseMeta):
     # =================================================================
     # remove_section
     # =================================================================
-    def remove_section(self, section: Section):
+    def remove_section(self, section):
         """Removes the passed Section from this Course, if it exists.
         
         Returns the modified Course object."""
-        # Verify that the section is indeed a Section object.
-        if not isinstance(section, Section):
+        # Verify that the section is indeed a Section object. NOTE: the Section import has been taken out to avoid a circular dependency.
+        if not isinstance(section, object):
             raise TypeError(f"<{section}>: invalid section - must be a Section object")
 
         if hasattr(self, '_sections') and section.number in getattr(self, '_sections', {}):
@@ -331,10 +341,12 @@ class Course(metaclass=CourseMeta):
     # =================================================================
     def has_teacher(self, teacher: Teacher):
         """Returns true if the passed Teacher is assigned to this Course."""
-        if not teacher: return False
+        if not teacher:
+            return False
 
         for t in self.teachers():
-            if t.id == teacher.id: return True
+            if t.id == teacher.id:
+                return True
         return False
 
     # =================================================================
@@ -355,10 +367,12 @@ class Course(metaclass=CourseMeta):
     # =================================================================
     def has_stream(self, stream):
         """Returns true if this Course has the specified Stream."""
-        if not stream: return False
+        if not stream:
+            return False
 
         for s in self.streams():
-            if s.id == stream.id: return True
+            if s.id == stream.id:
+                return True
 
         return False
 
