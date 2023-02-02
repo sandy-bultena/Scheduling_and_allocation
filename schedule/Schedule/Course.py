@@ -33,11 +33,72 @@ class CourseMeta(type):
     # add
     # =================================================================
     def add(self, course):
+        """Adds a new Course to the Courses object.
         
+        Returns the modified Courses object."""
         if not isinstance(course, Course):
             raise TypeError(f"<{course}>: invalid course - must be a Course object")
         self._instances[course.id] = course
 
+        return self
+
+    # =================================================================
+    # remove course
+    # =================================================================
+    def remove(self, course):
+        """Removes the passed Course from the Courses object. Prints remaining courses to the console.
+        
+        Returns the modified Courses object."""
+        if not isinstance(course, Course):
+            raise TypeError(f"<{course}>: invalid course - must be a Course object")
+        if course.id in self._instances:
+            del self._instances[course.id]
+        
+        course.delete()
+        del course
+
+        for cour in self._instances.values():
+            print(f"{cour.number}\t")
+        print("\n-------\n")
+
+        return self
+
+    # =================================================================
+    # get
+    # =================================================================
+    def get(self, c_id):
+        """Returns the Course object with the matching ID."""
+        return self._instances.get(c_id)
+
+    # =================================================================
+    # get_by_number
+    # =================================================================
+    def get_by_number(self, number):
+        """Return the Course which matches this Course number, if it exists."""
+        if not number: return
+
+        for course in self._instances.values():
+            if course.number == number: return course
+        
+        return None
+
+    # =================================================================
+    # list
+    # =================================================================
+    def list(self):
+        """Returns reference to the array of Course objects."""
+        return list(self._instances.values())
+
+    # =================================================================
+    # courses list for allocation
+    # =================================================================
+    def allocation_list(self):
+        """Returns a sorted list of the Courses that need allocation."""
+        courses = list(filter(lambda x: x.needs_allocation, self.list()))
+        courses = sorted(courses, key=lambda c: c.number)
+        return courses
+
+        
 
 
 class Course(metaclass=CourseMeta):
@@ -48,7 +109,7 @@ class Course(metaclass=CourseMeta):
     # new
     # --------------------------------------------------------------------
     def __init__(self, number, name: str = "", semester: str = "", **kwargs):
-        self.name = "C"  # temp assignment to avoid crashes in Block __str__
+        # self.name = "C"  # temp assignment to avoid crashes in Block __str__
         Course._max_id += 1
         self.__id = Course._max_id
         self.number = number
