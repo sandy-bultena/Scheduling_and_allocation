@@ -224,4 +224,88 @@ class Course(metaclass=CourseMeta):
         """Returns a list of all the Sections assigned to this Course."""
         return list(getattr(self, '_sections', {}).values())
 
+    # =================================================================
+    # number of sections
+    # =================================================================
+    def number_of_sections(self):
+        """Returns the number of Sections assigned to this Course."""
+        sections = self.sections()
+        return len(sections)
+
+    # =================================================================
+    # sections for teacher
+    # =================================================================
+    def sections_for_teacher(self, teacher):
+        """Returns a list of the Sections assigned to this course, with this Teacher."""
+        sections = []
+
+        for section in self.sections():
+            for teacher_id in section.teachers():
+                if teacher.id == teacher_id:
+                    sections.append(section)
+        
+        return sections
     
+    # =================================================================
+    # max_section_number
+    # =================================================================
+    def max_section_number(self):
+        """Returns the maximum Section number from the Sections assigned to this Course."""
+        sections = self.sections().sort(key=lambda s: s.number)
+        return sections[-1].number if len(sections) > 0 else 0
+
+    # =================================================================
+    # blocks
+    # =================================================================
+    def blocks(self):
+        """Returns a list of the Blocks assigned to this Course."""
+        blocks = []
+
+        for section in self.sections():
+            blocks.append(section.blocks)
+        
+        return blocks
+
+    # =================================================================
+    # section
+    # =================================================================
+    def section(self, section_number):
+        """Returns the Section associated with this Section number."""
+        if hasattr(self, '_sections'):
+            return self._sections[section_number]
+
+    # =================================================================
+    # print_description
+    # =================================================================
+    def print_description(self):
+        """Returns a text string that describes the Course, its Sections, its Blocks, its Teachers, and its Labs."""
+        text = ''
+
+        # Header
+        text += "\n\n"
+        text += '=' * 50 + "\n"
+
+        # Sections
+        for s in self.sections().sort(key=lambda x: x.number):
+            text += f"\n{s}\n"
+            text += "-" * 50 + "\n"
+
+            # Blocks
+            for b in s.blocks.sort(key=lambda x: x.day_number or x.start_number):
+                text += f"{b.day} {b.start}, {b.duration} hours\n"
+                text += "\tlabs: " + ", ".join(b.labs()) + "\n"
+                text += "\tteachers: "
+                text += ", ".join(b.teachers())
+                text += "\n"
+        
+        return text
+    
+    # =================================================================
+    # print_description2
+    # =================================================================
+    def print_description2(self):
+        """Returns a brief string containing the Course's number and name, in the format 'Number: Name'."""
+        return self.__str__()
+
+    def __str__(self) -> str:
+            return f"{self.number}: {self.name}"
