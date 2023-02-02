@@ -1,5 +1,6 @@
 import re
 from warnings import warn
+from Section import Section
 
 
 # SYNOPSIS
@@ -95,4 +96,55 @@ class Course(metaclass=CourseMeta):
             semester = ""
         self.__semester = semester
     
-    
+    # =================================================================
+    # number
+    # =================================================================
+    @property
+    def number(self):
+        """Gets and sets the Course number."""
+        return self.__number
+
+    @number.setter
+    def number(self, new_num):
+        self.__number = new_num
+
+    # =================================================================
+    # add_ section
+    # =================================================================
+    def add_section(self, *sections: Section):
+        """Assign a Section to this Course.
+        
+        Returns the modified Course object."""
+        if not hasattr(self, '_sections'):
+            self._sections = {}
+        
+        # In Perl, this function is structured in a way that allows it to take multiple sections and add them all to
+        # the Course, one at a time. However, it is never actually used that way. I am preserving the original
+        # structure just in case.
+        for section in sections:
+            # Verify that this is actually a Section object.
+            if not isinstance(section, Section):
+                raise TypeError(f"<{section}>: invalid section - must be a Section object.")
+            
+            # -------------------------------------------------------
+            # Section numbers must be unique for this Course.
+            # -------------------------------------------------------
+            duplicate = False
+            for sec in self._sections.values():
+                if section.number == sec.number:
+                    duplicate = True
+                    break
+            if duplicate:
+                raise Exception(f"<{section.number}>: section number is not unique for this Course.")
+            
+            # ----------------------------------------------------------
+            # save section for this course, save course for this section
+            # ----------------------------------------------------------
+            self._sections[section.number] = section
+            section.course = self
+        
+        return self
+
+
+
+
