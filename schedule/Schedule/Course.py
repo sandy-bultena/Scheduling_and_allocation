@@ -176,7 +176,7 @@ class Course(metaclass=CourseMeta):
     def get_section_by_name(self, name: str):
         """Gets the Section from this Course that has the passed section name, if it exists.
         
-        Returns the Section if found, or None otherwise."""
+        Returns a list containing the Section if found, or an empty list otherwise."""
         # NOTE: This method is coded to return an array in the Perl code. However, the one place where this function
         # is being called--AssignToResource.pm--only cares about the first element of the returned array.
         # I'm keeping the structure as-is, but this will probably need revision.
@@ -188,4 +188,40 @@ class Course(metaclass=CourseMeta):
                     to_return.append(i)
         return to_return
 
+    # =================================================================
+    # remove_section
+    # =================================================================
+    def remove_section(self, section: Section):
+        """Removes the passed Section from this Course, if it exists.
+        
+        Returns the modified Course object."""
+        # Verify that the section is indeed a Section object.
+        if not isinstance(section, Section):
+            raise TypeError(f"<{section}>: invalid section - must be a Section object")
+        
+        if hasattr(self, '_sections') and section.number in getattr(self, '_sections', {}):
+            del self._sections[section.number]
+        
+        section.delete()
+        
+        return self
 
+    # =================================================================
+    # delete
+    # =================================================================
+    def delete(self):
+        """Delete this object (and all its dependants).
+        
+        Returns None."""
+        for section in self.sections():
+            self.remove_section(section)
+        # TODO: Remove this Course from the CourseMeta's instances.
+
+    # =================================================================
+    # sections
+    # =================================================================
+    def sections(self):
+        """Returns a list of all the Sections assigned to this Course."""
+        return list(getattr(self, '_sections', {}).values())
+
+    
