@@ -109,12 +109,40 @@ def test_add_section_duplicate():
         course.add_section(section_2)
     assert "section number is not unique" in str(e.value).lower()
 
-def test_get_section():
-    assert False
+
+def test_get_section_good():
+    """Verifies that get_section() returns an existing section from this Course."""
+    course = Course(1)
+    num = "420.AO"
+    sect = Section(num)
+    course.add_section(sect)
+    assert course.get_section(num) == sect
 
 
-def test_get_section_by_id():
-    assert False
+def test_get_section_bad():
+    """Verifies that get_section() doesn't crash the program when trying to get a Section that doesn't exist."""
+    course = Course(1)
+    bad_num = "420"
+    assert course.get_section(bad_num) is None
+
+
+def test_get_section_by_id_good():
+    """Verifies that get_section_by_id() works when receiving a valid Section ID as input."""
+    course = Course(1)
+    section = Section()
+    sect_id = Section._max_id
+    course.add_section(section)
+    assert course.get_section_by_id(sect_id) == section
+
+
+def test_get_section_by_id_bad():
+    """Verifies that get_section_by_id() won't crash the program when given a bad ID as input, returning None
+    instead. """
+    course = Course(1)
+    section = Section()
+    bad_id = 999
+    course.add_section(section)
+    assert course.get_section_by_id(bad_id) is None
 
 
 def test_get_section_by_name():
