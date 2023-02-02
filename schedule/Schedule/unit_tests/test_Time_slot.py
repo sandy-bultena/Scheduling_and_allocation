@@ -1,14 +1,10 @@
 from ..Time_slot import TimeSlot
 
 
-# def test_id():
-#     slot = TimeSlot()
-#     assert slot.id == 1
-
-
-def test_id_incrementation():
+def test_id():
     """Verifies that the ID assigned to a TimeSlot increments automatically."""
-    # NOTE: Currently fails because of the test above.
+    # NOTE: Resetting the TimeSlot max_id to 0 to prevent shenanigans from simultaneously running tests.
+    TimeSlot._max_id = 0
     slots = []
     for x in range(5):
         slots.append(TimeSlot())
