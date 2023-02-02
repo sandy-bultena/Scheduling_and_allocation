@@ -429,6 +429,9 @@ class Schedule:
     @staticmethod
     def calculate_conflicts() -> list[Conflict]:
         """Reviews the schedule, and creates a list of Conflict objects as necessary"""
+        def __new_conflict(type, blocks):
+            Conflict(type, blocks)
+            for b in blocks: b.conflicted = type
         # create list of all blocks -> no longer needed
         # reset the conflict list
         Conflict.reset()
@@ -458,7 +461,7 @@ class Schedule:
                         b.conflicted = bb.conflicted = Conflict.TIME_STREAM
                     
                     # create a conflict object and mark the blocks as conflicting
-                    if is_conflict: Schedule.__new_conflict(Conflict.TIME, blocks)
+                    if is_conflict: __new_conflict(Conflict.TIME, blocks)
 
         # ---------------------------------------------------------
         # check for lunch break conflicts by teacher
@@ -487,7 +490,7 @@ class Schedule:
                     if has_lunch: break
                 
                 # if no lunch, create a conflict obj and mark blocks as conflicted
-                if not has_lunch: Schedule.__new_conflict(Conflict.LUNCH, blocks)
+                if not has_lunch: __new_conflict(Conflict.LUNCH, blocks)
 
         # ---------------------------------------------------------
         # check for 4 day schedule or 32 hrs max
@@ -502,7 +505,7 @@ class Schedule:
                 blocks_by_day[b.day_number].append(b)
 
             # if < 4 days, create a conflict and mark the blocks as conflicted
-            if len(blocks_by_day.keys()) < 4: Schedule.__new_conflict(Conflict.MINIMUM_DAYS, blocks)
+            if len(blocks_by_day.keys()) < 4: __new_conflict(Conflict.MINIMUM_DAYS, blocks)
             
             availability = 0
             for day in blocks_by_day.keys():
@@ -512,17 +515,9 @@ class Schedule:
                 availability += day_end - day_start - 0.5
             
             # if over limit, create conflict
-            if availability > 32: Schedule.__new_conflict(Conflict.AVAILABILITY, blocks)
+            if availability > 32: __new_conflict(Conflict.AVAILABILITY, blocks)
         
         # Perl ver. returns self here
-
-    # --------------------------------------------------------
-    # __new_conflict - new to Python ver
-    # --------------------------------------------------------
-    @staticmethod
-    def __new_conflict(type, blocks):
-        Conflict(type, blocks)
-        for b in blocks: b.conflicted = type
 
     # --------------------------------------------------------
     # _calculate_conflicts
@@ -599,10 +594,77 @@ class Schedule:
         Prints a schedule for a specific teacher
         Parameter teacher -> The teacher who's schedule to print
         """
+        from functools import cmp_to_key
+        def __sort_blocks(a, b):
+            if a.number < b.number: return 1
+            elif a.number > b.number: return -1
+            elif a.start_number < b.start_number: return 1
+            elif a.start_number > b.start_number: return -1
+            else: return 0
+
         if not isinstance(teacher, Teacher): raise TypeError(f"{teacher} must be an object of type Teacher")
         head = "="*50
         text = f"\n\n{head}\n{teacher}\n{head}\n"
-        # NOTE: INCOMPLETE
+        for c in sorted(Schedule.courses_for_teacher(teacher), key=lambda a : a.number.lower()):
+            text += f"\n{c.number} {c.name}\n"
+            text += "-"*80
+
+            # sections
+            for s in sorted(c.sections, lambda a : a.number):
+                if s.has_teacher(teacher):
+                    text += f"\n{s}\n\t" + "- "*25 + "\n"
+
+                    # blocks
+                    for b in sorted(s.blocks, key=cmp_to_key(__sort_blocks)):
+                        if b.has_teacher(teacher):
+                            text += f"\t{b.day} {b.start} {b.duration} hours\n\t\tlabs:"
+                            text += ", ".join(b.labs) + "\n"
+        return text
+
+    # --------------------------------------------------------
+    # clear_all_from_course
+    # --------------------------------------------------------
+    @staticmethod
+    def clear_all_from_course(course : Course):
+        """
+        Removes all teachers, labs, and streams from course
+        - Parameter course -> The course to be cleared.
+        """
+        if not course: return
+        if not isinstance(course, Course): raise TypeError(f"{course} must be an object of type Course")
+        for s in course.sections: Schedule.clear_all_from_section(s)
+
+    # --------------------------------------------------------
+    # clear_all_from_section
+    # --------------------------------------------------------
+    @staticmethod
+    def clear_all_from_section(section : Section):
+        """
+        Removes all teachers, labs, and streams from section
+        - Parameter section -> The section to be cleared.
+        """
+        if not section: return
+        if not isinstance(section, Section): raise TypeError(f"{section} must be an object of type Section")
+        # done manually in Perl ver
+        section.remove_all_teachers()
+        section.remove_all_streams()
+        labs = Lab.list()   # why does this use the global list of Labs?
+        for l in labs: section.remove_lab(l)
+
+    # --------------------------------------------------------
+    # clear_all_from_block
+    # --------------------------------------------------------
+    @staticmethod
+    def clear_all_from_block(block : Block):
+        """
+        Removes all teachers, labs, and streams from block
+        - Parameter block -> The block to be cleared.
+        """
+        if not block: return
+        if not isinstance(block, Block): raise TypeError(f"{block} must be an object of type Block")
+        # done manually in Perl ver
+        block.remove_all_teachers()
+        block.remove_all_labs()
 
 
 # NOTE: As Course isn't yet implemented, the output YAML will be different from the input
