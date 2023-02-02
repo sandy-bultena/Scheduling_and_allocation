@@ -1,7 +1,9 @@
 import re
 from warnings import warn
 from Section import Section
+from Stream import Stream
 from Teacher import Teacher
+from Lab import Lab
 
 
 # SYNOPSIS
@@ -327,7 +329,7 @@ class Course(metaclass=CourseMeta):
     # =================================================================
     # has teacher
     # =================================================================
-    def has_teacher(self, teacher):
+    def has_teacher(self, teacher: Teacher):
         """Returns true if the passed Teacher is assigned to this Course."""
         if not teacher: return False
 
@@ -376,7 +378,7 @@ class Course(metaclass=CourseMeta):
     # =================================================================
     # assign_lab
     # =================================================================
-    def assign_lab(self, lab):
+    def assign_lab(self, lab: Lab):
         """Assigns a Lab to all Sections of this Course.
         
         Returns the modified Course object."""
@@ -389,7 +391,7 @@ class Course(metaclass=CourseMeta):
     # =================================================================
     # assign_stream
     # =================================================================
-    def assign_stream(self, stream):
+    def assign_stream(self, stream: Stream):
         """Assigns a Stream to all Sections of this Course.
         
         Returns the modified Course object."""
@@ -399,4 +401,26 @@ class Course(metaclass=CourseMeta):
 
         return self
 
+    # =================================================================
+    # remove_teacher
+    # =================================================================
+    def remove_teacher(self, teacher: Teacher):
+        """Removes the passed Teacher from all Blocks in this Course.
+        
+        Returns the modified Course object."""
+        for section in self.sections():
+            section.remove_teacher(teacher)
+        
+        return self
 
+    # =================================================================
+    # remove_all_teachers
+    # =================================================================
+    def remove_all_teachers(self):
+        """Removes all Teachers from all Blocks in this Course.
+        
+        Returns the modified Course object."""
+        for teacher in self.teachers():
+            self.remove_teacher(teacher)
+        
+        return self
