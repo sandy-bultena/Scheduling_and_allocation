@@ -219,25 +219,19 @@ class Schedule:
 
     @staticmethod
     def __create_course(course : dict) -> Course:
-        # uncomment those lines if Course is implemented w/ a list in metaclass
-        #courses = list(filter(lambda i : i.id == course.get('id', -1), Course))
-        #if len(courses) == 0:
-
         # uncomment these lines if Course is implemented w/ a dict in metaclass (& delete bottom else)
-        #if Course.get(course.get('id', -1)): return Course.get(course.get('id', -1))
-        #else:
-        if True:
+        if Course.get(course.get('id', -1)): return Course.get(course.get('id', -1))
+        else:
             c = Course(number = course.get('number', ''), name = course.get('name', ''), semester = course.get('semester', ''))
             # uncomment following 3 lines when Course is implemented
-            #c._allocation = course.get('allocation', c.allocation)
-            #old_id = c.id
-            #c._Course__id = course.get('id', c.id)
-            #del Course._instances[old_id]
-            #Course._instances[c.id] = c
-            #for k in course.get('sections', {}).keys(): c.assign_section(Schedule.__create_section(course.get('sections', {})[k]))
+            c._allocation = course.get('allocation', c.allocation)
+            old_id = c.id
+            c._Course__id = course.get('id', c.id)
+            del Course._instances[old_id]
+            Course._instances[c.id] = c
+            for k in course.get('sections', {}).keys(): c.assign_section(Schedule.__create_section(course.get('sections', {})[k]))
             return c
-        else: return courses[0]
-
+        
     @staticmethod
     def __create_stream(stream : dict) -> Stream:
         if Stream.get(stream.get('id', -1)): return Stream.get(stream.get('id', -1))
@@ -316,7 +310,7 @@ class Schedule:
         """
         if not isinstance(teacher, Teacher): raise TypeError(f"{teacher} must be an object of type Teacher")
         outp = []
-        for c in Course:
+        for c in Course.list():
             if c.has_teacher(teacher): outp.add(c)
         return outp
 
@@ -477,7 +471,7 @@ class Schedule:
         start_lunch = 11
         end_lunch = 14
         lunch_periods = (i + .5 for i in range(start_lunch, end_lunch -1))
-        for t in Teacher:
+        for t in Teacher.list():
             # filter to only relevant blocks (that can possibly conflict)
             relevant_blocks = list(
                 filter(lambda b : b.start_number < end_lunch and b.start_number + b.duration > start_lunch, Schedule.blocks_for_teacher(t)))
@@ -503,7 +497,7 @@ class Schedule:
 
         # ---------------------------------------------------------
         # check for 4 day schedule or 32 hrs max
-        for t in Teacher:
+        for t in Teacher.list():
             if t.release: continue
 
             # collect blocks by day

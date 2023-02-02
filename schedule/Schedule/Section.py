@@ -315,7 +315,7 @@ class Section(metaclass=SectionMeta):
         """
         for s in streams:
             if not isinstance(s, Stream): raise f"{s}: invalid stream - must be a Stream object"
-            self.streams.add(s)
+            self._streams[s.id] = (s)
         return self
     
     # --------------------------------------------------------

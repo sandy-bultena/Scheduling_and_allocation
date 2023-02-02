@@ -1,11 +1,15 @@
-import sys
-
+from ..PerlLib import Colour
 # kind of a hack-y way to import Colour, but forces PerlLib to be recognized as a valid import source
-try: from ..PerlLib import Colour
+# if the top line stops working again, use this
+"""import sys
+try:
+    from ..PerlLib import Colour
+    print("W")
 except ImportError or ModuleNotFoundError:
         sys.path.insert(0, "\\".join(sys.path[0].split("\\")[:-1]) + "\\PerlLib")
         import Colour
-
+        print("L")
+"""
 class ConflictMeta(type):
     """ Metaclass for Conflict, making it iterable """
     _conflicts = []
