@@ -373,5 +373,30 @@ class Course(metaclass=CourseMeta):
         
         return self
     
-    
+    # =================================================================
+    # assign_lab
+    # =================================================================
+    def assign_lab(self, lab):
+        """Assigns a Lab to all Sections of this Course.
+        
+        Returns the modified Course object."""
+        if lab:
+            for section in self.sections():
+                section.assign_lab(lab)
+        
+        return self
+
+    # =================================================================
+    # assign_stream
+    # =================================================================
+    def assign_stream(self, stream):
+        """Assigns a Stream to all Sections of this Course.
+        
+        Returns the modified Course object."""
+        if stream:
+            for section in self.sections():
+                section.assign_stream(stream)
+
+        return self
+
 
