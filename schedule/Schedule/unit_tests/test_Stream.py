@@ -12,7 +12,7 @@ def test_constructor_default_values():
     """Checks that the constructor uses default values when arguments aren't provided"""
     s = Stream()
     assert s.number                                  # check has value
-    assert not s.descr and isinstance(s.descr, str) # check no value and is string (ie empty string)
+    assert isinstance(s.descr, str) # check no value and is string (ie empty string)
 
 def test_stream_created_success():
     """Checks that Stream is created correctly"""

@@ -60,6 +60,7 @@ class Schedule:
     # Static Methods
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
+    #region Read & Write YAML (TEMPORARY)
     # --------------------------------------------------------
     # read_YAML
     # --------------------------------------------------------
@@ -119,10 +120,10 @@ class Schedule:
                 f = open(file, "w")
                 dic = dict(
                     conflicts = dict( list = Conflict.list() ),
-                    courses = dict( list = Course._instances ),
-                    labs = dict( list = Lab._instances ),
-                    streams = dict( list = Stream._instances ),
-                    teachers = dict( list = Teacher._instances )
+                    courses = dict( list = Course.list() ),
+                    labs = dict( list = Lab.list() ),
+                    streams = dict( list = Stream.list() ),
+                    teachers = dict( list = Teacher.list() )
                 )
                 yam = yaml.dump_all([
                     dic, Block._max_id, Course._max_id, Lab._max_id, Section._max_id,
@@ -140,15 +141,6 @@ class Schedule:
     # BAD METHODS - TEMPORARY FOR YAML FILE
     # break all kinds of conventions but they're temporary
     # ========================================================
-    @staticmethod
-    def __set_max_ids(max_ids : dict):
-        Block._max_id = max_ids.get("block", 0)
-        Course._max_id = max_ids.get("course", 0)
-        Lab._max_id = max_ids.get("lab", 0)
-        Section._max_id = max_ids.get("section", 0)
-        Teacher._max_id = max_ids.get("teacher", 0)
-        TimeSlot._max_id = max_ids.get("timeslot", 0)
-        Stream._max_id = max_ids.get("stream", 0)
     
     @staticmethod
     def __create_conflict(conflict : dict) -> Conflict:
@@ -242,6 +234,21 @@ class Schedule:
             del Stream._instances[old_id]
             Stream._instances[s.id] = s
             return s
+
+#endregion
+
+    # --------------------------------------------------------
+    # __set_max_ids - Sets the max IDs of each class to specified values or 0. Unsure if it'll be useful for DB, but just in case listed separately from YAML methods
+    # --------------------------------------------------------
+    @staticmethod
+    def __set_max_ids(max_ids : dict):
+        Block._max_id = max_ids.get("block", 0)
+        Course._max_id = max_ids.get("course", 0)
+        Lab._max_id = max_ids.get("lab", 0)
+        Section._max_id = max_ids.get("section", 0)
+        Teacher._max_id = max_ids.get("teacher", 0)
+        TimeSlot._max_id = max_ids.get("timeslot", 0)
+        Stream._max_id = max_ids.get("stream", 0)
 
     # --------------------------------------------------------
     # teachers
