@@ -3,6 +3,7 @@ from ..Course import Course
 from ..Section import Section
 from ..Teacher import Teacher
 from ..Block import Block
+from ..Lab import Lab
 
 
 def test_id():
@@ -297,8 +298,25 @@ def test_section_bad():
     assert course.section(bad_num) is None
 
 
-def test_print_description():
-    assert False
+def test_print_description_full():
+    """Verifies that print_description() returns a detailed string containing information on the Course, its Sections,
+    its Blocks, its Teachers, and its Labs."""
+    course = Course(1, "Course 1", "fall")
+    block = Block("mon", "8:30", 1.5, 1)
+    section = Section("420", 1.5, "Section 1")
+    lab = Lab("R-101", "Worst place in the world")
+    teacher = Teacher("John", "Smith")
+    block.assign_lab(lab)
+    block.assign_teacher(teacher)
+    section.add_block(block)
+    course.add_section(section)
+    description = course.print_description()
+    print(description)
+    assert f"{course.number} {course.name}" in description\
+           and f"Section {section.number}" in description \
+           and f"{block.day} {block.start}, {block.duration} hours" in description \
+           and f"labs: {lab.number}: {lab.descr}" in description \
+           and f"teachers: {teacher.firstname} {teacher.lastname}" in description
 
 
 def test_print_description2():

@@ -359,6 +359,8 @@ class Course(metaclass=CourseMeta):
         # Header
         text += "\n\n"
         text += '=' * 50 + "\n"
+        text += f"{self.number} {self.name}\n"
+        text += '=' * 50 + "\n"
 
         # Sections
         for s in sorted(self.sections(), key=lambda x: x.number):
@@ -366,11 +368,12 @@ class Course(metaclass=CourseMeta):
             text += "-" * 50 + "\n"
 
             # Blocks
-            for b in s.blocks.sort(key=lambda x: x.day_number or x.start_number):
+            blocks = list(s.blocks)
+            for b in sorted(blocks, key=lambda x: x.day_number or x.start_number):
                 text += f"{b.day} {b.start}, {b.duration} hours\n"
-                text += "\tlabs: " + ", ".join(b.labs()) + "\n"
+                text += "\tlabs: " + ", ".join([str(lab) for lab in b.labs()]) + "\n"
                 text += "\tteachers: "
-                text += ", ".join(b.teachers())
+                text += ", ".join([str(t) for t in b.teachers()])
                 text += "\n"
 
         return text
