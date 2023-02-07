@@ -74,6 +74,7 @@ class Block(TimeSlot, metaclass=BlockMeta):
         - Parameter duration: float -> how long does this class last, in hours
         - Parameter number: int -> A number representing this specific Block.
         """
+        self._sync = list()
         super().__init__(day, start, duration)
         self.number = number  # NOTE: Based on the code found in CSV.pm and Section.pm
         Block._max_id += 1
@@ -82,7 +83,6 @@ class Block(TimeSlot, metaclass=BlockMeta):
         self.__section = None
         self._teachers = dict()
         self._labs = {}
-        self._sync = list()
         self._conflicted = 0
 
     # =================================================================
@@ -359,8 +359,8 @@ class Block(TimeSlot, metaclass=BlockMeta):
         if not isinstance(block, Block):
             raise TypeError(f"<{block}>: invalid block - must be a Block object.")
 
-        if not hasattr(self, '_sync'):
-            self._sync = []
+        """if not hasattr(self, '_sync'):
+            self._sync = []"""
         self._sync.append(block)
 
         return self
@@ -386,8 +386,8 @@ class Block(TimeSlot, metaclass=BlockMeta):
         """Returns an array ref of the Blocks which are synced to this Block."""
 
         # If the sync array doesn't exist, create it.
-        if not hasattr(self, '_sync'):
-            self._sync = []
+        """if not hasattr(self, '_sync'):
+            self._sync = []"""
 
         return self._sync
 
