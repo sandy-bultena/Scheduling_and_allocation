@@ -91,16 +91,17 @@ def test_add_section_good():
     assert len(sections) == 1 and section in sections and section.course == course
 
 
-# def test_add_section_invalid_input():
-#     """Verifies that add_section raises a TypeError if the user tries to add something that isn't a Section (or in
-#     this case, an object). """
-#     # NOTE: This test cannot possibly succeed because of the changes I made to the validation, since everything is an
-#     # object in Python, even the primitives.
-#     course = Course(1)
-#     bad_sect = None
-#     with pytest.raises(TypeError) as e:
-#         course.add_section(bad_sect)
-#     assert "invalid section" in str(e.value)
+def test_add_section_invalid_input():
+    """Verifies that add_section raises a TypeError if the user tries to add something that isn't a Section (or in
+    this case, an object). """
+    # NOTE: This test cannot possibly succeed because of the changes I made to the validation, since everything is an
+    # object in Python, even the primitives.
+    course = Course(1)
+    bad_sect = None
+    with pytest.raises(TypeError) as e:
+        course.add_section(bad_sect)
+    assert "invalid section" in str(e.value)
+
 
 def test_add_section_duplicate():
     """Verifies that add_section() raises an Exception when trying to add a duplicate of an existing Section to the
@@ -176,6 +177,16 @@ def test_remove_section_good():
     course.add_section(section)
     course.remove_section(section)
     assert len(course.sections()) == 0
+
+def test_remove_section_bad():
+    """Verifies that remove_section() raises an Exception when asked to remove a non-Section object."""
+    course = Course(1, semester="summer")
+    section = Section()
+    course.add_section(section)
+    bad_section = "foo"
+    with pytest.raises(TypeError) as e:
+        course.remove_section(bad_section)
+    assert "invalid section" in str(e.value).lower()
 
 
 def test_remove_section_no_crash():

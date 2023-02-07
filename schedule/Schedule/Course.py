@@ -193,9 +193,8 @@ class Course(metaclass=CourseMeta):
         # structure just in case.
         for section in sections:
             # Verify that this is actually a Section object. NOTE: the Section import has been taken out to avoid a
-            # circular dependency. TODO: Fix validation; this will let anything in now.
-            # TODO: Check the section's string representation, use that as validation.
-            if not isinstance(section, object):
+            # circular dependency.
+            if not hasattr(section, "number") or f"Section {section.number}" not in str(section):
                 raise TypeError(f"<{section}>: invalid section - must be a Section object.")
 
             # -------------------------------------------------------
@@ -268,8 +267,8 @@ class Course(metaclass=CourseMeta):
         
         Returns the modified Course object."""
         # Verify that the section is indeed a Section object. NOTE: the Section import has been taken out to avoid a
-        # circular dependency. #TODO: Reinstate the right validation. Anything can get in now.
-        if not isinstance(section, object):
+        # circular dependency.
+        if not hasattr(section, "number") or f"Section {section.number}" not in str(section):
             raise TypeError(f"<{section}>: invalid section - must be a Section object")
 
         if section.number in getattr(self, '_sections', {}):
