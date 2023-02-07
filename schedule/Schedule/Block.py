@@ -26,29 +26,32 @@ class BlockMeta(TimeSlotMeta):
         """Returns the list of all Blocks"""
         return Block._instances
 
+""" SYNOPSIS:
 
-# SYNOPSIS:
+from Schedule.Course import Course
+from Schedule.Section import Section
+from Schedule.Block import Block
+from Schedule.Teacher import Teacher
+from Schedule.Lab import Lab
 
-#    use Schedule::Course;
-#    use Schedule::Section;
-#    use Schedule::Block;
+block = Block(day = "Wed", start = "9:30", duration = 1.5)
+course = Course(name = "Basket Weaving")
+section = Section(number = 1)
+teacher = Teacher("Jane", "Doe")
+lab = Lab("P327")
 
-#    my $block = Block->new (-day=>"Wed",-start=>"9:30",-duration=>1.5);
+section.add_block(block)
 
-#    my $course = Course->new(-name=>"Basket Weaving");
-#    my $section = $course->create_section(-section_number=>1);
-#    $section->add_block($block);                                   section.add_block(block)
+print(f"Block belongs to section {block.section}")
 
-#    print "block belongs to section ",$block->section;     // print(f"block belongs to section {block.section}")
+block.assign_teacher(teacher)
+block.remove_teacher(teacher)
+block.teachers()
 
-#    $block->assign_teacher($teacher);  //  block.assign_teacher(teacher)
-#    $block->remove_teacher($teacher);      block.remove_teacher(teacher)
-#    $block->teachers();                    block.teachers()
-
-#    $block->add_lab("P327");               block.add_lab("P327")
-#    $block->remove_lab("P325");            block.remove_lab("P325")
-#    $block->labs();                        block.labs()
-
+block.assign_lab(lab)
+block.remove_lab(lab)
+block.labs()
+"""
 
 class Block(TimeSlot, metaclass=BlockMeta):
     """

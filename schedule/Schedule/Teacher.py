@@ -58,11 +58,12 @@ class TeacherMeta(type):
     # =================================================================
     # get_by_name
     # =================================================================
-    def get_by_name(self, first_name: str, last_name: str):
+    @staticmethod
+    def get_by_name(first_name: str, last_name: str):
         """Returns the first Teacher found matching the first name and last name, if one exists."""
         if not (first_name and last_name):
             return None
-        for teacher in self._instances:
+        for teacher in Teacher._instances:
             if teacher.firstname == first_name and teacher.lastname == last_name:
                 return teacher
         return None

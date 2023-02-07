@@ -10,6 +10,7 @@ except ImportError or ModuleNotFoundError:
         import Colour
         print("L")
 """
+
 class ConflictMeta(type):
     """ Metaclass for Conflict, making it iterable """
     _conflicts = []
@@ -17,6 +18,13 @@ class ConflictMeta(type):
     def __iter__(self):
         return iter(getattr(self, '_conflicts', []))
 
+
+""" SYNOPSIS/EXAMPLE:
+    from Schedule.Conflict import Conflict
+
+    blocks = [block1, block2, ...]
+    new_conflict = Conflict(type = Conflict.MINIMUM_DAYS, blocks = blocks)
+"""
 class Conflict(metaclass=ConflictMeta):
     """
     Represents a scheduling conflict.

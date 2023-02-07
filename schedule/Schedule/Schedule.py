@@ -11,6 +11,16 @@ import re
 import yaml # might require pip install pyyaml
 
 
+""" SYNOPSIS/EXAMPLE:
+    from Schedule.Schedule import Schedule
+
+    Schedule.read_YAML('my_schedule_file.txt')
+
+    # code here; model classes have been populated
+
+    Schedule.write_YAML('my_new_schedule_file.txt')
+"""
+
 class Schedule:
     """
     Provides the top level class for all schedule objects.
