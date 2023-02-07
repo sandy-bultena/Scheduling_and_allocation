@@ -7,19 +7,20 @@ from .Lab import Lab
 
 '''SYNOPSIS
 
-#    use Schedule::Course;
+    from Schedule.Course import Course
+    from Schedule.Block import Block
+    from Schedule.Section import Section
 
-#    my $block = Block->new (-day=>"Wed",-start=>"9:30",-duration=>1.5);
-#    my $section = Section->new(-number=>1, -hours=>6);
+    block = Block(day = "Wed", start = "9:30", duration = 1.5)
+    section = Section(number = 1, hours = 6)
+    course = Course(name = "Basket Weaving", number="420-ABC-DEF")
+    
+    course.add_section(section)
+    section.add_block(block)
 
-#    my $course = Course->new(-name=>"Basket Weaving", -course_id="420-ABC-DEF");
-#    $course->add_section($section);
-#    $section->add_block($block);
-
-#    print "Course consists of the following sections: ";
-#    foreach my $section ($course->sections) {
-# print info about $section
-#    }
+    print("Course consists of the following sections: ")
+    for s in course.sections():
+        # print info about section
 '''
 
 
@@ -100,14 +101,12 @@ class CourseMeta(type):
 
 
 class Course(metaclass=CourseMeta):
-    # ideally iterable is implemented with dict; if not, yaml write needs to be modified accordingly
     _max_id = 0
 
     # -------------------------------------------------------------------
     # new
     # --------------------------------------------------------------------
     def __init__(self, number, name: str = "", semester: str = ""):
-        # self.name = "C"  # temp assignment to avoid crashes in Block __str__
         Course._max_id += 1
         self.__id = Course._max_id
         self.number = number

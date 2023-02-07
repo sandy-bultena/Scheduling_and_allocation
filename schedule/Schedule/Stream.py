@@ -50,6 +50,12 @@ class StreamMeta(type):
         """Resets the list of streams"""
         Stream._instances = {}
 
+"""
+    from Schedule.Stream import Stream
+
+    stream = Stream(number = "P322")
+"""
+
 class Stream(metaclass=StreamMeta):
     """ Describes a group of students whose classes cannot overlap. """
     _max_id = 0

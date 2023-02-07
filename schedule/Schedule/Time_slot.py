@@ -20,6 +20,12 @@ class TimeSlotMeta(type):
     def __iter__(self):
         return iter(getattr(self, '_instances', []))
 
+""" SYNOPSIS/EXAMPLE:
+
+    from Schedule.Time_slot import TimeSlot
+
+    time_slot = TimeSlot(day = "Wed", start = "9:30", duration = 1.5, movable = True)
+"""
 
 class TimeSlot(metaclass=TimeSlotMeta):
     """

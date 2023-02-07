@@ -19,6 +19,35 @@ class SectionMeta(type):
         """Resets the list of sections"""
         Section._sections.clear()
 
+"""
+    from Schedule.Section import Section
+    from Schedule.Course import Course
+    from Schedule.Block import Block
+    from Schedule.Lab import Lab
+    from Schedule.Teacher import Teacher
+
+    block = Block(day = "Wed", start = "9:30", duration = 1.5)
+    section = Section(number = 1, hours = 6)
+    course = Course(name = "Basket Weaving")
+    teacher = Teacher("Jane", "Doe")
+    lab = Lab("P327")
+    
+    course.add_section(section)
+    section.add_block(block)
+
+    print("Section consists of the following blocks: ")
+    for b in section.blocks:
+        # print info about block
+    
+    section.assign_teacher(teacher)
+    section.remove_teacher(teacher)
+    section.teachers
+
+    section.add_lab(lab)
+    section.remove_lab(lab)
+    section.labs()
+"""
+
 class Section(metaclass=SectionMeta):
     """
     Describes a section (part of a course)

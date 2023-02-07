@@ -97,6 +97,14 @@ class LabMeta(type):
         """Returns the array of Lab objects."""
         return list(self._instances.values())
 
+""" SYNOPSIS/EXAMPLE:
+
+    from Schedule.Lab import Lab
+    from Schedule.Section import Section
+
+    lab = Lab(number = "P322")
+    lab.add_unavailable(day = "Mon", start = "3:22", duration = 5)
+"""
 
 class Lab(metaclass=LabMeta):
     """
