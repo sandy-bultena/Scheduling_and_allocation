@@ -121,6 +121,7 @@ class Lab(metaclass=LabMeta):
         self.descr = descr
         Lab._max_id += 1
         self.__id = Lab._max_id
+        self._unavailable: dict[int, TimeSlot] = {}
         Lab._instances[self.__id] = self
 
     # =================================================================
@@ -170,8 +171,8 @@ class Lab(metaclass=LabMeta):
 
         - Parameter duration => how long does this class last, in hours
         """
-        if not hasattr(self, '_unavailable'):
-            self._unavailable: dict[int, TimeSlot] = {}
+        # if not hasattr(self, '_unavailable'):
+        #     self._unavailable: dict[int, TimeSlot] = {}
 
         # Create a TimeSlot.
         slot = TimeSlot(day, start, duration)
@@ -191,7 +192,7 @@ class Lab(metaclass=LabMeta):
 
         Returns the modified Lab object.
         """
-        if hasattr(self, '_unavailable') and target_id in self._unavailable.keys():
+        if target_id in self._unavailable.keys():
             del self._unavailable[target_id]
 
         return self
@@ -207,7 +208,7 @@ class Lab(metaclass=LabMeta):
              
         Returns the TimeSlot object.
         """
-        if hasattr(self, '_unavailable') and target_id in self._unavailable.keys():
+        if target_id in self._unavailable.keys():
             return self._unavailable[target_id]
         return None
 
@@ -217,9 +218,10 @@ class Lab(metaclass=LabMeta):
 
     def unavailable(self):
         """Returns all unavailable time slot objects for this lab."""
-        if hasattr(self, '_unavailable'):
-            return list(self._unavailable.values())
-        return []
+        # if hasattr(self, '_unavailable'):
+        #     return list(self._unavailable.values())
+        # return []
+        return list(self._unavailable.values())
 
     # =================================================================
     # __str__
