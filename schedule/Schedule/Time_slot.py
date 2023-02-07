@@ -345,3 +345,25 @@ class TimeSlot(metaclass=TimeSlotMeta):
         rhs_start = rhs.start_number + delta
 
         return (self_start < rhs_end) and (rhs_start < self_end)
+
+# =================================================================
+# footer
+# =================================================================
+'''
+=head1 AUTHOR
+
+Sandy Bultena, Ian Clement, Jack Burns
+
+=head1 COPYRIGHT
+
+Copyright (c) 2016, Jack Burns, Sandy Bultena, Ian Clement. 
+
+All Rights Reserved.
+
+This module is free software. It may be used, redistributed
+and/or modified under the terms of the Perl Artistic License
+
+     (see http://www.perl.com/perl/misc/Artistic.html)
+
+=cut
+'''

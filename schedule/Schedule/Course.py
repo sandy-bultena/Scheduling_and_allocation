@@ -23,7 +23,8 @@ from .Lab import Lab
         # print info about section
 '''
 
-
+# TODO: Make the static collection return a tuple instead of a list.
+# Tuples are faster than lists, and also immutable.
 class CourseMeta(type):
     _instances = {}
 
@@ -534,3 +535,29 @@ class Course(metaclass=CourseMeta):
         while self.get_section(str(number)):
             number += 1
         return number
+
+# =================================================================
+# footer
+# =================================================================
+'''
+1;
+
+=head1 AUTHOR
+
+Sandy Bultena, Ian Clement, Jack Burns
+
+Translated to Python by Evan Laverdiere
+
+=head1 COPYRIGHT
+
+Copyright (c) 2016, Jack Burns, Sandy Bultena, Ian Clement. 
+
+All Rights Reserved.
+
+This module is free software. It may be used, redistributed
+and/or modified under the terms of the Perl Artistic License
+
+     (see http://www.perl.com/perl/misc/Artistic.html)
+
+=cut
+'''

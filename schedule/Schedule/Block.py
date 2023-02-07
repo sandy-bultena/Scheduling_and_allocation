@@ -20,11 +20,12 @@ class BlockMeta(TimeSlotMeta):
             return []
         day_blocks = filter(lambda x: x.day == day, blocks)
         return list(day_blocks)
-    
+
     @staticmethod
     def list():
         """Returns the list of all Blocks"""
         return Block._instances
+
 
 """ SYNOPSIS:
 
@@ -52,6 +53,7 @@ block.assign_lab(lab)
 block.remove_lab(lab)
 block.labs()
 """
+
 
 class Block(TimeSlot, metaclass=BlockMeta):
     """
@@ -135,7 +137,7 @@ class Block(TimeSlot, metaclass=BlockMeta):
         for other in self.synced():
             old = other.start
             if old != super().start:
-                other.start = super().start # Attempting to directly write to the backing field doesn't work.
+                other.start = super().start  # Attempting to directly write to the backing field doesn't work.
                 # Fortunately, calling the property like this doesn't result in an infinite loop.
 
     # =================================================================
@@ -255,7 +257,6 @@ class Block(TimeSlot, metaclass=BlockMeta):
         # If the Block doesn't already have a labs dict, create one.
         # if not hasattr(self, '_labs'):
         #     self._labs = {}
-
 
         for key in self._labs:
             if self._labs[key].id == lab.id:
@@ -484,3 +485,26 @@ class Block(TimeSlot, metaclass=BlockMeta):
         if number == 0:
             self.number = section.get_new_number()
         pass
+
+
+# =================================================================
+# footer
+# =================================================================
+'''
+=head1 AUTHOR
+
+Sandy Bultena, Ian Clement, Jack Burns
+
+Translated to Python by Evan Laverdiere
+
+=head1 COPYRIGHT
+
+Copyright (c) 2016, Jack Burns, Sandy Bultena, Ian Clement. 
+
+All Rights Reserved.
+
+This module is free software. It may be used, redistributed
+and/or modified under the terms of the Perl Artistic License
+
+     (see http://www.perl.com/perl/misc/Artistic.html)
+'''
