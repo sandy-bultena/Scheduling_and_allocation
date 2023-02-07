@@ -1,11 +1,11 @@
-from Teacher import Teacher
-from Course import Course
-from Conflict import Conflict
-from Lab import Lab
-from Stream import Stream
-from Section import Section
-from Block import Block
-from Time_slot import TimeSlot
+from .Teacher import Teacher
+from .Course import Course
+from .Conflict import Conflict
+from .Lab import Lab
+from .Stream import Stream
+from .Section import Section
+from .Block import Block
+from .Time_slot import TimeSlot
 import os
 import re
 import yaml # might require pip install pyyaml
@@ -71,13 +71,13 @@ class Schedule:
             try:
                 f = open(file, "r")
                 # same as below -_ substitution, but specifically for mangled names (_Class__var)
-                raw_yaml = re.sub("^(\s*)_[a-zA-Z]*?__", "", f.read())
+                raw_yaml = re.sub(r"^(\s*)_[a-zA-Z]*?__", "", f.read())
                 # regex substitution replaces - or _ at the beginning of variable names, since the manual casting assumes clean var names
                 # take out any tags, since we're bypassing them and initializing classes manually
                     # this is a terrible thing and should NOT be done in a long-term project, absolutely not scalable
-                raw_yaml = re.sub('!.*$', '', re.sub("^(\s*)[_-]([^- ])", r"\1\2", raw_yaml, flags=re.MULTILINE), flags=re.MULTILINE)
+                raw_yaml = re.sub(r'!.*$', '', re.sub(r"^(\s*)[_-]([^- ])", r"\1\2", raw_yaml, flags=re.MULTILINE), flags=re.MULTILINE)
                 # enclose timestamps in single quotes to avoid sexagesimal conversion (9:00 -> 540 seconds)
-                raw_yaml = re.sub('(\s)(\d+):(\d+)(\s)', r"\1'\2:\3'\4", raw_yaml)
+                raw_yaml = re.sub(r'(\s)(\d+):(\d+)(\s)', r"\1'\2:\3'\4", raw_yaml)
                 max_ids = {}
                 (
                     yaml_contents, max_ids['block'], max_ids['course'], max_ids['lab'],
@@ -272,8 +272,7 @@ class Schedule:
     @staticmethod
     def courses() -> list[Course]:
         """Returns the list of Courses"""
-        return list() # uncomment following line & delete this when Course is done
-        #return Course.list()
+        return Course.list()
 
     # --------------------------------------------------------
     # labs
@@ -301,10 +300,10 @@ class Schedule:
         - Parameter teacher -> The Teacher who's Sections should be found
         """
         if not isinstance(teacher, Teacher): raise TypeError(f"{teacher} must be an object of type Teacher")
-        outp = []
+        outp = set()
         for s in Section:
             if teacher in s.teachers: outp.add(s)
-        return outp
+        return list(outp)
 
     # --------------------------------------------------------
     # courses_for_teacher
@@ -316,10 +315,10 @@ class Schedule:
         - Parameter teacher -> The Teacher who's Courses should be found
         """
         if not isinstance(teacher, Teacher): raise TypeError(f"{teacher} must be an object of type Teacher")
-        outp = []
+        outp = set()
         for c in Course.list():
             if c.has_teacher(teacher): outp.add(c)
-        return outp
+        return list(outp)
 
     # --------------------------------------------------------
     # allocated_courses_for_teacher
@@ -343,10 +342,10 @@ class Schedule:
         - Parameter teacher -> The Teacher who's Blocks should be found
         """
         if not isinstance(teacher, Teacher): raise TypeError(f"{teacher} must be an object of type Teacher")
-        outp = []
+        outp = set()
         for b in Block:
             if b.has_teacher(teacher): outp.add(b)
-        return outp
+        return list(outp)
 
     # --------------------------------------------------------
     # blocks_in_lab
@@ -358,10 +357,10 @@ class Schedule:
         - Parameter lab -> The Lab that should be found
         """
         if not isinstance(lab, Lab): raise TypeError(f"{lab} must be an object of type Lab")
-        outp = []
+        outp = set()
         for b in Block:
             if b.has_lab(lab): outp.add(b)
-        return outp
+        return list(outp)
 
     # --------------------------------------------------------
     # sections_for_stream
@@ -373,10 +372,10 @@ class Schedule:
         - Parameter stream -> The Stream that should be found
         """
         if not isinstance(stream, Stream): raise TypeError(f"{stream} must be an object of type Stream")
-        outp = []
+        outp = set()
         for s in Section:
             if s.has_stream(stream): outp.add(s)
-        return outp
+        return list(outp)
 
     # --------------------------------------------------------
     # blocks_for_stream
@@ -388,9 +387,9 @@ class Schedule:
         - Parameter stream -> The Stream who's Blocks should be found
         """
         if not isinstance(stream, Stream): raise TypeError(f"{stream} must be an object of type Stream")
-        outp = []
-        for s in Schedule.sections_for_stream(stream): outp.extend(s)
-        return outp
+        outp = set()
+        for s in Schedule.sections_for_stream(stream): outp.update(s.blocks.values())
+        return list(outp)
 
     # NOTE: all_x() methods have been removed, since they're now equivalent to x() methods
 
@@ -440,7 +439,7 @@ class Schedule:
     # calculate_conflicts
     # --------------------------------------------------------
     @staticmethod
-    def calculate_conflicts() -> list[Conflict]:
+    def calculate_conflicts():
         """Reviews the schedule, and creates a list of Conflict objects as necessary"""
         def __new_conflict(type, blocks):
             Conflict(type, blocks)
@@ -454,7 +453,7 @@ class Schedule:
         # ---------------------------------------------------------
         # check all block pairs to see if there is a time overlap
         for index, b in enumerate(Block.list()):
-            for bb in Block[index + 1:]:
+            for bb in Block.list()[index + 1:]:
                 # if the same block, skip (shouldn't happen)
                 if b == bb: continue
 
@@ -474,7 +473,7 @@ class Schedule:
                         b.conflicted = bb.conflicted = Conflict.TIME_STREAM
                     
                     # create a conflict object and mark the blocks as conflicting
-                    if is_conflict: __new_conflict(Conflict.TIME, blocks)
+                    if is_conflict: __new_conflict(Conflict.TIME, [b, bb])
 
         # ---------------------------------------------------------
         # check for lunch break conflicts by teacher
@@ -518,8 +517,9 @@ class Schedule:
                 blocks_by_day[b.day_number].append(b)
 
             # if < 4 days, create a conflict and mark the blocks as conflicted
-            if len(blocks_by_day.keys()) < 4: __new_conflict(Conflict.MINIMUM_DAYS, blocks)
+            if len(blocks_by_day.keys()) < 4 and blocks: __new_conflict(Conflict.MINIMUM_DAYS, blocks)
             
+            # if they have more than 32 hours worth of classes
             availability = 0
             for day in blocks_by_day.keys():
                 day_start = min(map(lambda b: b.start_number, blocks_by_day[day]))
@@ -533,9 +533,8 @@ class Schedule:
         # Perl ver. returns self here
 
     # --------------------------------------------------------
-    # _calculate_conflicts
+    # _conflict_lunch
     # --------------------------------------------------------
-    # NOTE: Perl ver. was defined | sub _conflictLunch($$) | - confirm what $$ means
     @staticmethod
     def _conflict_lunch(block : Block, lunch_start):
         lunch_end = lunch_start + .5
@@ -678,12 +677,6 @@ class Schedule:
         # done manually in Perl ver
         block.remove_all_teachers()
         block.remove_all_labs()
-
-
-# NOTE: As Course isn't yet implemented, the output YAML will be different from the input
-# Course objects default to { name = "C" } as a placeholder, so many teachers, labs, and streams
-# won't appear in normal output and will only appear in the respective list sections
-# this shouldn't affect functionality (outside of Course not being saved)
 
 # NOTE: The sample FallSchedule.yaml given by Aref has an error in it;
 # Teacher max_id is written as 16, despite there being teachers with IDs up to 29

@@ -28,6 +28,7 @@ class StreamMeta(type):
     def share_blocks(b1, b2):
         """Checks if there's a stream who share the two blocks provided"""
         occurences = {}
+        if not b1.section or not b2.section: return False
         for s in b1.section.streams: occurences[s.id] = 1
         for s in b2.section.streams:
             if s.id in occurences: return True

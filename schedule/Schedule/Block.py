@@ -80,6 +80,7 @@ class Block(TimeSlot, metaclass=BlockMeta):
         self._block_id = Block._max_id
         Block._instances.append(self)
         self.__section = None
+        self._teachers = dict()
 
     # =================================================================
     # number

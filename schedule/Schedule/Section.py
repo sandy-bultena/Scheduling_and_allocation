@@ -94,9 +94,9 @@ class Section(metaclass=SectionMeta):
     # blocks
     # --------------------------------------------------------
     @property
-    def blocks(self) -> dict:
+    def blocks(self) -> list:
         """ Gets list of section's blocks """
-        return self._blocks
+        return list(self._blocks)
 
     # --------------------------------------------------------
     # title

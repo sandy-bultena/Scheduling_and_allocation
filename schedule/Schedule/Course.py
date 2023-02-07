@@ -115,6 +115,7 @@ class Course(metaclass=CourseMeta):
         self.semester = semester
         self._allocation = True
         self._sections = {}
+        Course._instances[self.id] = self
 
     # =================================================================
     # id
@@ -289,6 +290,7 @@ class Course(metaclass=CourseMeta):
         for section in self.sections():
             self.remove_section(section)
         # TODO: Remove this Course from the CourseMeta's instances.
+        if Course._instances[self.id]: del Course._instances[self.id]
 
     # =================================================================
     # sections
