@@ -81,6 +81,9 @@ class Block(TimeSlot, metaclass=BlockMeta):
         Block._instances.append(self)
         self.__section = None
         self._teachers = dict()
+        self._labs = {}
+        self._sync = list()
+        self._conflicted = 0
 
     # =================================================================
     # number
@@ -182,8 +185,8 @@ class Block(TimeSlot, metaclass=BlockMeta):
         """Assign a lab to this block."""
 
         # If the Block doesn't already have a labs dict, create one.
-        if not hasattr(self, '_labs'):
-            self._labs = {}
+        # if not hasattr(self, '_labs'):
+        #     self._labs = {}
 
         if not isinstance(lab, Lab):
             raise TypeError(f"<{lab}>: invalid lab - must be a Lab object.")
@@ -202,8 +205,8 @@ class Block(TimeSlot, metaclass=BlockMeta):
         Returns the Block object."""
 
         # If the Block doesn't already have a labs dict, create one.
-        if not hasattr(self, '_labs'):
-            self._labs = {}
+        # if not hasattr(self, '_labs'):
+        #     self._labs = {}
 
         if not isinstance(lab, Lab):
             raise TypeError(f"<{lab}>: invalid lab - must be a Lab object.")
@@ -233,8 +236,8 @@ class Block(TimeSlot, metaclass=BlockMeta):
         """Returns a list of the labs assigned to this block."""
 
         # If the Block doesn't already have a labs dict, create one.
-        if not hasattr(self, '_labs'):
-            self._labs = {}
+        # if not hasattr(self, '_labs'):
+        #     self._labs = {}
 
         return list(self._labs.values())
 
@@ -247,8 +250,8 @@ class Block(TimeSlot, metaclass=BlockMeta):
             return False
 
         # If the Block doesn't already have a labs dict, create one.
-        if not hasattr(self, '_labs'):
-            self._labs = {}
+        # if not hasattr(self, '_labs'):
+        #     self._labs = {}
 
 
         for key in self._labs:
@@ -265,8 +268,8 @@ class Block(TimeSlot, metaclass=BlockMeta):
         
         Returns the Block object."""
         # If this Block doesn't already contain a Teachers dict, create one.
-        if not hasattr(self, '_teachers'):
-            self._teachers = {}
+        # if not hasattr(self, '_teachers'):
+        #     self._teachers = {}
 
         # Verify that this teacher is, in fact, a Teacher. 
         if not isinstance(teacher, Teacher):
@@ -284,8 +287,8 @@ class Block(TimeSlot, metaclass=BlockMeta):
         
         Returns the Block object."""
         # If this Block doesn't already contain a Teachers dict, create one.
-        if not hasattr(self, '_teachers'):
-            self._teachers = {}
+        # if not hasattr(self, '_teachers'):
+        #     self._teachers = {}
 
         # Verify that the teacher is, in fact, a Teacher. 
         if not isinstance(teacher, Teacher):
@@ -305,8 +308,8 @@ class Block(TimeSlot, metaclass=BlockMeta):
         
         Returns the Block object."""
         # If this Block doesn't already contain a Teachers dict, create one.
-        if not hasattr(self, '_teachers'):
-            self._teachers = {}
+        # if not hasattr(self, '_teachers'):
+        #     self._teachers = {}
 
         for teacher in list(self._teachers.values()):
             self.remove_teacher(teacher)
@@ -319,8 +322,8 @@ class Block(TimeSlot, metaclass=BlockMeta):
     def teachers(self):
         """Returns a list of teachers assigned to this Block."""
         # If this Block doesn't already have a teachers dict, create one.
-        if not hasattr(self, '_teachers'):
-            self._teachers = {}
+        # if not hasattr(self, '_teachers'):
+        #     self._teachers = {}
         return list(self._teachers.values())
 
     # =================================================================
@@ -401,15 +404,15 @@ class Block(TimeSlot, metaclass=BlockMeta):
     @property
     def conflicted(self):
         """Gets and sets conflicted field."""
-        if not hasattr(self, '_conflicted'):
-            self._conflicted = 0
+        # if not hasattr(self, '_conflicted'):
+        #     self._conflicted = 0
 
         return self._conflicted
 
     @conflicted.setter
     def conflicted(self, new_conf: int):
-        if not hasattr(self, '_conflicted'):
-            self._conflicted = 0
+        # if not hasattr(self, '_conflicted'):
+        #     self._conflicted = 0
         self._conflicted = self.conflicted | new_conf
 
     # =================================================================
