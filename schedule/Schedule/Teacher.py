@@ -227,6 +227,11 @@ class Teacher(metaclass=TeacherMeta):
     def __str__(self):
         return f"{self.firstname} {self.lastname}"
 
+    @staticmethod
+    def list():
+        """Returns an immutable tuple containing all occurrences of Teachers."""
+        return tuple(Teacher._instances.values())
+
 # =================================================================
 # footer
 # =================================================================

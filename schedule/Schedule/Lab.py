@@ -97,6 +97,7 @@ class LabMeta(type):
         """Returns the array of Lab objects."""
         return list(self._instances.values())
 
+
 """ SYNOPSIS/EXAMPLE:
 
     from Schedule.Lab import Lab
@@ -105,6 +106,7 @@ class LabMeta(type):
     lab = Lab(number = "P322")
     lab.add_unavailable(day = "Mon", start = "3:22", duration = 5)
 """
+
 
 class Lab(metaclass=LabMeta):
     """
@@ -240,13 +242,19 @@ class Lab(metaclass=LabMeta):
         if not self.__descr:
             return f"{self.__number}"
         return f"{self.__number}: {self.__descr}"
-    
+
     # =================================================================
     # print_description
     # =================================================================
     def print_description(self) -> str:
         """Returns a text string that describes the Lab."""
         return self.__str__()
+
+    @staticmethod
+    def list():
+        """Returns an immutable tuple containing all instances of the Lab class."""
+        return tuple(Lab._instances.values())
+
 
 # =================================================================
 # footer

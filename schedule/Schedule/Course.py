@@ -536,6 +536,10 @@ class Course(metaclass=CourseMeta):
             number += 1
         return number
 
+    @staticmethod
+    def list():
+        return tuple(Course._instances.values())
+
 # =================================================================
 # footer
 # =================================================================

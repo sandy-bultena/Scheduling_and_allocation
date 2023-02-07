@@ -1,4 +1,6 @@
 import re
+
+
 #
 # Synopsis
 #
@@ -20,12 +22,14 @@ class TimeSlotMeta(type):
     def __iter__(self):
         return iter(getattr(self, '_instances', []))
 
+
 """ SYNOPSIS/EXAMPLE:
 
     from Schedule.Time_slot import TimeSlot
 
     time_slot = TimeSlot(day = "Wed", start = "9:30", duration = 1.5, movable = True)
 """
+
 
 class TimeSlot(metaclass=TimeSlotMeta):
     """
@@ -337,7 +341,7 @@ class TimeSlot(metaclass=TimeSlotMeta):
         # detect date collisions. If the dates differ, there's no conflict, and we can leave. Otherwise, continue.
         if abs(self.day_number - rhs.day_number) >= 1 - delta:
             return False
-        
+
         # Calculate the start/end for each block with the error factor removed.
         self_start = self.start_number + delta
         self_end = self.start_number + self.duration - delta
@@ -345,6 +349,11 @@ class TimeSlot(metaclass=TimeSlotMeta):
         rhs_start = rhs.start_number + delta
 
         return (self_start < rhs_end) and (rhs_start < self_end)
+
+    # @staticmethod
+    # def list():
+    #     return tuple(TimeSlot._instances)
+
 
 # =================================================================
 # footer
