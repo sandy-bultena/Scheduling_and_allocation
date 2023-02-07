@@ -183,16 +183,37 @@ def test_remove_section_no_crash():
     course.remove_section(bad_section)
     assert len(course.sections()) == 1 and section_1 in course.sections()
 
+
 def test_delete():
-    assert False
+    """Verifies that delete() will remove all Sections from the Course."""
+    course = Course(1)
+    section_1 = Section("420")
+    section_2 = Section("555")
+    course.add_section(section_1)
+    course.add_section(section_2)
+    course.delete()
+    assert len(course.sections()) == 0
 
 
 def test_sections():
-    assert False
+    """Verifies that sections() returns a list of all the Sections assigned to this Course."""
+    course = Course(1)
+    section_1 = Section("420")
+    section_2 = Section("555")
+    course.add_section(section_1)
+    course.add_section(section_2)
+    sections = course.sections()
+    assert len(sections) == 2 and section_1 in sections and section_2 in sections
 
 
 def test_number_of_sections():
-    assert False
+    """Verifies that number_of_sections() correctly returns the number of Sections assigned to this Course."""
+    course = Course(1)
+    section_1 = Section("420")
+    section_2 = Section("555")
+    course.add_section(section_1)
+    course.add_section(section_2)
+    assert course.number_of_sections() == len(course.sections())
 
 
 def test_sections_for_teacher():
