@@ -6,6 +6,12 @@ from ..Lab import Lab
 from ..Conflict import Conflict
 from ..Section import Section
 from ..Block import Block
+import pytest
+
+@pytest.fixture(autouse=True)
+def run_before_and_after():
+    Block._max_id = 0
+    Block._instances = []
 
 def test_teachers_get():
     """Checks that teachers method returns correct list"""
@@ -214,85 +220,246 @@ def test_calculate_conflicts():
     s1 = Section()
     s1.assign_stream(st1)
 
-    tue_block = Block('tue', "15:00", 1, 1)
-    wed_block = Block('wed', "15:00", 1, 1)
-    thu_block = Block('thu', "15:00", 1, 1)
+    tue_block = Block('tue', "15:00", 1, 50)
+    wed_block = Block('wed', "15:00", 1, 51)
+    thu_block = Block('thu', "15:00", 1, 52)
 
     # TIME_TEACHER conflict
     b1 = Block("mon", "13:00", 2, 1)
     b1.assign_teacher(t1)
-    b2 = Block("mon", "14:00", 2, 1)
+    b2 = Block("mon", "14:00", 2, 2)
     b2.assign_teacher(t1)
     tue_block.assign_teacher(t1)
     wed_block.assign_teacher(t1)
     thu_block.assign_teacher(t1)
-    time_teacher_conflicted = [b1, b2]
+    time_teacher_conflicted = set([b1, b2])
 
     # TIME_LAB conflict
-    b3 = Block("mon", "13:00", 2, 1)
+    b3 = Block("mon", "13:00", 2, 3)
     b3.assign_lab(l1)
-    b4 = Block("mon", "14:00", 2, 1)
+    b4 = Block("mon", "14:00", 2, 4)
     b4.assign_lab(l1)
-    time_lab_conflicted = [b3, b4]
+    time_lab_conflicted = set([b3, b4])
     
     # TIME_STREAM conflict
-    b5 = Block("mon", "13:00", 2, 1)
+    b5 = Block("mon", "13:00", 2, 5)
     b5.section = s1
-    b6 = Block("mon", "14:00", 2, 1)
+    b6 = Block("mon", "14:00", 2, 6)
     b6.section = s1
-    time_stream_conflicted = [b5, b6]
+    time_stream_conflicted = set([b5, b6])
 
     # LUNCH conflict
-    b7 = Block("mon", "10:30", 2, 1)
+    b7 = Block("mon", "10:30", 4, 7)
     b7.assign_teacher(t2)
-    b8 = Block("mon", "12:30", 2, 1)
-    b8.assign_teacher(t2)
     tue_block.assign_teacher(t2)
     wed_block.assign_teacher(t2)
     thu_block.assign_teacher(t2)
-    lunch_conflicted = [b7, b8]
+    lunch_conflicted = set([b7])
 
     # MINIMUM_DAYS conflict
-    b7 = Block("mon", "8:30", 2, 1)
-    b7.assign_teacher(t3)
-    min_days_conflicted = [b7]
+    b8 = Block("mon", "8:30", 2, 8)
+    b8.assign_teacher(t3)
+    min_days_conflicted = set([b8])
 
     # AVAILABILITY conflict
-    b9 = Block("mon", "12:00", 6, 1)
+    b9 = Block("mon", "11:30", 8, 9)
     b9.assign_teacher(t4)
-    b10 = Block("tue", "12:00", 6, 1)
+    b10 = Block("tue", "11:30", 8, 10)
     b10.assign_teacher(t4)
-    b11 = Block("wed", "12:00", 6, 1)
+    b11 = Block("wed", "11:30", 8, 11)
     b11.assign_teacher(t4)
-    b12 = Block("thu", "12:00", 6, 1)
+    b12 = Block("thu", "11:30", 8, 12)
     b12.assign_teacher(t4)
-    b13 = Block("fri", "12:00", 6, 1)
+    b13 = Block("fri", "11:30", 8, 13)
     b13.assign_teacher(t4)
-    availability_conflicted = [b9, b10, b11, b12, b13]
+    availability_conflicted = set([b9, b10, b11, b12, b13])
 
     Schedule.calculate_conflicts()
     conflict_types = dict()
     conflict_values = dict[int, Conflict]()
-    conflict_block_sets = list[list[Block]]
+    conflict_block_sets = list[list[Block]]()
     for i in Conflict:
         if i.type not in conflict_types: conflict_types[i.type] = 0
         conflict_types[i.type] += 1
         conflict_values[i.type] = i
-        conflict_block_sets.append(i.blocks)
-    
+        conflict_block_sets.append(set(i.blocks))
+
     # check for correct number of instances of each type
     assert conflict_types[Conflict.TIME] == 3   # TIME_TEACHER, TIME_LAB, & TIME_STREAM
     assert conflict_types[Conflict.LUNCH] == 1
     assert conflict_types[Conflict.MINIMUM_DAYS] == 1
     assert conflict_types[Conflict.AVAILABILITY] == 1
-    assert len(conflict_block_sets) == 6
+    assert len(conflict_block_sets) == 6        # 6 total conflicts
     
     # check that each instance points to the correct blocks for non-TIME conflicts
-    assert conflict_values[Conflict.LUNCH].blocks == lunch_conflicted
-    assert conflict_values[Conflict.MINIMUM_DAYS].blocks == min_days_conflicted
-    assert conflict_values[Conflict.AVAILABILITY].blocks == availability_conflicted
+    assert set(conflict_values[Conflict.LUNCH].blocks) == lunch_conflicted
+    assert set(conflict_values[Conflict.MINIMUM_DAYS].blocks) == min_days_conflicted
+    assert set(conflict_values[Conflict.AVAILABILITY].blocks) == availability_conflicted
 
     # check that 3 TIME conflict block lists are included in block lists
     assert time_lab_conflicted in conflict_block_sets
     assert time_stream_conflicted in conflict_block_sets
     assert time_teacher_conflicted in conflict_block_sets
+
+def test_teacher_stats():
+    """Checks that the teacher_stats method gives all and only relevant and accurate information"""
+    t1 = Teacher("Jane", "Doe")
+
+    tue_block = Block('tue', "15:00", 1, 50)
+    wed_block = Block('wed', "15:00", 1, 51)
+    thu_block = Block('thu', "15:00", 1, 52)
+
+    s1 = Section("S1")
+    s2 = Section("S2")
+    s1.add_block(tue_block)
+    s2.add_block(wed_block)
+    s2.add_block(thu_block)
+
+    c1 = Course("C1", "Course #1", semester="summer")
+    Course("C2", "Course #2", semester="summer")
+    c1.add_section(s1)
+    c1.add_section(s2)
+
+    c1.assign_teacher(t1)
+    c1.assign_teacher(t1)
+
+    stats = Schedule.teacher_stat(t1)
+    
+    assert "Jane Doe's Stats" in stats
+
+    assert "Tuesday" in stats
+    assert "Wednesday" in stats
+    assert "Thursday" in stats
+    assert "Monday" not in stats
+    assert "Friday" not in stats
+    
+    assert "Hours of Work: 3" in stats  # 3.0
+    assert "Course #1" in stats
+    assert "Course #2" not in stats
+    assert "2 Section(s)" in stats
+
+def test_teacher_details():
+    """Checks that the teacher_details method gives all and only relevant and accurate information"""
+    t1 = Teacher("Jane", "Doe")
+
+    l1 = Lab("P327")
+    l2 = Lab("P326")
+    l3 = Lab("P325")
+
+    tue_block = Block('tue', "12:00", 2.5, 50)
+    tue_block.assign_lab(l1)
+    tue_block.assign_lab(l2)
+    wed_block = Block('wed', "8:30", 3, 51)
+    wed_block.assign_lab(l2)
+    thu_block = Block('thu', "14:00", 1, 52)
+    thu_block.assign_lab(l3)
+
+    s1 = Section("S1")
+    s2 = Section("S2")
+    s1.add_block(tue_block)
+    s2.add_block(wed_block)
+    s2.add_block(thu_block)
+
+    c1 = Course("C1", "Course #1", semester="summer")
+    Course("C2", "Course #2", semester="summer")
+    c1.add_section(s1)
+    c1.add_section(s2)
+
+    c1.assign_teacher(t1)
+    c1.assign_teacher(t1)
+
+    dets = Schedule.teacher_details(t1)
+    
+    assert "Jane Doe" in dets
+
+    assert "Course #1" in dets
+    assert "Course #2" not in dets
+    assert "Section S1" in dets
+    assert "Section S2" in dets
+
+    assert tue_block.day in dets
+    assert tue_block.start in dets
+    assert str(tue_block.duration) in dets
+    assert wed_block.day in dets
+    assert wed_block.start in dets
+    assert str(wed_block.duration) in dets
+    assert thu_block.day in dets
+    assert thu_block.start in dets
+    assert str(thu_block.duration) in dets
+
+    assert str(l1) in dets
+    assert str(l2) in dets
+    assert str(l3) in dets
+    assert f"{l1}, {l2}" in dets
+
+def test_clear_course():
+    """Checks that the clear_all_from_course method correctly clears course"""
+    t1 = Teacher("Jane", "Doe")
+
+    tue_block = Block('tue', "15:00", 1, 50)
+    wed_block = Block('wed', "15:00", 1, 51)
+    thu_block = Block('thu', "15:00", 1, 52)
+
+    tue_block.assign_lab(Lab())
+    wed_block.assign_lab(Lab())
+    thu_block.assign_lab(Lab())
+
+    s1 = Section("S1")
+    s2 = Section("S2")
+    s1.add_block(tue_block)
+    s2.add_block(wed_block)
+    s2.add_block(thu_block)
+
+    s1.assign_stream(Stream())
+    s2.assign_stream(Stream())
+
+    c1 = Course("C1", "Course #1", semester="summer")
+    c1.add_section(s1)
+    c1.add_section(s2)
+
+    c1.assign_teacher(t1)
+    c1.assign_teacher(t1)
+
+    Schedule.clear_all_from_course(c1)
+
+    assert len(c1.sections()) == 2
+    assert len(s1.blocks) == 1
+    assert len(s2.blocks) == 2
+    assert not s1.teachers
+    assert not s2.teachers
+    assert not s1.streams
+    assert not s2.streams
+    assert not s1.labs
+    assert not s2.labs
+
+def test_clear_section():
+    """Checks that the clear_all_from_section method correctly clears section"""
+    s1 = Section("S1")
+    
+    tue_block = Block('tue', "15:00", 1, 50)
+    tue_block.assign_lab(Lab())
+    s1.add_block(tue_block)
+    s1.add_block(Block('wed', "15:00", 1, 51))
+    s1.add_block(Block('thu', "15:00", 1, 52))
+
+    s1.assign_stream(Stream())
+
+    s1.assign_teacher(Teacher("Jane", "Doe"))
+
+    Schedule.clear_all_from_section(s1)
+
+    assert len(s1.blocks) == 3
+    assert not s1.teachers
+    assert not s1.streams
+    assert not s1.labs
+
+def test_clear_block():
+    """Checks that the clear_all_from_block method correctly clears block"""    
+    b1 = Block('tue', "15:00", 1, 50)
+    b1.assign_lab(Lab())
+    b1.assign_teacher(Teacher("Jane", "Doe"))
+
+    Schedule.clear_all_from_block(b1)
+
+    assert not b1.teachers()
+    assert not b1.labs()

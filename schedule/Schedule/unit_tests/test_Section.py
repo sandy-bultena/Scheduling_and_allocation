@@ -150,7 +150,7 @@ def test_add_block_valid():
     s = Section()
     b = Block('Mon', '13:00', 2, 1)
     s.add_block(b)
-    assert b in s.blocks.values()
+    assert b in s.blocks
 
 def test_add_block_invalid():
     """Checks that an invalid block can't be added"""
@@ -192,7 +192,7 @@ def test_remove_block_valid():
     b = Block('Mon', '13:00', 2, 1)
     s.add_block(b)
     s.remove_block(b)
-    assert b not in s.blocks.values()
+    assert b not in s.blocks
     assert b not in Block.list()        # make sure block.delete is called
 
 def test_remove_block_invalid():

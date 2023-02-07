@@ -479,7 +479,7 @@ class Schedule:
         # check for lunch break conflicts by teacher
         start_lunch = 11
         end_lunch = 14
-        lunch_periods = (i + .5 for i in range(start_lunch, end_lunch -1))
+        lunch_periods = list(i/2 for i in range(start_lunch*2, end_lunch*2))
         for t in Teacher.list():
             # filter to only relevant blocks (that can possibly conflict)
             relevant_blocks = list(
@@ -521,9 +521,9 @@ class Schedule:
             
             # if they have more than 32 hours worth of classes
             availability = 0
-            for day in blocks_by_day.keys():
-                day_start = min(map(lambda b: b.start_number, blocks_by_day[day]))
-                day_end = max(map(lambda b: b.start_number + b.duration, blocks_by_day[day]))
+            for blocks_in_day in blocks_by_day.values():
+                day_start = min(map(lambda b: b.start_number, blocks_in_day))
+                day_end = max(map(lambda b: b.start_number + b.duration, blocks_in_day))
                 if day_end <= day_start: continue
                 availability += day_end - day_start - 0.5
             
@@ -572,13 +572,13 @@ class Schedule:
         for b in blocks:
             hours_of_work += b.duration
             match b.day.lower():
-                case 'monday': week['Monday'] = True
-                case 'tuesday': week['Tuesday'] = True
-                case 'wednesday': week['Wednesday'] = True
-                case 'thursday': week['Thursday'] = True
-                case 'friday': week['Friday'] = True
-                case 'saturday': week['Saturday'] = True
-                case 'sunday': week['Sunday'] = True
+                case 'mon': week['Monday'] = True
+                case 'tue': week['Tuesday'] = True
+                case 'wed': week['Wednesday'] = True
+                case 'thu': week['Thursday'] = True
+                case 'fri': week['Friday'] = True
+                case 'sat': week['Saturday'] = True
+                case 'sun': week['Sunday'] = True
         
         message = f"""{teacher.firstname} {teacher.lastname}'s Stats.
         
@@ -593,7 +593,7 @@ class Schedule:
             num_sections = 0
             for s in sections:
                 if s.course is c: num_sections += 1
-            message += f"-> {c.print_description2} ({num_sections} Section(s))\n"
+            message += f"-> {c.print_description2()} ({num_sections} Section(s))\n"
         
         return message
 
@@ -622,15 +622,15 @@ class Schedule:
             text += "-"*80
 
             # sections
-            for s in sorted(c.sections, lambda a : a.number):
+            for s in sorted(c.sections(), key = lambda a : a.number):
                 if s.has_teacher(teacher):
                     text += f"\n{s}\n\t" + "- "*25 + "\n"
 
                     # blocks
                     for b in sorted(s.blocks, key=cmp_to_key(__sort_blocks)):
                         if b.has_teacher(teacher):
-                            text += f"\t{b.day} {b.start} {b.duration} hours\n\t\tlabs:"
-                            text += ", ".join(b.labs) + "\n"
+                            text += f"\t{b.day} {b.start} {b.duration} hours\n\t\tlabs: "
+                            text += ", ".join(str(l) for l in b.labs()) + "\n"
         return text
 
     # --------------------------------------------------------
@@ -644,7 +644,7 @@ class Schedule:
         """
         if not course: return
         if not isinstance(course, Course): raise TypeError(f"{course} must be an object of type Course")
-        for s in course.sections: Schedule.clear_all_from_section(s)
+        for s in course.sections(): Schedule.clear_all_from_section(s)
 
     # --------------------------------------------------------
     # clear_all_from_section
