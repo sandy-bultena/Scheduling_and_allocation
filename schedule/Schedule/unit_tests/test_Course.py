@@ -596,8 +596,38 @@ def test_remove_stream_bad():
 
 
 def test_remove_all_streams():
-    assert False
+    """Verifies that remove_all_streams() works as intended."""
+    course = Course(1, "Course 1", "fall")
+    block = Block("mon", "8:30", 1.5, 1)
+    section = Section("420", 1.5, "Section 1")
+    section.add_block(block)
+    course.add_section(section)
+    stream_1 = Stream()
+    stream_2 = Stream()
+    course.assign_stream(stream_1)
+    course.assign_stream(stream_2)
+    course.remove_all_streams()
+    assert len(course.streams()) == 0
 
 
-def test_get_new_number():
-    assert False
+def test_get_new_number_good():
+    """Verifies that get_new_number() works as intended."""
+    course = Course(1, "Course 1", "fall")
+    block = Block("mon", "8:30", 1.5, 1)
+    section = Section("420", 1.5, "Section 1")
+    section.add_block(block)
+    course.add_section(section)
+    num = 420
+    expected_num = 421
+    assert course.get_new_number(num) == expected_num
+
+
+def test_new_number_unused_number():
+    """Verifies that get_new_number will return the same number it was passed if that number isn't in use."""
+    course = Course(1, "Course 1", "fall")
+    block = Block("mon", "8:30", 1.5, 1)
+    section = Section("420", 1.5, "Section 1")
+    section.add_block(block)
+    course.add_section(section)
+    num = 421
+    assert course.get_new_number(num) == num

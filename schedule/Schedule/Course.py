@@ -533,6 +533,6 @@ class Course(metaclass=CourseMeta):
     # =======================================
     def get_new_number(self, number: int):
         """Returns the first unused Section Number."""
-        while self.get_section(number):
+        while self.get_section(str(number)):
             number += 1
         return number
