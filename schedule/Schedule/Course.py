@@ -313,8 +313,8 @@ class Course(metaclass=CourseMeta):
         sections = []
 
         for section in self.sections():
-            for teacher_id in section.teachers():
-                if teacher.id == teacher_id:
+            for teacher_id in section.teachers:
+                if teacher.id == teacher_id.id:
                     sections.append(section)
 
         return sections

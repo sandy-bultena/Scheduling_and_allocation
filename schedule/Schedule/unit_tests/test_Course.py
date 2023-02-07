@@ -1,6 +1,7 @@
 import pytest
 from ..Course import Course
 from ..Section import Section
+from ..Teacher import Teacher
 
 
 def test_id():
@@ -217,8 +218,24 @@ def test_number_of_sections():
 
 
 def test_sections_for_teacher():
-    assert False
+    """Verifies that sections_for_teacher() returns a list of all sections featuring this teacher in this course."""
+    course = Course(1)
+    section_1 = Section("420")
+    teach = Teacher("John", "Smith")
+    section_1.assign_teacher(teach)
+    course.add_section(section_1)
+    teach_sections = course.sections_for_teacher(teach)
+    assert section_1 in teach_sections
 
+
+def test_sections_for_teacher_empty():
+    """Verifies that sections_for_teacher() returns an empty list if no Teacher has been assigned to the Course."""
+    course = Course(1)
+    section_1 = Section("420")
+    teach = Teacher("John", "Smith")
+    course.add_section(section_1)
+    teach_sections = course.sections_for_teacher(teach)
+    assert len(teach_sections) == 0
 
 def test_max_section_number():
     assert False
