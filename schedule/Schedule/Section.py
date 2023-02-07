@@ -79,7 +79,7 @@ class Section(metaclass=SectionMeta):
 
         if self.blocks:
             self._hours = 0
-            for b in self.blocks.values():
+            for b in self.blocks:
                 self._hours += b.duration
 
     # --------------------------------------------------------
@@ -96,7 +96,7 @@ class Section(metaclass=SectionMeta):
     @property
     def blocks(self) -> list:
         """ Gets list of section's blocks """
-        return list(self._blocks)
+        return self._blocks.values()
 
     # --------------------------------------------------------
     # title
@@ -138,7 +138,7 @@ class Section(metaclass=SectionMeta):
     def labs(self) -> set:
         """ Gets all labs assigned to all blocks in this section """
         labs = set()
-        for b in self.blocks.values():
+        for b in self.blocks:
             for l in b.labs():
                 labs.add(l)
         print(labs)
@@ -151,7 +151,7 @@ class Section(metaclass=SectionMeta):
     def teachers(self) -> set:
         """ Gets all teachers assigned to all blocks in this section """
         teachers = set()
-        for b in self.blocks.values():
+        for b in self.blocks:
             for t in b.teachers(): teachers.add(t)
         for t in self._teachers.values(): teachers.add(t)
         return teachers
@@ -195,7 +195,7 @@ class Section(metaclass=SectionMeta):
         Gets block with given ID from this section
         - Parameter id -> The ID of the block to find
         """
-        f = list(filter(lambda a : a.id == id, self.blocks.values()))
+        f = list(filter(lambda a : a.id == id, self.blocks))
         return f[0] if len(f) > 0 else None
     
     # --------------------------------------------------------
@@ -206,7 +206,7 @@ class Section(metaclass=SectionMeta):
         Gets block with given block number from this section
         - Parameter number -> The number of the block to find
         """
-        for b in self.blocks.values():
+        for b in self.blocks:
             if not b.number: b.number = 0
             if b.number == number: return b
         return None
@@ -220,7 +220,7 @@ class Section(metaclass=SectionMeta):
         - Parameter lab -> The lab to assign
         """
         if lab:
-            for b in self.blocks.values(): b.assign_lab(lab)
+            for b in self.blocks: b.assign_lab(lab)
         return self
     
     # --------------------------------------------------------
@@ -231,7 +231,7 @@ class Section(metaclass=SectionMeta):
         Remove a lab from every block in the section
         - Parameter lab -> The lab to remove
         """
-        for b in self.blocks.values(): b.remove_lab(lab)
+        for b in self.blocks: b.remove_lab(lab)
         return self
     
     # --------------------------------------------------------
@@ -244,7 +244,7 @@ class Section(metaclass=SectionMeta):
         """
         if not isinstance(teacher, Teacher): raise TypeError(f"{type(teacher)}: invalid teacher - must be a Teacher object")
         if teacher:
-            for b in self.blocks.values():
+            for b in self.blocks:
                 b.assign_teacher(teacher)
             self._teachers[teacher.id] = teacher
             self._allocation[teacher.id] = self.hours
@@ -292,7 +292,7 @@ class Section(metaclass=SectionMeta):
         - Parameter teacher -> The teacher to be removed
         """
         if not isinstance(teacher, Teacher): raise TypeError(f"{type(teacher)}: invalid teacher - must be a Teacher object")
-        for b in self.blocks.values(): b.remove_teacher(teacher)
+        for b in self.blocks: b.remove_teacher(teacher)
         if teacher in self.teachers: del self._teachers[teacher.id]
         if teacher.id in self._allocation: del self._allocation[teacher.id]
 
@@ -375,7 +375,7 @@ class Section(metaclass=SectionMeta):
             # removed check to avoid circular dependency
             #if not isinstance(b, Block): raise f"{b}: invalid block - must be a Block object"
             if not hasattr(b, 'id'): raise TypeError(f"{b}: invalid block - no id found")
-            self.blocks[b.id] = b
+            self._blocks[b.id] = b
             b.section = self
         return self
     
@@ -388,7 +388,7 @@ class Section(metaclass=SectionMeta):
         - Parameter block -> The block to remove
         """
         if not hasattr(block, 'id') or not hasattr(block, 'delete'): raise TypeError(f"{block}: invalid block - must be a Block object")
-        if block.id in self.blocks: del self.blocks[block.id]
+        if block.id in self._blocks: del self._blocks[block.id]
         block.delete()
         return self
     
@@ -397,7 +397,7 @@ class Section(metaclass=SectionMeta):
     # --------------------------------------------------------
     def delete(self) -> None:
         """ Delete this object and all its dependants """
-        for b in list(self.blocks.values()):
+        for b in self.blocks:
             self.remove_block(b)
         Section._sections.remove(self)
         return self
@@ -417,7 +417,7 @@ class Section(metaclass=SectionMeta):
     # --------------------------------------------------------
     def is_conflicted(self) -> bool:
         """ Checks if there is a conflict with this section """
-        for b in self.blocks.values():
+        for b in self.blocks:
             if b.conflicted: return True
         return False
     
@@ -427,7 +427,7 @@ class Section(metaclass=SectionMeta):
     #def conflicts(self) -> list:
         """ Gets a list of conflicts related to this section """
         """conflicts = []
-        for b in self.blocks.values():
+        for b in self.blocks:
             if hasattr(b, 'conflicts'): conflicts.extend(b.conflicts())
         return conflicts"""
     

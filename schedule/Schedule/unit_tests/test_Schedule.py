@@ -273,18 +273,26 @@ def test_calculate_conflicts():
     Schedule.calculate_conflicts()
     conflict_types = dict()
     conflict_values = dict[int, Conflict]()
+    conflict_block_sets = list[list[Block]]
     for i in Conflict:
         if i.type not in conflict_types: conflict_types[i.type] = 0
         conflict_types[i.type] += 1
         conflict_values[i.type] = i
+        conflict_block_sets.append(i.blocks)
     
     # check for correct number of instances of each type
     assert conflict_types[Conflict.TIME] == 3   # TIME_TEACHER, TIME_LAB, & TIME_STREAM
     assert conflict_types[Conflict.LUNCH] == 1
     assert conflict_types[Conflict.MINIMUM_DAYS] == 1
     assert conflict_types[Conflict.AVAILABILITY] == 1
+    assert len(conflict_block_sets) == 6
     
-    # check that each instance points to the correct blocks
+    # check that each instance points to the correct blocks for non-TIME conflicts
     assert conflict_values[Conflict.LUNCH].blocks == lunch_conflicted
     assert conflict_values[Conflict.MINIMUM_DAYS].blocks == min_days_conflicted
     assert conflict_values[Conflict.AVAILABILITY].blocks == availability_conflicted
+
+    # check that 3 TIME conflict block lists are included in block lists
+    assert time_lab_conflicted in conflict_block_sets
+    assert time_stream_conflicted in conflict_block_sets
+    assert time_teacher_conflicted in conflict_block_sets
