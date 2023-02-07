@@ -2,6 +2,7 @@ import pytest
 from ..Course import Course
 from ..Section import Section
 from ..Teacher import Teacher
+from ..Block import Block
 
 
 def test_id():
@@ -237,16 +238,63 @@ def test_sections_for_teacher_empty():
     teach_sections = course.sections_for_teacher(teach)
     assert len(teach_sections) == 0
 
+
 def test_max_section_number():
-    assert False
+    """Verifies that max_section_number() returns the highest number of all the Sections assigned to this Course."""
+    course = Course(1)
+    section_1 = Section("420")
+    section_2 = Section("500")
+    section_3 = Section("120")
+    course.add_section(section_1)
+    course.add_section(section_2)
+    course.add_section(section_3)
+    max_num = course.max_section_number()
+    assert max_num == section_2.number
 
 
-def test_blocks():
-    assert False
+def test_max_section_number_zero():
+    """Verifies that max_section_number() returns zero if no Sections are assigned to this Course."""
+    course = Course(1)
+    assert course.max_section_number() == 0
+
+
+def test_blocks_good():
+    """Verifies that blocks() returns a list of all Blocks that have been assigned to this Course."""
+    course = Course(1)
+    section = Section("420")
+    block_1 = Block("mon", "9:30", 1.5, 1)
+    block_2 = Block("wed", "9:30", 1.5, 2)
+    section.add_block(block_1, block_2)
+    course.add_section(section)
+    blocks = course.blocks()
+    assert len(blocks[0]) == 2 and block_1 in blocks[0] and block_2 in blocks[0]
+
+
+def test_blocks_bad():
+    """Verifies that blocks() returns an empty list when the Sections of this Course contain no Blocks."""
+    course = Course(1)
+    section = Section("420")
+    course.add_section(section)
+    blocks = course.blocks()
+    assert len(blocks[0]) == 0
 
 
 def test_section():
-    assert False
+    """Verifies that section() returns the correct Section when receiving a valid number."""
+    course = Course(1)
+    course_num = "420"
+    section = Section(course_num)
+    course.add_section(section)
+    assert course.section(course_num) == section
+
+
+def test_section_bad():
+    """Verifies that section() returns nothing when receiving an invalid section number."""
+    course = Course(1)
+    section = Section("420")
+    course.add_section(section)
+    bad_num = "555"
+    assert course.section(bad_num) is None
 
 
 def test_print_description():
