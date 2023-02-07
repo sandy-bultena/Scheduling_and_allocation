@@ -96,7 +96,7 @@ def test_add_section_invalid_input():
     this case, an object). """
     # NOTE: This test cannot possibly succeed because of the changes I made to the validation, since everything is an
     # object in Python, even the primitives.
-    course = Course(1)
+    course = Course(1, semester="summer")
     bad_sect = None
     with pytest.raises(TypeError) as e:
         course.add_section(bad_sect)
