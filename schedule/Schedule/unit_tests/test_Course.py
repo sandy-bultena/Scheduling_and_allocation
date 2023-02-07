@@ -402,7 +402,41 @@ def test_streams_empty():
 
 
 def test_has_stream():
-    assert False
+    """Verifies that has_stream() returns true if the passed Stream exists within the Course."""
+    course = Course(1, "Course 1", "fall")
+    block = Block("mon", "8:30", 1.5, 1)
+    section = Section("420", 1.5, "Section 1")
+    stream = Stream()
+    section.add_block(block)
+    section.assign_stream(stream)
+    course.add_section(section)
+    assert course.has_stream(stream) is True
+
+
+def test_has_stream_false():
+    """Verifies that has_stream() returns false if the Course doesn't contain the passed Stream."""
+    course = Course(1, "Course 1", "fall")
+    block = Block("mon", "8:30", 1.5, 1)
+    section = Section("420", 1.5, "Section 1")
+    stream = Stream()
+    section.add_block(block)
+    section.assign_stream(stream)
+    course.add_section(section)
+
+    bad_stream = Stream()
+    assert course.has_stream(bad_stream) is False
+
+
+def test_has_stream_bad_input():
+    """Verifies that has_stream() returns false if no input is specified."""
+    course = Course(1, "Course 1", "fall")
+    block = Block("mon", "8:30", 1.5, 1)
+    section = Section("420", 1.5, "Section 1")
+    stream = Stream()
+    section.add_block(block)
+    section.assign_stream(stream)
+    course.add_section(section)
+    assert course.has_stream(None) is False
 
 
 def test_assign_teacher():
