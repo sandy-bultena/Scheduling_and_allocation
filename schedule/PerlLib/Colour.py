@@ -10,6 +10,20 @@ RGB is in readable format (#......) unless specified otherwise.
 """
 import re
 
+"""
+
+import PerlLib.Colour
+
+red, green, blue = Colour.rgb("mistyrose3")
+hue, saturation, light = Colour.hsl("mistyrose3")
+
+Colour.darken("mistyrose3", 20) # darken the colour by 20%
+Colour.lighten("mistyrose3", 20) # lighten the colour by 20%
+
+print(Colour.string("mistyrose3"))          # "#FF0000"
+print(Colour.hsl_from_percent(0, 1, 0.5))   # "#FF0000"
+"""
+
 _colour_list = {}
 
 MAX_COLOUR = 255
@@ -23,7 +37,7 @@ def __initialize_colours():
 
   colour_list = __colour_data.split("\n")
   for c in colour_list:
-    r, g, b, name = re.split("\s+", c.strip(), 3)
+    r, g, b, name = re.split(r"\s+", c.strip(), 3)
     if not name: continue
     name = name.strip()
     _colour_list[name] = [int(r), int(g), int(b)]
