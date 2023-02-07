@@ -388,7 +388,7 @@ class Schedule:
         """
         if not isinstance(stream, Stream): raise TypeError(f"{stream} must be an object of type Stream")
         outp = set()
-        for s in Schedule.sections_for_stream(stream): outp.update(s.blocks.values())
+        for s in Schedule.sections_for_stream(stream): outp.update(s.blocks)
         return list(outp)
 
     # NOTE: all_x() methods have been removed, since they're now equivalent to x() methods

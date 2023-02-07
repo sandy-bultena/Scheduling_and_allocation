@@ -393,7 +393,7 @@ class Course(metaclass=CourseMeta):
         teachers = {}
 
         for section in self.sections():
-            for teacher in section.teachers():
+            for teacher in section.teachers:
                 teachers[teacher] = teacher
 
         return list(teachers.values())
