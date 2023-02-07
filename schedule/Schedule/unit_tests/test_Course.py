@@ -4,6 +4,7 @@ from ..Section import Section
 from ..Teacher import Teacher
 from ..Block import Block
 from ..Lab import Lab
+from ..Stream import Stream
 
 
 def test_id():
@@ -312,7 +313,7 @@ def test_print_description_full():
     course.add_section(section)
     description = course.print_description()
     print(description)
-    assert f"{course.number} {course.name}" in description\
+    assert f"{course.number} {course.name}" in description \
            and f"Section {section.number}" in description \
            and f"{block.day} {block.start}, {block.duration} hours" in description \
            and f"labs: {lab.number}: {lab.descr}" in description \
@@ -352,11 +353,52 @@ def test_teachers_bad():
 
 
 def test_has_teacher():
-    assert False
+    """Verifies that has_teacher() returns True if the specified Teacher has been assigned to this course."""
+    course = Course(1, "Course 1", "fall")
+    block = Block("mon", "8:30", 1.5, 1)
+    section = Section("420", 1.5, "Section 1")
+    lab = Lab("R-101", "Worst place in the world")
+    teacher = Teacher("John", "Smith")
+    block.assign_lab(lab)
+    block.assign_teacher(teacher)
+    section.add_block(block)
+    course.add_section(section)
+    assert course.has_teacher(teacher) is True
+
+
+def test_has_teacher_bad_input():
+    """Verifies that has_teacher() returns false when looking for something that isn't a Teacher."""
+    course = Course(1, "Course 1", "fall")
+    block = Block("mon", "8:30", 1.5, 1)
+    section = Section("420", 1.5, "Section 1")
+    lab = Lab("R-101", "Worst place in the world")
+    teacher = Teacher("John", "Smith")
+    block.assign_lab(lab)
+    block.assign_teacher(teacher)
+    section.add_block(block)
+    course.add_section(section)
+    bad_teach = "foo"
+    assert course.has_teacher(bad_teach) is False
 
 
 def test_streams():
-    assert False
+    """Verifies that streams() returns a list of all Streams belonging to the Sections of this Course."""
+    course = Course(1, "Course 1", "fall")
+    block = Block("mon", "8:30", 1.5, 1)
+    section = Section("420", 1.5, "Section 1")
+    stream = Stream()
+    section.add_block(block)
+    section.assign_stream(stream)
+    course.add_section(section)
+    streams = course.streams()
+    assert len(streams) == 1 and stream in streams
+
+
+def test_streams_empty():
+    """Verifies that streams() returns an empty list if no Streams are assigned to this Course."""
+    course = Course(1)
+    streams = course.streams()
+    assert len(streams) == 0
 
 
 def test_has_stream():

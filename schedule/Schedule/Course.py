@@ -406,7 +406,7 @@ class Course(metaclass=CourseMeta):
     # =================================================================
     def has_teacher(self, teacher: Teacher):
         """Returns true if the passed Teacher is assigned to this Course."""
-        if not teacher:
+        if not teacher or not isinstance(teacher, Teacher):
             return False
 
         for t in self.teachers():
@@ -422,7 +422,7 @@ class Course(metaclass=CourseMeta):
         streams = {}
 
         for section in self.sections():
-            for stream in section.streams():
+            for stream in section.streams:
                 streams[stream] = stream
 
         return list(streams.values())
