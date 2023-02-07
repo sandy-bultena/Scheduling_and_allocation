@@ -320,7 +320,11 @@ def test_print_description_full():
 
 
 def test_print_description2():
-    assert False
+    """Verifies that print_description2() prints a brief string containing the Course's number and name."""
+    course = Course(1, "Course 1", "fall")
+    description = course.print_description2()
+    print(description)
+    assert f"{course.number}: {course.name}" in description
 
 
 def test_teachers():
