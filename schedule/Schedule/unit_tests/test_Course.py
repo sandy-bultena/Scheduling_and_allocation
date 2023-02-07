@@ -518,16 +518,81 @@ def test_assign_stream_bad():
     assert "invalid stream" in str(e.value)
 
 
-def test_remove_teacher():
-    assert False
+def test_remove_teacher_good():
+    """Verifies that remove_teacher() can successfully remove the specified Teacher from the Course."""
+    course = Course(1, "Course 1", "fall")
+    block = Block("mon", "8:30", 1.5, 1)
+    section = Section("420", 1.5, "Section 1")
+    section.add_block(block)
+    course.add_section(section)
+    teacher_1 = Teacher("John", "Smith")
+    teacher_2 = Teacher("Jane", "Doe")
+    course.assign_teacher(teacher_1)
+    course.assign_teacher(teacher_2)
+    course.remove_teacher(teacher_1)
+    assert len(course.teachers()) == 1 and teacher_1 not in course.teachers()
+
+
+def test_remove_teacher_bad():
+    """Verifies that remove_teacher() raises an exception when trying to remove a non-Teacher object."""
+    course = Course(1, "Course 1", "fall")
+    block = Block("mon", "8:30", 1.5, 1)
+    section = Section("420", 1.5, "Section 1")
+    section.add_block(block)
+    course.add_section(section)
+    teacher_1 = Teacher("John", "Smith")
+    course.assign_teacher(teacher_1)
+    bad_teacher = "foo"
+    with pytest.raises(TypeError) as e:
+        course.remove_teacher(bad_teacher)
+    assert "invalid teacher" in str(e.value).lower()
 
 
 def test_remove_all_teachers():
-    assert False
+    """Verifies that remove_all_teachers() works as intended."""
+    course = Course(1, "Course 1", "fall")
+    block = Block("mon", "8:30", 1.5, 1)
+    section = Section("420", 1.5, "Section 1")
+    section.add_block(block)
+    course.add_section(section)
+    teacher_1 = Teacher("John", "Smith")
+    teacher_2 = Teacher("Jane", "Doe")
+    teacher_3 = Teacher("John", "Barleycorn")
+    course.assign_teacher(teacher_1)
+    course.assign_teacher(teacher_2)
+    course.assign_teacher(teacher_3)
+    course.remove_all_teachers()
+    assert len(course.teachers()) == 0
 
 
-def test_remove_stream():
-    assert False
+def test_remove_stream_good():
+    """Verifies that remove_stream() works as intended."""
+    course = Course(1, "Course 1", "fall")
+    block = Block("mon", "8:30", 1.5, 1)
+    section = Section("420", 1.5, "Section 1")
+    section.add_block(block)
+    course.add_section(section)
+    stream_1 = Stream()
+    stream_2 = Stream()
+    course.assign_stream(stream_1)
+    course.assign_stream(stream_2)
+    course.remove_stream(stream_1)
+    assert len(course.streams()) == 1 and stream_1 not in course.streams()
+
+
+def test_remove_stream_bad():
+    """Verifies that remove_stream() raises an exception when receiving a non-Stream object."""
+    course = Course(1, "Course 1", "fall")
+    block = Block("mon", "8:30", 1.5, 1)
+    section = Section("420", 1.5, "Section 1")
+    section.add_block(block)
+    course.add_section(section)
+    stream_1 = Stream()
+    course.assign_stream(stream_1)
+    bad_stream = "foo"
+    with pytest.raises(TypeError) as e:
+        course.remove_stream(bad_stream)
+    assert "invalid stream" in str(e.value).lower()
 
 
 def test_remove_all_streams():
