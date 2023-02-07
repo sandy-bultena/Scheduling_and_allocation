@@ -327,8 +327,28 @@ def test_print_description2():
     assert f"{course.number}: {course.name}" in description
 
 
-def test_teachers():
-    assert False
+def test_teachers_good():
+    """Verifies that teachers() returns a list of the Teachers assigned to this course."""
+    course = Course(1, "Course 1", "fall")
+    block = Block("mon", "8:30", 1.5, 1)
+    section = Section("420", 1.5, "Section 1")
+    lab = Lab("R-101", "Worst place in the world")
+    teacher_1 = Teacher("John", "Smith")
+    teacher_2 = Teacher("Jane", "Doe")
+    block.assign_teacher(teacher_1)
+    block.assign_teacher(teacher_2)
+    block.assign_lab(lab)
+    section.add_block(block)
+    course.add_section(section)
+    teachers = course.teachers()
+    assert len(teachers) == 2 and teacher_1 in teachers and teacher_2 in teachers
+
+
+def test_teachers_bad():
+    """Verifies that teachers() returns an empty list if no teachers have been assigned."""
+    course = Course(1)
+    teachers = course.teachers()
+    assert len(teachers) == 0
 
 
 def test_has_teacher():
