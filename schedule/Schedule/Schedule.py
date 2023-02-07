@@ -150,6 +150,7 @@ class Schedule:
     # ========================================================
     # BAD METHODS - TEMPORARY FOR YAML FILE
     # break all kinds of conventions but they're temporary
+    # DO NOT REPLICATE THIS ANYWHERE ELSE IT'S HARD TO USE AND NOT SCALABLE
     # ========================================================
     
     @staticmethod
@@ -221,11 +222,9 @@ class Schedule:
 
     @staticmethod
     def __create_course(course : dict) -> Course:
-        # uncomment these lines if Course is implemented w/ a dict in metaclass (& delete bottom else)
         if Course.get(course.get('id', -1)): return Course.get(course.get('id', -1))
         else:
             c = Course(number = course.get('number', ''), name = course.get('name', ''), semester = course.get('semester', ''))
-            # uncomment following 3 lines when Course is implemented
             c._allocation = course.get('allocation', c.allocation)
             old_id = c.id
             c._Course__id = course.get('id', c.id)
@@ -241,8 +240,8 @@ class Schedule:
             s = Stream(stream.get('number', 'A'), stream.get('descr', ''))
             old_id = s.id
             s._Stream__id = stream.get('id', s.id)
-            del Stream._instances[old_id]
-            Stream._instances[s.id] = s
+            del Stream._Stream__instances[old_id]
+            Stream._Stream__instances[s.id] = s
             return s
 
 #endregion
@@ -272,7 +271,7 @@ class Schedule:
     # streams
     # --------------------------------------------------------
     @staticmethod
-    def streams() -> list[Stream]:
+    def streams() -> tuple[Stream]:
         """Returns the list of Streams"""
         return Stream.list()
 
@@ -443,7 +442,7 @@ class Schedule:
         if not isinstance(stream, Stream): raise TypeError(f"{stream} must be an object of type Stream")
         # go through all sections, and remove stream from each
         for s in Section: s.remove_stream(stream)
-        Stream.remove(stream)
+        stream.delete()
 
     # --------------------------------------------------------
     # calculate_conflicts
@@ -687,8 +686,3 @@ class Schedule:
         # done manually in Perl ver
         block.remove_all_teachers()
         block.remove_all_labs()
-
-# NOTE: The sample FallSchedule.yaml given by Aref has an error in it;
-# Teacher max_id is written as 16, despite there being teachers with IDs up to 29
-# this causes bugs with teachers being overwritten by each other and should be manually fixed in the YAML file
-# if more teachers are added in the Perl version, the old ones with higher IDs would be overwritten

@@ -1,23 +1,8 @@
+from __future__ import annotations
 from .Course import Course
 from .Stream import Stream
 from .Teacher import Teacher
 import re
-
-
-class SectionMeta(type):
-    """ Metaclass for Conflict, making it iterable """
-    _sections = []
-    
-    def __iter__(self):
-        return iter(getattr(self, '_sections', []))
-    
-    # --------------------------------------------------------
-    # reset
-    # --------------------------------------------------------
-    @staticmethod
-    def reset():
-        """Resets the list of sections"""
-        Section._sections.clear()
 
 """
     from Schedule.Section import Section
@@ -48,11 +33,12 @@ class SectionMeta(type):
     section.labs()
 """
 
-class Section(metaclass=SectionMeta):
+class Section():
     """
     Describes a section (part of a course)
     """
     _max_id = 0
+    __instances = dict()
 
     # ========================================================
     # CONSTRUCTOR
@@ -75,9 +61,9 @@ class Section(metaclass=SectionMeta):
         self.hours = hours
         Section._max_id += 1
         self.__id = Section._max_id
-        Section._sections.append(self)
         self._num_students = 0
         self._course = None
+        Section.__instances[self.id] = self
     
     @staticmethod
     def __validate_hours(hours):
@@ -87,9 +73,36 @@ class Section(metaclass=SectionMeta):
         return hours
 
     # ========================================================
+    # ITERATING RELATED (STATIC)
+    # ========================================================
+    # --------------------------------------------------------
+    # list
+    # --------------------------------------------------------
+    @staticmethod
+    #@property
+    def list() -> tuple[Section]:
+        """ Gets all instances of Section. Returns a tuple object. """
+        return tuple(Section.__instances.values())
+    
+    # --------------------------------------------------------
+    # get
+    # --------------------------------------------------------
+    @staticmethod
+    def get(id : int) -> Section:
+        """ Gets a Section with a given ID. If ID doesn't exist, returns None."""
+        return Section.__instances[id] if id in Section.__instances else None
+    
+    # --------------------------------------------------------
+    # reset
+    # --------------------------------------------------------
+    @staticmethod
+    def reset():
+        """ Deletes all Sections """
+        Section.__instances = dict[int, Section]()
+
+    # ========================================================
     # PROPERTIES
     # ========================================================
-    
     # --------------------------------------------------------
     # hours
     # --------------------------------------------------------
@@ -428,8 +441,7 @@ class Section(metaclass=SectionMeta):
         """ Delete this object and all its dependants """
         for b in self.blocks:
             self.remove_block(b)
-        Section._sections.remove(self)
-        return self
+        if self.id in Section.__instances: del Section.__instances[self.id]
     
     # NOTE: There's another method here called "block" in the Perl version, but from what I can tell it's the same thing as get_block_by_id with a different implementation
     

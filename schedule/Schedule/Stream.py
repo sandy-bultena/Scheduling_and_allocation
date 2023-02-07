@@ -1,64 +1,15 @@
-class StreamMeta(type):
-    """ Metaclass for Stream, making it iterable """
-    _instances = {}
+from __future__ import annotations
 
-    def __iter__(self): return iter(getattr(self, '_instances', []))
-
-    # --------------------------------------------------------
-    # get_by_id
-    # --------------------------------------------------------
-    @staticmethod
-    def get_by_id(id : int):
-        """Returns the Stream object with matching ID"""
-        for i in Stream._instances.values():
-            if i.id == id: return i
-    
-    # --------------------------------------------------------
-    # list
-    # --------------------------------------------------------
-    @staticmethod
-    def list():
-        """Returns the list of Stream objects"""
-        return list(Stream._instances.values())
-    
-    # --------------------------------------------------------
-    # share_blocks
-    # --------------------------------------------------------
-    @staticmethod
-    def share_blocks(b1, b2):
-        """Checks if there's a stream who share the two blocks provided"""
-        occurences = {}
-        if not b1.section or not b2.section: return False
-        for s in b1.section.streams: occurences[s.id] = 1
-        for s in b2.section.streams:
-            if s.id in occurences: return True
-        return False
-    
-    # --------------------------------------------------------
-    # remove
-    # --------------------------------------------------------
-    @staticmethod
-    def remove(st):
-        """Removes a stream from the list"""
-        if st.id in Stream._instances: del Stream._instances[st.id]
-    
-    # --------------------------------------------------------
-    # reset
-    # --------------------------------------------------------
-    @staticmethod
-    def reset():
-        """Resets the list of streams"""
-        Stream._instances = {}
-
-"""
+""" SYNOPSIS/EXAMPLE:
     from Schedule.Stream import Stream
 
     stream = Stream(number = "P322")
 """
 
-class Stream(metaclass=StreamMeta):
+class Stream():
     """ Describes a group of students whose classes cannot overlap. """
     _max_id = 0
+    __instances = dict()
 
     # ========================================================
     # CONSTRUCTOR
@@ -73,8 +24,36 @@ class Stream(metaclass=StreamMeta):
         self.__id = Stream._max_id
         self.number = number
         self.descr = descr
-        Stream._instances[self.__id] = self
+        Stream.__instances[self.__id] = self
     
+    # ========================================================
+    # ITERATING RELATED (STATIC)
+    # ========================================================
+    # --------------------------------------------------------
+    # list
+    # --------------------------------------------------------
+    @staticmethod
+    #@property
+    def list() -> tuple[Stream]:
+        """ Gets all instances of Stream. Returns a tuple object. """
+        return tuple(Stream.__instances.values())
+    
+    # --------------------------------------------------------
+    # get
+    # --------------------------------------------------------
+    @staticmethod
+    def get(id : int) -> Stream:
+        """ Gets a Stream with a given ID. If ID doesn't exist, returns None."""
+        return Stream.__instances[id] if id in Stream.__instances else None
+    
+    # --------------------------------------------------------
+    # reset
+    # --------------------------------------------------------
+    @staticmethod
+    def reset():
+        """ Deletes all Streams """
+        Stream.__instances = dict[int, Stream]()
+
     # ========================================================
     # PROPERTIES
     # ========================================================
@@ -84,7 +63,7 @@ class Stream(metaclass=StreamMeta):
     # --------------------------------------------------------
     @property
     def id(self) -> int:
-        """ Gets the id of the stream. """
+        """ Gets the id of the Stream. """
         return self.__id
     
     # ========================================================
@@ -92,15 +71,35 @@ class Stream(metaclass=StreamMeta):
     # ========================================================
 
     # --------------------------------------------------------
+    # share_blocks (STATIC)
+    # --------------------------------------------------------
+    @staticmethod
+    def share_blocks(b1, b2):
+        """Checks if there's a Stream that shares the two blocks provided"""
+        occurences = {}
+        if not b1.section or not b2.section: return False
+        for s in b1.section.streams: occurences[s.id] = 1
+        for s in b2.section.streams:
+            if s.id in occurences: return True
+        return False
+
+    # --------------------------------------------------------
     # __str__
     # --------------------------------------------------------
     def __str__(self) -> str:
-        """ Returns a text string with the stream's number """
+        """ Returns a text string with the Stream's number """
         return self.number
     
     # --------------------------------------------------------
     # print_description     # note: called print_description2 in the Perl version
     # --------------------------------------------------------
     def print_description(self) -> str:
-        """ Returns a text string that describes the stream """
+        """ Returns a text string that describes the Stream """
         return f"{self.number}: {self.descr}"
+    
+    # --------------------------------------------------------
+    # delete
+    # --------------------------------------------------------
+    def delete(self):
+        """ Deletes the current instance of Stream """
+        if self.id in Stream.__instances: del Stream.__instances[self.id]
