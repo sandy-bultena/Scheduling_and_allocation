@@ -491,8 +491,31 @@ def test_assign_lab_bad():
     assert "invalid lab" in str(e.value).lower()
 
 
-def test_assign_stream():
-    assert False
+def test_assign_stream_good():
+    """Verifies that assign_stream() can successfully assign a valid Stream to all Sections of the Course."""
+    course = Course(1, "Course 1", "fall")
+    block = Block("mon", "8:30", 1.5, 1)
+    section = Section("420", 1.5, "Section 1")
+    section.add_block(block)
+    course.add_section(section)
+
+    stream = Stream()
+    course.assign_stream(stream)
+    assert len(section.streams) == 1 and stream in section.streams
+
+
+def test_assign_stream_bad():
+    """Verifies that assign_stream() will raise an exception if it receives a non-Stream object."""
+    course = Course(1, "Course 1", "fall")
+    block = Block("mon", "8:30", 1.5, 1)
+    section = Section("420", 1.5, "Section 1")
+    section.add_block(block)
+    course.add_section(section)
+
+    bad_stream = "foo"
+    with pytest.raises(TypeError) as e:
+        course.assign_stream(bad_stream)
+    assert "invalid stream" in str(e.value)
 
 
 def test_remove_teacher():
