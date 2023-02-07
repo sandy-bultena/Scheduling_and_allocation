@@ -5,8 +5,7 @@ from .Stream import Stream
 from .Teacher import Teacher
 from .Lab import Lab
 
-
-# SYNOPSIS
+'''SYNOPSIS
 
 #    use Schedule::Course;
 
@@ -21,6 +20,7 @@ from .Lab import Lab
 #    foreach my $section ($course->sections) {
 # print info about $section
 #    }
+'''
 
 
 class CourseMeta(type):
@@ -53,7 +53,7 @@ class CourseMeta(type):
             raise TypeError(f"<{course}>: invalid course - must be a Course object")
         if course.id in self._instances:
             del self._instances[course.id]
-        
+
         course.delete()
         del course
 
@@ -79,7 +79,7 @@ class CourseMeta(type):
 
         for course in self._instances.values():
             if course.number == number: return course
-        
+
         return None
 
     # =================================================================
@@ -98,8 +98,6 @@ class CourseMeta(type):
         courses = sorted(courses, key=lambda c: c.number)
         return courses
 
-        
-
 
 class Course(metaclass=CourseMeta):
     # ideally iterable is implemented with dict; if not, yaml write needs to be modified accordingly
@@ -115,6 +113,8 @@ class Course(metaclass=CourseMeta):
         self.number = number
         self.name = name
         self.semester = semester
+        self._allocation = True
+        self._sections = {}
 
     # =================================================================
     # id
@@ -146,8 +146,6 @@ class Course(metaclass=CourseMeta):
         For example, Math and Human Relations do not need to be allocated to one of our teachers.
         
         Defaults to true."""
-        if not hasattr(self, '_allocation'):
-            self._allocation = True
         return self._allocation
 
     @needs_allocation.setter
@@ -189,15 +187,13 @@ class Course(metaclass=CourseMeta):
         """Assign a Section to this Course.
         
         Returns the modified Course object."""
-        if not hasattr(self, '_sections'):
-            self._sections = {}
-
         # In Perl, this function is structured in a way that allows it to take multiple sections and add them all to
         # the Course, one at a time. However, it is never actually used that way. I am preserving the original
         # structure just in case.
         for section in sections:
             # Verify that this is actually a Section object. NOTE: the Section import has been taken out to avoid a
             # circular dependency. TODO: Fix validation; this will let anything in now.
+            # TODO: Check the section's string representation, use that as validation.
             if not isinstance(section, object):
                 raise TypeError(f"<{section}>: invalid section - must be a Section object.")
 
@@ -226,7 +222,7 @@ class Course(metaclass=CourseMeta):
     def get_section(self, number):
         """Gets the Section from this Course that has the passed section number, if it exists. Otherwise,
         returns None. """
-        if hasattr(self, '_sections') and number in self._sections.keys():
+        if number in self._sections.keys():
             return self._sections[number]
         return None
 
@@ -237,11 +233,11 @@ class Course(metaclass=CourseMeta):
         """Gets the Section from this Course that matches the passed section ID, if it exists.
         
         Returns the Section if found, or None otherwise."""
-        if hasattr(self, '_sections'):
-            sections = self.sections()
-            for i in sections:
-                if i.id == sect_id:
-                    return i
+        # if hasattr(self, '_sections'):
+        sections = self.sections()
+        for i in sections:
+            if i.id == sect_id:
+                return i
 
         return None
 
@@ -275,7 +271,7 @@ class Course(metaclass=CourseMeta):
         if not isinstance(section, object):
             raise TypeError(f"<{section}>: invalid section - must be a Section object")
 
-        if hasattr(self, '_sections') and section.number in getattr(self, '_sections', {}):
+        if section.number in getattr(self, '_sections', {}):
             del self._sections[section.number]
 
         # TODO: Decide whether this should be in the if statement. If it's invalid, we may not want to delete it.
@@ -348,7 +344,7 @@ class Course(metaclass=CourseMeta):
     # =================================================================
     def section(self, section_number):
         """Returns the Section associated with this Section number."""
-        if hasattr(self, '_sections'):
+        if section_number in self._sections.keys():
             return self._sections[section_number]
 
     # =================================================================
