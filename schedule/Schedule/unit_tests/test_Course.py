@@ -439,12 +439,56 @@ def test_has_stream_bad_input():
     assert course.has_stream(None) is False
 
 
-def test_assign_teacher():
-    assert False
+def test_assign_teacher_good():
+    """Verifies that assign_teacher() assigns the passed Teacher to all Sections of the Course."""
+    course = Course(1, "Course 1", "fall")
+    block = Block("mon", "8:30", 1.5, 1)
+    section = Section("420", 1.5, "Section 1")
+    section.add_block(block)
+    course.add_section(section)
+    teacher = Teacher("John", "Smith")
+    course.assign_teacher(teacher)
+    teachers = course.teachers()
+    assert len(teachers) == 1 and teacher in teachers
 
 
-def test_assign_lab():
-    assert False
+def test_assign_teacher_bad():
+    """Verifies that assign_teacher throws a TypeError when trying to assign a non-Teacher object."""
+    course = Course(1, "Course 1", "fall")
+    block = Block("mon", "8:30", 1.5, 1)
+    section = Section("420", 1.5, "Section 1")
+    section.add_block(block)
+    course.add_section(section)
+    bad_teach = "foo"
+    with pytest.raises(TypeError) as e:
+        course.assign_teacher(bad_teach)
+    assert "invalid teacher" in str(e.value).lower()
+
+
+def test_assign_lab_good():
+    """Verifies that assign_lab() can assign a legitimate Lab to all Sections of the Course."""
+    course = Course(1, "Course 1", "fall")
+    block = Block("mon", "8:30", 1.5, 1)
+    section = Section("420", 1.5, "Section 1")
+    section.add_block(block)
+    course.add_section(section)
+    lab = Lab()
+    course.assign_lab(lab)
+    assert block.has_lab(lab)
+
+
+def test_assign_lab_bad():
+    """Verifies that assign_lab throws an exception when it receives a non-Lab object."""
+    course = Course(1, "Course 1", "fall")
+    block = Block("mon", "8:30", 1.5, 1)
+    section = Section("420", 1.5, "Section 1")
+    section.add_block(block)
+    course.add_section(section)
+
+    bad_lab = "foo"
+    with pytest.raises(TypeError) as e:
+        course.assign_lab(bad_lab)
+    assert "invalid lab" in str(e.value).lower()
 
 
 def test_assign_stream():
