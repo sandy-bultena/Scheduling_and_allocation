@@ -52,7 +52,7 @@ def test_confirm_description_includes_num_and_descr():
 def test_confirm_can_get_by_id():
     """Confirm that Streams can be retrieved by ID"""
     s = Stream()
-    assert Stream.get_by_id(1) is s
+    assert Stream.get(1) is s
 
 def test_share_blocks_finds_shared():
     """Confirm that share_blocks finds streams with both blocks"""
@@ -73,8 +73,8 @@ def test_share_blocks_ignores_non_shared():
     se.assign_stream(s)
     assert not Stream.share_blocks(b1, b2)
 
-def test_confirm_remove():
-    """Confirm that calling remove will remove the stream"""
+def test_confirm_delete():
+    """Confirm that calling delete will remove the stream"""
     s = Stream()
-    Stream.remove(s)
+    s.delete()
     assert s not in Stream.list()

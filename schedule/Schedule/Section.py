@@ -79,7 +79,6 @@ class Section():
     # list
     # --------------------------------------------------------
     @staticmethod
-    #@property
     def list() -> tuple[Section]:
         """ Gets all instances of Section. Returns a tuple object. """
         return tuple(Section.__instances.values())

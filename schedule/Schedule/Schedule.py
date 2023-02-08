@@ -310,7 +310,7 @@ class Schedule:
         """
         if not isinstance(teacher, Teacher): raise TypeError(f"{teacher} must be an object of type Teacher")
         outp = set()
-        for s in Section:
+        for s in Section.list():
             if teacher in s.teachers: outp.add(s)
         return list(outp)
 
@@ -382,7 +382,7 @@ class Schedule:
         """
         if not isinstance(stream, Stream): raise TypeError(f"{stream} must be an object of type Stream")
         outp = set()
-        for s in Section:
+        for s in Section.list():
             if s.has_stream(stream): outp.add(s)
         return list(outp)
 
@@ -441,7 +441,7 @@ class Schedule:
         """Removes Stream from schedule"""
         if not isinstance(stream, Stream): raise TypeError(f"{stream} must be an object of type Stream")
         # go through all sections, and remove stream from each
-        for s in Section: s.remove_stream(stream)
+        for s in Section.list(): s.remove_stream(stream)
         stream.delete()
 
     # --------------------------------------------------------
