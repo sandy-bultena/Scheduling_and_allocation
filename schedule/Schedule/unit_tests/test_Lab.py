@@ -1,6 +1,6 @@
 import pytest
 
-from ..Lab import Lab, LabMeta
+from ..Lab import Lab
 from ..Time_slot import TimeSlot
 from ..Block import Block
 
