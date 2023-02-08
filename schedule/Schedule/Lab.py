@@ -9,31 +9,6 @@ class LabMeta(type):
         return iter(getattr(self, '_instances', {}))
 
     # =================================================================
-    # share_blocks
-    # =================================================================
-    @staticmethod
-    def share_blocks(block1, block2):
-        """Checks whether there are Labs which share the two specified Blocks."""
-
-        # Count occurrences in both sets and ensure that all values are < 2
-        occurrences = {}
-        for lab in block1.labs():
-            if lab.id not in occurrences.keys():
-                occurrences[lab.id] = 0
-            occurrences[lab.id] += 1
-        for lab in block2.labs():
-            if lab.id not in occurrences.keys():
-                occurrences[lab.id] = 0
-            occurrences[lab.id] += 1
-
-        # A count of 2 means that they are in both sets.
-        for lab_count in occurrences.values():
-            if lab_count >= 2:
-                return True
-
-        return False
-
-    # =================================================================
     # add
     # =================================================================
     def add(self, *args):
@@ -249,6 +224,31 @@ class Lab:
             if lab.number == number:
                 return lab
         return None
+
+    # =================================================================
+    # share_blocks
+    # =================================================================
+    @staticmethod
+    def share_blocks(block1, block2):
+        """Checks whether there are Labs which share the two specified Blocks."""
+
+        # Count occurrences in both sets and ensure that all values are < 2
+        occurrences = {}
+        for lab in block1.labs():
+            if lab.id not in occurrences.keys():
+                occurrences[lab.id] = 0
+            occurrences[lab.id] += 1
+        for lab in block2.labs():
+            if lab.id not in occurrences.keys():
+                occurrences[lab.id] = 0
+            occurrences[lab.id] += 1
+
+        # A count of 2 means that they are in both sets.
+        for lab_count in occurrences.values():
+            if lab_count >= 2:
+                return True
+
+        return False
 
 
 # =================================================================
