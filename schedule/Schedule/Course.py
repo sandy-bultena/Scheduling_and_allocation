@@ -33,23 +33,11 @@ class CourseMeta(type):
         return iter(getattr(self, '_instances', {}))
 
     # =================================================================
-    # add
-    # =================================================================
-    def add(self, course):
-        """Adds a new Course to the Courses object.
-        
-        Returns the modified Courses object."""
-        if not isinstance(course, Course):
-            raise TypeError(f"<{course}>: invalid course - must be a Course object")
-        self._instances[course.id] = course
-
-        return self
-
-    # =================================================================
     # remove course
     # =================================================================
     def remove(self, course):
-        """Removes the passed Course from the Courses object. Prints remaining courses to the console.
+        """Removes the passed Course from the Courses object. Prints remaining courses to the
+        console.
         
         Returns the modified Courses object."""
         if not isinstance(course, Course):
@@ -66,17 +54,8 @@ class CourseMeta(type):
 
         return self
 
-    # =================================================================
-    # courses list for allocation
-    # =================================================================
-    def allocation_list(self):
-        """Returns a sorted list of the Courses that need allocation."""
-        courses = list(filter(lambda x: x.needs_allocation, self.list()))
-        courses = sorted(courses, key=lambda c: c.number)
-        return courses
 
-
-class Course(metaclass=CourseMeta):
+class Course:
     """Describes a distinct course."""
     _max_id = 0
     __instances = {}
@@ -562,7 +541,6 @@ class Course(metaclass=CourseMeta):
         courses = list(filter(lambda x: x.needs_allocation, Course.list()))
         courses = sorted(courses, key=lambda c: c.number)
         return courses
-
 
 
 # =================================================================

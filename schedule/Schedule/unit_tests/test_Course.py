@@ -200,14 +200,15 @@ def test_remove_section_no_crash():
 
 
 def test_delete():
-    """Verifies that delete() will remove all Sections from the Course."""
+    """Verifies that delete() will remove all Sections from the Course, and remove the Course
+    from the backend list of Courses. """
     course = Course(1, semester="summer")
     section_1 = Section("420")
     section_2 = Section("555")
     course.add_section(section_1)
     course.add_section(section_2)
     course.delete()
-    assert len(course.sections()) == 0
+    assert len(course.sections()) == 0 and course not in Course.list()
 
 
 def test_sections():
