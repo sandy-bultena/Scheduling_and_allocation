@@ -19,16 +19,6 @@ class TeacherMeta(type):
         return self
 
     # =================================================================
-    # get
-    # =================================================================
-    def get(self, teacher_id: int):
-        """Returns the Teacher object matching the passed ID, if it exists."""
-        for teacher in self._instances.values():
-            if teacher.id == teacher_id:
-                return teacher
-        return None
-
-    # =================================================================
     # get_by_name
     # =================================================================
     @staticmethod
@@ -66,7 +56,8 @@ class TeacherMeta(type):
     # disjoint 
     # =================================================================
     def disjoint(self, rhs):
-        """Determine if the current set of teachers is disjoint with the provided set of teachers."""
+        """Determine if the current set of teachers is disjoint with the provided set of
+        teachers. """
         occurrences = {}
 
         # Get all the teachers in the current set.
@@ -233,6 +224,19 @@ class Teacher(metaclass=TeacherMeta):
                 return True
 
         return False
+
+    # =================================================================
+    # get
+    # =================================================================
+    @staticmethod
+    def get(teacher_id: int):
+        """Returns the Teacher object matching the passed ID, if it exists."""
+        # for teacher in Teacher.__instances.values():
+        #     if teacher.id == teacher_id:
+        #         return teacher
+        if teacher_id in Teacher.__instances.keys():
+            return Teacher.__instances[teacher_id]
+        return None
 
 
 # =================================================================

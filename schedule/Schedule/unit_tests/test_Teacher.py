@@ -116,3 +116,20 @@ def test_share_blocks_false():
     block_2 = Block("mon", "10:00", 1.5, 2)
     block_1.assign_teacher(teach)
     assert Teacher.share_blocks(block_1, block_2) is False
+
+
+def test_get_good_id():
+    """Verifies that the static get() method works as intended."""
+    Teacher._Teacher__instances = {}
+    Teacher._max_id = 0
+    teach = Teacher("John", "Smith")
+    assert Teacher.get(1) == teach
+
+
+def test_get_bad_id():
+    """Verifies that get() returns None when receiving an invalid ID."""
+    Teacher._Teacher__instances = {}
+    Teacher._max_id = 0
+    teach = Teacher("John", "Smith")
+    bad_id = 666
+    assert Teacher.get(bad_id) is None
