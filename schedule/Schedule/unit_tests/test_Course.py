@@ -659,3 +659,35 @@ def test_get_bad_id():
     course = Course(1, "Course 1", "fall")
     bad_num = 666
     assert Course.get(bad_num) is None
+
+
+def test_get_by_number_good():
+    """Verifies that get_by_number() returns the first Course matching the passed number."""
+    num = "420-6P3-AB"
+    Course._Course__instances = {}
+    Course._max_id = 0
+    course_1 = Course(num, "Course 1", "fall")
+    course_2 = Course("11111", "Course 2", "fall")
+    assert Course.get_by_number(num) == course_1
+
+
+def test_get_by_number_bad():
+    """Verifies that get_by_number() returns None if no matching Course is found."""
+    Course._Course__instances = {}
+    Course._max_id = 0
+    num = "420-6P3-AB"
+    course_1 = Course(num, "Course 1", "fall")
+    course_2 = Course("11111", "Course 2", "fall")
+    bad_num = "666"
+    assert Course.get_by_number(bad_num) is None
+
+
+def test_get_by_number_no_input():
+    """Verifies that get_by_number() returns None when receiving None or an empty string."""
+    Course._Course__instances = {}
+    Course._max_id = 0
+    num = "420-6P3-AB"
+    course_1 = Course(num, "Course 1", "fall")
+    course_2 = Course("11111", "Course 2", "fall")
+    bad_num = ""
+    assert Course.get_by_number(bad_num) is None

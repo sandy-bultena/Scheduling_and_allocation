@@ -23,6 +23,7 @@ from .Lab import Lab
         # print info about section
 '''
 
+
 # TODO: Make the static collection return a tuple instead of a list.
 # Tuples are faster than lists, and also immutable.
 class CourseMeta(type):
@@ -66,18 +67,6 @@ class CourseMeta(type):
         return self
 
     # =================================================================
-    # get_by_number
-    # =================================================================
-    def get_by_number(self, number):
-        """Return the Course which matches this Course number, if it exists."""
-        if not number: return
-
-        for course in self._instances.values():
-            if course.number == number: return course
-
-        return None
-
-    # =================================================================
     # courses list for allocation
     # =================================================================
     def allocation_list(self):
@@ -88,13 +77,19 @@ class CourseMeta(type):
 
 
 class Course(metaclass=CourseMeta):
+    """Describes a distinct course."""
     _max_id = 0
     __instances = {}
 
     # -------------------------------------------------------------------
     # new
     # --------------------------------------------------------------------
-    def __init__(self, number, name: str = "", semester: str = ""):
+    def __init__(self, number: str = "", name: str = "", semester: str = ""):
+        """Creates and returns a course object.
+        
+        Parameter **number**: str -> The alphanumeric course number.
+
+        Parameter **name**: str -> the name of the course."""
         Course._max_id += 1
         self.__id = Course._max_id
         self.number = number
@@ -165,7 +160,7 @@ class Course(metaclass=CourseMeta):
         return self.__number
 
     @number.setter
-    def number(self, new_num):
+    def number(self, new_num: str):
         self.__number = new_num
 
     # =================================================================
@@ -193,7 +188,8 @@ class Course(metaclass=CourseMeta):
                     duplicate = True
                     break
             if duplicate:
-                raise Exception(f"<{section.number}>: section number is not unique for this Course.")
+                raise Exception(
+                    f"<{section.number}>: section number is not unique for this Course.")
 
             # ----------------------------------------------------------
             # save section for this course, save course for this section
@@ -542,6 +538,19 @@ class Course(metaclass=CourseMeta):
     def get(c_id: int):
         """Returns the Course object with the matching ID."""
         return Course.__instances.get(c_id)
+
+    # =================================================================
+    # get_by_number
+    # =================================================================
+    @staticmethod
+    def get_by_number(number):
+        """Return the Course which matches this Course number, if it exists."""
+        if not number: return
+
+        for course in Course.__instances.values():
+            if course.number == number: return course
+
+        return None
 
 
 # =================================================================
