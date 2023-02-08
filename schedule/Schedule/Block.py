@@ -1,10 +1,10 @@
 from .Lab import Lab
 from .Section import Section
 from .Teacher import Teacher
-from .Time_slot import TimeSlot, TimeSlotMeta
+from .Time_slot import TimeSlot
 
 
-class BlockMeta(TimeSlotMeta):
+class BlockMeta:
     """Metaclass for Block, making it iterable."""
     _instances = []
 
@@ -55,7 +55,7 @@ block.labs()
 """
 
 
-class Block(TimeSlot, metaclass=BlockMeta):
+class Block(TimeSlot):
     """
     Describes a block which is a specific time slot for teaching part of a section of a course.
     """
@@ -66,6 +66,7 @@ class Block(TimeSlot, metaclass=BlockMeta):
 
     _max_id = 0
     _DEFAULT_DAY = 'mon'
+    __instances = []
 
     # =================================================================
     # Constructor
@@ -84,7 +85,7 @@ class Block(TimeSlot, metaclass=BlockMeta):
         self.number = number  # NOTE: Based on the code found in CSV.pm and Section.pm
         Block._max_id += 1
         self._block_id = Block._max_id
-        Block._instances.append(self)
+        Block.__instances.append(self)
         self.__section = None
         self._teachers = dict()
         self._labs = {}
