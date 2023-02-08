@@ -6,6 +6,10 @@ conflict_types.append(Conflict.TIME_LAB)
 conflict_types.append(Conflict.TIME_STREAM)
 conflict_types.append(Conflict.TIME_TEACHER)
 
+@pytest.fixture(autouse=True)
+def run_before_and_after():
+    Conflict.reset()
+
 def test_constructor_fails_with_invalid_arguments():
     """Checks that TypeError exception is raised when incorrect arguments are provided"""
     with pytest.raises(TypeError) as e:
@@ -19,7 +23,7 @@ def test_constructor_fails_with_invalid_arguments():
 def test_conflict_is_added_to_collection():
     """Checks that newly created Conflict is correctly added to the collection"""
     c = Conflict(Conflict.LUNCH, [1])
-    assert c in Conflict
+    assert c in Conflict.list()
 
 def test_conflict_created_success():
     """Checks that Conflict is created correctly"""
@@ -30,14 +34,13 @@ def test_conflict_created_success():
 
 def test_confirm_Conflict_can_be_iterated():
     """Confirm that Conflict can be iterated over"""
-    Conflict.list().clear()
     Conflict(Conflict.TIME_LAB, [1])
     Conflict(Conflict.TIME_TEACHER, [2])
     Conflict(Conflict.TIME_STREAM, [3])
     Conflict(Conflict.TIME_LAB, [1])
     Conflict(Conflict.TIME_TEACHER, [2])
     Conflict(Conflict.TIME_STREAM, [3])
-    for i in Conflict:
+    for i in Conflict.list():
         assert i
 
 def test_confirm_hash_descriptions_and_colour_cover_same_types():
@@ -46,7 +49,6 @@ def test_confirm_hash_descriptions_and_colour_cover_same_types():
 
 def test_confirm_conflicts_list_is_full():
     """Confirms that the list of conflicts can be retrieved, and contains currently existing conflicts"""
-    Conflict.list().clear()
     c1 = Conflict(Conflict.TIME_LAB, [1])
     c2 = Conflict(Conflict.TIME_TEACHER, [2])
     c3 = Conflict(Conflict.TIME_STREAM, [3])
@@ -107,7 +109,6 @@ def test_confirm_conflict_is_deleted():
 
 def test_reset_works():
     """Confirms Conflict.reset() works correctly"""
-    Conflict._conflicts.clear()
     c1 = Conflict(Conflict.TIME_LAB, [1])
     c2 = Conflict(Conflict.TIME_TEACHER, [2])
     c3 = Conflict(Conflict.TIME_STREAM, [3])

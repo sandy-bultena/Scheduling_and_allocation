@@ -169,7 +169,10 @@ class Schedule:
         blocks = list(filter(lambda i : i.id == block.get('id', -1), Block))
         if len(blocks) == 0:
             b = Block(block.get('day', ''), block.get('start', ''), block.get('duration', 0), block.get('number', 0))
-            b._block_id = block.get('id', b.id)
+            old_id = b.id
+            b._Block__id = block.get('id', b.id)
+            del Block._Block__instances[old_id]
+            Block._Block__instances[b.id] = b
             b.conflicted = block.get('conflicted', b.conflicted)
             # don't set day_number, its calculated based on day
             # don't set start_number, its calculated based on start
@@ -189,7 +192,10 @@ class Schedule:
             s = Section(section.get('number', ''), section.get('hours', 0), section.get('name', ''))
             if section.get('course'): s.course = Schedule.__create_course(section.get('course'))
             for k in section.get('blocks', {}).keys(): s.add_block(Schedule.__create_block(section.get('blocks', {})[k]))
+            old_id = s.id
             s._Section__id = section.get('id', s.id)
+            del Section._Section__instances[old_id]
+            Section._Section__instances[s.id] = s
             s._allocation = section.get('allocation', s._allocation)
             s.num_students = section.get('num_students', s.num_students)
             for k in section.get('streams', {}).keys(): s.assign_stream(Schedule.__create_stream(section.get('streams', {})[k]))

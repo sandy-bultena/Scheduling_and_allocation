@@ -51,7 +51,7 @@ class Stream():
     @staticmethod
     def reset():
         """ Deletes all Streams """
-        Stream.__instances = dict[int, Stream]()
+        for s in Stream.list(): s.delete()
 
     # ========================================================
     # PROPERTIES

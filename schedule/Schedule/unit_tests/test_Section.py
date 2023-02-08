@@ -10,7 +10,7 @@ import pytest
 def run_before_and_after():
     Section._max_id = 0
     Section.reset()
-    Block.list().clear()
+    Block.reset()
 
 #region General & Properties
 def test_constructor_default_values():
@@ -104,9 +104,9 @@ def test_delete_deletes_all():
     s.add_block(b1).add_block(b2).add_block(b3)
     s.delete()
     assert s not in Section.list()
-    assert b1 not in Block
-    assert b2 not in Block
-    assert b3 not in Block
+    assert b1 not in Block.list()
+    assert b2 not in Block.list()
+    assert b3 not in Block.list()
 
 def test_is_conflicted_detects_conflicts_correctly():
     """Checks that the is_conflicted method correctly picks up conflicted blocks"""

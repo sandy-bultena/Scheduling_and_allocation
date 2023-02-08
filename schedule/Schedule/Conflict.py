@@ -1,31 +1,21 @@
+from __future__ import annotations
 from ..PerlLib import Colour
 # kind of a hack-y way to import Colour, but forces PerlLib to be recognized as a valid import source
 # if the top line stops working again, use this
 """import sys
 try:
     from ..PerlLib import Colour
-    print("W")
 except ImportError or ModuleNotFoundError:
         sys.path.insert(0, "\\".join(sys.path[0].split("\\")[:-1]) + "\\PerlLib")
         import Colour
-        print("L")
 """
-
-class ConflictMeta(type):
-    """ Metaclass for Conflict, making it iterable """
-    _conflicts = []
-    
-    def __iter__(self):
-        return iter(getattr(self, '_conflicts', []))
-
-
 """ SYNOPSIS/EXAMPLE:
     from Schedule.Conflict import Conflict
 
     blocks = [block1, block2, ...]
     new_conflict = Conflict(type = Conflict.MINIMUM_DAYS, blocks = blocks)
 """
-class Conflict(metaclass=ConflictMeta):
+class Conflict():
     """
     Represents a scheduling conflict.
     - Constant Attributes -> TIME, LUNCH, MINIMUM_DAYS, AVAILABILITY, TIME_TEACHER, TIME_LAB, TIME_STREAM
@@ -58,6 +48,8 @@ class Conflict(metaclass=ConflictMeta):
 
     _colours[TIME] = Colour.lighten(_colours[TIME_TEACHER], 30)
 
+    __instances = list()
+
     # ========================================================
     # CONSTRUCTOR
     # ========================================================
@@ -71,7 +63,26 @@ class Conflict(metaclass=ConflictMeta):
         
         self.type = type
         self.blocks = blocks.copy() # if list is changed, the Conflict won't be
-        Conflict._conflicts.append(self)
+        Conflict.__instances.append(self)
+
+    # ========================================================
+    # ITERATING RELATED (STATIC)
+    # ========================================================
+    # --------------------------------------------------------
+    # list
+    # --------------------------------------------------------
+    @staticmethod
+    def list() -> tuple[Conflict]:
+        """ Gets all instances of Conflict. Returns a tuple object. """
+        return tuple(Conflict.__instances)
+    
+    # --------------------------------------------------------
+    # reset
+    # --------------------------------------------------------
+    @staticmethod
+    def reset():
+        """ Deletes all Conflicts """
+        for c in Conflict.list(): c.delete()
 
     # ========================================================
     # METHODS
@@ -102,14 +113,6 @@ class Conflict(metaclass=ConflictMeta):
         Conflict.TIME_STREAM  : "time overlap",
         Conflict.AVAILABILITY : "not available"
     }
-
-    # --------------------------------------------------------
-    # list
-    # --------------------------------------------------------
-    @staticmethod
-    def list() -> list:
-        """Returns reference to list of Conflict objects"""
-        return Conflict._conflicts
 
     # --------------------------------------------------------
     # most_severe
@@ -145,15 +148,6 @@ class Conflict(metaclass=ConflictMeta):
     def get_description(type):
         """ Returns the description of the provided conflict type """
         return Conflict._hash_descriptions()[type]
-    
-    # --------------------------------------------------------
-    # reset | new to Python version
-    # --------------------------------------------------------
-    @staticmethod
-    def reset():
-        """ Resets the list of conflicts """
-        Conflict._conflicts.clear()
-
 
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
     # Instance Methods
@@ -174,5 +168,4 @@ class Conflict(metaclass=ConflictMeta):
     # --------------------------------------------------------
     def delete(self):
         """ Deletes the conflict from the conflict list """
-        Conflict._conflicts.remove(self)
-        return self
+        Conflict.__instances.remove(self)

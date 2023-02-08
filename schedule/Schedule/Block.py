@@ -465,9 +465,7 @@ class Block(TimeSlot):
         number = self.number
         section = self.section
 
-        if number == 0:
-            self.number = section.get_new_number()
-        pass
+        if number == 0: self.number = section.get_new_number()
 
     # ===================================
     # List [Tuple]
@@ -476,6 +474,14 @@ class Block(TimeSlot):
     def list():
         """Returns a tuple containing all Block objects."""
         return tuple(Block.__instances.values())
+
+    # ===================================
+    # Reset
+    # ===================================
+    @staticmethod
+    def reset():
+        """Resets the list of Block objects."""
+        for b in Block.list(): b.delete()
 
     # =================================================================
     # get_day_blocks ($day, $blocks)

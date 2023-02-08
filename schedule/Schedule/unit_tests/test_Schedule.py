@@ -10,8 +10,7 @@ import pytest
 
 @pytest.fixture(autouse=True)
 def run_before_and_after():
-    Block._max_id = 0
-    Block._instances = []
+    Block.reset()
 
 def test_teachers_get():
     """Checks that teachers method returns correct list"""
@@ -278,7 +277,7 @@ def test_calculate_conflicts():
     conflict_types = dict()
     conflict_values = dict[int, Conflict]()
     conflict_block_sets = list[list[Block]]()
-    for i in Conflict:
+    for i in Conflict.list():
         if i.type not in conflict_types: conflict_types[i.type] = 0
         conflict_types[i.type] += 1
         conflict_values[i.type] = i
