@@ -1,6 +1,6 @@
 import pytest
 
-from ..Teacher import Teacher, TeacherMeta
+from ..Teacher import Teacher
 from ..Block import Block
 
 
@@ -51,7 +51,8 @@ def test_lastname_setter_good():
 
 
 def test_lastname_setter_bad():
-    """Verifies that the lastname setter throws an exception when receiving an invalid input (empty strings)."""
+    """Verifies that the lastname setter throws an exception when receiving an invalid input (
+    empty strings). """
     teach = Teacher("John", "Smith")
     bad_name = ""
     with pytest.raises(Exception) as e:
@@ -97,19 +98,21 @@ def test_print_description():
 
 
 def test_share_blocks_true():
-    """Verifies that the static share_blocks() method returns true if two blocks are sharing a teacher."""
+    """Verifies that the static share_blocks() method returns true if two blocks are sharing a
+    teacher. """
     teach = Teacher("John", "Smith")
     block_1 = Block("mon", "8:30", 1.5, 1)
     block_2 = Block("mon", "10:00", 1.5, 2)
     block_1.assign_teacher(teach)
     block_2.assign_teacher(teach)
-    assert TeacherMeta.share_blocks(block_1, block_2) is True
+    assert Teacher.share_blocks(block_1, block_2) is True
 
 
 def test_share_blocks_false():
-    """Verifies that the static share_blocks() method returns false if two blocks are not sharing any Teachers."""
+    """Verifies that the static share_blocks() method returns false if two blocks are not sharing
+    any Teachers. """
     teach = Teacher("John", "Smith")
     block_1 = Block("mon", "8:30", 1.5, 1)
     block_2 = Block("mon", "10:00", 1.5, 2)
     block_1.assign_teacher(teach)
-    assert TeacherMeta.share_blocks(block_1, block_2) is False
+    assert Teacher.share_blocks(block_1, block_2) is False

@@ -6,33 +6,6 @@ class TeacherMeta(type):
         return iter(getattr(self, '_instances', {}))
 
     # =================================================================
-    # share_blocks
-    # =================================================================
-    @staticmethod
-    def share_blocks(block1, block2):
-        """Checks if there are teachers who share these two blocks."""
-        # Count occurrences in both sets to ensure that all values are < 2
-        occurrences: dict[int, int] = {}
-
-        # Get all the teachers in the first and second sets.
-        for teacher in block1.teachers():
-            if teacher.id not in occurrences.keys():
-                occurrences[teacher.id] = 0
-            occurrences[teacher.id] += 1
-
-        for teacher in block2.teachers():
-            if teacher.id not in occurrences.keys():
-                occurrences[teacher.id] = 0
-            occurrences[teacher.id] += 1
-
-        # A count of 2 means the teachers are in both sets.
-        for count in occurrences.values():
-            if count >= 2:
-                return True
-
-        return False
-
-    # =================================================================
     # add
     # =================================================================
     def add(self, *args):
@@ -128,6 +101,7 @@ class TeacherMeta(type):
 
 class Teacher(metaclass=TeacherMeta):
     _max_id = 0
+    __instances = {}
 
     """Describes a teacher."""
 
@@ -138,16 +112,16 @@ class Teacher(metaclass=TeacherMeta):
     def __init__(self, firstname: str, lastname: str, dept: str = ""):
         """Creates a Teacher object.
         
-        Parameter firstname: str -> first name of the teacher.
-        Parameter lastname: str -> last name of the teacher.
-        Parameter dept -> department that this teacher is associated with (optional)"""
+        Parameter **firstname:** str -> first name of the teacher.
+        Parameter **lastname:** str -> last name of the teacher.
+        Parameter **dept:** str -> department that this teacher is associated with (optional)"""
         self.firstname = firstname
         self.lastname = lastname
         self.dept = dept
         Teacher._max_id += 1
         self.__id = Teacher._max_id
         self.release = 0
-        Teacher._instances[self.__id] = self
+        Teacher.__instances[self.__id] = self
 
     # =================================================================
     # id
@@ -192,7 +166,8 @@ class Teacher(metaclass=TeacherMeta):
     # =================================================================
     # dept
     # =================================================================
-    # NOTE: May or may not remove these due to it being not Pythonic to have such simple getters/setters.
+    # NOTE: May or may not remove these due to it being not Pythonic to
+    # have such simple getters/setters.
     @property
     def dept(self):
         """Gets and sets the name of the Teacher's department."""
@@ -230,7 +205,35 @@ class Teacher(metaclass=TeacherMeta):
     @staticmethod
     def list():
         """Returns an immutable tuple containing all occurrences of Teachers."""
-        return tuple(Teacher._instances.values())
+        return tuple(Teacher.__instances.values())
+
+    # =================================================================
+    # share_blocks
+    # =================================================================
+    @staticmethod
+    def share_blocks(block1, block2):
+        """Checks if there are teachers who share these two Blocks."""
+        # Count occurrences in both sets to ensure that all values are < 2
+        occurrences: dict[int, int] = {}
+
+        # Get all the teachers in the first and second sets.
+        for teacher in block1.teachers():
+            if teacher.id not in occurrences.keys():
+                occurrences[teacher.id] = 0
+            occurrences[teacher.id] += 1
+
+        for teacher in block2.teachers():
+            if teacher.id not in occurrences.keys():
+                occurrences[teacher.id] = 0
+            occurrences[teacher.id] += 1
+
+        # A count of 2 means the teachers are in both sets.
+        for count in occurrences.values():
+            if count >= 2:
+                return True
+
+        return False
+
 
 # =================================================================
 # footer
