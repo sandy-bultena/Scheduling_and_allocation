@@ -4,24 +4,6 @@ from .Teacher import Teacher
 from .Time_slot import TimeSlot
 
 
-class BlockMeta:
-    """Metaclass for Block, making it iterable."""
-    _instances = []
-
-    # =================================================================
-    # get_day_blocks ($day, $blocks)
-    # =================================================================
-    def get_day_blocks(self, day, blocks: list):
-        """Returns an array of all blocks within a specific day.
-        
-        Parameter day: int -> day of the week (1=monday, 2=tuesday, etc.)
-        Parameter blocks: list -> An array of AssignBlocks."""
-        if not blocks:
-            return []
-        day_blocks = filter(lambda x: x.day == day, blocks)
-        return list(day_blocks)
-
-
 """ SYNOPSIS:
 
 from Schedule.Course import Course
@@ -489,6 +471,22 @@ class Block(TimeSlot):
     def list():
         """Returns a tuple containing all Block objects."""
         return tuple(Block.__instances)
+
+    # =================================================================
+    # get_day_blocks ($day, $blocks)
+    # =================================================================
+    @staticmethod
+    def get_day_blocks(day: str, blocks: list):
+        """Returns an array of all blocks within a specific day.
+
+        Parameter day: str -> three-letter day of the week (mon, tue, etc.)
+        Parameter blocks: list -> An array of AssignBlocks."""
+        # NOTE: Day was an integer according to the original Perl documentation, but that won't work here because
+        # TimeSlot.day returns a string.
+        if not blocks or type(blocks[0]) is not Block:
+            return []
+        day_blocks = filter(lambda x: x.day == day, blocks)
+        return list(day_blocks)
 
 
 # =================================================================

@@ -714,3 +714,40 @@ def test_list_empty():
     Block._Block__instances = []
     blocks = Block.list()
     assert len(blocks) == 0
+
+
+def test_get_day_blocks():
+    """Verifies that get_day_blocks() returns a list of all Blocks occurring on a specific day of the week."""
+    day = "mon"
+    block_1 = Block("mon", "8:00", 1.5, 1)
+    block_2 = Block("mon", "8:00", 1.5, 2)
+    block_3 = Block("tue", "8:00", 1.5, 2)
+    block_4 = Block("wed", "8:00", 1.5, 2)
+    unfiltered_blocks = [block_1, block_2, block_3, block_4]
+    monday_blocks = Block.get_day_blocks(day, unfiltered_blocks)
+    assert len(monday_blocks) == 2 and block_1 in monday_blocks and block_2 in monday_blocks
+
+
+def test_get_day_blocks_bad_input():
+    """Verifies that get_day_blocks() won't crash the program if passed a list containing non-Block objects."""
+    day = "mon"
+    block_1 = Block("mon", "8:00", 1.5, 1)
+    block_2 = Block("mon", "8:00", 1.5, 2)
+    block_3 = Block("tue", "8:00", 1.5, 2)
+    block_4 = Block("wed", "8:00", 1.5, 2)
+    bad_blocks = ["foo", "bar", "baz"]
+    monday_blocks = Block.get_day_blocks(day, bad_blocks)
+    assert len(monday_blocks) == 0
+
+
+def test_get_day_blocks_empty_list():
+    """Verifies that get_day_blocks() returns an empty list if no Blocks match the passed day."""
+    block_1 = Block("mon", "8:00", 1.5, 1)
+    block_2 = Block("mon", "8:00", 1.5, 2)
+    block_3 = Block("tue", "8:00", 1.5, 2)
+    block_4 = Block("wed", "8:00", 1.5, 2)
+    unfiltered_blocks = [block_1, block_2, block_3, block_4]
+    bad_day = "fri"
+    friday_blocks = Block.get_day_blocks(bad_day, unfiltered_blocks)
+    assert len(friday_blocks) == 0
+
