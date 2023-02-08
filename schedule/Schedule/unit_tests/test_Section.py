@@ -33,7 +33,7 @@ def test_section_created_success():
 def test_section_is_added_to_collection():
     """Checks that newly created Section is added to the collection"""
     s = Section()
-    assert s in Section
+    assert s in Section.list()
 
 def test_set_hours_valid():
     """Checks that valid hours can be set"""
@@ -103,7 +103,7 @@ def test_delete_deletes_all():
     b3 = Block('Mon', '13:00', 2, 3)
     s.add_block(b1).add_block(b2).add_block(b3)
     s.delete()
-    assert s not in Section
+    assert s not in Section.list()
     assert b1 not in Block
     assert b2 not in Block
     assert b3 not in Block

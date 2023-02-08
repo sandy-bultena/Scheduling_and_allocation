@@ -33,7 +33,6 @@ class Stream():
     # list
     # --------------------------------------------------------
     @staticmethod
-    #@property
     def list() -> tuple[Stream]:
         """ Gets all instances of Stream. Returns a tuple object. """
         return tuple(Stream.__instances.values())
