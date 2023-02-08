@@ -21,11 +21,6 @@ class BlockMeta:
         day_blocks = filter(lambda x: x.day == day, blocks)
         return list(day_blocks)
 
-    @staticmethod
-    def list():
-        """Returns the list of all Blocks"""
-        return Block._instances
-
 
 """ SYNOPSIS:
 
@@ -486,6 +481,14 @@ class Block(TimeSlot):
         if number == 0:
             self.number = section.get_new_number()
         pass
+
+    # ===================================
+    # List [Tuple]
+    # ===================================
+    @staticmethod
+    def list():
+        """Returns a tuple containing all Block objects."""
+        return tuple(Block.__instances)
 
 
 # =================================================================

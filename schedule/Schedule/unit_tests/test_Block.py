@@ -698,3 +698,19 @@ def test_refresh_number():
     sect.add_block(block)
     block.refresh_number()
     assert block.number == 1
+
+
+def test_list():
+    """Verifies that list() returns a tuple containing all extant Blocks."""
+    Block._Block__instances = []
+    block_1 = Block("mon", "8:00", 1.5, 1)
+    block_2 = Block("mon", "8:00", 1.5, 2)
+    blocks = Block.list()
+    assert len(blocks) == 2 and block_1 in blocks and block_2 in blocks
+
+
+def test_list_empty():
+    """Verifies that list() returns an empty tuple if there are no Blocks."""
+    Block._Block__instances = []
+    blocks = Block.list()
+    assert len(blocks) == 0

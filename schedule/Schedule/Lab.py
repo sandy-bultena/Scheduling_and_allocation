@@ -250,6 +250,10 @@ class Lab(metaclass=LabMeta):
         """Returns a text string that describes the Lab."""
         return self.__str__()
 
+    # ===================================
+    # list [tuple]
+    # ===================================
+
     @staticmethod
     def list():
         """Returns an immutable tuple containing all instances of the Lab class."""
