@@ -1,56 +1,4 @@
-class TeacherMeta(type):
-    """Metaclass for Teacher, making it iterable."""
-    _instances = {}
-
-    def __iter__(self):
-        return iter(getattr(self, '_instances', {}))
-
-    # =================================================================
-    # add
-    # =================================================================
-    def add(self, *args):
-        """Adds a new Teacher to the Teachers object.
-        
-        Returns the Teachers object."""
-        for teacher in args:
-            if not isinstance(teacher, Teacher):
-                raise TypeError(f"<{teacher}>: invalid teacher - must be a Teacher object.")
-            self._instances[teacher.id] = teacher
-        return self
-
-    # =================================================================
-    # list 
-    # =================================================================
-    def list(self):
-        """Returns an array of Teacher objects."""
-        return list(self._instances.values())
-
-    # =================================================================
-    # disjoint 
-    # =================================================================
-    def disjoint(self, rhs):
-        """Determine if the current set of teachers is disjoint with the provided set of
-        teachers. """
-        occurrences = {}
-
-        # Get all the teachers in the current set.
-        for teacher in self.list():
-            if teacher.id not in self._instances.keys():
-                occurrences[teacher.id] = 0
-            occurrences[teacher.id] += 1
-
-        # Get all the teachers in the provided set.
-        for teacher in rhs.list():
-            if teacher.id not in self._instances.keys():
-                occurrences[teacher.id] = 0
-            occurrences[teacher.id] += 1
-
-        # A teacher count of 2 means they're in both sets.
-        for count in occurrences.values():
-            if count >= 2:
-                return False
-
-        return True
+from typing import List
 
 
 # SYNOPSIS
@@ -63,7 +11,7 @@ class TeacherMeta(type):
 #                               );
 
 
-class Teacher(metaclass=TeacherMeta):
+class Teacher:
     _max_id = 0
     __instances = {}
 
@@ -231,6 +179,35 @@ class Teacher(metaclass=TeacherMeta):
         """Removes this Teacher from the Teachers object."""
         if self.id in Teacher.__instances.keys():
             del Teacher.__instances[self.id]
+
+    # =================================================================
+    # disjoint
+    # =================================================================
+    @staticmethod
+    def disjoint(set_1: List, rhs: List) -> bool:
+        """Determines if one set of teachers is disjoint with another.
+
+        Returns false if even a single Teacher occurs in both sets, or true otherwise."""
+        occurrences = {}
+
+        # Get all the teachers in the current set.
+        for teacher in set_1:
+            if teacher.id not in occurrences.keys():
+                occurrences[teacher.id] = 0
+            occurrences[teacher.id] += 1
+
+        # Get all the teachers in the provided set.
+        for teacher in rhs:
+            if teacher.id not in occurrences.keys():
+                occurrences[teacher.id] = 0
+            occurrences[teacher.id] += 1
+
+        # A teacher count of 2 means they're in both sets; there is no disjoint.
+        for count in occurrences.values():
+            if count >= 2:
+                return False
+
+        return True
 
 
 # =================================================================

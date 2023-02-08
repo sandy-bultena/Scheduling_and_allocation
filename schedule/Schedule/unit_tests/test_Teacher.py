@@ -189,3 +189,29 @@ def test_delete():
     teach_1.delete()
     teachers = Teacher.list()
     assert len(teachers) == 4 and teach_1 not in teachers
+
+
+def test_disjoint_true():
+    """Verifies that the static disjoint() method returns True if both sets of Teachers nave no
+    Teachers in common. """
+    f_name = "John"
+    l_name = "Smith"
+    teach_1 = Teacher(f_name, "Smythe")
+    teach_2 = Teacher("Jane", l_name)
+    teach_3 = Teacher("Jane", "Doe")
+    teach_4 = Teacher(f_name, l_name)
+    set_1 = [teach_1, teach_2]
+    set_2 = [teach_3, teach_4]
+    assert Teacher.disjoint(set_1, set_2) is True
+
+
+def test_disjoint_false():
+    """Verifies that disjoint() returns false if the sets have any common Teachers."""
+    f_name = "John"
+    l_name = "Smith"
+    teach_1 = Teacher(f_name, "Smythe")
+    teach_2 = Teacher("Jane", l_name)
+    teach_3 = Teacher("Jane", "Doe")
+    set_1 = [teach_1, teach_2]
+    set_2 = [teach_2, teach_3]
+    assert Teacher.disjoint(set_1, set_2) is False
