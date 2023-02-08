@@ -3,7 +3,6 @@ from .Section import Section
 from .Teacher import Teacher
 from .Time_slot import TimeSlot
 
-
 """ SYNOPSIS:
 
 from Schedule.Course import Course
@@ -95,8 +94,10 @@ class Block(TimeSlot):
         #  ) method, to destroy the reference to a local Block parameter after said Block has already been removed
         #  from Section's array/hash of Blocks. Because of this, and because it doesn't seem possible to make an
         #  object delete itself in Python, I don't believe that this method is needed.
-        Block._instances.remove(self)
-        self = None
+        # Block._instances.remove(self)
+        # self = None
+        if self in Block.__instances:
+            Block.__instances.remove(self)
 
     # =================================================================
     # start

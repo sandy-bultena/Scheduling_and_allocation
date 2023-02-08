@@ -41,15 +41,15 @@ def test_number_setter_bad():
     assert "must be an integer and cannot be null" in str(e.value).lower()
 
 
-# def test_delete():
-#     """Verifies that the delete() method successfully destroys an instance of a Block."""
-#     day = "mon"
-#     start = "8:30"
-#     dur = 2
-#     num = 1
-#     block = Block(day, start, dur, num)
-#     block.delete()
-#     assert block is None
+def test_delete():
+    """Verifies that the delete() method successfully destroys an instance of a Block."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    block.delete()
+    assert block not in Block.list()
 
 
 def test_start_getter():

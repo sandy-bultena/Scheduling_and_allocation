@@ -352,7 +352,7 @@ class Schedule:
         """
         if not isinstance(teacher, Teacher): raise TypeError(f"{teacher} must be an object of type Teacher")
         outp = set()
-        for b in Block:
+        for b in Block.list():
             if b.has_teacher(teacher): outp.add(b)
         return list(outp)
 
@@ -367,7 +367,7 @@ class Schedule:
         """
         if not isinstance(lab, Lab): raise TypeError(f"{lab} must be an object of type Lab")
         outp = set()
-        for b in Block:
+        for b in Block.list():
             if b.has_lab(lab): outp.add(b)
         return list(outp)
 
@@ -419,7 +419,7 @@ class Schedule:
         """Removes Teacher from schedule"""
         if not isinstance(teacher, Teacher): raise TypeError(f"{teacher} must be an object of type Teacher")
         # go through all blocks, and remove teacher from each
-        for b in Block: b.remove_teacher(teacher)
+        for b in Block.list(): b.remove_teacher(teacher)
         Teacher.remove(teacher)
 
     # --------------------------------------------------------
@@ -430,7 +430,7 @@ class Schedule:
         """Removes Lab from schedule"""
         if not isinstance(lab, Lab): raise TypeError(f"{lab} must be an object of type Lab")
         # go through all blocks, and remove lab from each
-        for b in Block: b.remove_lab(lab)
+        for b in Block.list(): b.remove_lab(lab)
         Lab.remove(lab)
 
     # --------------------------------------------------------
@@ -457,7 +457,7 @@ class Schedule:
         # reset the conflict list
         Conflict.reset()
         # reset all blocks conflicted tags
-        for b in Block: b.reset_conflicted()
+        for b in Block.list(): b.reset_conflicted()
 
         # ---------------------------------------------------------
         # check all block pairs to see if there is a time overlap
