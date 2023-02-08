@@ -426,7 +426,7 @@ class Schedule:
         if not isinstance(teacher, Teacher): raise TypeError(f"{teacher} must be an object of type Teacher")
         # go through all blocks, and remove teacher from each
         for b in Block.list(): b.remove_teacher(teacher)
-        Teacher.remove(teacher)
+        Teacher.delete(teacher)
 
     # --------------------------------------------------------
     # remove_lab

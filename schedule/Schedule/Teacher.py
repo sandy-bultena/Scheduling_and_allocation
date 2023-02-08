@@ -19,20 +19,6 @@ class TeacherMeta(type):
         return self
 
     # =================================================================
-    # remove teacher 
-    # =================================================================
-    def remove(self, teacher):
-        """Removes this Teacher from the Teachers object.
-        
-        Returns the modified Teachers object."""
-        if not isinstance(teacher, Teacher):
-            raise TypeError(f"<{teacher}>: invalid teacher - must be a Teacher object.")
-        if self._instances[teacher.id]:
-            del self._instances[teacher.id]
-
-        return self
-
-    # =================================================================
     # list 
     # =================================================================
     def list(self):
@@ -237,6 +223,14 @@ class Teacher(metaclass=TeacherMeta):
             if teacher.firstname == first_name and teacher.lastname == last_name:
                 return teacher
         return None
+
+    # =================================================================
+    # remove teacher
+    # =================================================================
+    def delete(self):
+        """Removes this Teacher from the Teachers object."""
+        if self.id in Teacher.__instances.keys():
+            del Teacher.__instances[self.id]
 
 
 # =================================================================

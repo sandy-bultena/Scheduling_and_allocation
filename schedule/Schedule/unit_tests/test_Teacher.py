@@ -174,3 +174,18 @@ def test_get_by_name_missing_name():
     teach_5 = Teacher(f_name, "Doe")
     bad_name = ""
     assert Teacher.get_by_name(f_name, bad_name) is None
+
+
+def test_delete():
+    """Verifies that delete() method can remove a Teacher from the dict of instances."""
+    Teacher._Teacher__instances = {}
+    f_name = "John"
+    l_name = "Smith"
+    teach_1 = Teacher(f_name, "Smythe")
+    teach_2 = Teacher("Jane", l_name)
+    teach_3 = Teacher("Jane", "Doe")
+    teach_4 = Teacher(f_name, l_name)
+    teach_5 = Teacher(f_name, "Doe")
+    teach_1.delete()
+    teachers = Teacher.list()
+    assert len(teachers) == 4 and teach_1 not in teachers
