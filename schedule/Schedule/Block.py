@@ -42,7 +42,7 @@ class Block(TimeSlot):
 
     _max_id = 0
     _DEFAULT_DAY = 'mon'
-    __instances = []
+    __instances = {}
 
     # =================================================================
     # Constructor
@@ -61,11 +61,11 @@ class Block(TimeSlot):
         self.number = number  # NOTE: Based on the code found in CSV.pm and Section.pm
         Block._max_id += 1
         self._block_id = Block._max_id
-        Block.__instances.append(self)
         self.__section = None
         self._teachers = dict()
         self._labs = {}
         self._conflicted = 0
+        Block.__instances[self._block_id] = self
 
     # =================================================================
     # number
@@ -78,8 +78,8 @@ class Block(TimeSlot):
 
     @number.setter
     def number(self, new_num: int):
-        # NOTE: The reason it checks for strings in the Perl code is because Perl doesn't distinguish between strings
-        # and numbers: A value of "0" registers as 0, and vice versa.
+        # NOTE: The reason it checks for strings in the Perl code is because Perl doesn't
+        # distinguish between strings and numbers: A value of "0" registers as 0, and vice versa.
         if new_num is None or not isinstance(new_num, int):
             raise Exception(f"<{new_num}>: section number must be an integer and cannot be null.")
         self.__number = new_num
@@ -89,15 +89,14 @@ class Block(TimeSlot):
     # =================================================================
     def delete(self):
         """Delete this Block object and all its dependents."""
-        # self = None  # TODO: Verify that this works as intended. NOTE: It does not. del self  # NOTE: Neither does
-        #  this. NOTE: So far as I can tell, the only place this method is being called is in Section's remove_block(
-        #  ) method, to destroy the reference to a local Block parameter after said Block has already been removed
-        #  from Section's array/hash of Blocks. Because of this, and because it doesn't seem possible to make an
-        #  object delete itself in Python, I don't believe that this method is needed.
-        # Block._instances.remove(self)
-        # self = None
-        if self in Block.__instances:
-            Block.__instances.remove(self)
+        # self = None NOTE: So far as I can tell, the only place this method is being called is
+        # in Section's remove_block( ) method, to destroy the reference to a local Block
+        # parameter after said Block has already been removed from Section's array/hash of
+        # Blocks. Because of this, and because it doesn't seem possible to make an object delete
+        # itself in Python, I don't believe that this method is needed. Block._instances.remove(
+        # self) self = None
+        if self in Block.__instances.values():
+            del Block.__instances[self._block_id]
 
     # =================================================================
     # start
@@ -116,7 +115,8 @@ class Block(TimeSlot):
         for other in self.synced():
             old = other.start
             if old != super().start:
-                other.start = super().start  # Attempting to directly write to the backing field doesn't work.
+                other.start = super().start  # Attempting to directly write to the backing field
+                # doesn't work.
                 # Fortunately, calling the property like this doesn't result in an infinite loop.
 
     # =================================================================
@@ -175,7 +175,8 @@ class Block(TimeSlot):
         if not isinstance(lab, Lab):
             raise TypeError(f"<{lab}>: invalid lab - must be a Lab object.")
 
-        # TODO: Check if this function allows multiple labs to be assigned at once in the perl version
+        # TODO: Check if this function allows multiple labs to be assigned at once in the perl
+        #  version
         self._labs[lab.id] = lab
 
         return self
@@ -328,7 +329,8 @@ class Block(TimeSlot):
     def teachersObj(self):
         """Returns a list of teacher objects to this Block."""
         # NOTE: Not entirely sure what this is meant to be doing in the original Perl.
-        # ADDENDUM: There are no references to this method anywhere in the code beyond here. May get rid of it.
+        # ADDENDUM: There are no references to this method anywhere in the code beyond here.
+        # May get rid of it.
         return self._teachers
 
     # =================================================================
@@ -336,7 +338,8 @@ class Block(TimeSlot):
     # =================================================================
     def sync_block(self, block):
         """The new Block object will be synced with this one 
-        (i.e., changing the start time of this Block will change the start time of the synched block).
+        (i.e., changing the start time of this Block will change the start time of the
+        synched block).
         
         Returns the Block object."""
         if not isinstance(block, Block):
@@ -404,7 +407,8 @@ class Block(TimeSlot):
     def is_conflicted(self):
         """Returns true if there is a conflict with this Block, false otherwise.
 
-        Returns a number representing the type of conflict with this Block, or 0 if there are no conflicts."""
+        Returns a number representing the type of conflict with this Block, or 0 if there are no
+        conflicts. """
         return self.conflicted != 0
 
     # =================================================================
@@ -445,8 +449,8 @@ class Block(TimeSlot):
     # =================================================================
     # def conflicts(self):
     #     """Returns a list of the conflicts related to this Block."""
-    #     # NOTE: This function appears to be unfinished. There is no way to actually assign anything to Block's
-    #     # -conflicts attributes in the original Perl code.
+    #     # NOTE: This function appears to be unfinished. There is no way to actually assign
+    #     # anything to Block's -conflicts attributes in the original Perl code.
     #     if not hasattr(self, '_conflicts'):
     #         self._conflicts = []
     #
@@ -471,7 +475,7 @@ class Block(TimeSlot):
     @staticmethod
     def list():
         """Returns a tuple containing all Block objects."""
-        return tuple(Block.__instances)
+        return tuple(Block.__instances.values())
 
     # =================================================================
     # get_day_blocks ($day, $blocks)
@@ -482,8 +486,8 @@ class Block(TimeSlot):
 
         Parameter day: str -> three-letter day of the week (mon, tue, etc.)
         Parameter blocks: list -> An array of AssignBlocks."""
-        # NOTE: Day was an integer according to the original Perl documentation, but that won't work here because
-        # TimeSlot.day returns a string.
+        # NOTE: Day was an integer according to the original Perl documentation, but that won't
+        # work here because TimeSlot.day returns a string.
         if not blocks or type(blocks[0]) is not Block:
             return []
         day_blocks = filter(lambda x: x.day == day, blocks)

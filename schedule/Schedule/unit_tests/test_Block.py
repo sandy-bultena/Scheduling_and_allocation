@@ -645,11 +645,13 @@ def test_print_description_full():
     block.assign_lab(lab1)
     block.assign_lab(lab2)
     desc = block.print_description()
-    assert str(sect.number) in desc and day in desc and start in desc and lab1.number in desc and lab2.number in desc
+    assert str(sect.number) in desc and day in desc and start in desc and lab1.number in desc \
+           and lab2.number in desc
 
 
 def test_print_description_short():
-    """Verifies that print_description returns information about just the Block if it has no assigned Section."""
+    """Verifies that print_description returns information about just the Block if it has no
+    assigned Section. """
     day = "mon"
     start = "8:30"
     dur = 2
@@ -666,7 +668,8 @@ def test_print_description_short():
 
 
 def test_print_description_2():
-    """Verifies that print_description_2() works as intended: returning information about just the Block itself."""
+    """Verifies that print_description_2() works as intended: returning information about just
+    the Block itself. """
     day = "mon"
     start = "8:30"
     dur = 2
@@ -677,7 +680,8 @@ def test_print_description_2():
 
 
 # def test_conflicts():
-#     """Verifies that conflicts() returns an empty list when no Conflicts are assigned to this Block."""
+#     """Verifies that conflicts() returns an empty list when no Conflicts are
+#     assigned to this Block."""
 #     day = "mon"
 #     start = "8:30"
 #     dur = 2
@@ -702,7 +706,7 @@ def test_refresh_number():
 
 def test_list():
     """Verifies that list() returns a tuple containing all extant Blocks."""
-    Block._Block__instances = []
+    Block._Block__instances = {}
     block_1 = Block("mon", "8:00", 1.5, 1)
     block_2 = Block("mon", "8:00", 1.5, 2)
     blocks = Block.list()
@@ -711,7 +715,7 @@ def test_list():
 
 def test_list_empty():
     """Verifies that list() returns an empty tuple if there are no Blocks."""
-    Block._Block__instances = []
+    Block._Block__instances = {}
     blocks = Block.list()
     assert len(blocks) == 0
 
