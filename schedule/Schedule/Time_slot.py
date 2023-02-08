@@ -110,7 +110,8 @@ class TimeSlot:
 
     @day.setter
     def day(self, new_day: str):
-        # Convert the string to lowercase and remove any extraneous characters beyond the ones we want.
+        # Convert the string to lowercase and remove any extraneous characters beyond the ones we
+        # want.
         new_day = new_day[0:3].lower()
 
         # If this is one of the seven valid days, set it.

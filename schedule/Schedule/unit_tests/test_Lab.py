@@ -1,3 +1,5 @@
+import pytest
+
 from ..Lab import Lab, LabMeta
 from ..Time_slot import TimeSlot
 from ..Block import Block
@@ -194,3 +196,35 @@ def test_share_blocks_false():
     block_2 = Block("wed", "8:30", 1.5, 2)
     block_1.assign_lab(lab)
     assert Lab.share_blocks(block_1, block_2) is False
+
+
+def test_remove():
+    """Verifies that the static remove() method works as intended."""
+    Lab._Lab__instances = {}
+    lab1 = Lab("R-101", "Worst place in the world")
+    lab2 = Lab("R-102", "Second-worst place in the world")
+    Lab.remove(lab1)
+    labs = Lab.list()
+    assert len(labs) == 1 and lab1 not in labs
+
+
+def test_remove_bad():
+    """Verifies that remove() raises an exception when trying to delete a non-Lab object."""
+    Lab._Lab__instances = {}
+    lab1 = Lab("R-101", "Worst place in the world")
+    lab2 = Lab("R-102", "Second-worst place in the world")
+    bad_lab = "foo"
+    with pytest.raises(TypeError) as e:
+        Lab.remove(bad_lab)
+    assert "invalid lab" in str(e.value).lower()
+
+
+def test_remove_gets_slots():
+    """Verifies that remove() deletes any TimeSlots in the Block's unavailable attribute."""
+    Lab._Lab__instances = {}
+    TimeSlot._TimeSlot__instances = []
+    lab1 = Lab("R-101", "Worst place in the world")
+    lab2 = Lab("R-102", "Second-worst place in the world")
+    lab1.add_unavailable("mon", "8:00", 1.5)
+    Lab.remove(lab1)
+    assert lab1 not in Lab.list() and len(TimeSlot.list()) == 0

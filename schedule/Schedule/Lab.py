@@ -37,21 +37,6 @@ class LabMeta(type):
                 return lab
         return None
 
-    # =================================================================
-    # remove lab
-    # =================================================================
-    def remove(self, lab_obj):
-        """Removes the specified Lab from the Labs object.
-        
-        Returns the modified Labs."""
-        if not isinstance(lab_obj, Lab):
-            raise TypeError(f"<{lab_obj}>: invalid lab - must be a Lab object")
-
-        # Remove the passed Lab object only if it's actually contained in the list of instances.
-        if lab_obj.id in self._instances.keys():
-            del self._instances[lab_obj.id]
-        return self
-
 
 """ SYNOPSIS/EXAMPLE:
 
@@ -249,6 +234,22 @@ class Lab:
                 return True
 
         return False
+
+    # =================================================================
+    # remove lab
+    # =================================================================
+    @staticmethod
+    def remove(lab_obj):
+        """Removes the specified Lab from the Labs object."""
+        if not isinstance(lab_obj, Lab):
+            raise TypeError(f"<{lab_obj}>: invalid lab - must be a Lab object")
+
+        # Remove the passed Lab object only if it's actually contained in the list of instances.
+        if lab_obj.id in Lab.__instances.keys():
+            for slot in lab_obj.unavailable():
+                TimeSlot._TimeSlot__instances.remove(slot)
+                del lab_obj._unavailable[slot.id]
+            del Lab.__instances[lab_obj.id]
 
 
 # =================================================================
