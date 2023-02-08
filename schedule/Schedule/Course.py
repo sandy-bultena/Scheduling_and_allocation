@@ -24,37 +24,6 @@ from .Lab import Lab
 '''
 
 
-# TODO: Make the static collection return a tuple instead of a list.
-# Tuples are faster than lists, and also immutable.
-class CourseMeta(type):
-    _instances = {}
-
-    def __iter__(self):
-        return iter(getattr(self, '_instances', {}))
-
-    # =================================================================
-    # remove course
-    # =================================================================
-    def remove(self, course):
-        """Removes the passed Course from the Courses object. Prints remaining courses to the
-        console.
-        
-        Returns the modified Courses object."""
-        if not isinstance(course, Course):
-            raise TypeError(f"<{course}>: invalid course - must be a Course object")
-        if course.id in self._instances:
-            del self._instances[course.id]
-
-        course.delete()
-        del course
-
-        for cour in self._instances.values():
-            print(f"{cour.number}\t")
-        print("\n-------\n")
-
-        return self
-
-
 class Course:
     """Describes a distinct course."""
     _max_id = 0
