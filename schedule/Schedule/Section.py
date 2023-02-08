@@ -97,7 +97,7 @@ class Section():
     @staticmethod
     def reset():
         """ Deletes all Sections """
-        Section.__instances = dict[int, Section]()
+        for s in Section.list(): s.delete()
 
     # ========================================================
     # PROPERTIES
