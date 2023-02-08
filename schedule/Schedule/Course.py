@@ -529,6 +529,7 @@ class Course(metaclass=CourseMeta):
 
     @staticmethod
     def list():
+        """Returns a list of all Course objects."""
         return tuple(Course.__instances.values())
 
     # =================================================================
@@ -551,6 +552,17 @@ class Course(metaclass=CourseMeta):
             if course.number == number: return course
 
         return None
+
+    # =================================================================
+    # courses list for allocation
+    # =================================================================
+    @staticmethod
+    def allocation_list():
+        """Returns a sorted list of the Courses that need allocation."""
+        courses = list(filter(lambda x: x.needs_allocation, Course.list()))
+        courses = sorted(courses, key=lambda c: c.number)
+        return courses
+
 
 
 # =================================================================

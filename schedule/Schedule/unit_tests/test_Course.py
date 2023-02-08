@@ -691,3 +691,24 @@ def test_get_by_number_no_input():
     course_2 = Course("11111", "Course 2", "fall")
     bad_num = ""
     assert Course.get_by_number(bad_num) is None
+
+
+def test_allocation_list():
+    """Verifies that allocation_list() returns a list of the courses in need of allocation."""
+    Course._Course__instances = {}
+    Course._max_id = 0
+    course_1 = Course("24601", "Course 1", "fall")
+    course_2 = Course("11111", "Course 2", "fall")
+    course_2.needs_allocation = False
+    courses = Course.allocation_list()
+    assert len(courses) == 1 and course_1 in courses
+
+
+def test_allocation_list_sorted():
+    """Verifies that the list returned by allocation_list() is sorted by Course number."""
+    Course._Course__instances = {}
+    Course._max_id = 0
+    course_1 = Course("24601", "Course 1", "fall")
+    course_2 = Course("11111", "Course 2", "fall")
+    courses = Course.allocation_list()
+    assert len(courses) == 2 and courses[0] == course_2 and courses[1] == course_1
