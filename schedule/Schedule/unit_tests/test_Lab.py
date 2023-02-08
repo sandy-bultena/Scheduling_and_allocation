@@ -50,9 +50,10 @@ def test_descr_setter():
 
 
 def test_add_unavailable():
-    """Verifies that add_unavailable() creates a TimeSlot object with the passed-in values, which is stored in the
-    Lab's _unavailable attribute. """
-    # Reset the TimeSlot class's max_id to 0 to avoid KeyErrors when all tests are run simultaneously.
+    """Verifies that add_unavailable() creates a TimeSlot object with the passed-in values,
+    which is stored in the Lab's _unavailable attribute. """
+    # Reset the TimeSlot class's max_id to 0 to avoid KeyErrors when all tests are run
+    # simultaneously.
     TimeSlot._max_id = 0
     day = "mon"
     start = "8:30"
@@ -60,11 +61,13 @@ def test_add_unavailable():
     lab = Lab()
     lab.add_unavailable(day, start, dur)
     slot = getattr(lab, '_unavailable')[1]
-    assert type(slot) is TimeSlot and slot.day == day and slot.start == start and slot.duration == dur
+    assert type(slot) is TimeSlot and slot.day == day \
+           and slot.start == start and slot.duration == dur
 
 
 def test_remove_unavailable_good():
-    """Verifies that remove_unavailable() can remove a TimeSlot from Lab based on the received TimeSlot ID."""
+    """Verifies that remove_unavailable() can remove a TimeSlot from Lab based on the received
+    TimeSlot ID. """
     day = "mon"
     start = "8:30"
     dur = 2.0
@@ -76,8 +79,8 @@ def test_remove_unavailable_good():
 
 
 def test_remove_unavailable_no_crash():
-    """Verifies that remove_unavailable will not crash the program when attempting to remove a TimeSlot which doesn't
-    exist. """
+    """Verifies that remove_unavailable will not crash the program when attempting to remove a
+    TimeSlot which doesn't exist. """
     day = "mon"
     start = "8:30"
     dur = 2.0
@@ -86,7 +89,8 @@ def test_remove_unavailable_no_crash():
     bad_id = 9999
     slot_key = getattr(TimeSlot, '_max_id')
     lab.remove_unavailable(bad_id)
-    assert len(getattr(lab, '_unavailable')) == 1 and getattr(lab, '_unavailable')[slot_key].start == start
+    assert len(getattr(lab, '_unavailable')) == 1 \
+           and getattr(lab, '_unavailable')[slot_key].start == start
 
 
 def test_get_unavailable_good():
@@ -102,7 +106,8 @@ def test_get_unavailable_good():
 
 
 def test_get_unavailable_bad_input():
-    """Verifies that get_unavailable returns None when trying to retrieve a nonexistent TimeSlot from the Lab."""
+    """Verifies that get_unavailable returns None when trying to retrieve a nonexistent TimeSlot
+    from the Lab. """
     day = "mon"
     start = "8:30"
     dur = 2.0
@@ -129,14 +134,16 @@ def test_unavailable():
 
 
 def test_unavailable_no_slots():
-    """Verifies that unavailable() returns an empty list if no TimeSlots have been assigned to this Lab."""
+    """Verifies that unavailable() returns an empty list if no TimeSlots have been assigned to
+    this Lab. """
     lab = Lab()
     slots = lab.unavailable()
     assert type(slots) is list and len(slots) == 0
 
 
 def test_print_description_full():
-    """Verifies that print_description() returns a string containing the Lab's number and description attributes."""
+    """Verifies that print_description() returns a string containing the Lab's number and
+    description attributes. """
     num = "R-101"
     desc = "Worst place in the world."
     lab = Lab(num, desc)
@@ -145,16 +152,33 @@ def test_print_description_full():
 
 
 def test_print_description_short():
-    """Verifies that print_description() returns a string containing only the Lab's number if it lacks a description
-    attribute. """
+    """Verifies that print_description() returns a string containing only the Lab's number if it
+    lacks a description attribute. """
     num = "R-101"
     lab = Lab(num)
     desc = lab.print_description()
     assert num in desc
 
 
+def test_list():
+    """Verifies that list() returns a tuple of all extant Lab objects."""
+    Lab._Lab__instances = {}
+    lab1 = Lab("R-101", "Worst place in the world")
+    lab2 = Lab("R-102", "Second-worst place in the world")
+    labs = Lab.list()
+    assert len(labs) == 2 and lab1 in labs and lab2 in labs
+
+
+def test_list_empty():
+    """Verifies that list() returns an empty tuple if no Labs have been created."""
+    Lab._Lab__instances = {}
+    labs = Lab.list()
+    assert len(labs) == 0
+
+
 def test_share_blocks_true():
-    """Verifies that the static share_blocks() method returns true if two Blocks are sharing the same Lab."""
+    """Verifies that the static share_blocks() method returns true if two Blocks are sharing the
+    same Lab. """
     lab = Lab()
     block_1 = Block("mon", "8:30", 1.5, 1)
     block_2 = Block("wed", "8:30", 1.5, 2)

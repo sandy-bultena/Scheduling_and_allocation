@@ -63,19 +63,6 @@ class LabMeta(type):
         return None
 
     # =================================================================
-    # get_by_number
-    # =================================================================
-    def get_by_number(self, number: str):
-        """Returns the Lab which matches this Lab number, if it exists."""
-        if not number:
-            return
-
-        for lab in self.list():
-            if lab.number == number:
-                return lab
-        return None
-
-    # =================================================================
     # remove lab
     # =================================================================
     def remove(self, lab_obj):
@@ -90,13 +77,6 @@ class LabMeta(type):
             del self._instances[lab_obj.id]
         return self
 
-    # =================================================================
-    # list
-    # =================================================================
-    def list(self):
-        """Returns the array of Lab objects."""
-        return list(self._instances.values())
-
 
 """ SYNOPSIS/EXAMPLE:
 
@@ -108,7 +88,7 @@ class LabMeta(type):
 """
 
 
-class Lab(metaclass=LabMeta):
+class Lab:
     """
     Describes a distinct, contiguous course/section/class.
 
@@ -120,6 +100,7 @@ class Lab(metaclass=LabMeta):
         The description of the Lab.
     """
     _max_id = 0
+    __instances = {}
 
     # -------------------------------------------------------------------
     # new
@@ -132,7 +113,7 @@ class Lab(metaclass=LabMeta):
         Lab._max_id += 1
         self.__id = Lab._max_id
         self._unavailable: dict[int, TimeSlot] = {}
-        Lab._instances[self.__id] = self
+        Lab.__instances[self.__id] = self
 
     # =================================================================
     # id
@@ -214,9 +195,9 @@ class Lab(metaclass=LabMeta):
     def get_unavailable(self, target_id: int):
         """Return the unavailable time slot object for this Lab.
         
-        - Parameter target_id -> The ID of the TimeSlot to be returned.
+        - Parameter target_id: int -> The ID of the TimeSlot to be returned.
              
-        Returns the TimeSlot object.
+        Returns the TimeSlot object if found, None otherwise.
         """
         if target_id in self._unavailable.keys():
             return self._unavailable[target_id]
@@ -228,9 +209,6 @@ class Lab(metaclass=LabMeta):
 
     def unavailable(self):
         """Returns all unavailable time slot objects for this lab."""
-        # if hasattr(self, '_unavailable'):
-        #     return list(self._unavailable.values())
-        # return []
         return list(self._unavailable.values())
 
     # =================================================================
@@ -253,11 +231,24 @@ class Lab(metaclass=LabMeta):
     # ===================================
     # list [tuple]
     # ===================================
-
     @staticmethod
     def list():
         """Returns an immutable tuple containing all instances of the Lab class."""
-        return tuple(Lab._instances.values())
+        return tuple(Lab.__instances.values())
+
+    # =================================================================
+    # get_by_number
+    # =================================================================
+    @staticmethod
+    def get_by_number(number: str):
+        """Returns the Lab which matches this Lab number, if it exists."""
+        if not number:
+            return
+
+        for lab in Lab.list():
+            if lab.number == number:
+                return lab
+        return None
 
 
 # =================================================================
