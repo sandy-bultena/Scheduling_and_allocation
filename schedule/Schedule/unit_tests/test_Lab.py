@@ -203,20 +203,20 @@ def test_remove():
     Lab._Lab__instances = {}
     lab1 = Lab("R-101", "Worst place in the world")
     lab2 = Lab("R-102", "Second-worst place in the world")
-    Lab.remove(lab1)
+    lab1.delete()
     labs = Lab.list()
     assert len(labs) == 1 and lab1 not in labs
 
 
-def test_remove_bad():
-    """Verifies that remove() raises an exception when trying to delete a non-Lab object."""
-    Lab._Lab__instances = {}
-    lab1 = Lab("R-101", "Worst place in the world")
-    lab2 = Lab("R-102", "Second-worst place in the world")
-    bad_lab = "foo"
-    with pytest.raises(TypeError) as e:
-        Lab.remove(bad_lab)
-    assert "invalid lab" in str(e.value).lower()
+# def test_remove_bad():
+#     """Verifies that remove() raises an exception when trying to delete a non-Lab object."""
+#     Lab._Lab__instances = {}
+#     lab1 = Lab("R-101", "Worst place in the world")
+#     lab2 = Lab("R-102", "Second-worst place in the world")
+#     bad_lab = "foo"
+#     with pytest.raises(TypeError) as e:
+#         Lab.delete(bad_lab)
+#     assert "invalid lab" in str(e.value).lower()
 
 
 def test_remove_gets_slots():
@@ -226,5 +226,5 @@ def test_remove_gets_slots():
     lab1 = Lab("R-101", "Worst place in the world")
     lab2 = Lab("R-102", "Second-worst place in the world")
     lab1.add_unavailable("mon", "8:00", 1.5)
-    Lab.remove(lab1)
+    lab1.delete()
     assert lab1 not in Lab.list() and len(TimeSlot.list()) == 0

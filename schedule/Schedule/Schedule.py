@@ -437,7 +437,7 @@ class Schedule:
         if not isinstance(lab, Lab): raise TypeError(f"{lab} must be an object of type Lab")
         # go through all blocks, and remove lab from each
         for b in Block.list(): b.remove_lab(lab)
-        Lab.remove(lab)
+        Lab.delete(lab)
 
     # --------------------------------------------------------
     # remove_stream

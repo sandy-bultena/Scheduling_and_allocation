@@ -238,18 +238,22 @@ class Lab:
     # =================================================================
     # remove lab
     # =================================================================
-    @staticmethod
-    def remove(lab_obj):
-        """Removes the specified Lab from the Labs object."""
-        if not isinstance(lab_obj, Lab):
-            raise TypeError(f"<{lab_obj}>: invalid lab - must be a Lab object")
 
+    def delete(self):
+        """Removes this Lab from the Labs object, along with its unavailable TimeSlots."""
         # Remove the passed Lab object only if it's actually contained in the list of instances.
-        if lab_obj.id in Lab.__instances.keys():
-            for slot in lab_obj.unavailable():
+        # if lab_obj.id in Lab.__instances.keys():
+        #     for slot in lab_obj.unavailable():
+        #         TimeSlot._TimeSlot__instances.delete(slot)
+        #         del lab_obj._unavailable[slot.id]
+        #     del Lab.__instances[lab_obj.id]
+        if self in Lab.__instances.values():
+            # Remove any TimeSlots associated with this Lab.
+            for slot in self.unavailable():
                 TimeSlot._TimeSlot__instances.remove(slot)
-                del lab_obj._unavailable[slot.id]
-            del Lab.__instances[lab_obj.id]
+                del self._unavailable[slot.id]
+            # Then remove the Lab itself from the list of instances.
+            del Lab.__instances[self.__id]
 
 
 # =================================================================
