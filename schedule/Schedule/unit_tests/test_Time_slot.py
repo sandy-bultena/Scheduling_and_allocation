@@ -169,3 +169,19 @@ def test_conflicts_time_different_days():
     slot1 = TimeSlot()
     slot2 = TimeSlot("Tuesday")
     assert slot1.conflicts_time(slot2) is False
+
+
+def test_list():
+    """Verifies that the static list() method returns a tuple containing all extant TimeSlot objects."""
+    TimeSlot._TimeSlot__instances = []
+    slot1 = TimeSlot()
+    slot2 = TimeSlot("Tuesday")
+    slots = TimeSlot.list()
+    assert len(slots) == 2 and slot1 in slots and slot2 in slots
+
+
+def test_list_no_slots():
+    """Verifies that the static list() method returns an empty tuple if no TimeSlots have been created yet."""
+    TimeSlot._TimeSlot__instances = []
+    slots = TimeSlot.list()
+    assert len(slots) == 0

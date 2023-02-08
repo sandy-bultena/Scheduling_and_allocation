@@ -14,15 +14,6 @@ import re
 #                                    -movable=>1);
 
 
-class TimeSlotMeta(type):
-    """Metaclass for TimeSlot, making the latter iterable."""
-    # _counter = 0
-    _instances = []
-
-    def __iter__(self):
-        return iter(getattr(self, '_instances', []))
-
-
 """ SYNOPSIS/EXAMPLE:
 
     from Schedule.Time_slot import TimeSlot
@@ -31,7 +22,7 @@ class TimeSlotMeta(type):
 """
 
 
-class TimeSlot(metaclass=TimeSlotMeta):
+class TimeSlot:
     """
     A time slot is specified by a day of the week, start time, length (in hours), and whether or not it is allowed to
     move.
@@ -43,6 +34,7 @@ class TimeSlot(metaclass=TimeSlotMeta):
     # Class/Global Variables
     # =================================================================
     _max_id = 0
+    __instances = []
     WEEK = {
         "mon": 1,
         "tue": 2,
@@ -98,7 +90,7 @@ class TimeSlot(metaclass=TimeSlotMeta):
         self.movable = movable
         TimeSlot._max_id += 1
         self.__id = TimeSlot._max_id
-        TimeSlot._instances.append(self)
+        TimeSlot.__instances.append(self)
 
     # ====================================
     # id
@@ -350,10 +342,9 @@ class TimeSlot(metaclass=TimeSlotMeta):
 
         return (self_start < rhs_end) and (rhs_start < self_end)
 
-    # @staticmethod
-    # def list():
-    #     return tuple(TimeSlot._instances)
-
+    @staticmethod
+    def list():
+        return tuple(TimeSlot.__instances)
 
 # =================================================================
 # footer
