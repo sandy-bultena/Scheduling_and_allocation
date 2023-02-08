@@ -133,3 +133,44 @@ def test_get_bad_id():
     teach = Teacher("John", "Smith")
     bad_id = 666
     assert Teacher.get(bad_id) is None
+
+
+def test_get_by_name_good():
+    """Verifies that the static get_by_name() method returns the first Teacher matching the
+    passed names. """
+    Teacher._Teacher__instances = {}
+    f_name = "John"
+    l_name = "Smith"
+    teach_1 = Teacher(f_name, "Smythe")
+    teach_2 = Teacher("Jane", l_name)
+    teach_3 = Teacher("Jane", "Doe")
+    teach_4 = Teacher(f_name, l_name)
+    teach_5 = Teacher(f_name, "Doe")
+    assert Teacher.get_by_name(f_name, l_name) == teach_4
+
+
+def test_get_by_name_bad():
+    """Verifies that get_by_name() returns None if no teacher matching both names is found."""
+    Teacher._Teacher__instances = {}
+    f_name = "John"
+    l_name = "Smith"
+    teach_1 = Teacher(f_name, "Smythe")
+    teach_2 = Teacher("Jane", l_name)
+    teach_3 = Teacher("Jane", "Doe")
+    teach_4 = Teacher("Jim", l_name)
+    teach_5 = Teacher(f_name, "Doe")
+    assert Teacher.get_by_name(f_name, l_name) is None
+
+
+def test_get_by_name_missing_name():
+    """Verifies that get_by_name() returns None if one of the names is left blank."""
+    Teacher._Teacher__instances = {}
+    f_name = "John"
+    l_name = "Smith"
+    teach_1 = Teacher(f_name, "Smythe")
+    teach_2 = Teacher("Jane", l_name)
+    teach_3 = Teacher("Jane", "Doe")
+    teach_4 = Teacher(f_name, l_name)
+    teach_5 = Teacher(f_name, "Doe")
+    bad_name = ""
+    assert Teacher.get_by_name(f_name, bad_name) is None

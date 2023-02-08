@@ -19,19 +19,6 @@ class TeacherMeta(type):
         return self
 
     # =================================================================
-    # get_by_name
-    # =================================================================
-    @staticmethod
-    def get_by_name(first_name: str, last_name: str):
-        """Returns the first Teacher found matching the first name and last name, if one exists."""
-        if not (first_name and last_name):
-            return None
-        for teacher in Teacher._instances:
-            if teacher.firstname == first_name and teacher.lastname == last_name:
-                return teacher
-        return None
-
-    # =================================================================
     # remove teacher 
     # =================================================================
     def remove(self, teacher):
@@ -236,6 +223,19 @@ class Teacher(metaclass=TeacherMeta):
         #         return teacher
         if teacher_id in Teacher.__instances.keys():
             return Teacher.__instances[teacher_id]
+        return None
+
+    # =================================================================
+    # get_by_name
+    # =================================================================
+    @staticmethod
+    def get_by_name(first_name: str, last_name: str):
+        """Returns the first Teacher found matching the first name and last name, if one exists."""
+        if not (first_name and last_name):
+            return None
+        for teacher in Teacher.__instances.values():
+            if teacher.firstname == first_name and teacher.lastname == last_name:
+                return teacher
         return None
 
 
