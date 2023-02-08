@@ -642,3 +642,20 @@ def test_new_number_unused_number():
     course.add_section(section)
     num = 421
     assert course.get_new_number(num) == num
+
+
+def test_get_good():
+    """Verifies that the static get() method works as intended."""
+    Course._Course__instances = {}
+    Course._max_id = 0
+    course = Course(1, "Course 1", "fall")
+    assert Course.get(1) == course
+
+
+def test_get_bad_id():
+    """Verifies that get() returns None if there's no Course with the passed ID"""
+    Course._Course__instances = {}
+    Course._max_id = 0
+    course = Course(1, "Course 1", "fall")
+    bad_num = 666
+    assert Course.get(bad_num) is None

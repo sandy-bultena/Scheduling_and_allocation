@@ -66,13 +66,6 @@ class CourseMeta(type):
         return self
 
     # =================================================================
-    # get
-    # =================================================================
-    def get(self, c_id):
-        """Returns the Course object with the matching ID."""
-        return self._instances.get(c_id)
-
-    # =================================================================
     # get_by_number
     # =================================================================
     def get_by_number(self, number):
@@ -83,13 +76,6 @@ class CourseMeta(type):
             if course.number == number: return course
 
         return None
-
-    # =================================================================
-    # list
-    # =================================================================
-    def list(self):
-        """Returns reference to the array of Course objects."""
-        return list(self._instances.values())
 
     # =================================================================
     # courses list for allocation
@@ -103,6 +89,7 @@ class CourseMeta(type):
 
 class Course(metaclass=CourseMeta):
     _max_id = 0
+    __instances = {}
 
     # -------------------------------------------------------------------
     # new
@@ -115,7 +102,7 @@ class Course(metaclass=CourseMeta):
         self.semester = semester
         self._allocation = True
         self._sections = {}
-        Course._instances[self.id] = self
+        Course.__instances[self.id] = self
 
     # =================================================================
     # id
@@ -188,12 +175,12 @@ class Course(metaclass=CourseMeta):
         """Assign a Section to this Course.
         
         Returns the modified Course object."""
-        # In Perl, this function is structured in a way that allows it to take multiple sections and add them all to
-        # the Course, one at a time. However, it is never actually used that way. I am preserving the original
-        # structure just in case.
+        # In Perl, this function is structured in a way that allows it to take multiple sections
+        # and add them all to the Course, one at a time. However, it is never actually used that
+        # way. I am preserving the original structure just in case.
         for section in sections:
-            # Verify that this is actually a Section object. NOTE: the Section import has been taken out to avoid a
-            # circular dependency.
+            # Verify that this is actually a Section object. NOTE: the Section import has been
+            # taken out to avoid a circular dependency.
             if not hasattr(section, "number") or f"Section {section.number}" not in str(section):
                 raise TypeError(f"<{section}>: invalid section - must be a Section object.")
 
@@ -220,8 +207,8 @@ class Course(metaclass=CourseMeta):
     # get_section
     # =================================================================
     def get_section(self, number):
-        """Gets the Section from this Course that has the passed section number, if it exists. Otherwise,
-        returns None. """
+        """Gets the Section from this Course that has the passed section number, if it exists.
+        Otherwise, returns None. """
         if number in self._sections.keys():
             return self._sections[number]
         return None
@@ -248,9 +235,10 @@ class Course(metaclass=CourseMeta):
         """Gets the Section from this Course that has the passed section name, if it exists.
         
         Returns a list containing the Section if found, or an empty list otherwise."""
-        # NOTE: This method is coded to return an array in the Perl code. However, the one place where this function
-        # is being called--AssignToResource.pm--only cares about the first element of the returned array.
-        # I'm keeping the structure as-is, but this will probably need revision.
+        # NOTE: This method is coded to return an array in the Perl code. However, the one place
+        # where this function is being called--AssignToResource.pm--only cares about the first
+        # element of the returned array. I'm keeping the structure as-is, but this will probably
+        # need revision.
         to_return = []
         if name:
             sections = self.sections()
@@ -266,15 +254,16 @@ class Course(metaclass=CourseMeta):
         """Removes the passed Section from this Course, if it exists.
         
         Returns the modified Course object."""
-        # Verify that the section is indeed a Section object. NOTE: the Section import has been taken out to avoid a
-        # circular dependency.
+        # Verify that the section is indeed a Section object. NOTE: the Section import has been
+        # taken out to avoid a circular dependency.
         if not hasattr(section, "number") or f"Section {section.number}" not in str(section):
             raise TypeError(f"<{section}>: invalid section - must be a Section object")
 
         if section.number in getattr(self, '_sections', {}):
             del self._sections[section.number]
 
-        # TODO: Decide whether this should be in the if statement. If it's invalid, we may not want to delete it.
+        # TODO: Decide whether this should be in the if statement. If it's invalid, we may not
+        #  want to delete it.
         section.delete()
 
         return self
@@ -289,7 +278,7 @@ class Course(metaclass=CourseMeta):
         for section in self.sections():
             self.remove_section(section)
         # TODO: Remove this Course from the CourseMeta's instances.
-        if Course._instances[self.id]: del Course._instances[self.id]
+        if Course.__instances[self.id]: del Course.__instances[self.id]
 
     # =================================================================
     # sections
@@ -352,7 +341,8 @@ class Course(metaclass=CourseMeta):
     # print_description
     # =================================================================
     def print_description(self):
-        """Returns a text string that describes the Course, its Sections, its Blocks, its Teachers, and its Labs."""
+        """Returns a text string that describes the Course, its Sections, its Blocks,
+        its Teachers, and its Labs. """
         text = ''
 
         # Header
@@ -381,7 +371,8 @@ class Course(metaclass=CourseMeta):
     # print_description2
     # =================================================================
     def print_description2(self):
-        """Returns a brief string containing the Course's number and name, in the format 'Number: Name'."""
+        """Returns a brief string containing the Course's number and name, in the format 'Number:
+        Name'. """
         return self.__str__()
 
     def __str__(self) -> str:
@@ -536,9 +527,22 @@ class Course(metaclass=CourseMeta):
             number += 1
         return number
 
+    # =======================================
+    # list
+    # =======================================
+
     @staticmethod
     def list():
-        return tuple(Course._instances.values())
+        return tuple(Course.__instances.values())
+
+    # =================================================================
+    # get
+    # =================================================================
+    @staticmethod
+    def get(c_id: int):
+        """Returns the Course object with the matching ID."""
+        return Course.__instances.get(c_id)
+
 
 # =================================================================
 # footer
