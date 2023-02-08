@@ -228,3 +228,36 @@ def test_remove_gets_slots():
     lab1.add_unavailable("mon", "8:00", 1.5)
     lab1.delete()
     assert lab1 not in Lab.list() and len(TimeSlot.list()) == 0
+
+
+def test_get_good():
+    """Verifies that the static get() method works as intended."""
+    Lab._Lab__instances = {}
+    Lab._max_id = 0
+    lab1 = Lab("R-101", "Worst place in the world")
+    lab2 = Lab("R-102", "Second-worst place in the world")
+    assert Lab.get(2) == lab2
+
+
+def test_get_bad():
+    """Verifies that get() returns None when given an invalid ID."""
+    Lab._Lab__instances = {}
+    Lab._max_id = 0
+    lab1 = Lab("R-101", "Worst place in the world")
+    lab2 = Lab("R-102", "Second-worst place in the world")
+    bad_id = 666
+    assert Lab.get(bad_id) is None
+
+
+def test_get_by_number_good():
+    """Verifies that get_by_number() returns the first Lab matching the passed room number."""
+    Lab._Lab__instances = {}
+    room = "R-101"
+    lab = Lab(room, "The worst place in the world")
+    assert Lab.get_by_number(room) == lab
+
+
+def test_get_by_number_bad():
+    lab1 = Lab("R-101", "Worst place in the world")
+    bad_room = "foo"
+    assert Lab.get_by_number(bad_room) is None

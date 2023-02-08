@@ -1,43 +1,5 @@
 from .Time_slot import TimeSlot
 
-
-class LabMeta(type):
-    """Metaclass for Lab, making the latter iterable."""
-    _instances = {}
-
-    def __iter__(self):
-        return iter(getattr(self, '_instances', {}))
-
-    # =================================================================
-    # add
-    # =================================================================
-    def add(self, *args):
-        """Adds a new Lab to the Labs object.
-
-        Returns the modified Labs object."""
-        for lab in args:
-            if not isinstance(lab, Lab):
-                raise TypeError(f"<{lab}>: invalid lab - must be a Lab object")
-
-            # Cannot have two distinct labs with the same room number.
-            my_obj = self.get_by_number(lab.number)
-            if my_obj and my_obj.id != lab.id:
-                # TODO: Raise some kind of Exception.
-                pass
-            self._instances[lab.id] = lab
-        return self
-
-    # =================================================================
-    # get
-    # =================================================================
-    def get(self, lab_id: int):
-        """Returns the Lab object matching the specified ID, if it exists."""
-        for lab in self._instances.values():
-            if lab.id == lab_id:
-                return lab
-        return None
-
-
 """ SYNOPSIS/EXAMPLE:
 
     from Schedule.Lab import Lab
@@ -211,6 +173,19 @@ class Lab:
         return None
 
     # =================================================================
+    # get
+    # =================================================================
+    @staticmethod
+    def get(lab_id: int):
+        """Returns the Lab object matching the specified ID, if it exists."""
+        # for lab in Lab.__instances.values():
+        #     if lab.id == lab_id:
+        #         return lab
+        if lab_id in Lab.__instances.keys():
+            return Lab.__instances[lab_id]
+        return None
+
+    # =================================================================
     # share_blocks
     # =================================================================
     @staticmethod
@@ -236,7 +211,7 @@ class Lab:
         return False
 
     # =================================================================
-    # remove lab
+    # remove lab / delete
     # =================================================================
 
     def delete(self):
