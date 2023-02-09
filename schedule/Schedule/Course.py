@@ -186,9 +186,10 @@ class Course:
         to_return = []
         if name:
             sections = self.sections()
-            for i in sections:
-                if i.name == name:
-                    to_return.append(i)
+            # for i in sections:
+            #     if i.name == name:
+            #         to_return.append(i)
+            to_return = [s for s in sections if s.name == name]
         return to_return
 
     # =================================================================

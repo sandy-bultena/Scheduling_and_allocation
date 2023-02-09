@@ -1,6 +1,5 @@
 import re
 
-
 #
 # Synopsis
 #
@@ -24,11 +23,11 @@ import re
 
 class TimeSlot:
     """
-    A time slot is specified by a day of the week, start time, length (in hours), and whether or not it is allowed to
-    move.
+    A time slot is specified by a day of the week, start time, length (in hours), and whether or
+    not it is allowed to move.
     
-    Example: The 'Block' object has a time slot used for teaching, whilst a 'Lab' object has a time slot indicating
-    when it is not available.
+    Example: The 'Block' object has a time slot used for teaching, whilst a 'Lab' object has a
+    time slot indicating when it is not available.
     """
     # =================================================================
     # Class/Global Variables
@@ -62,7 +61,9 @@ class TimeSlot:
     # Constructor
     # =================================================================
 
-    def __init__(self, day: str = DEFAULT_DAY, start: str = DEFAULT_START, duration: float = DEFAULT_DURATION,
+    def __init__(self, day: str = DEFAULT_DAY,
+                 start: str = DEFAULT_START,
+                 duration: float = DEFAULT_DURATION,
                  movable=True):
         """
         Creates a new TimeSlot object.
@@ -184,9 +185,10 @@ class TimeSlot:
 
     # region movable, start_number & day_number
 
-    # NOTE: Supposedly, it is not Pythonic to have dedicated properties for instance attributes that don't require
-    # any special circumstances, such as having only a getter with no setter or requiring detailed input validation
-    # in the setter. Will ask Sandy about this to see what she thinks.
+    # NOTE: Supposedly, it is not Pythonic to have dedicated properties for instance attributes
+    # that don't require any special circumstances, such as having only a getter with no setter
+    # or requiring detailed input validation in the setter. Will ask Sandy about this to see what
+    # she thinks.
 
     # ====================================
     # movable
@@ -208,8 +210,8 @@ class TimeSlot:
         """
         Sets or returns the start time in hours (i.e., 1:30 pm = 13.5 hours)
         
-        This time info is set every time the start method is invoked on the object. Modifying it directly does NOT
-        modify the values stored in 'day'.
+        This time info is set every time the start method is invoked on the object. Modifying it
+        directly does NOT modify the values stored in 'day'.
 
         To set the day according to the data in this hash, use the method "snap_to_time".
         """
@@ -224,10 +226,11 @@ class TimeSlot:
     # ====================================
     @property
     def day_number(self):
-        """Returns a real number that defines the day of the week, starting from Monday. E.g., tuesday = 2.0.
+        """Returns a real number that defines the day of the week, starting from Monday. E.g.,
+        tuesday = 2.0.
         
-        This info is set every time the day property is called. Modifying this property directly does NOT modify the
-        values stored in 'day'.
+        This info is set every time the day property is called. Modifying this property directly
+        does NOT modify the values stored in 'day'.
         
         To set the day according to the data in this property, use the method snap_to_day()."""
         return self.__day_number
@@ -242,8 +245,8 @@ class TimeSlot:
     # ====================================
     def snap_to_time(self, *args: int):
         """
-        Takes the start number, and converts it to the nearest fraction of an hour (if max_hour_div = 2, then snaps
-        to every 1/2 hour).
+        Takes the start number, and converts it to the nearest fraction of an hour (if
+        max_hour_div = 2, then snaps to every 1/2 hour).
 
         Resets the 'start' property to the new clock time.
 
@@ -277,8 +280,8 @@ class TimeSlot:
         for i in range(TimeSlot.MAX_HOUR_DIV + 1):
             fracs.append(i / TimeSlot.MAX_HOUR_DIV)
 
-        # Sort according to which one is closest to our fraction. Based on experiments in the terminal, this should
-        # works while the max_hour_div is 2.
+        # Sort according to which one is closest to our fraction. Based on experiments in the
+        # terminal, this should works while the max_hour_div is 2.
         sorted_frac = sorted(fracs, key=lambda x: abs(x - frac))
 
         # add hour fraction to hour.
@@ -302,7 +305,8 @@ class TimeSlot:
         """
         day = self._snap_to_day(*args)
 
-        # NOTE: Function's return value is not being used at all. Commenting out these lines of code.
+        # NOTE: Function's return value is not being used at all. Commenting out these lines
+        # of code.
         # changed = False
         # if TimeSlot.reverse_week[day] != self.day:
         #     changed = True
@@ -327,11 +331,12 @@ class TimeSlot:
         """
         Tests that the current Time_Slot conflicts with another TimeSlot.
         """
-        # Detect time collisions up to this error factor. Also useful for graphical applications that require a small
-        # error threshold when moving a block into place.
+        # Detect time collisions up to this error factor. Also useful for graphical applications
+        # that require a small error threshold when moving a block into place.
         delta = 0.05
 
-        # detect date collisions. If the dates differ, there's no conflict, and we can leave. Otherwise, continue.
+        # detect date collisions. If the dates differ, there's no conflict, and we can leave.
+        # Otherwise, continue.
         if abs(self.day_number - rhs.day_number) >= 1 - delta:
             return False
 
@@ -346,6 +351,7 @@ class TimeSlot:
     @staticmethod
     def list():
         return tuple(TimeSlot.__instances)
+
 
 # =================================================================
 # footer
