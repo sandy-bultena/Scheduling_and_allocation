@@ -1,5 +1,7 @@
 import mysql.connector
 
+db_name = "scheduler_db"
+
 db = mysql.connector.connect(
     host="10.101.0.27",
     username="evan_test",
@@ -10,7 +12,8 @@ cursor = db.cursor()
 
 print("Initializing database...")
 
-cursor.execute("USE test_db")
+cursor.execute(f"CREATE DATABASE IF NOT EXISTS {db_name};")
+cursor.execute(f"USE {db_name}")
 
 lab_query = "CREATE TABLE IF NOT EXISTS Lab(id int NOT NULL, name varchar(50) NOT NULL, " \
             "description varchar(100) NOT NULL, PRIMARY KEY(id)) "
