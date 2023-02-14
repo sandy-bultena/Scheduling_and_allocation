@@ -36,12 +36,28 @@ schedule_query = "CREATE TABLE IF NOT EXISTS Schedule(id int NOT NULL, name varc
                  "FOREIGN KEY (scenario_id) REFERENCES Scenario(id) ON DELETE CASCADE ON UPDATE " \
                  "CASCADE) "
 
+section_query = "CREATE TABLE IF NOT EXISTS Section(id int NOT NULL, name varchar(50), " \
+                "number varchar(15), hours decimal(4,2) DEFAULT 1.5, num_students int DEFAULT 0, " \
+                "course_id " \
+                "int NOT NULL, schedule_id int NOT NULL, PRIMARY KEY(id), FOREIGN KEY(course_id) " \
+                "REFERENCES Course(id) ON DELETE CASCADE, FOREIGN KEY(schedule_id) REFERENCES " \
+                "Schedule(id) ON DELETE CASCADE)"
+
+block_query = "CREATE TABLE IF NOT EXISTS Block(id int NOT NULL, section_id int NOT NULL, " \
+              "timeslot_id int " \
+              "NOT NULL, " \
+              "PRIMARY KEY(id), FOREIGN KEY(section_id) REFERENCES Section(id) ON DELETE CASCADE " \
+              "ON UPDATE CASCADE, " \
+              "FOREIGN KEY(timeslot_id) REFERENCES TimeSlot(id))"
+
 cursor.execute(lab_query)
 cursor.execute(teacher_query)
 cursor.execute(course_query)
 cursor.execute(timeslot_query)
 cursor.execute(scenario_query)
 cursor.execute(schedule_query)
+cursor.execute(section_query)
+cursor.execute(block_query)
 
 cursor.execute("SHOW TABLES")
 
