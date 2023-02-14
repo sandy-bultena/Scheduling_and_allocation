@@ -50,6 +50,11 @@ block_query = "CREATE TABLE IF NOT EXISTS Block(id int NOT NULL, section_id int 
               "ON UPDATE CASCADE, " \
               "FOREIGN KEY(timeslot_id) REFERENCES TimeSlot(id))"
 
+lab_block_query = "CREATE TABLE IF NOT EXISTS LabBlock(lab_id int NOT NULL, block_id int NOT NULL, " \
+                  "PRIMARY KEY(lab_id, block_id), " \
+                  "FOREIGN KEY(lab_id) REFERENCES Lab(id) ON DELETE CASCADE, " \
+                  "FOREIGN KEY(block_id) REFERENCES Block(id) ON DELETE CASCADE)"
+
 cursor.execute(lab_query)
 cursor.execute(teacher_query)
 cursor.execute(course_query)
@@ -58,6 +63,7 @@ cursor.execute(scenario_query)
 cursor.execute(schedule_query)
 cursor.execute(section_query)
 cursor.execute(block_query)
+cursor.execute(lab_block_query)
 
 cursor.execute("SHOW TABLES")
 
