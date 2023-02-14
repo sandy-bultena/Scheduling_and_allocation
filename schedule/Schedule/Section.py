@@ -51,8 +51,12 @@ class Section():
         - Parameter name -> The section's name.
         """
         
+        # LEAVE IN:
+            # Allows for teacher allocations to be tracked & calculated correctly in AllocationManager,
+            # since Blocks are ignored there
         self._teachers = {}
         self._allocation = {}
+
         self._streams = {}
         self._blocks = {}
 
