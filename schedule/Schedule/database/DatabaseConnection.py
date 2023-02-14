@@ -15,7 +15,12 @@ cursor.execute("USE test_db")
 lab_query = "CREATE TABLE IF NOT EXISTS Lab(id int NOT NULL, name varchar(50) NOT NULL, " \
             "description varchar(100) NOT NULL, PRIMARY KEY(id)) "
 
+teacher_query = "CREATE TABLE IF NOT EXISTS Teacher(id int NOT NULL, first_name varchar(50) NOT " \
+                "NULL, last_name varchar(50) NOT NULL, dept varchar(50), PRIMARY KEY(id)) "
+
+
 cursor.execute(lab_query)
+cursor.execute(teacher_query)
 
 cursor.execute("SHOW TABLES")
 
