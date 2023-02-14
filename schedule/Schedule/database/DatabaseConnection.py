@@ -26,10 +26,22 @@ timeslot_query = "CREATE TABLE IF NOT EXISTS TimeSlot(id int NOT NULL, day char(
                  "1, unavailable_lab_id int, PRIMARY KEY(id), FOREIGN KEY(unavailable_lab_id) " \
                  "REFERENCES Lab(id))"
 
+scenario_query = "CREATE TABLE IF NOT EXISTS Scenario(id int NOT NULL, name varchar(50), " \
+                 "description varchar(1000), year int, PRIMARY KEY(id)) "
+
+schedule_query = "CREATE TABLE IF NOT EXISTS Schedule(id int NOT NULL, name varchar(50) NOT NULL, " \
+                 "description varchar(100), " \
+                 "semester varchar(11) NOT NULL, official boolean NOT NULL, scenario_id int NOT " \
+                 "NULL, PRIMARY KEY(id), " \
+                 "FOREIGN KEY (scenario_id) REFERENCES Scenario(id) ON DELETE CASCADE ON UPDATE " \
+                 "CASCADE) "
+
 cursor.execute(lab_query)
 cursor.execute(teacher_query)
 cursor.execute(course_query)
 cursor.execute(timeslot_query)
+cursor.execute(scenario_query)
+cursor.execute(schedule_query)
 
 cursor.execute("SHOW TABLES")
 
@@ -37,4 +49,3 @@ print("Following tables exist in the database:")
 
 for x in cursor:
     print(x)
-
