@@ -50,10 +50,31 @@ block_query = "CREATE TABLE IF NOT EXISTS Block(id int NOT NULL, section_id int 
               "ON UPDATE CASCADE, " \
               "FOREIGN KEY(timeslot_id) REFERENCES TimeSlot(id))"
 
+stream_query = "CREATE TABLE IF NOT EXISTS Stream(id int NOT NULL, number varchar(2) NOT NULL, " \
+               "description varchar(50), PRIMARY KEY (id)) "
+
 lab_block_query = "CREATE TABLE IF NOT EXISTS LabBlock(lab_id int NOT NULL, block_id int NOT NULL, " \
                   "PRIMARY KEY(lab_id, block_id), " \
                   "FOREIGN KEY(lab_id) REFERENCES Lab(id) ON DELETE CASCADE, " \
                   "FOREIGN KEY(block_id) REFERENCES Block(id) ON DELETE CASCADE)"
+
+teacher_block_query = "CREATE TABLE IF NOT EXISTS TeacherBlock(teacher_id int NOT NULL, block_id " \
+                      "int NOT NULL, " \
+                      "PRIMARY KEY(teacher_id, block_id), " \
+                      "FOREIGN KEY(teacher_id) REFERENCES Teacher(id) ON DELETE CASCADE, " \
+                      "FOREIGN KEY(block_id) REFERENCES Block(id) ON DELETE CASCADE)"
+
+schedule_teachers_query = "CREATE TABLE IF NOT EXISTS ScheduleTeacher(schedule_id int NOT NULL, " \
+                          "teacher_id int NOT NULL, work_release decimal(4, 2) NOT NULL, " \
+                          "PRIMARY KEY(schedule_id, teacher_id), FOREIGN KEY (schedule_id) " \
+                          "REFERENCES Schedule(id) ON DELETE CASCADE, " \
+                          "FOREIGN KEY (teacher_id) REFERENCES Teacher(id) ON DELETE CASCADE)"
+
+stream_section_query = "CREATE TABLE IF NOT EXISTS StreamSection(stream_id int NOT NULL, " \
+                       "section_id int NOT NULL, " \
+                       "PRIMARY KEY(stream_id, section_id), " \
+                       "FOREIGN KEY(stream_id) REFERENCES Stream(id) ON DELETE CASCADE, " \
+                       "FOREIGN KEY(section_id) REFERENCES Section(id) ON DELETE CASCADE)"
 
 cursor.execute(lab_query)
 cursor.execute(teacher_query)
@@ -63,7 +84,11 @@ cursor.execute(scenario_query)
 cursor.execute(schedule_query)
 cursor.execute(section_query)
 cursor.execute(block_query)
+cursor.execute(stream_query)
 cursor.execute(lab_block_query)
+cursor.execute(teacher_block_query)
+cursor.execute(schedule_teachers_query)
+cursor.execute(stream_section_query)
 
 cursor.execute("SHOW TABLES")
 
