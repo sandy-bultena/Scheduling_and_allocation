@@ -21,9 +21,15 @@ teacher_query = "CREATE TABLE IF NOT EXISTS Teacher(id int NOT NULL, first_name 
 course_query = "CREATE TABLE IF NOT EXISTS Course(id int NOT NULL, name varchar(50) NOT NULL, " \
                "number varchar(15), allocation bool DEFAULT 1, PRIMARY KEY(id)) "
 
+timeslot_query = "CREATE TABLE IF NOT EXISTS TimeSlot(id int NOT NULL, day char(3) NOT NULL, " \
+                 "duration decimal(3,1) NOT NULL, start varchar(5) NOT NULL, movable bool DEFAULT " \
+                 "1, unavailable_lab_id int, PRIMARY KEY(id), FOREIGN KEY(unavailable_lab_id) " \
+                 "REFERENCES Lab(id))"
+
 cursor.execute(lab_query)
 cursor.execute(teacher_query)
 cursor.execute(course_query)
+cursor.execute(timeslot_query)
 
 cursor.execute("SHOW TABLES")
 
