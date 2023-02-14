@@ -76,6 +76,12 @@ stream_section_query = "CREATE TABLE IF NOT EXISTS StreamSection(stream_id int N
                        "FOREIGN KEY(stream_id) REFERENCES Stream(id) ON DELETE CASCADE, " \
                        "FOREIGN KEY(section_id) REFERENCES Section(id) ON DELETE CASCADE)"
 
+section_teacher_query = "CREATE TABLE IF NOT EXISTS SectionTeacher(section_id int NOT NULL, " \
+                        "teacher_id int NOT NULL, allocation decimal(3,1)," \
+                        "PRIMARY KEY(section_id, teacher_id)," \
+                        "FOREIGN KEY(section_id) REFERENCES Section(id) ON DELETE CASCADE," \
+                        "FOREIGN KEY(teacher_id) REFERENCES Teacher(id) ON DELETE CASCADE)"
+
 cursor.execute(lab_query)
 cursor.execute(teacher_query)
 cursor.execute(course_query)
@@ -89,6 +95,7 @@ cursor.execute(lab_block_query)
 cursor.execute(teacher_block_query)
 cursor.execute(schedule_teachers_query)
 cursor.execute(stream_section_query)
+cursor.execute(section_teacher_query)
 
 cursor.execute("SHOW TABLES")
 
