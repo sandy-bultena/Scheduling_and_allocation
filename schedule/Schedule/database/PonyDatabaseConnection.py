@@ -68,6 +68,7 @@ class TimeSlot(db.Entity):
     duration = Required(Decimal, 3, 1)
     start = Required(str, max_len=5)
     movable = Optional(bool, default=True, sql_default='1')
+    block_id = Optional('Block')
     unavailable_lab_id = Optional(Lab)
 
 
@@ -109,8 +110,14 @@ class Stream(db.Entity):
     sections = Set(Section)
 
 
-class Block(TimeSlot):
-    block_id = Required(int)
+class Block(db.Entity):
+    id = PrimaryKey(int)
+    # Every Block is an instance of a TimeSlot. However, using normal inheritance causes problems
+    # here because you can't give the child class a different primary key from the parent class,
+    # and you can't use a non-primary key as a foreign key in other tables. Because of this,
+    # we've decided to simply create a link between the two tables without inheriting anything.
+    time_slot_id = Required(TimeSlot)
+
     # Blocks have a many-to-one relationship with Sections. A Block can belong to one Section,
     # or none.
     section_id = Optional(Section)
