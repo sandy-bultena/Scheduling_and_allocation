@@ -1,9 +1,10 @@
+from decimal import Decimal
+
 from pony.orm import *
 import mysql.connector
 
 # Test database to verify that Pony works. Anything done here won't affect the main scheduler_db.
 db_name = "pony_scheduler_db"
-
 
 # Create the database if it doesn't exist. Using mysql.connector to accomplish this because Pony
 # doesn't let you use the create_db option when binding to a MySQL database.
@@ -36,6 +37,9 @@ class Lab(db.Entity):
     id = PrimaryKey(int)
     name = Required(str, max_len=50)
     description = Required(str, max_len=100)
+    # This field won't be present in the database, but we have to declare it here to establish a
+    # one-to-many relationship between Lab and TimeSlot.
+    unavailable_labs = Set('TimeSlot')
 
 
 class Teacher(db.Entity):
@@ -50,6 +54,16 @@ class Course(db.Entity):
     name = Required(str, max_len=50)
     number = Optional(str, max_len=15)
     allocation = Optional(bool, default=True, sql_default='1')
+
+
+class TimeSlot(db.Entity):
+    _table_ = "time_slot"  # Give the table a custom name; otherwise it becomes "timeslot".
+    id = PrimaryKey(int)
+    day = Required(str, max_len=3)
+    duration = Required(Decimal, 3, 1)
+    start = Required(str, max_len=5)
+    movable = Optional(bool, default=True, sql_default='1')
+    unavailable_lab_id = Optional(Lab)
 
 
 # Binds all entities created in this script to the specified database. If the database doesn't
