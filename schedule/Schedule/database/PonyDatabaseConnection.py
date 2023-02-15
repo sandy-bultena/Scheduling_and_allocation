@@ -40,6 +40,7 @@ class Lab(db.Entity):
     # This field won't be present in the database, but we have to declare it here to establish a
     # one-to-many relationship between Lab and TimeSlot.
     unavailable_labs = Set('TimeSlot')
+    blocks = Set('Block')
 
 
 class Teacher(db.Entity):
@@ -47,6 +48,9 @@ class Teacher(db.Entity):
     first_name = Required(str, max_len=50)
     last_name = Required(str, max_len=50)
     dept = Optional(str, max_len=50)
+    schedules = Set('Schedule')
+    sections = Set('Section')
+    blocks = Set('Block')
 
 
 class Course(db.Entity):
@@ -54,6 +58,7 @@ class Course(db.Entity):
     name = Required(str, max_len=50)
     number = Optional(str, max_len=15)
     allocation = Optional(bool, default=True, sql_default='1')
+    sections = Set('Section')
 
 
 class TimeSlot(db.Entity):
@@ -64,6 +69,54 @@ class TimeSlot(db.Entity):
     start = Required(str, max_len=5)
     movable = Optional(bool, default=True, sql_default='1')
     unavailable_lab_id = Optional(Lab)
+
+
+class Scenario(db.Entity):
+    id = PrimaryKey(int)
+    name = Optional(str, max_len=50)
+    description = Optional(str, max_len=1000)
+    year = Optional(int, max=2200)
+    schedules = Set('Schedule')
+
+
+class Schedule(db.Entity):
+    id = PrimaryKey(int)
+    description = Optional(str, max_len=100)
+    semester = Required(str, max_len=11)
+    official = Required(bool)
+    scenario_id = Required(Scenario)
+    sections = Set('Section')
+    teachers = Set(Teacher)
+
+
+class Section(db.Entity):
+    id = PrimaryKey(int)
+    name = Optional(str, max_len=50)
+    number = Optional(str, max_len=15)
+    hours = Optional(Decimal, 4, 2, sql_default='1.5')
+    num_students = Optional(int, sql_default='0')
+    course_id = Required(Course)
+    schedule_id = Required(Schedule)
+    streams = Set('Stream')
+    teachers = Set(Teacher)
+    blocks = Set('Block')
+
+
+class Stream(db.Entity):
+    id = PrimaryKey(int)
+    number = Required(str, max_len=2)
+    descr = Optional(str, max_len=50)
+    sections = Set(Section)
+
+
+class Block(TimeSlot):
+    block_id = Required(int)
+    # Blocks have a many-to-one relationship with Sections. A Block can belong to one Section,
+    # or none.
+    section_id = Optional(Section)
+    # Blocks have many-to-many relationships with Labs and Teachers.
+    labs = Set(Lab)
+    teachers = Set(Teacher)
 
 
 # Binds all entities created in this script to the specified database. If the database doesn't
