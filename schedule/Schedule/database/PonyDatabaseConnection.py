@@ -27,6 +27,9 @@ conn.close()
 # Create a Pony Database object.
 db = Database()
 
+# Turn on debug mode, so we can see the SQL statements.
+set_sql_debug(True)
+
 
 # Create all the Entity classes.
 class Lab(db.Entity):
@@ -42,9 +45,17 @@ class Teacher(db.Entity):
     dept = Optional(str, max_len=50)
 
 
-# Binds all entities created in this script to the specified database.
-# If the database doesn't exist, it will be created. (I hope)
-# NOTE: Verified that this does not work. MySQL binding doesn't accept a create_db option.
+class Course(db.Entity):
+    id = PrimaryKey(int)
+    name = Required(str, max_len=50)
+    number = Optional(str, max_len=15)
+    allocation = Optional(bool, default=True, sql_default='1')
+
+
+# Binds all entities created in this script to the specified database. If the database doesn't
+# exist, it will be created. (I hope) NOTE: Verified that this does not work. MySQL binding
+# doesn't accept a create_db option. Have to use mysql.connector to ensure the database's
+# creation, done above.
 db.bind(provider='mysql',
         host='10.101.0.27',
         user='evan_test',
