@@ -1,26 +1,56 @@
 from pony.orm import *
+import mysql.connector
 
 # Test database to verify that Pony works. Anything done here won't affect the main scheduler_db.
 db_name = "pony_scheduler_db"
 
+
+# Create the database if it doesn't exist. Using mysql.connector to accomplish this because Pony
+# doesn't let you use the create_db option when binding to a MySQL database.
+conn = mysql.connector.connect(
+    host="10.101.0.27",
+    username="evan_test",
+    password="test_stage_pwd_23"
+)
+
+cursor = conn.cursor()
+
+print("Initializing database...")
+
+cursor.execute(f"CREATE DATABASE IF NOT EXISTS {db_name};")
+cursor.execute(f"USE {db_name}")
+
+# close the cursor and connection before switching over to Pony.
+cursor.close()
+conn.close()
+
+# Create a Pony Database object.
 db = Database()
 
 
 # Create all the Entity classes.
 class Lab(db.Entity):
     id = PrimaryKey(int)
-    name = Required(str)
-    description = Required(str)
+    name = Required(str, max_len=50)
+    description = Required(str, max_len=100)
+
+
+class Teacher(db.Entity):
+    id = PrimaryKey(int)
+    first_name = Required(str, max_len=50)
+    last_name = Required(str, max_len=50)
+    dept = Optional(str, max_len=50)
 
 
 # Binds all entities created in this script to the specified database.
 # If the database doesn't exist, it will be created. (I hope)
+# NOTE: Verified that this does not work. MySQL binding doesn't accept a create_db option.
 db.bind(provider='mysql',
         host='10.101.0.27',
         user='evan_test',
         passwd='test_stage_pwd_23',
-        db=db_name,
-        create_db=True)
+        db=db_name)
 
 # Map the Entity classes to the database tables once the entities have been defined and the
 # database has been bound.
+db.generate_mapping(create_tables=True)
