@@ -1,5 +1,7 @@
 from pony.orm import *
 from PonyDatabaseConnection import *
+
+
 # from ..Time_slot import TimeSlot as T_Slot
 
 
@@ -31,6 +33,12 @@ def get_slots_from_db():
     slots.show()
 
 
+@db_session
+def create_block():
+    """Creates a Block and inserts it, along with its corresponding time slot, into the database."""
+    slot = TimeSlot(id=1, day="mon", duration=1.5, start="8:30")
+    block = Block(id=1, time_slot_id=slot.id)
+
 # @db_session
 # def model_to_entity(slot: T_Slot):
 #     e_slot = TimeSlot(id=slot.id, day=slot.day, duration=slot.duration,
@@ -42,3 +50,4 @@ def get_slots_from_db():
 
 # model_slot = T_Slot()
 # model_to_entity(model_slot)
+create_block()
