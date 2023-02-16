@@ -12,6 +12,16 @@ def model_to_entity(slot: ModelTSlot.TimeSlot):
 
 
 @db_session
+def entity_to_model() -> ModelTSlot.TimeSlot:
+    """Retrieves an entity TimeSlot from the database and creates a model TimeSlot from it."""
+    e_slot = TimeSlot.get(id=1)
+    print(e_slot)
+    m_slot = ModelTSlot.TimeSlot(e_slot.day, e_slot.start, float(e_slot.duration), e_slot.movable)
+    m_slot._TimeSlot__id = ModelTSlot.TimeSlot._max_id = e_slot.id
+    return m_slot
+
+
+@db_session
 def get_max_ts_id() -> int:
     """Retrieves the highest TimeSlot ID from the database."""
     val = max(s.id for s in TimeSlot)
@@ -35,3 +45,7 @@ if __name__ == "__main__":
     print("Attempting database insertion by creation of corresponding entity TimeSlot...")
 
     model_to_entity(t_slot)
+
+    slot = entity_to_model()
+    print(f"Created a model TimeSlot: {slot.day} {slot.start} {str(slot.duration)} hours.")
+
