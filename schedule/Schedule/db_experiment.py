@@ -1,6 +1,6 @@
-from pony.orm import db_session
+from pony.orm import *
 
-from database.PonyDatabaseConnection import *
+from database.PonyDatabaseConnection import db, TimeSlot
 import Time_slot as ModelTSlot
 
 
