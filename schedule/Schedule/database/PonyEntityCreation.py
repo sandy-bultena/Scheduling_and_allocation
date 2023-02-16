@@ -1,9 +1,10 @@
 from pony.orm import *
-from PonyDatabaseConnection import *
+from database.PonyDatabaseConnection import *
 
 
 # from ..Time_slot import TimeSlot as T_Slot
-
+# from Schedule.Time_slot import TimeSlot as T_Slot
+from Schedule.Time_slot import TimeSlot as T_Slot
 
 @db_session
 def create_time_slots():
@@ -39,10 +40,10 @@ def create_block():
     slot = TimeSlot(id=1, day="mon", duration=1.5, start="8:30")
     block = Block(id=1, time_slot_id=slot.id)
 
-# @db_session
-# def model_to_entity(slot: T_Slot):
-#     e_slot = TimeSlot(id=slot.id, day=slot.day, duration=slot.duration,
-#                       start=slot.start, movable=slot.movable)
+@db_session
+def model_to_entity(slot: T_Slot):
+    e_slot = TimeSlot(id=slot.id, day=slot.day, duration=slot.duration,
+                      start=slot.start, movable=slot.movable)
 
 
 # create_time_slots()
@@ -50,4 +51,6 @@ def create_block():
 
 # model_slot = T_Slot()
 # model_to_entity(model_slot)
-create_block()
+# create_block()
+m_slot = T_Slot()
+model_to_entity(m_slot)
