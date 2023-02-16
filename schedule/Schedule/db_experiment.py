@@ -1,13 +1,14 @@
 from pony.orm import *
 
-from database.PonyDatabaseConnection import db, TimeSlot
+from database.PonyDatabaseConnection import TimeSlot, Block
 import Time_slot as ModelTSlot
+# from Block import Block as ModelBlock
 
 
 @db_session
 def model_to_entity(slot: ModelTSlot.TimeSlot):
     """Create an entity TimeSlot from a passed model TimeSlot, storing it in the database."""
-    e_slot = TimeSlot(id=slot.id, day=slot.day, duration=slot.duration,
+    e_slot = TimeSlot(day=slot.day, duration=slot.duration,
                       start=slot.start, movable=slot.movable)
 
 
@@ -19,6 +20,13 @@ def entity_to_model() -> ModelTSlot.TimeSlot:
     m_slot = ModelTSlot.TimeSlot(e_slot.day, e_slot.start, float(e_slot.duration), e_slot.movable)
     m_slot._TimeSlot__id = ModelTSlot.TimeSlot._max_id = e_slot.id
     return m_slot
+
+
+# @db_session
+# def model_block_to_entity_block(block: ModelBlock):
+#     e_slot = TimeSlot(day=block.day, duration=block.duration,
+#                       start=block.start, movable=block.movable)
+#     e_block = Block(time_slot_id=e_slot.id)
 
 
 @db_session
@@ -49,3 +57,6 @@ if __name__ == "__main__":
     slot = entity_to_model()
     print(f"Created a model TimeSlot: {slot.day} {slot.start} {str(slot.duration)} hours.")
 
+    # m_block = ModelBlock("Mon", "9:30", 1.5, 420)
+    # print(f"Created a model Block: {m_block}")
+    # model_block_to_entity_block(m_block)

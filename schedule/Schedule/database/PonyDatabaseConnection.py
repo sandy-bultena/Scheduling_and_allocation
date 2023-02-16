@@ -34,7 +34,7 @@ set_sql_debug(True)
 
 # Create all the Entity classes.
 class Lab(db.Entity):
-    id = PrimaryKey(int)
+    # id = PrimaryKey(int)
     name = Required(str, max_len=50)
     description = Required(str, max_len=100)
     # This field won't be present in the database, but we have to declare it here to establish a
@@ -44,7 +44,7 @@ class Lab(db.Entity):
 
 
 class Teacher(db.Entity):
-    id = PrimaryKey(int)
+    # id = PrimaryKey(int)
     first_name = Required(str, max_len=50)
     last_name = Required(str, max_len=50)
     dept = Optional(str, max_len=50)
@@ -54,7 +54,7 @@ class Teacher(db.Entity):
 
 
 class Course(db.Entity):
-    id = PrimaryKey(int)
+    # id = PrimaryKey(int)
     name = Required(str, max_len=50)
     number = Optional(str, max_len=15)
     allocation = Optional(bool, default=True, sql_default='1')
@@ -63,7 +63,7 @@ class Course(db.Entity):
 
 class TimeSlot(db.Entity):
     _table_ = "time_slot"  # Give the table a custom name; otherwise it becomes "timeslot".
-    id = PrimaryKey(int)
+    # id = PrimaryKey(int)
     day = Required(str, max_len=3)
     duration = Required(Decimal, 3, 1)
     start = Required(str, max_len=5)
@@ -73,7 +73,7 @@ class TimeSlot(db.Entity):
 
 
 class Scenario(db.Entity):
-    id = PrimaryKey(int)
+    # id = PrimaryKey(int)
     name = Optional(str, max_len=50)
     description = Optional(str, max_len=1000)
     year = Optional(int, max=2200)
@@ -81,7 +81,7 @@ class Scenario(db.Entity):
 
 
 class Schedule(db.Entity):
-    id = PrimaryKey(int)
+    # id = PrimaryKey(int)
     description = Optional(str, max_len=100)
     semester = Required(str, max_len=11)
     official = Required(bool)
@@ -91,7 +91,7 @@ class Schedule(db.Entity):
 
 
 class Section(db.Entity):
-    id = PrimaryKey(int)
+    # id = PrimaryKey(int)
     name = Optional(str, max_len=50)
     number = Optional(str, max_len=15)
     hours = Optional(Decimal, 4, 2, sql_default='1.5')
@@ -104,14 +104,14 @@ class Section(db.Entity):
 
 
 class Stream(db.Entity):
-    id = PrimaryKey(int)
+    # id = PrimaryKey(int)
     number = Required(str, max_len=2)
     descr = Optional(str, max_len=50)
     sections = Set(Section)
 
 
 class Block(db.Entity):
-    id = PrimaryKey(int)
+    # id = PrimaryKey(int)
     # Every Block is an instance of a TimeSlot. However, using normal inheritance causes problems
     # here because you can't give the child class a different primary key from the parent class,
     # and you can't use a non-primary key as a foreign key in other tables. Because of this,
