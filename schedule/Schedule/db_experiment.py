@@ -29,7 +29,7 @@ def model_block_to_entity_block(block: ModelBlock):
                       start=block.start, movable=block.movable)
     # e_slot.id is listed as NoneType with a value of None, even though the TimeSlot object seems
     # to have been created. Perhaps it's because the changes weren't committed yet?
-    commit()
+    flush()
     e_block = Block(time_slot_id=e_slot.id)
 
 
