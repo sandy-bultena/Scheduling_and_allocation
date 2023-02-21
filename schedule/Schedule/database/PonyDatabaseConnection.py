@@ -124,6 +124,7 @@ class Block(db.Entity):
     # Blocks have many-to-many relationships with Labs and Teachers.
     labs = Set(Lab)
     teachers = Set(Teacher)
+    number = Required(int, min=0)
 
 
 # Binds all entities created in this script to the specified database. If the database doesn't

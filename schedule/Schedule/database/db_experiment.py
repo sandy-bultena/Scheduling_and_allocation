@@ -1,9 +1,19 @@
 from pony.orm import *
 
-from database.PonyDatabaseConnection import TimeSlot, Block
+import sys
+from os import path
+
+sys.path.append(path.dirname(path.dirname(__file__)))
+
+from PonyDatabaseConnection import TimeSlot, Block
 import Time_slot as ModelTSlot
 from Block import Block as ModelBlock
-import os
+from Lab import Lab as ModelLab
+
+
+@db_session
+def add_unavailable_lab_to_time_slot():
+    pass
 
 
 @db_session
@@ -30,7 +40,7 @@ def model_block_to_entity_block(block: ModelBlock):
     # e_slot.id is listed as NoneType with a value of None, even though the TimeSlot object seems
     # to have been created. Perhaps it's because the changes weren't committed yet?
     flush()
-    e_block = Block(time_slot_id=e_slot.id)
+    e_block = Block(time_slot_id=e_slot.id, number=123)
 
 
 @db_session
@@ -44,8 +54,8 @@ def get_max_ts_id() -> int:
 
 
 if __name__ == "__main__":
-    file_path = os.path.realpath(__file__)
-    print(file_path)
+    # file_path = os.path.realpath(__file__)
+    # print(file_path)
 
     max_ts_id = get_max_ts_id()
     print(max_ts_id)
