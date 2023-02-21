@@ -146,7 +146,8 @@ def bind_entities(**db_params):
     # exist, it will be created. (I hope) NOTE: Verified that this does not work. MySQL binding
     # doesn't accept a create_db option. Have to use mysql.connector to ensure the database's
     # creation, done above.
-    db_params['database'].bind(db_params)
+    #print(db_params)
+    db_params['database'].bind(**db_params)
 
 
 def map_entities(db):
@@ -253,7 +254,19 @@ def define_database(**db_params):
         conn.close()
     # db = Database()
     # define_entities(db)
-    db_params['database'] = db
-    bind_entities(**db_params)
+    db.bind(**db_params)
     map_entities(db)
     return db
+
+if __name__ == "__main__":
+    define_database(provider='mysql',
+        host='10.101.0.27',
+        user='evan_test',
+        passwd='test_stage_pwd_23',
+        db=db_name)
+    """db.bind(provider='mysql',
+        host='10.101.0.27',
+        user='evan_test',
+        passwd='test_stage_pwd_23',
+        db=db_name)
+    db.generate_mapping(create_tables=True)"""
