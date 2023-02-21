@@ -1,5 +1,9 @@
-from ..Conflict import Conflict
+from Conflict import Conflict
 import pytest
+
+import sys
+from os import path
+sys.path.append(path.dirname(path.dirname(__file__)))
 
 conflict_types = Conflict._sorted_conflicts.copy()
 conflict_types.append(Conflict.TIME_LAB)

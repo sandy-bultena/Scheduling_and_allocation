@@ -1,12 +1,18 @@
-from ..Schedule import Schedule
-from ..Teacher import Teacher
-from ..Stream import Stream
-from ..Course import Course
-from ..Lab import Lab
-from ..Conflict import Conflict
-from ..Section import Section
-from ..Block import Block
+import sys
+from os import path
+sys.path.append(path.dirname(path.dirname(__file__)))
+
+from Schedule import Schedule
+from Teacher import Teacher
+from Stream import Stream
+from Course import Course
+from Lab import Lab
+from Conflict import Conflict
+from Section import Section
+from Block import Block
 import pytest
+
+
 
 @pytest.fixture(autouse=True)
 def run_before_and_after():

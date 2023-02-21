@@ -1,4 +1,9 @@
-from ..Time_slot import TimeSlot
+import sys
+from os import path
+sys.path.append(path.dirname(path.dirname(__file__)))
+
+from Time_slot import TimeSlot
+
 
 
 def test_id():

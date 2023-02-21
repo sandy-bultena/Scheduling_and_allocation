@@ -1,9 +1,16 @@
-from ..Undo import Undo
+import sys
+from os import path
+
+sys.path.append(path.dirname(path.dirname(__file__)))
+
+from Undo import Undo
 import pytest
+
 
 @pytest.fixture(autouse=True)
 def run_before_and_after():
     Undo._max_id = 0
+
 
 def test_constructor_created_success():
     """Checks that Undo is correctly correctly"""
