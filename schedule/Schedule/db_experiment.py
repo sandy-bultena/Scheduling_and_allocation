@@ -3,6 +3,7 @@ from pony.orm import *
 from database.PonyDatabaseConnection import TimeSlot, Block
 import Time_slot as ModelTSlot
 # from Block import Block as ModelBlock
+import os
 
 
 @db_session
@@ -40,6 +41,9 @@ def get_max_ts_id() -> int:
 
 
 if __name__ == "__main__":
+    file_path = os.path.realpath(__file__)
+    print(file_path)
+
     max_ts_id = get_max_ts_id()
     print(max_ts_id)
     # If the max ID is greater than 0, it means the TimeSlot table is not empty.
