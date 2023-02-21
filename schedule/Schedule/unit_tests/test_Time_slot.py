@@ -20,19 +20,28 @@ PROVIDER = 'mysql'
 class TestTimeSlot:
     db: Database
 
-    # @pytest.fixture(autouse=True)
-    # def run_before(self):
-    #     self.db = define_database(host=HOST, passwd=PASSWD, db=DB_NAME, provider=PROVIDER,
-    #                               user=USERNAME)
+    @pytest.fixture(autouse=True)
+    def run_before(self):
+        self.db = define_database(host=HOST, passwd=PASSWD, db=DB_NAME, provider=PROVIDER,
+                                  user=USERNAME)
+        yield
+        self.db.drop_all_tables(with_all_data=True)
+        # The code below prevents us from getting a BindingError when this function is called
+        # after the first test. Makes the test suite run really slow, but at least it ensures
+        # that all the tests pass. Based on a solution found here:
+        # https://github.com/ponyorm/pony/issues/214#issuecomment-787452937
+        self.db.disconnect()
+        self.db.provider = None
+        self.db.schema = None
 
-    @classmethod
-    def setup_class(cls):
-        cls.db = define_database(host=HOST, passwd=PASSWD, db=DB_NAME, provider=PROVIDER,
-                                 user=USERNAME)
-
-    @classmethod
-    def teardown_class(cls):
-        cls.db.drop_all_tables(with_all_data=True)
+    # @classmethod
+    # def setup_class(cls):
+    #     cls.db = define_database(host=HOST, passwd=PASSWD, db=DB_NAME, provider=PROVIDER,
+    #                              user=USERNAME)
+    #
+    # @classmethod
+    # def teardown_class(cls):
+    #     cls.db.drop_all_tables(with_all_data=True)
 
     # @pytest.fixture(autouse=True)
     # def run_after(self):
@@ -41,9 +50,6 @@ class TestTimeSlot:
     @db_session
     def test_id(self):
         """Verifies that the ID assigned to a TimeSlot increments automatically."""
-        # NOTE: Resetting the TimeSlot max_id to 0 to prevent shenanigans from simultaneously
-        # running tests.
-        TimeSlot._max_id = 0
         slots = []
         for x in range(5):
             slots.append(TimeSlot())
