@@ -79,21 +79,67 @@ class Schedule:
         scenario = db.Scenario.get(id=sched.scenario_id)
         # create Model version of scenario
         schedule = Schedule(id, sched.semester, sched.official, scenario, sched.description)
+
+        # create all courses
         for course in select(c for c in db.Course):
             c = Course(course.number, course.name)
             c.needs_allocation = course.allocation
-
-        for teacher_schedule in select(t for t in db.Teacher if t.schedule_id == id):
-            teacher = db.Teacher.get(id = teacher_schedule.teacher_id)
-            t = Teacher(teacher.first_name, teacher.last_name, teacher.dept, id = teacher_schedule.teacher_id)
-            t.release = teacher_schedule.work_release
         
+        # create all labs
+        for lab in select(l for l in db.Lab):
+            l = Lab(l.number, l.description)
+            # set up unavailable times
+            for slot in select(ts for ts in db.TimeSlot if ts.unavailable_lab_id == lab.id):
+                ts = TimeSlot(slot.day, slot.start, slot.duration, slot.movable, id = slot.id)
+                l.add_unavailable(ts)
+
+        # create all teachers
+        for teacher in select(t for t in db.Teacher): Schedule.__create_teacher(teacher.id)
+        
+        # add release for this schedule to any teachers
+        for schedule_teacher in select(t for t in db.Schedule_Teacher if t.schedule_id == id):
+            Schedule.__create_teacher(schedule_teacher.teacher_id).release = schedule_teacher.work_release
+        
+        # create all streams
+        for stream in select(s for s in db.Stream): Schedule.__create_stream(stream.id)
+            
+        # create all sections in this schedule
         for section in select(s for s in db.Section if s.schedule_id == id):
             s = Section(section.number, section.hours, section.name, id = section.id)
             s.num_students = section.num_students
             Course.get(section.course_id).add_section(s)
-            
+            # identify teachers and set allocation
+            for section_teacher in select(t for t in db.Section_Teacher if t.section_id == section.id):
+                t = Schedule.__create_teacher(section_teacher.teacher_id)
+                s.assign_teacher(t)
+                s.set_teacher_allocation(t, section_teacher.allocation)
+            # identify section-stream connections and update accordingly
+            for section_stream in section.streams:
+                st = Schedule.__create_stream(section_stream.stream)
+                s.assign_stream(st)
+            # identify, create, and assign blocks
+            for block in select(b for b in db.Block if b.section_id == s.id):
+                slot = db.TimeSlot.get(id = block.time_slot_id)
+                b = Block(slot.day, slot.start, slot.duration, block.number, id = block.id, time_slot_id = slot.id)
+                s.add_block(b)
+                for l in block.labs: b.assign_lab(Lab.get(l.id))
+                for t in block.teachers: b.assign_teacher(Teacher.get(t.id))
         
+        return schedule
+            
+    @staticmethod
+    def __create_teacher(id : int) -> Teacher:
+        """ Takes a given ID and returns the Teacher model object with given ID. If it doesn't exist, creates it from the database. """
+        if Teacher.get(id): return Teacher.get(id)
+        teacher = db.Teacher.get(id = id)
+        return Teacher(teacher.first_name, teacher.last_name, teacher.dept, id = id)
+            
+    @staticmethod
+    def __create_stream(id : int) -> Stream:
+        """ Takes a given ID and returns the Stream model object with given ID. If it doesn't exist, creates it from the database. """
+        if Stream.get(id): return Stream.get(id)
+        stream = db.Stream.get(id = id)
+        return Stream(stream.number, stream.descr)
 
     #region Read & Write YAML (TEMPORARY)
     # --------------------------------------------------------
@@ -125,8 +171,8 @@ class Schedule:
                 for c in yaml_contents['conflicts']['list']: Schedule.__create_conflict(c)
                 for c in yaml_contents['courses']['list'].values(): Schedule.__create_course(c)
                 for l in yaml_contents['labs']['list'].values(): Schedule.__create_lab(l)
-                for s in yaml_contents['streams']['list'].values(): Schedule.__create_stream(s)
-                for t in yaml_contents['teachers']['list'].values(): Schedule.__create_teacher(t)
+                for s in yaml_contents['streams']['list'].values(): Schedule.__create_stream_yaml(s)
+                for t in yaml_contents['teachers']['list'].values(): Schedule.__create_teacher_yaml(t)
 
                 # set max IDs again so it now matches with the stored value
                 Schedule.__set_max_ids(max_ids)
@@ -204,7 +250,7 @@ class Schedule:
             for k in block.get('labs', {}).keys(): b.assign_lab(Schedule.__create_lab(block.get('labs', {})[k]))
             b.movable = block.get('movable', b.movable)
             if block.get('section'): b.section = Schedule.__create_section(block.get('section'))
-            for k in block.get('teachers', {}).keys(): b.assign_teacher(Schedule.__create_teacher(block.get('teachers', {})[k]))
+            for k in block.get('teachers', {}).keys(): b.assign_teacher(Schedule.__create_teacher_yaml(block.get('teachers', {})[k]))
             b._Block__sync = block.get('sync', [])
 
             return b
@@ -223,8 +269,8 @@ class Schedule:
             Section._Section__instances[s.id] = s
             s._allocation = section.get('allocation', s._allocation)
             s.num_students = section.get('num_students', s.num_students)
-            for k in section.get('streams', {}).keys(): s.assign_stream(Schedule.__create_stream(section.get('streams', {})[k]))
-            for k in section.get('teachers', {}).keys(): s.assign_teacher(Schedule.__create_teacher(section.get('teachers', {})[k]))
+            for k in section.get('streams', {}).keys(): s.assign_stream(Schedule.__create_stream_yaml(section.get('streams', {})[k]))
+            for k in section.get('teachers', {}).keys(): s.assign_teacher(Schedule.__create_teacher_yaml(section.get('teachers', {})[k]))
             return s
         else: return sections[0]
 
@@ -240,7 +286,7 @@ class Schedule:
             return l
 
     @staticmethod
-    def __create_teacher(teacher : dict) -> Teacher:
+    def __create_teacher_yaml(teacher : dict) -> Teacher:
         if Teacher.get(teacher.get('id', -1)): return Teacher.get(teacher.get('id', -1))
         else:
             t = Teacher(teacher.get('fname', ''), teacher.get('lname', ''), teacher.get('dept', ''))
@@ -265,7 +311,7 @@ class Schedule:
             return c
         
     @staticmethod
-    def __create_stream(stream : dict) -> Stream:
+    def __create_stream_yaml(stream : dict) -> Stream:
         if Stream.get(stream.get('id', -1)): return Stream.get(stream.get('id', -1))
         else:
             s = Stream(stream.get('number', 'A'), stream.get('descr', ''))

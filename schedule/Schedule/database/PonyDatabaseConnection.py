@@ -35,7 +35,7 @@ set_sql_debug(True)
 # Create all the Entity classes.
 class Lab(db.Entity):
     # id = PrimaryKey(int)
-    name = Required(str, max_len=50)
+    number = Required(str, max_len=50)
     description = Optional(str, max_len=100)
     # This field won't be present in the database, but we have to declare it here to establish a
     # one-to-many relationship between Lab and TimeSlot.
@@ -50,7 +50,8 @@ class Teacher(db.Entity):
     dept = Optional(str, max_len=50)
     #schedules = Set('Schedule')
     schedules = Set('TeacherSchedule')
-    sections = Set('Section')
+    #sections = Set('Section')
+    sections = Set('TeacherSection')
     blocks = Set('Block')
 
 
@@ -91,12 +92,6 @@ class Schedule(db.Entity):
     #teachers = Set(Teacher)
     teachers = Set('TeacherSchedule')
 
-class TeacherSchedule(db.Entity):
-    teacher_id = Required(Teacher)
-    schedule_id = Required(Schedule)
-    work_release = Required(Decimal, 4, 2)
-
-
 class Section(db.Entity):
     # id = PrimaryKey(int)
     name = Optional(str, max_len=50)
@@ -106,7 +101,8 @@ class Section(db.Entity):
     course_id = Required(Course)
     schedule_id = Required(Schedule)
     streams = Set('Stream')
-    teachers = Set(Teacher)
+    #teachers = Set(Teacher)
+    teachers = Set('TeacherSection')
     blocks = Set('Block')
 
 
@@ -132,7 +128,18 @@ class Block(db.Entity):
     labs = Set(Lab)
     teachers = Set(Teacher)
     number = Required(int, min=0)
-
+    
+class Schedule_Teacher(db.Entity):
+    teacher_id = Required(Teacher)
+    schedule_id = Required(Schedule)
+    work_release = Required(Decimal, 4, 2)
+    PrimaryKey(teacher_id, schedule_id)
+    
+class Section_Teacher(db.Entity):
+    teacher_id = Required(Teacher)
+    section_id = Required(Section)
+    allocation = Required(Decimal, 3, 1)
+    PrimaryKey(teacher_id, section_id)
 
 # Binds all entities created in this script to the specified database. If the database doesn't
 # exist, it will be created. (I hope) NOTE: Verified that this does not work. MySQL binding

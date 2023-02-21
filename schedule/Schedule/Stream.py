@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from database.PonyDatabaseConnection import Stream as dbStream
+from pony.orm import *
+
 """ SYNOPSIS/EXAMPLE:
     from Schedule.Stream import Stream
 
@@ -14,17 +17,25 @@ class Stream():
     # ========================================================
     # CONSTRUCTOR
     # ========================================================
-    def __init__(self, number : str = "A", descr : str = ""):
+    def __init__(self, number : str = "A", descr : str = "", *args, id : int = None):
         """
         Creates an instance of the Stream class.
         - Parameter number -> defines the stream number.
         - Parameter desc -> defines the stream description.
         """
-        Stream._max_id += 1
-        self.__id = Stream._max_id
+        if len(args) > 0: raise ValueError("Error: too many positional arguments")
         self.number = number
         self.descr = descr
+
+        self.__id = id if id else Stream.__create_entity(self)
         Stream.__instances[self.__id] = self
+
+    @db_session
+    @staticmethod
+    def __create_entity(instance : Stream):
+        entity_block = dbStream(number = instance.number, descr = instance.descr)
+        commit()
+        return max(s.id for s in dbStream) if not None else 1
     
     # ========================================================
     # ITERATING RELATED (STATIC)

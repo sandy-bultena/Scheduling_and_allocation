@@ -1,4 +1,8 @@
+from __future__ import annotations
 from Time_slot import TimeSlot
+
+from database.PonyDatabaseConnection import Lab as dbLab
+from pony.orm import *
 
 """ SYNOPSIS/EXAMPLE:
 
@@ -21,7 +25,6 @@ class Lab:
     desc: str
         The description of the Lab.
     """
-    _max_id = 0
     __instances = {}
 
     # -------------------------------------------------------------------
@@ -32,10 +35,17 @@ class Lab:
         """Creates and returns a new Lab object."""
         self.number = number
         self.descr = descr
-        Lab._max_id += 1
-        self.__id = Lab._max_id
         self._unavailable: dict[int, TimeSlot] = {}
+
+        self.__id = id if id else Lab.__create_entity(self)
         Lab.__instances[self.__id] = self
+
+    @db_session
+    @staticmethod
+    def __create_entity(instance : Lab):
+        entity_block = dbLab(name = instance.name, number = instance.number, allocation = instance.needs_allocation)
+        commit()
+        return max(s.id for s in dbLab) if not None else 1
 
     # =================================================================
     # id
