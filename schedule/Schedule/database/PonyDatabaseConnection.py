@@ -49,9 +49,9 @@ class Teacher(db.Entity):
     last_name = Required(str, max_len=50)
     dept = Optional(str, max_len=50)
     #schedules = Set('Schedule')
-    schedules = Set('TeacherSchedule')
+    schedules = Set('Schedule_Teacher')
     #sections = Set('Section')
-    sections = Set('TeacherSection')
+    sections = Set('Section_Teacher')
     blocks = Set('Block')
 
 
@@ -90,7 +90,7 @@ class Schedule(db.Entity):
     scenario_id = Required(Scenario)
     sections = Set('Section')
     #teachers = Set(Teacher)
-    teachers = Set('TeacherSchedule')
+    teachers = Set('Schedule_Teacher')
 
 class Section(db.Entity):
     # id = PrimaryKey(int)
@@ -102,7 +102,7 @@ class Section(db.Entity):
     schedule_id = Required(Schedule)
     streams = Set('Stream')
     #teachers = Set(Teacher)
-    teachers = Set('TeacherSection')
+    teachers = Set('Section_Teacher')
     blocks = Set('Block')
 
 

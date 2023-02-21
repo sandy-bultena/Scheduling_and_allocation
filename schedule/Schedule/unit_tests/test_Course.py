@@ -1,14 +1,14 @@
 import pytest
+import sys
+from os import path
+sys.path.append(path.dirname(path.dirname(__file__)))
+
 from Course import Course
 from Section import Section
 from Teacher import Teacher
 from Block import Block
 from Lab import Lab
 from Stream import Stream
-
-import sys
-from os import path
-sys.path.append(path.dirname(path.dirname(__file__)))
 
 
 def test_id():
