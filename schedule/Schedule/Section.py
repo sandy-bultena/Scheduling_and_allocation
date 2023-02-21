@@ -4,6 +4,9 @@ from Stream import Stream
 from Teacher import Teacher
 import re
 
+from database.PonyDatabaseConnection import Section as dbSection
+from pony.orm import *
+
 """
     from Schedule.Section import Section
     from Schedule.Course import Course
@@ -37,19 +40,20 @@ class Section():
     """
     Describes a section (part of a course)
     """
-    _max_id = 0
     __instances = dict()
 
     # ========================================================
     # CONSTRUCTOR
     # ========================================================
-    def __init__(self, number : str = "", hours = 1.5, name : str = ""):
+    def __init__(self, number : str = "", hours = 1.5, name : str = "", *args, id : int = None, schedule_id : int = None):
         """
         Creates an instance of the Section class.
         - Parameter number -> The section's number.
         - Parameter hours -> The hours of class the section has per week.
         - Parameter name -> The section's name.
         """
+        if len(args) > 0: raise ValueError("Error: too many positional arguments")
+        if not id and not schedule_id: raise ValueError("Error: id or schedule_id must be defined")
         
         # LEAVE IN:
             # Allows for teacher allocations to be tracked & calculated correctly in AllocationManager,
@@ -63,11 +67,19 @@ class Section():
         self.name = name
         self.number = number
         self.hours = hours
-        Section._max_id += 1
-        self.__id = Section._max_id
         self._num_students = 0
         self._course = None
-        Section.__instances[self.id] = self
+
+        self.__id = id if id else Section.__create_entity(self, schedule_id)
+        Section.__instances[self.__id] = self
+
+    @db_session
+    @staticmethod
+    def __create_entity(instance : Section, schedule_id : int):
+        entity_block = dbSection(name = instance.name, number = instance.number, hours = instance.hours, num_students = instance.num_students, 
+            course_id = instance._course.id if instance._course else None, schedule_id = schedule_id)
+        commit()
+        return max(s.id for s in dbSection) if not None else 1
     
     @staticmethod
     def __validate_hours(hours):

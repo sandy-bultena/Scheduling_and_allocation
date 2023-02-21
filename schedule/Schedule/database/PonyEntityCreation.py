@@ -1,10 +1,12 @@
 from pony.orm import *
-from database.PonyDatabaseConnection import *
-
+from PonyDatabaseConnection import *
+import sys
+from os import path
+sys.path.append(path.dirname(path.dirname(__file__)))
 
 # from ..Time_slot import TimeSlot as T_Slot
 # from Schedule.Time_slot import TimeSlot as T_Slot
-from Schedule.Time_slot import TimeSlot as T_Slot
+from Time_slot import TimeSlot as T_Slot
 
 @db_session
 def create_time_slots():

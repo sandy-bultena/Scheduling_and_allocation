@@ -1,27 +1,15 @@
 from __future__ import annotations
 import sys
 from os import path
-
 sys.path.append(path.dirname(path.dirname(__file__)))
-# from ..PerlLib import Colour
 import PerlLib.Colour as Colour
 
-# kind of a hack-y way to import Colour, but forces PerlLib to be recognized as a valid import
-# source if the top line stops working again, use this
-"""import sys
-try:
-    from ..PerlLib import Colour
-except ImportError or ModuleNotFoundError:
-        sys.path.insert(0, "\\".join(sys.path[0].split("\\")[:-1]) + "\\PerlLib")
-        import Colour
-"""
 """ SYNOPSIS/EXAMPLE:
     from Schedule.Conflict import Conflict
 
     blocks = [block1, block2, ...]
     new_conflict = Conflict(type = Conflict.MINIMUM_DAYS, blocks = blocks)
 """
-
 
 class Conflict():
     """

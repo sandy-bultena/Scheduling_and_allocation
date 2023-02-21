@@ -1,9 +1,13 @@
+from __future__ import annotations
 import re
 from warnings import warn
 # from Section import Section
 from Stream import Stream
 from Teacher import Teacher
 from Lab import Lab
+
+from database.PonyDatabaseConnection import Course as dbCourse
+from pony.orm import *
 
 '''SYNOPSIS
 
@@ -26,26 +30,33 @@ from Lab import Lab
 
 class Course:
     """Describes a distinct course."""
-    _max_id = 0
     __instances = {}
 
     # -------------------------------------------------------------------
     # new
     # --------------------------------------------------------------------
-    def __init__(self, number: str = "", name: str = "", semester: str = ""):
+    def __init__(self, number: str = "", name: str = "", semester: str = "", *args, id : int = None):
         """Creates and returns a course object.
         
         Parameter **number**: str -> The alphanumeric course number.
 
         Parameter **name**: str -> the name of the course."""
-        Course._max_id += 1
-        self.__id = Course._max_id
+        if len(args) > 0: raise ValueError("Error: too many positional arguments")
         self.number = number
         self.name = name
         self.semester = semester
         self._allocation = True
         self._sections = {}
-        Course.__instances[self.id] = self
+
+        self.__id = id if id else Course.__create_entity(self)
+        Course.__instances[self.__id] = self
+
+    @db_session
+    @staticmethod
+    def __create_entity(instance : Course):
+        entity_block = dbCourse(name = instance.name, number = instance.number, allocation = instance.needs_allocation)
+        commit()
+        return max(s.id for s in dbCourse) if not None else 1
 
     # =================================================================
     # id

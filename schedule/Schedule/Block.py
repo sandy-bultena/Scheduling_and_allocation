@@ -1,7 +1,11 @@
+from __future__ import annotations
 from Lab import Lab
 from Section import Section
 from Teacher import Teacher
 from Time_slot import TimeSlot
+
+from database.PonyDatabaseConnection import Block as dbBlock
+from pony.orm import *
 
 """ SYNOPSIS:
 
@@ -40,7 +44,6 @@ class Block(TimeSlot):
     # Class Variables
     # =================================================================
 
-    _max_id = 0
     _DEFAULT_DAY = 'mon'
     __instances = {}
 
@@ -48,7 +51,7 @@ class Block(TimeSlot):
     # Constructor
     # =================================================================
 
-    def __init__(self, day: str, start: str, duration: float, number: int) -> None:
+    def __init__(self, day: str, start: str, duration: float, number: int, *args, id : int = None, time_slot_id : int = None) -> None:
         """Creates a new Block object.
         
         - Parameter day: str -> 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'
@@ -57,15 +60,25 @@ class Block(TimeSlot):
         - Parameter number: int -> A number representing this specific Block.
         """
         self._sync = list()
-        super().__init__(day, start, duration)
+        if (id and not time_slot_id) or (time_slot_id and not id): raise ValueError("Error: id and time_slot_id must be both defined or neither defined")
+        if len(args) > 0: raise ValueError("Error: too many positional arguments")
+        super().__init__(day, start, duration, id = time_slot_id)
         self.number = number  # NOTE: Based on the code found in CSV.pm and Section.pm
-        Block._max_id += 1
-        self._block_id = Block._max_id
         self.__section = None
         self._teachers = dict()
         self._labs = {}
         self._conflicted = 0
+
+        self._block_id = id if id else Block.__create_entity(self)
         Block.__instances[self._block_id] = self
+
+    @db_session
+    @staticmethod
+    def __create_entity(instance : Block):
+        entity_block = dbBlock(time_slot_id = instance.time_id, number = instance.number)
+        commit()
+        return max(b.id for b in dbBlock) if not None else 1
+
 
     # =================================================================
     # number
@@ -146,6 +159,11 @@ class Block(TimeSlot):
     def id(self):
         """Gets the Block id."""
         return self._block_id
+    
+    @property
+    def time_id(self):
+        """Gets the associated Time Slot's id."""
+        return self.__id
 
     # =================================================================
     # section

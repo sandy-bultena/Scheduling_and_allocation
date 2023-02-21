@@ -48,7 +48,8 @@ class Teacher(db.Entity):
     first_name = Required(str, max_len=50)
     last_name = Required(str, max_len=50)
     dept = Optional(str, max_len=50)
-    schedules = Set('Schedule')
+    #schedules = Set('Schedule')
+    schedules = Set('TeacherSchedule')
     sections = Set('Section')
     blocks = Set('Block')
 
@@ -87,7 +88,13 @@ class Schedule(db.Entity):
     official = Required(bool)
     scenario_id = Required(Scenario)
     sections = Set('Section')
-    teachers = Set(Teacher)
+    #teachers = Set(Teacher)
+    teachers = Set('TeacherSchedule')
+
+class TeacherSchedule(db.Entity):
+    teacher_id = Required(Teacher)
+    schedule_id = Required(Schedule)
+    work_release = Required(Decimal, 4, 2)
 
 
 class Section(db.Entity):

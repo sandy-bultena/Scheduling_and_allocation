@@ -1,4 +1,8 @@
+from __future__ import annotations
 import re
+
+from database.PonyDatabaseConnection import TimeSlot as dbTimeSlot
+from pony.orm import *
 
 #
 # Synopsis
@@ -32,7 +36,6 @@ class TimeSlot:
     # =================================================================
     # Class/Global Variables
     # =================================================================
-    _max_id = 0
     __instances = []
     WEEK = {
         "mon": 1,
@@ -64,7 +67,7 @@ class TimeSlot:
     def __init__(self, day: str = DEFAULT_DAY,
                  start: str = DEFAULT_START,
                  duration: float = DEFAULT_DURATION,
-                 movable=True):
+                 movable=True, *args, id : int = None):
         """
         Creates a new TimeSlot object.
 
@@ -83,15 +86,23 @@ class TimeSlot:
         movable: bool
             Whether this time_slot can be moved or not.
         """
+        if len(args) > 0: raise ValueError("Error: too many positional arguments")
         self.day_number = 0
         self.start_number = 0
         self.day = day
         self.start = start
         self.duration = duration
         self.movable = movable
-        TimeSlot._max_id += 1
-        self.__id = TimeSlot._max_id
+        
+        self.__id = id if id else TimeSlot.__create_entity(self)
         TimeSlot.__instances.append(self)
+
+    @db_session
+    @staticmethod
+    def __create_entity(instance : TimeSlot):
+        entity_block = dbTimeSlot(day = instance.day, duration = instance.duration, start = instance.start, movable = instance.movable)
+        commit()
+        return max(t.id for t in dbTimeSlot) if not None else 1
 
     # ====================================
     # id

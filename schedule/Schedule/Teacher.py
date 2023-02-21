@@ -1,4 +1,8 @@
+from __future__ import annotations
 from typing import List
+
+from database.PonyDatabaseConnection import Teacher as dbTeacher
+from pony.orm import *
 
 
 # SYNOPSIS
@@ -21,19 +25,27 @@ class Teacher:
     # new
     # --------------------------------------------------------------------
 
-    def __init__(self, firstname: str, lastname: str, dept: str = ""):
+    def __init__(self, firstname: str, lastname: str, dept: str = "", *args, id : int = None):
         """Creates a Teacher object.
         
         Parameter **firstname:** str -> first name of the teacher.
         Parameter **lastname:** str -> last name of the teacher.
         Parameter **dept:** str -> department that this teacher is associated with (optional)"""
+        if len(args) > 0: raise ValueError("Error: too many positional arguments")
         self.firstname = firstname
         self.lastname = lastname
         self.dept = dept
-        Teacher._max_id += 1
-        self.__id = Teacher._max_id
         self.release = 0
+
+        self.__id = id if id else Teacher.__create_entity(self)
         Teacher.__instances[self.__id] = self
+
+    @db_session
+    @staticmethod
+    def __create_entity(instance : Teacher):
+        entity_block = dbTeacher(first_name = instance.firstname, last_name = instance.lastname, dept = instance.dept)
+        commit()
+        return max(t.id for t in dbTeacher) if not None else 1
 
     # =================================================================
     # id

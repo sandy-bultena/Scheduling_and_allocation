@@ -10,6 +10,9 @@ import os
 import re
 import yaml # might require pip install pyyaml
 
+import database.PonyDatabaseConnection as db
+from pony.orm import *
+
 
 """ SYNOPSIS/EXAMPLE:
     from Schedule.Schedule import Schedule
@@ -33,16 +36,13 @@ class Schedule:
     # ========================================================
     # CONSTRUCTOR
     # ========================================================
-    def __init__(self, **kwargs):
+    def __init__(self, id, semester, official, scenario, descr = ""):
         """ Creates an instance of the Schedule class. """
-        # Reset max ids (NOTE: Conflict has no max id)
-        Stream._max_id = 0
-        Teacher._max_id = 0
-        Course._max_id = 0
-        Lab._max_id = 0
-        Block._max_id = 0
-        TimeSlot._max_id = 0
-        Section._max_id = 0
+        self._id = id
+        self.semester = semester
+        self.official = official
+        self.scenario = scenario
+        self.descr = descr
 
     # ========================================================
     # METHODS
@@ -69,6 +69,31 @@ class Schedule:
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
     # Static Methods
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+    # --------------------------------------------------------
+    # read_DB
+    # --------------------------------------------------------
+    @staticmethod
+    def read_DB(id):
+        sched = db.Schedule.get(id=id)
+        scenario = db.Scenario.get(id=sched.scenario_id)
+        # create Model version of scenario
+        schedule = Schedule(id, sched.semester, sched.official, scenario, sched.description)
+        for course in select(c for c in db.Course):
+            c = Course(course.number, course.name)
+            c.needs_allocation = course.allocation
+
+        for teacher_schedule in select(t for t in db.Teacher if t.schedule_id == id):
+            teacher = db.Teacher.get(id = teacher_schedule.teacher_id)
+            t = Teacher(teacher.first_name, teacher.last_name, teacher.dept, id = teacher_schedule.teacher_id)
+            t.release = teacher_schedule.work_release
+        
+        for section in select(s for s in db.Section if s.schedule_id == id):
+            s = Section(section.number, section.hours, section.name, id = section.id)
+            s.num_students = section.num_students
+            Course.get(section.course_id).add_section(s)
+            
+        
 
     #region Read & Write YAML (TEMPORARY)
     # --------------------------------------------------------
