@@ -1,7 +1,12 @@
 import pytest
 
-from ..Teacher import Teacher
-from ..Block import Block
+import sys
+from os import path
+sys.path.append(path.dirname(path.dirname(__file__)))
+
+from Teacher import Teacher
+from Block import Block
+
 
 
 def test_id():

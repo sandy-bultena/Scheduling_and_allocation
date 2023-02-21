@@ -1,9 +1,13 @@
 import pytest
 
-from ..Block import Block
-from ..Section import Section
-from ..Lab import Lab
-from ..Teacher import Teacher
+from Block import Block
+from Section import Section
+from Lab import Lab
+from Teacher import Teacher
+
+import sys
+from os import path
+sys.path.append(path.dirname(path.dirname(__file__)))
 
 
 def test_number_getter():

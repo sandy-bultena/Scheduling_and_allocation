@@ -1,8 +1,13 @@
+import sys
+from os import path
+sys.path.append(path.dirname(path.dirname(__file__)))
+
 import pytest
 
-from ..Lab import Lab
-from ..Time_slot import TimeSlot
-from ..Block import Block
+from Lab import Lab
+from Time_slot import TimeSlot
+from Block import Block
+
 
 
 def test_id():

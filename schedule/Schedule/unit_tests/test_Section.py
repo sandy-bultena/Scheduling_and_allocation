@@ -1,10 +1,16 @@
-from ..Section import Section
-from ..Course import Course
-from ..Block import Block
-from ..Lab import Lab
-from ..Teacher import Teacher
-from ..Stream import Stream
+import sys
+from os import path
+sys.path.append(path.dirname(path.dirname(__file__)))
+
+from Section import Section
+from Course import Course
+from Block import Block
+from Lab import Lab
+from Teacher import Teacher
+from Stream import Stream
 import pytest
+
+
 
 @pytest.fixture(autouse=True)
 def run_before_and_after():

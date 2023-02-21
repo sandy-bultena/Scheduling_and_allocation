@@ -1,11 +1,11 @@
-from .Teacher import Teacher
-from .Course import Course
-from .Conflict import Conflict
-from .Lab import Lab
-from .Stream import Stream
-from .Section import Section
-from .Block import Block
-from .Time_slot import TimeSlot
+from Teacher import Teacher
+from Course import Course
+from Conflict import Conflict
+from Lab import Lab
+from Stream import Stream
+from Section import Section
+from Block import Block
+from Time_slot import TimeSlot
 import os
 import re
 import yaml # might require pip install pyyaml

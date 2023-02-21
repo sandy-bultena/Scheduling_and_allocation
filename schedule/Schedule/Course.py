@@ -1,9 +1,9 @@
 import re
 from warnings import warn
 # from Section import Section
-from .Stream import Stream
-from .Teacher import Teacher
-from .Lab import Lab
+from Stream import Stream
+from Teacher import Teacher
+from Lab import Lab
 
 '''SYNOPSIS
 

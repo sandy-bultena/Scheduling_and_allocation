@@ -1,7 +1,7 @@
-from .Lab import Lab
-from .Section import Section
-from .Teacher import Teacher
-from .Time_slot import TimeSlot
+from Lab import Lab
+from Section import Section
+from Teacher import Teacher
+from Time_slot import TimeSlot
 
 """ SYNOPSIS:
 

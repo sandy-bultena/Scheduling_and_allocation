@@ -2,7 +2,8 @@ from pony.orm import *
 
 from database.PonyDatabaseConnection import TimeSlot, Block
 import Time_slot as ModelTSlot
-# from Block import Block as ModelBlock
+from Block import Block as ModelBlock
+import os
 
 
 @db_session
@@ -22,11 +23,14 @@ def entity_to_model() -> ModelTSlot.TimeSlot:
     return m_slot
 
 
-# @db_session
-# def model_block_to_entity_block(block: ModelBlock):
-#     e_slot = TimeSlot(day=block.day, duration=block.duration,
-#                       start=block.start, movable=block.movable)
-#     e_block = Block(time_slot_id=e_slot.id)
+@db_session
+def model_block_to_entity_block(block: ModelBlock):
+    e_slot = TimeSlot(day=block.day, duration=block.duration,
+                      start=block.start, movable=block.movable)
+    # e_slot.id is listed as NoneType with a value of None, even though the TimeSlot object seems
+    # to have been created. Perhaps it's because the changes weren't committed yet?
+    flush()
+    e_block = Block(time_slot_id=e_slot.id)
 
 
 @db_session
@@ -40,6 +44,9 @@ def get_max_ts_id() -> int:
 
 
 if __name__ == "__main__":
+    file_path = os.path.realpath(__file__)
+    print(file_path)
+
     max_ts_id = get_max_ts_id()
     print(max_ts_id)
     # If the max ID is greater than 0, it means the TimeSlot table is not empty.
@@ -57,6 +64,6 @@ if __name__ == "__main__":
     slot = entity_to_model()
     print(f"Created a model TimeSlot: {slot.day} {slot.start} {str(slot.duration)} hours.")
 
-    # m_block = ModelBlock("Mon", "9:30", 1.5, 420)
-    # print(f"Created a model Block: {m_block}")
-    # model_block_to_entity_block(m_block)
+    m_block = ModelBlock("Mon", "9:30", 1.5, 420)
+    print(f"Created a model Block: {m_block}")
+    model_block_to_entity_block(m_block)

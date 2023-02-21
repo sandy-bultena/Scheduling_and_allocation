@@ -1,7 +1,7 @@
 from __future__ import annotations
-from .Course import Course
-from .Stream import Stream
-from .Teacher import Teacher
+from Course import Course
+from Stream import Stream
+from Teacher import Teacher
 import re
 
 """
