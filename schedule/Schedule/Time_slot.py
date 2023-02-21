@@ -67,7 +67,7 @@ class TimeSlot:
     def __init__(self, day: str = DEFAULT_DAY,
                  start: str = DEFAULT_START,
                  duration: float = DEFAULT_DURATION,
-                 movable=True, *args, id : int = None):
+                 movable=True, *args, id: int = None):
         """
         Creates a new TimeSlot object.
 
@@ -93,7 +93,7 @@ class TimeSlot:
         self.start = start
         self.duration = duration
         self.movable = movable
-        
+
         self.__id = id if id else TimeSlot.__create_entity(self)
         TimeSlot.__instances.append(self)
 
