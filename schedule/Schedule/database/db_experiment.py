@@ -12,6 +12,19 @@ from Lab import Lab as ModelLab
 
 
 @db_session
+def adding_time_slot_to_lab():
+    lab_id = max(l.id for l in Lab)
+    e_lab = Lab[lab_id]
+
+    # Set this Lab's primary key as the value of the TimeSlot's unavailable_lab_id foreign key.
+    slot_id = get_max_ts_id()
+    TimeSlot[slot_id].unavailable_lab_id = lab_id
+    flush()
+
+    # The Lab's set of unavailable_labs will be updated automatically.
+    print(e_lab.unavailable_slots)
+
+@db_session
 def model_to_entity_lab(m_lab: ModelLab):
     e_lab = Lab(name=m_lab.number, description=m_lab.descr)
 
@@ -81,3 +94,6 @@ if __name__ == "__main__":
     lab = ModelLab(descr="Test")
     print(f"Created a model Lab: {lab}")
     model_to_entity_lab(lab)
+
+    print("Attempting to link a TimeSlot to a Lab...")
+    adding_time_slot_to_lab()

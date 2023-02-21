@@ -39,7 +39,7 @@ class Lab(db.Entity):
     description = Optional(str, max_len=100)
     # This field won't be present in the database, but we have to declare it here to establish a
     # one-to-many relationship between Lab and TimeSlot.
-    unavailable_labs = Set('TimeSlot')
+    unavailable_slots = Set('TimeSlot')
     blocks = Set('Block')
 
 
