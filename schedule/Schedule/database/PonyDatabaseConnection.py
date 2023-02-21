@@ -36,7 +36,7 @@ set_sql_debug(True)
 class Lab(db.Entity):
     # id = PrimaryKey(int)
     name = Required(str, max_len=50)
-    description = Required(str, max_len=100)
+    description = Optional(str, max_len=100)
     # This field won't be present in the database, but we have to declare it here to establish a
     # one-to-many relationship between Lab and TimeSlot.
     unavailable_labs = Set('TimeSlot')
