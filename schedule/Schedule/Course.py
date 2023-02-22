@@ -99,14 +99,18 @@ class Course:
     # =================================================================
     @property
     def semester(self):
-        """Gets or sets the Course's semester (accepted values: 'summer', 'winter', 'fall', or blank)."""
+        """Gets or sets the Course's semester (accepted values: 'summer', 'winter', 'fall',
+        or blank). """
         return self.__semester
 
     @semester.setter
     def semester(self, semester: str):
         semester = semester.lower()
+        # Warn the user if they entered a value other than summer, winter, or fall. Was
+        # originally a generic Warning, but pony.orm.dbapiprovider overrides this with its own
+        # Warning class, so I changed it to a more specific UserWarning.
         if not re.match("^(summer|winter|fall)", semester):
-            warn(f"invalid semester for course; {semester}", Warning, stacklevel=2)
+            warn(f"invalid semester for course; {semester}", UserWarning, stacklevel=2)
             semester = ""
         self.__semester = semester
 

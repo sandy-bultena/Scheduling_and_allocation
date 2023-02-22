@@ -47,7 +47,8 @@ class TestCourse:
         assert name == course.name
 
     def test_needs_allocation_getter(self):
-        """Verifies that needs_allocation getter works as intended, returning a default value of True."""
+        """Verifies that needs_allocation getter works as intended, returning a default value of
+        True. """
         course = Course(1, semester="summer")
         assert course.needs_allocation is True
 
@@ -75,7 +76,7 @@ class TestCourse:
         input, and sets the value of semester to an empty string. """
         course = Course(1, semester="summer")
         bad_semester = "foo"
-        with pytest.warns(Warning) as w:
+        with pytest.warns(UserWarning) as w:
             course.semester = bad_semester
         assert "invalid semester for course" in str(w[0].message) and course.semester == ''
 
@@ -100,10 +101,10 @@ class TestCourse:
         assert len(sections) == 1 and section in sections and section.course == course
 
     def test_add_section_invalid_input(self):
-        """Verifies that add_section raises a TypeError if the user tries to add something that isn't a Section (or in
-        this case, an object). """
-        # NOTE: This test cannot possibly succeed because of the changes I made to the validation, since everything is an
-        # object in Python, even the primitives.
+        """Verifies that add_section raises a TypeError if the user tries to add something that
+        isn't a Section (or in this case, an object). """
+        # NOTE: This test cannot possibly succeed because of the changes I made to the
+        # validation, since everything is an object in Python, even the primitives.
         course = Course(1, semester="summer")
         bad_sect = None
         with pytest.raises(TypeError) as e:
@@ -130,7 +131,8 @@ class TestCourse:
         assert course.get_section(num) == sect
 
     def test_get_section_bad(self):
-        """Verifies that get_section() doesn't crash the program when trying to get a Section that doesn't exist."""
+        """Verifies that get_section() doesn't crash the program when trying to get a Section
+        that doesn't exist. """
         course = Course(1, semester="summer")
         bad_num = "420"
         assert course.get_section(bad_num) is None
@@ -153,7 +155,8 @@ class TestCourse:
         assert course.get_section_by_id(bad_id) is None
 
     def test_get_section_by_name_good(self):
-        """Verifies that get_section_by_name() returns a list with the correct section when given a valid name as input."""
+        """Verifies that get_section_by_name() returns a list with the correct section when given
+        a valid name as input. """
         course = Course(1, semester="summer")
         name = "test"
         section = Section("", 1.5, name)
@@ -162,7 +165,8 @@ class TestCourse:
         assert len(sections) == 1 and sections[0] == section
 
     def test_get_section_by_name_bad(self):
-        """Verifies that get_section_by_name() returns an empty list when given an invalid section name."""
+        """Verifies that get_section_by_name() returns an empty list when given an invalid
+        section name. """
         course = Course(1, semester="summer")
         section = Section("", 1.5, "test")
         bad_name = "foo"
@@ -171,7 +175,8 @@ class TestCourse:
         assert len(sections) == 0
 
     def test_remove_section_good(self):
-        """Verifies that remove_section() works as intended when asked to remove a legitimate Section."""
+        """Verifies that remove_section() works as intended when asked to remove a legitimate
+        Section. """
         course = Course(1, semester="summer")
         section = Section()
         course.add_section(section)
@@ -179,7 +184,8 @@ class TestCourse:
         assert len(course.sections()) == 0
 
     def test_remove_section_bad(self):
-        """Verifies that remove_section() raises an Exception when asked to remove a non-Section object."""
+        """Verifies that remove_section() raises an Exception when asked to remove a non-Section
+        object. """
         course = Course(1, semester="summer")
         section = Section()
         course.add_section(section)
@@ -189,7 +195,8 @@ class TestCourse:
         assert "invalid section" in str(e.value).lower()
 
     def test_remove_section_no_crash(self):
-        """Verifies that remove_section() will not crash the program if asked to remove a Section that doesn't exist."""
+        """Verifies that remove_section() will not crash the program if asked to remove a Section
+        that doesn't exist. """
         course = Course(1, semester="summer")
         section_1 = Section("420")
         course.add_section(section_1)
@@ -219,7 +226,8 @@ class TestCourse:
         assert len(sections) == 2 and section_1 in sections and section_2 in sections
 
     def test_number_of_sections(self):
-        """Verifies that number_of_sections() correctly returns the number of Sections assigned to this Course."""
+        """Verifies that number_of_sections() correctly returns the number of Sections assigned
+        to this Course. """
         course = Course(1, semester="summer")
         section_1 = Section("420")
         section_2 = Section("555")
@@ -228,7 +236,8 @@ class TestCourse:
         assert course.number_of_sections() == len(course.sections())
 
     def test_sections_for_teacher(self):
-        """Verifies that sections_for_teacher() returns a list of all sections featuring this teacher in this course."""
+        """Verifies that sections_for_teacher() returns a list of all sections featuring this
+        teacher in this course. """
         course = Course(1, semester="summer")
         section_1 = Section("420")
         teach = Teacher("John", "Smith")
@@ -238,7 +247,8 @@ class TestCourse:
         assert section_1 in teach_sections
 
     def test_sections_for_teacher_empty(self):
-        """Verifies that sections_for_teacher() returns an empty list if no Teacher has been assigned to the Course."""
+        """Verifies that sections_for_teacher() returns an empty list if no Teacher has been
+        assigned to the Course. """
         course = Course(1, semester="summer")
         section_1 = Section("420")
         teach = Teacher("John", "Smith")
@@ -247,7 +257,8 @@ class TestCourse:
         assert len(teach_sections) == 0
 
     def test_max_section_number(self):
-        """Verifies that max_section_number() returns the highest number of all the Sections assigned to this Course."""
+        """Verifies that max_section_number() returns the highest number of all the Sections
+        assigned to this Course. """
         course = Course(1, semester="summer")
         section_1 = Section("420")
         section_2 = Section("500")
@@ -259,12 +270,14 @@ class TestCourse:
         assert max_num == section_2.number
 
     def test_max_section_number_zero(self):
-        """Verifies that max_section_number() returns zero if no Sections are assigned to this Course."""
+        """Verifies that max_section_number() returns zero if no Sections are assigned to this
+        Course. """
         course = Course(1, semester="summer")
         assert course.max_section_number() == 0
 
     def test_blocks_good(self):
-        """Verifies that blocks() returns a list of all Blocks that have been assigned to this Course."""
+        """Verifies that blocks() returns a list of all Blocks that have been assigned to this
+        Course. """
         course = Course(1, semester="summer")
         section = Section("420")
         block_1 = Block("mon", "9:30", 1.5, 1)
@@ -275,7 +288,8 @@ class TestCourse:
         assert len(blocks[0]) == 2 and block_1 in blocks[0] and block_2 in blocks[0]
 
     def test_blocks_bad(self):
-        """Verifies that blocks() returns an empty list when the Sections of this Course contain no Blocks."""
+        """Verifies that blocks() returns an empty list when the Sections of this Course contain
+        no Blocks. """
         course = Course(1, semester="summer")
         section = Section("420")
         course.add_section(section)
@@ -319,7 +333,8 @@ class TestCourse:
                and f"teachers: {teacher.firstname} {teacher.lastname}" in description
 
     def test_print_description2(self):
-        """Verifies that print_description2() prints a brief string containing the Course's number and name."""
+        """Verifies that print_description2() prints a brief string containing the Course's
+        number and name. """
         course = Course(1, "Course 1", "fall")
         description = course.print_description2()
         print(description)
@@ -348,7 +363,8 @@ class TestCourse:
         assert len(teachers) == 0
 
     def test_has_teacher(self):
-        """Verifies that has_teacher() returns True if the specified Teacher has been assigned to this course."""
+        """Verifies that has_teacher() returns True if the specified Teacher has been assigned to
+        this course. """
         course = Course(1, "Course 1", "fall")
         block = Block("mon", "8:30", 1.5, 1)
         section = Section("420", 1.5, "Section 1")
@@ -361,7 +377,8 @@ class TestCourse:
         assert course.has_teacher(teacher) is True
 
     def test_has_teacher_bad_input(self):
-        """Verifies that has_teacher() returns false when looking for something that isn't a Teacher."""
+        """Verifies that has_teacher() returns false when looking for something that isn't a
+        Teacher. """
         course = Course(1, "Course 1", "fall")
         block = Block("mon", "8:30", 1.5, 1)
         section = Section("420", 1.5, "Section 1")
@@ -375,7 +392,8 @@ class TestCourse:
         assert course.has_teacher(bad_teach) is False
 
     def test_streams(self):
-        """Verifies that streams() returns a list of all Streams belonging to the Sections of this Course."""
+        """Verifies that streams() returns a list of all Streams belonging to the Sections of
+        this Course. """
         course = Course(1, "Course 1", "fall")
         block = Block("mon", "8:30", 1.5, 1)
         section = Section("420", 1.5, "Section 1")
@@ -387,7 +405,8 @@ class TestCourse:
         assert len(streams) == 1 and stream in streams
 
     def test_streams_empty(self):
-        """Verifies that streams() returns an empty list if no Streams are assigned to this Course."""
+        """Verifies that streams() returns an empty list if no Streams are assigned to this
+        Course. """
         course = Course(1, semester="summer")
         streams = course.streams()
         assert len(streams) == 0
@@ -404,7 +423,8 @@ class TestCourse:
         assert course.has_stream(stream) is True
 
     def test_has_stream_false(self):
-        """Verifies that has_stream() returns false if the Course doesn't contain the passed Stream."""
+        """Verifies that has_stream() returns false if the Course doesn't contain the passed
+        Stream. """
         course = Course(1, "Course 1", "fall")
         block = Block("mon", "8:30", 1.5, 1)
         section = Section("420", 1.5, "Section 1")
@@ -428,7 +448,8 @@ class TestCourse:
         assert course.has_stream(None) is False
 
     def test_assign_teacher_good(self):
-        """Verifies that assign_teacher() assigns the passed Teacher to all Sections of the Course."""
+        """Verifies that assign_teacher() assigns the passed Teacher to all Sections of the
+        Course. """
         course = Course(1, "Course 1", "fall")
         block = Block("mon", "8:30", 1.5, 1)
         section = Section("420", 1.5, "Section 1")
@@ -440,7 +461,8 @@ class TestCourse:
         assert len(teachers) == 1 and teacher in teachers
 
     def test_assign_teacher_bad(self):
-        """Verifies that assign_teacher throws a TypeError when trying to assign a non-Teacher object."""
+        """Verifies that assign_teacher throws a TypeError when trying to assign a non-Teacher
+        object. """
         course = Course(1, "Course 1", "fall")
         block = Block("mon", "8:30", 1.5, 1)
         section = Section("420", 1.5, "Section 1")
@@ -476,7 +498,8 @@ class TestCourse:
         assert "invalid lab" in str(e.value).lower()
 
     def test_assign_stream_good(self):
-        """Verifies that assign_stream() can successfully assign a valid Stream to all Sections of the Course."""
+        """Verifies that assign_stream() can successfully assign a valid Stream to all Sections
+        of the Course. """
         course = Course(1, "Course 1", "fall")
         block = Block("mon", "8:30", 1.5, 1)
         section = Section("420", 1.5, "Section 1")
@@ -488,7 +511,8 @@ class TestCourse:
         assert len(section.streams) == 1 and stream in section.streams
 
     def test_assign_stream_bad(self):
-        """Verifies that assign_stream() will raise an exception if it receives a non-Stream object."""
+        """Verifies that assign_stream() will raise an exception if it receives a non-Stream
+        object. """
         course = Course(1, "Course 1", "fall")
         block = Block("mon", "8:30", 1.5, 1)
         section = Section("420", 1.5, "Section 1")
@@ -501,7 +525,8 @@ class TestCourse:
         assert "invalid stream" in str(e.value)
 
     def test_remove_teacher_good(self):
-        """Verifies that remove_teacher() can successfully remove the specified Teacher from the Course."""
+        """Verifies that remove_teacher() can successfully remove the specified Teacher from the
+        Course. """
         course = Course(1, "Course 1", "fall")
         block = Block("mon", "8:30", 1.5, 1)
         section = Section("420", 1.5, "Section 1")
@@ -515,7 +540,8 @@ class TestCourse:
         assert len(course.teachers()) == 1 and teacher_1 not in course.teachers()
 
     def test_remove_teacher_bad(self):
-        """Verifies that remove_teacher() raises an exception when trying to remove a non-Teacher object."""
+        """Verifies that remove_teacher() raises an exception when trying to remove a non-Teacher
+        object. """
         course = Course(1, "Course 1", "fall")
         block = Block("mon", "8:30", 1.5, 1)
         section = Section("420", 1.5, "Section 1")
@@ -598,7 +624,8 @@ class TestCourse:
         assert course.get_new_number(num) == expected_num
 
     def test_new_number_unused_number(self):
-        """Verifies that get_new_number will return the same number it was passed if that number isn't in use."""
+        """Verifies that get_new_number will return the same number it was passed if that number
+        isn't in use. """
         course = Course(1, "Course 1", "fall")
         block = Block("mon", "8:30", 1.5, 1)
         section = Section("420", 1.5, "Section 1")
