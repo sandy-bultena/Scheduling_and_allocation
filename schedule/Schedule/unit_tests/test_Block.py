@@ -10,31 +10,31 @@ from Lab import Lab
 from Teacher import Teacher
 from pony.orm import *
 from database.PonyDatabaseConnection import define_database
-
-# database constants for tests
-DB_NAME = "test_db_pony"
-HOST = "10.101.0.27"
-USERNAME = "evan_test"
-PASSWD = "test_stage_pwd_23"
-PROVIDER = 'mysql'
+from unit_tests.db_constants import *
 
 
 class TestBlock:
-    db: Database
+    db: Database = define_database(host=HOST, passwd=PASSWD, db=DB_NAME, provider=PROVIDER,
+                                   user=USERNAME)
 
     @pytest.fixture(autouse=True)
     def run_before(self):
-        self.db = define_database(host=HOST, passwd=PASSWD, db=DB_NAME, provider=PROVIDER,
-                                  user=USERNAME)
+        self.db.create_tables()
         yield
-        self.db.drop_all_tables(with_all_data=True)
+        # self.db.drop_all_tables(with_all_data=True)
+        self.db.drop_table(table_name='lab', if_exists=True, with_all_data=True)
+        self.db.drop_table(table_name='block', if_exists=True, with_all_data=True)
+        self.db.drop_table(table_name='time_slot', if_exists=True, with_all_data=True)
+        self.db.drop_table(table_name='section', if_exists=True, with_all_data=True)
+        self.db.drop_table(table_name='teacher', if_exists=True, with_all_data=True)
+        self.db.drop_table(table_name='course', if_exists=True, with_all_data=True)
         # The code below prevents us from getting a BindingError when this function is called
         # after the first test. Makes the test suite run really slow, but at least it ensures
         # that all the tests pass. Based on a solution found here:
         # https://github.com/ponyorm/pony/issues/214#issuecomment-787452937
-        self.db.disconnect()
-        self.db.provider = None
-        self.db.schema = None
+        # self.db.disconnect()
+        # self.db.provider = None
+        # self.db.schema = None
 
     def test_number_getter(self):
         """Verifies that the number property works as intended."""
@@ -161,8 +161,7 @@ class TestBlock:
         dur = 2
         num = 1
         block = Block(day, start, dur, num)
-        assert block.id == getattr(block,
-                                   '_max_id')  # Verifies that this Block has an ID equal to the current maximum ID.
+        assert block.id == 1
 
     def test_section_getter(self):
         """Verifies that the section getter works as intended."""
@@ -171,7 +170,8 @@ class TestBlock:
         dur = 2
         num = 1
         block = Block(day, start, dur, num)
-        """Since sections are not assigned to Blocks at initialization, the value of section will be None."""
+        """Since sections are not assigned to Blocks at initialization, the value of section will 
+        be None. """
         assert block.section is None
 
     def test_section_setter_good(self):
@@ -181,12 +181,13 @@ class TestBlock:
         dur = 2
         num = 1
         block = Block(day, start, dur, num)
-        sect = Section()
+        sect = Section(id=1)
         block.section = sect
         assert block.section == sect
 
     def test_section_setter_bad(self):
-        """Verifies that the section setter throws a TypeError when receiving a value that isn't a Section."""
+        """Verifies that the section setter throws a TypeError when receiving a value that isn't
+        a Section. """
         day = "mon"
         start = "8:30"
         dur = 2
@@ -236,7 +237,8 @@ class TestBlock:
         assert lab not in getattr(block, '_labs').values()
 
     def test_remove_lab_bad(self):
-        """Verifies that remove_lab() throws an exception if asked to remove something that isn't a Lab from this Block."""
+        """Verifies that remove_lab() throws an exception if asked to remove something that isn't
+        a Lab from this Block. """
         day = "mon"
         start = "8:30"
         dur = 2
@@ -264,7 +266,8 @@ class TestBlock:
         assert lab in getattr(block, "_labs").values()
 
     def test_remove_all_labs(self):
-        """Verifies that remove_all_labs works as intended, removing all Labs from the current Block."""
+        """Verifies that remove_all_labs works as intended, removing all Labs from the current
+        Block. """
         day = "mon"
         start = "8:30"
         dur = 2
@@ -292,7 +295,8 @@ class TestBlock:
         assert len(labs) == 2 and labs[0] == this_lab and labs[1] == other_lab
 
     def test_labs_empty(self):
-        """Verifies that labs() returns an empty list if called while no Labs are assigned to the Block."""
+        """Verifies that labs() returns an empty list if called while no Labs are assigned to the
+        Block. """
         day = "mon"
         start = "8:30"
         dur = 2
@@ -370,8 +374,8 @@ class TestBlock:
         assert len(getattr(block, '_teachers')) == 0
 
     def test_remove_teacher_bad(self):
-        """Verifies that remove_teacher() throws an exception when trying to remove something that isn't a Teacher
-        object. """
+        """Verifies that remove_teacher() throws an exception when trying to remove something
+        that isn't a Teacher object. """
         day = "mon"
         start = "8:30"
         dur = 2
@@ -385,8 +389,8 @@ class TestBlock:
         assert "invalid teacher" in str(e.value).lower()
 
     def test_remove_teacher_no_crash(self):
-        """Verifies that remove_teacher() doesn't crash the program when attempting to remove a Teacher that isn't
-        assigned to this Block. """
+        """Verifies that remove_teacher() doesn't crash the program when attempting to remove a
+        Teacher that isn't assigned to this Block. """
         day = "mon"
         start = "8:30"
         dur = 2
@@ -414,7 +418,8 @@ class TestBlock:
         assert len(getattr(block, '_teachers')) == 0
 
     def test_remove_all_teachers_no_crash(self):
-        """Verifies that remove_all_teachers() won't crash the program when no teachers have been assigned yet."""
+        """Verifies that remove_all_teachers() won't crash the program when no teachers have been
+        assigned yet. """
         day = "mon"
         start = "8:30"
         dur = 2
@@ -438,7 +443,8 @@ class TestBlock:
         assert len(teachers) == 2 and teach in teachers and other_teach in teachers
 
     def test_teachers_empty_list(self):
-        """Verifies that teachers() will return an empty list if no Teachers are assigned to this Block."""
+        """Verifies that teachers() will return an empty list if no Teachers are assigned to this
+        Block. """
         day = "mon"
         start = "8:30"
         dur = 2
@@ -448,7 +454,8 @@ class TestBlock:
         assert len(teachers) == 0
 
     def test_has_teacher_true(self):
-        """Verifies that has_teacher() returns true when the specified Teacher has been assigned to this Block."""
+        """Verifies that has_teacher() returns true when the specified Teacher has been assigned
+        to this Block. """
         day = "mon"
         start = "8:30"
         dur = 2
@@ -459,7 +466,8 @@ class TestBlock:
         assert block.has_teacher(teach)
 
     def test_has_teach_false(self):
-        """Verifies that has_teacher returns false when the specified Teacher isn't assigned to this Block."""
+        """Verifies that has_teacher returns false when the specified Teacher isn't assigned to
+        this Block. """
         day = "mon"
         start = "8:30"
         dur = 2
@@ -471,7 +479,8 @@ class TestBlock:
         assert block.has_teacher(other_teach) is False
 
     def test_has_teach_bad_input(self):
-        """Verifies that has_teacher() returns false when passed something that isn't a Teacher object."""
+        """Verifies that has_teacher() returns false when passed something that isn't a Teacher
+        object. """
         day = "mon"
         start = "8:30"
         dur = 2
@@ -508,7 +517,8 @@ class TestBlock:
         assert len(getattr(block1, '_sync')) == 1 and block2 in getattr(block1, '_sync')
 
     def test_sync_block_bad(self):
-        """Verifies that sync_block() throws an exception when receiving something that isn't a Block."""
+        """Verifies that sync_block() throws an exception when receiving something that isn't a
+        Block. """
         day = "mon"
         start = "8:30"
         dur = 2
@@ -544,7 +554,8 @@ class TestBlock:
         assert len(getattr(block1, '_sync')) == 1 and block2 in getattr(block1, '_sync')
 
     def test_synced(self):
-        """Verifies that synced() returns a list of all the Blocks that are synced with this Block."""
+        """Verifies that synced() returns a list of all the Blocks that are synced with this
+        Block. """
         day = "mon"
         start = "8:30"
         dur = 2
@@ -556,7 +567,8 @@ class TestBlock:
         assert len(blocks) == 1 and block2 in blocks
 
     def test_synced_empty_list(self):
-        """Verifies that synced() returns an empty list if called when no Blocks are synced with this Block."""
+        """Verifies that synced() returns an empty list if called when no Blocks are synced with
+        this Block. """
         day = "mon"
         start = "8:30"
         dur = 2
@@ -566,7 +578,8 @@ class TestBlock:
         assert len(blocks) == 0
 
     def test_reset_conflicted(self):
-        """Verifies that reset_conflicted works as intended, setting the value of conflicted to False."""
+        """Verifies that reset_conflicted works as intended, setting the value of conflicted to
+        False. """
         day = "mon"
         start = "8:30"
         dur = 2
@@ -576,7 +589,8 @@ class TestBlock:
         assert getattr(block1, '_conflicted') is 0
 
     def test_conflicted_getter(self):
-        """Verifies that the conflicted getter works as intended, returning a default value of False."""
+        """Verifies that the conflicted getter works as intended, returning a default value of
+        False. """
         day = "mon"
         start = "8:30"
         dur = 2
@@ -615,14 +629,14 @@ class TestBlock:
         assert block1.is_conflicted() is True
 
     def test_print_description_full(self):
-        """Verifies that print_description returns a description containing info about the Block, its assigned Labs,
-        and its Section. """
+        """Verifies that print_description returns a description containing info about the Block,
+        its assigned Labs, and its Section. """
         day = "mon"
         start = "8:30"
         dur = 2
         num = 1
         block = Block(day, start, dur, num)
-        sect = Section("42", 2, "Section 42")
+        sect = Section("42", 2, "Section 42", id=1)
         lab1 = Lab("R-101", "Worst place in the world")
         lab2 = Lab("R-102", "Second-worst place in the world")
         block.section = sect
@@ -678,7 +692,7 @@ class TestBlock:
         dur = 2
         num = 0
         block = Block(day, start, dur, num)
-        sect = Section("42")
+        sect = Section("42", id=1)
         sect.add_block(block)
         block.refresh_number()
         assert block.number == 1
@@ -698,7 +712,8 @@ class TestBlock:
         assert len(blocks) == 0
 
     def test_get_day_blocks(self):
-        """Verifies that get_day_blocks() returns a list of all Blocks occurring on a specific day of the week."""
+        """Verifies that get_day_blocks() returns a list of all Blocks occurring on a specific
+        day of the week. """
         day = "mon"
         block_1 = Block("mon", "8:00", 1.5, 1)
         block_2 = Block("mon", "8:00", 1.5, 2)
@@ -709,7 +724,8 @@ class TestBlock:
         assert len(monday_blocks) == 2 and block_1 in monday_blocks and block_2 in monday_blocks
 
     def test_get_day_blocks_bad_input(self):
-        """Verifies that get_day_blocks() won't crash the program if passed a list containing non-Block objects."""
+        """Verifies that get_day_blocks() won't crash the program if passed a list containing
+        non-Block objects. """
         day = "mon"
         block_1 = Block("mon", "8:00", 1.5, 1)
         block_2 = Block("mon", "8:00", 1.5, 2)
@@ -720,7 +736,8 @@ class TestBlock:
         assert len(monday_blocks) == 0
 
     def test_get_day_blocks_empty_list(self):
-        """Verifies that get_day_blocks() returns an empty list if no Blocks match the passed day."""
+        """Verifies that get_day_blocks() returns an empty list if no Blocks match the passed
+        day. """
         block_1 = Block("mon", "8:00", 1.5, 1)
         block_2 = Block("mon", "8:00", 1.5, 2)
         block_3 = Block("tue", "8:00", 1.5, 2)
