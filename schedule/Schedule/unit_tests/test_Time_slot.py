@@ -10,7 +10,6 @@ from pony.orm import *
 
 db = define_database(host=HOST, passwd=PASSWD, db=DB_NAME, provider=PROVIDER, user=USERNAME)
 
-@db_session
 @pytest.fixture(autouse=True)
 def before_and_after():
     db.create_tables()

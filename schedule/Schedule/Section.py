@@ -46,7 +46,7 @@ class Section():
     # ========================================================
     # CONSTRUCTOR
     # ========================================================
-    def __init__(self, number: str = "", hours=1.5, name: str = "", *args, id: int = None,
+    def __init__(self, number: str = "", hours=1.5, name: str = "", course : Course = None, *args, id: int = None,
                  schedule_id: int = None):
         """
         Creates an instance of the Section class.
