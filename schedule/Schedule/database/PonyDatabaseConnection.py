@@ -48,9 +48,9 @@ class Teacher(db.Entity):
     first_name = Required(str, max_len=50)
     last_name = Required(str, max_len=50)
     dept = Optional(str, max_len=50)
-    #schedules = Set('Schedule')
+    # schedules = Set('Schedule')
     schedules = Set('Schedule_Teacher')
-    #sections = Set('Section')
+    # sections = Set('Section')
     sections = Set('Section_Teacher')
     blocks = Set('Block')
 
@@ -89,8 +89,9 @@ class Schedule(db.Entity):
     official = Required(bool)
     scenario_id = Required(Scenario)
     sections = Set('Section')
-    #teachers = Set(Teacher)
+    # teachers = Set(Teacher)
     teachers = Set('Schedule_Teacher')
+
 
 class Section(db.Entity):
     # id = PrimaryKey(int)
@@ -101,7 +102,7 @@ class Section(db.Entity):
     course_id = Required(Course)
     schedule_id = Required(Schedule)
     streams = Set('Stream')
-    #teachers = Set(Teacher)
+    # teachers = Set(Teacher)
     teachers = Set('Section_Teacher')
     blocks = Set('Block')
 
@@ -129,11 +130,13 @@ class Block(db.Entity):
     teachers = Set(Teacher)
     number = Required(int, min=0)
 
+
 class Schedule_Teacher(db.Entity):
     teacher_id = Required(Teacher)
     schedule_id = Required(Schedule)
     work_release = Required(Decimal, 4, 2)
     PrimaryKey(teacher_id, schedule_id)
+
 
 class Section_Teacher(db.Entity):
     teacher_id = Required(Teacher)
@@ -141,12 +144,13 @@ class Section_Teacher(db.Entity):
     allocation = Required(Decimal, 3, 1)
     PrimaryKey(teacher_id, section_id)
 
+
 def bind_entities(**db_params):
     # Binds all entities created in this script to the specified database. If the database doesn't
     # exist, it will be created. (I hope) NOTE: Verified that this does not work. MySQL binding
     # doesn't accept a create_db option. Have to use mysql.connector to ensure the database's
     # creation, done above.
-    #print(db_params)
+    # print(db_params)
     db_params['database'].bind(**db_params)
 
 
@@ -254,16 +258,18 @@ def define_database(**db_params):
         conn.close()
     # db = Database()
     # define_entities(db)
+    set_sql_debug(True)  # Optional; prints Pony's SQL statements to the console.
     db.bind(**db_params)
     map_entities(db)
     return db
 
+
 if __name__ == "__main__":
     define_database(provider='mysql',
-        host='10.101.0.27',
-        user='evan_test',
-        passwd='test_stage_pwd_23',
-        db=db_name)
+                    host='10.101.0.27',
+                    user='evan_test',
+                    passwd='test_stage_pwd_23',
+                    db=db_name)
     """db.bind(provider='mysql',
         host='10.101.0.27',
         user='evan_test',

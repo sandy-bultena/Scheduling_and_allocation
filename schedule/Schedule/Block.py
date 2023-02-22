@@ -51,7 +51,8 @@ class Block(TimeSlot):
     # Constructor
     # =================================================================
 
-    def __init__(self, day: str, start: str, duration: float, number: int, *args, id : int = None, time_slot_id : int = None) -> None:
+    def __init__(self, day: str, start: str, duration: float, number: int, *args, id: int = None,
+                 time_slot_id: int = None) -> None:
         """Creates a new Block object.
         
         - Parameter day: str -> 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'
@@ -60,9 +61,10 @@ class Block(TimeSlot):
         - Parameter number: int -> A number representing this specific Block.
         """
         self._sync = list()
-        if (id and not time_slot_id) or (time_slot_id and not id): raise ValueError("Error: id and time_slot_id must be both defined or neither defined")
+        if (id and not time_slot_id) or (time_slot_id and not id): raise ValueError(
+            "Error: id and time_slot_id must be both defined or neither defined")
         if len(args) > 0: raise ValueError("Error: too many positional arguments")
-        super().__init__(day, start, duration, id = time_slot_id)
+        super().__init__(day, start, duration, id=time_slot_id)
         self.number = number  # NOTE: Based on the code found in CSV.pm and Section.pm
         self.__section = None
         self._teachers = dict()
@@ -74,11 +76,10 @@ class Block(TimeSlot):
 
     @db_session
     @staticmethod
-    def __create_entity(instance : Block):
-        entity_block = dbBlock(time_slot_id = instance.time_id, number = instance.number)
+    def __create_entity(instance: Block):
+        entity_block = dbBlock(time_slot_id=instance.time_id, number=instance.number)
         commit()
         return max(b.id for b in dbBlock) if not None else 1
-
 
     # =================================================================
     # number
@@ -159,11 +160,11 @@ class Block(TimeSlot):
     def id(self):
         """Gets the Block id."""
         return self._block_id
-    
+
     @property
     def time_id(self):
         """Gets the associated Time Slot's id."""
-        return self.__id
+        return super().id
 
     # =================================================================
     # section
