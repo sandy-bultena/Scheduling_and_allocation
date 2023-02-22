@@ -45,7 +45,7 @@ class Section():
     # ========================================================
     # CONSTRUCTOR
     # ========================================================
-    def __init__(self, number : str = "", hours = 1.5, name : str = "", *args, id : int = None, schedule_id : int = None):
+    def __init__(self, number : str = "", hours = 1.5, name : str = "", course : Course = None, *args, id : int = None, schedule_id : int = None):
         """
         Creates an instance of the Section class.
         - Parameter number -> The section's number.
@@ -68,7 +68,7 @@ class Section():
         self.number = number
         self.hours = hours
         self._num_students = 0
-        self._course = None
+        self._course = course
 
         self.__id = id if id else Section.__create_entity(self, schedule_id)
         Section.__instances[self.__id] = self
@@ -77,7 +77,7 @@ class Section():
     @staticmethod
     def __create_entity(instance : Section, schedule_id : int):
         entity_block = dbSection(name = instance.name, number = instance.number, hours = instance.hours, num_students = instance.num_students, 
-            course_id = instance._course.id if instance._course else None, schedule_id = schedule_id)
+            course_id = instance._course.id, schedule_id = schedule_id)
         commit()
         return max(s.id for s in dbSection) if not None else 1
     

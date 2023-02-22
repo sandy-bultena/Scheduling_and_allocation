@@ -105,7 +105,7 @@ class Schedule:
             
         # create all sections in this schedule
         for section in select(s for s in db.Section if s.schedule_id == id):
-            s = Section(section.number, section.hours, section.name, id = section.id)
+            s = Section(section.number, section.hours, section.name, Course.get(section.course_id, id = section.id))
             s.num_students = section.num_students
             Course.get(section.course_id).add_section(s)
             # identify teachers and set allocation
@@ -125,6 +125,7 @@ class Schedule:
                 for l in block.labs: b.assign_lab(Lab.get(l.id))
                 for t in block.teachers: b.assign_teacher(Teacher.get(t.id))
         
+        Schedule.calculate_conflicts()
         return schedule
             
     @staticmethod

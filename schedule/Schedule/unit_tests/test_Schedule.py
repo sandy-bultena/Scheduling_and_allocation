@@ -1,6 +1,10 @@
 import sys
 from os import path
 sys.path.append(path.dirname(path.dirname(__file__)))
+import pytest
+from unit_tests.db_constants import *
+from pony.orm import *
+from database.PonyDatabaseConnection import define_database, Schedule as dbSchedule, Scenario as dbScenario
 
 from Schedule import Schedule
 from Teacher import Teacher
@@ -10,13 +14,29 @@ from Lab import Lab
 from Conflict import Conflict
 from Section import Section
 from Block import Block
-import pytest
 
+db = define_database(host=HOST, passwd=PASSWD, db=DB_NAME, provider=PROVIDER, user=USERNAME)
 
+@db_session
+def init_scenario_and_schedule():
+    sc = dbScenario()
+    flush()
+    s = dbSchedule(semester="Winter 2023", official=False, scenario_id=sc.id)
+
+init_scenario_and_schedule()
 
 @pytest.fixture(autouse=True)
-def run_before_and_after():
+def before_and_after():
+    db.create_tables()
     Block.reset()
+    yield
+    db.drop_table(table_name = 'teacher', if_exists = True, with_all_data = True)
+    db.drop_table(table_name = 'stream', if_exists = True, with_all_data = True)
+    db.drop_table(table_name = 'section', if_exists = True, with_all_data = True)
+    db.drop_table(table_name = 'block', if_exists = True, with_all_data = True)
+    db.drop_table(table_name = 'course', if_exists = True, with_all_data = True)
+    db.drop_table(table_name = 'lab', if_exists = True, with_all_data = True)
+    db.drop_table(table_name = 'time_slot', if_exists = True, with_all_data = True)
 
 def test_teachers_get():
     """Checks that teachers method returns correct list"""
@@ -56,16 +76,17 @@ def test_conflicts_get():
 def test_get_sections_for_teacher():
     """Checks that sections_for_teacher method returns correct sections"""
     t1 = Teacher("Jane", "Doe")
+    c = Course(semester="summer")
     
-    s1 = Section("1")
+    s1 = Section("1", course=c, schedule_id=1)
     s1.add_block(Block('mon', '13:00', 2, 1))
     s1.assign_teacher(t1)
     
-    s2 = Section("2")
+    s2 = Section("2", course=c, schedule_id=1)
     s2.add_block(Block('mon', '13:00', 2, 1))
     s2.assign_teacher(t1)
 
-    s3 = Section("3")
+    s3 = Section("3", course=c, schedule_id=1)
     
     sections = Schedule.sections_for_teacher(t1)
     assert s1 in sections
@@ -75,14 +96,15 @@ def test_get_sections_for_teacher():
 def test_get_courses_for_teacher():
     """Checks that courses_for_teacher method returns correct courses"""
     t1 = Teacher("Jane", "Doe")
+    c = Course(semester="summer")
 
-    s1 = Section("1")
+    s1 = Section("1", course=c, schedule_id=1)
     s1.add_block(Block('mon', '13:00', 2, 1))
     c1 = Course(1, semester="summer")
     c1.add_section(s1)
     s1.assign_teacher(t1)
 
-    s2 = Section("2")
+    s2 = Section("2", course=c, schedule_id=1)
     s2.add_block(Block('mon', '13:00', 2, 1))
     c2 = Course(2, semester="summer")
     c2.add_section(s1)
@@ -98,14 +120,15 @@ def test_get_courses_for_teacher():
 def test_get_allocated_courses_for_teacher():
     """Checks that allocated_courses_for_teacher method returns correct courses"""
     t1 = Teacher("Jane", "Doe")
+    c = Course(semester="summer")
 
-    s1 = Section("1")
+    s1 = Section("1", course=c, schedule_id=1)
     s1.add_block(Block('mon', '13:00', 2, 1))
     c1 = Course(1, semester="summer")
     c1.add_section(s1)
     s1.assign_teacher(t1)
 
-    s2 = Section("2")
+    s2 = Section("2", course=c, schedule_id=1)
     s2.add_block(Block('mon', '13:00', 2, 1))
     c2 = Course(2, semester="summer")
     c2.add_section(s1)
@@ -153,14 +176,15 @@ def test_get_blocks_in_lab():
 def test_get_sections_for_stream():
     """Checks that sections_for_stream method returns correct sections"""
     st = Stream()
+    c = Course(semester="summer")
 
-    s1 = Section("1")
+    s1 = Section("1", course=c, schedule_id=1)
     s1.assign_stream(st)
 
-    s2 = Section("2")
+    s2 = Section("2", course=c, schedule_id=1)
     s2.assign_stream(st)
 
-    s3 = Section("3")
+    s3 = Section("3", course=c, schedule_id=1)
     
     sections = Schedule.sections_for_stream(st)
     assert s1 in sections
@@ -170,19 +194,20 @@ def test_get_sections_for_stream():
 def test_get_blocks_for_stream():
     """Checks that blocks_for_stream method returns correct sections"""
     st = Stream()
+    c = Course(semester="summer")
 
-    s1 = Section("1")
+    s1 = Section("1", course=c, schedule_id=1)
     b1 = Block('mon', '13:00', 2, 1)
     s1.add_block(b1)
     s1.assign_stream(st)
     
-    s2 = Section("2")
+    s2 = Section("2", course=c, schedule_id=1)
     b2 = Block('mon', '13:00', 2, 1)
     s2.assign_stream(st)
     s2.add_block(b2)
 
     b3 = Block('mon', '13:00', 2, 1)
-    s3 = Section("3")
+    s3 = Section("3", course=c, schedule_id=1)
     s3.add_block(b3)
     
     blocks = Schedule.blocks_for_stream(st)
@@ -219,10 +244,11 @@ def test_calculate_conflicts():
     t2 = Teacher("John", "Doe")
     t3 = Teacher("Joe", "Doe")
     t4 = Teacher("J", "D")
+    c = Course(semester="summer")
 
     l1 = Lab()
     st1 = Stream()
-    s1 = Section()
+    s1 = Section(course=c, schedule_id=1)
     s1.assign_stream(st1)
 
     tue_block = Block('tue', "15:00", 1, 50)
@@ -309,13 +335,14 @@ def test_calculate_conflicts():
 def test_teacher_stats():
     """Checks that the teacher_stats method gives all and only relevant and accurate information"""
     t1 = Teacher("Jane", "Doe")
+    c = Course(semester="summer")
 
     tue_block = Block('tue', "15:00", 1, 50)
     wed_block = Block('wed', "15:00", 1, 51)
     thu_block = Block('thu', "15:00", 1, 52)
 
-    s1 = Section("S1")
-    s2 = Section("S2")
+    s1 = Section("S1", course=c, schedule_id=1)
+    s2 = Section("S2", course=c, schedule_id=1)
     s1.add_block(tue_block)
     s2.add_block(wed_block)
     s2.add_block(thu_block)
@@ -346,6 +373,7 @@ def test_teacher_stats():
 def test_teacher_details():
     """Checks that the teacher_details method gives all and only relevant and accurate information"""
     t1 = Teacher("Jane", "Doe")
+    c = Course(semester="summer")
 
     l1 = Lab("P327")
     l2 = Lab("P326")
@@ -359,8 +387,8 @@ def test_teacher_details():
     thu_block = Block('thu', "14:00", 1, 52)
     thu_block.assign_lab(l3)
 
-    s1 = Section("S1")
-    s2 = Section("S2")
+    s1 = Section("S1", course=c, schedule_id=1)
+    s2 = Section("S2", course=c, schedule_id=1)
     s1.add_block(tue_block)
     s2.add_block(wed_block)
     s2.add_block(thu_block)
@@ -397,9 +425,10 @@ def test_teacher_details():
     assert str(l3) in dets
     assert f"{l1}, {l2}" in dets
 
-def test_clear_course():
+def test_clear_Course(semester="summer"):
     """Checks that the clear_all_from_course method correctly clears course"""
     t1 = Teacher("Jane", "Doe")
+    c = Course(semester="summer")
 
     tue_block = Block('tue', "15:00", 1, 50)
     wed_block = Block('wed', "15:00", 1, 51)
@@ -409,8 +438,8 @@ def test_clear_course():
     wed_block.assign_lab(Lab())
     thu_block.assign_lab(Lab())
 
-    s1 = Section("S1")
-    s2 = Section("S2")
+    s1 = Section("S1", course=c, schedule_id=1)
+    s2 = Section("S2", course=c, schedule_id=1)
     s1.add_block(tue_block)
     s2.add_block(wed_block)
     s2.add_block(thu_block)
@@ -439,7 +468,8 @@ def test_clear_course():
 
 def test_clear_section():
     """Checks that the clear_all_from_section method correctly clears section"""
-    s1 = Section("S1")
+    c = Course(semester="summer")
+    s1 = Section("S1", course=c, schedule_id=1)
     
     tue_block = Block('tue', "15:00", 1, 50)
     tue_block.assign_lab(Lab())
