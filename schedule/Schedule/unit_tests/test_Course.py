@@ -83,7 +83,7 @@ class TestCourse:
     def test_number_getter(self):
         """Verifies that the number getter works as intended."""
         course = Course(1, semester="summer")
-        assert course.number == 1
+        assert course.number == '1'
 
     def test_number_setter(self):
         """Verifies that the number setter works as intended."""
@@ -95,7 +95,7 @@ class TestCourse:
         """Verifies that add_section can add a valid Section to this Course, and that the Course is added to the Section
         itself. """
         course = Course(1, semester="summer")
-        section = Section()
+        section = Section(id=1)
         course.add_section(section)
         sections = list(getattr(course, '_sections').values())
         assert len(sections) == 1 and section in sections and section.course == course
@@ -115,7 +115,7 @@ class TestCourse:
         """Verifies that add_section() raises an Exception when trying to add a duplicate of an existing Section to the
         Course. """
         course = Course(1, semester="summer")
-        section_1 = Section()
+        section_1 = Section(id=1)
         section_2 = section_1
         course.add_section(section_1)
         with pytest.raises(Exception) as e:
@@ -126,7 +126,7 @@ class TestCourse:
         """Verifies that get_section() returns an existing section from this Course."""
         course = Course(1, semester="summer")
         num = "420.AO"
-        sect = Section(num)
+        sect = Section(num, id=1)
         course.add_section(sect)
         assert course.get_section(num) == sect
 
@@ -140,8 +140,8 @@ class TestCourse:
     def test_get_section_by_id_good(self):
         """Verifies that get_section_by_id() works when receiving a valid Section ID as input."""
         course = Course(1, semester="summer")
-        section = Section()
-        sect_id = Section._max_id
+        section = Section(id=1)
+        sect_id = 1
         course.add_section(section)
         assert course.get_section_by_id(sect_id) == section
 
@@ -149,7 +149,7 @@ class TestCourse:
         """Verifies that get_section_by_id() won't crash the program when given a bad ID as input, returning None
         instead. """
         course = Course(1, semester="summer")
-        section = Section()
+        section = Section(id=1)
         bad_id = 999
         course.add_section(section)
         assert course.get_section_by_id(bad_id) is None
@@ -159,7 +159,7 @@ class TestCourse:
         a valid name as input. """
         course = Course(1, semester="summer")
         name = "test"
-        section = Section("", 1.5, name)
+        section = Section("", 1.5, name, id=1)
         course.add_section(section)
         sections = course.get_section_by_name(name)
         assert len(sections) == 1 and sections[0] == section
@@ -168,7 +168,7 @@ class TestCourse:
         """Verifies that get_section_by_name() returns an empty list when given an invalid
         section name. """
         course = Course(1, semester="summer")
-        section = Section("", 1.5, "test")
+        section = Section("", 1.5, "test", id=1)
         bad_name = "foo"
         course.add_section(section)
         sections = course.get_section_by_name(bad_name)
@@ -178,7 +178,7 @@ class TestCourse:
         """Verifies that remove_section() works as intended when asked to remove a legitimate
         Section. """
         course = Course(1, semester="summer")
-        section = Section()
+        section = Section(id=1)
         course.add_section(section)
         course.remove_section(section)
         assert len(course.sections()) == 0
@@ -187,7 +187,7 @@ class TestCourse:
         """Verifies that remove_section() raises an Exception when asked to remove a non-Section
         object. """
         course = Course(1, semester="summer")
-        section = Section()
+        section = Section(id=1)
         course.add_section(section)
         bad_section = "foo"
         with pytest.raises(TypeError) as e:
@@ -198,9 +198,9 @@ class TestCourse:
         """Verifies that remove_section() will not crash the program if asked to remove a Section
         that doesn't exist. """
         course = Course(1, semester="summer")
-        section_1 = Section("420")
+        section_1 = Section("420", id=1)
         course.add_section(section_1)
-        bad_section = Section("421")
+        bad_section = Section("421", id=666)
         course.remove_section(bad_section)
         assert len(course.sections()) == 1 and section_1 in course.sections()
 
@@ -208,8 +208,8 @@ class TestCourse:
         """Verifies that delete() will remove all Sections from the Course, and remove the Course
         from the backend list of Courses. """
         course = Course(1, semester="summer")
-        section_1 = Section("420")
-        section_2 = Section("555")
+        section_1 = Section("420", id=1)
+        section_2 = Section("555", id=2)
         course.add_section(section_1)
         course.add_section(section_2)
         course.delete()
@@ -218,8 +218,8 @@ class TestCourse:
     def test_sections(self):
         """Verifies that sections() returns a list of all the Sections assigned to this Course."""
         course = Course(1, semester="summer")
-        section_1 = Section("420")
-        section_2 = Section("555")
+        section_1 = Section("420", id=1)
+        section_2 = Section("555", id=2)
         course.add_section(section_1)
         course.add_section(section_2)
         sections = course.sections()
@@ -229,8 +229,8 @@ class TestCourse:
         """Verifies that number_of_sections() correctly returns the number of Sections assigned
         to this Course. """
         course = Course(1, semester="summer")
-        section_1 = Section("420")
-        section_2 = Section("555")
+        section_1 = Section("420", id=1)
+        section_2 = Section("555", id=2)
         course.add_section(section_1)
         course.add_section(section_2)
         assert course.number_of_sections() == len(course.sections())
@@ -239,7 +239,7 @@ class TestCourse:
         """Verifies that sections_for_teacher() returns a list of all sections featuring this
         teacher in this course. """
         course = Course(1, semester="summer")
-        section_1 = Section("420")
+        section_1 = Section("420", id=1)
         teach = Teacher("John", "Smith")
         section_1.assign_teacher(teach)
         course.add_section(section_1)
@@ -250,7 +250,7 @@ class TestCourse:
         """Verifies that sections_for_teacher() returns an empty list if no Teacher has been
         assigned to the Course. """
         course = Course(1, semester="summer")
-        section_1 = Section("420")
+        section_1 = Section("420", id=1)
         teach = Teacher("John", "Smith")
         course.add_section(section_1)
         teach_sections = course.sections_for_teacher(teach)
@@ -260,9 +260,9 @@ class TestCourse:
         """Verifies that max_section_number() returns the highest number of all the Sections
         assigned to this Course. """
         course = Course(1, semester="summer")
-        section_1 = Section("420")
-        section_2 = Section("500")
-        section_3 = Section("120")
+        section_1 = Section("420", id=1)
+        section_2 = Section("500", id=2)
+        section_3 = Section("120", id=3)
         course.add_section(section_1)
         course.add_section(section_2)
         course.add_section(section_3)
@@ -279,7 +279,7 @@ class TestCourse:
         """Verifies that blocks() returns a list of all Blocks that have been assigned to this
         Course. """
         course = Course(1, semester="summer")
-        section = Section("420")
+        section = Section("420", id=1)
         block_1 = Block("mon", "9:30", 1.5, 1)
         block_2 = Block("wed", "9:30", 1.5, 2)
         section.add_block(block_1, block_2)
@@ -291,7 +291,7 @@ class TestCourse:
         """Verifies that blocks() returns an empty list when the Sections of this Course contain
         no Blocks. """
         course = Course(1, semester="summer")
-        section = Section("420")
+        section = Section("420", id=1)
         course.add_section(section)
         blocks = course.blocks()
         assert len(blocks[0]) == 0
@@ -300,14 +300,14 @@ class TestCourse:
         """Verifies that section() returns the correct Section when receiving a valid number."""
         course = Course(1, semester="summer")
         course_num = "420"
-        section = Section(course_num)
+        section = Section(course_num, id=1)
         course.add_section(section)
         assert course.section(course_num) == section
 
     def test_section_bad(self):
         """Verifies that section() returns nothing when receiving an invalid section number."""
         course = Course(1, semester="summer")
-        section = Section("420")
+        section = Section("420", id=1)
         course.add_section(section)
         bad_num = "555"
         assert course.section(bad_num) is None
@@ -317,7 +317,7 @@ class TestCourse:
         its Blocks, its Teachers, and its Labs."""
         course = Course(1, "Course 1", "fall")
         block = Block("mon", "8:30", 1.5, 1)
-        section = Section("420", 1.5, "Section 1")
+        section = Section("420", 1.5, "Section 1", id=1)
         lab = Lab("R-101", "Worst place in the world")
         teacher = Teacher("John", "Smith")
         block.assign_lab(lab)
@@ -344,7 +344,7 @@ class TestCourse:
         """Verifies that teachers() returns a list of the Teachers assigned to this course."""
         course = Course(1, "Course 1", "fall")
         block = Block("mon", "8:30", 1.5, 1)
-        section = Section("420", 1.5, "Section 1")
+        section = Section("420", 1.5, "Section 1", id=1)
         lab = Lab("R-101", "Worst place in the world")
         teacher_1 = Teacher("John", "Smith")
         teacher_2 = Teacher("Jane", "Doe")
@@ -367,7 +367,7 @@ class TestCourse:
         this course. """
         course = Course(1, "Course 1", "fall")
         block = Block("mon", "8:30", 1.5, 1)
-        section = Section("420", 1.5, "Section 1")
+        section = Section("420", 1.5, "Section 1", id=1)
         lab = Lab("R-101", "Worst place in the world")
         teacher = Teacher("John", "Smith")
         block.assign_lab(lab)
@@ -381,7 +381,7 @@ class TestCourse:
         Teacher. """
         course = Course(1, "Course 1", "fall")
         block = Block("mon", "8:30", 1.5, 1)
-        section = Section("420", 1.5, "Section 1")
+        section = Section("420", 1.5, "Section 1", id=1)
         lab = Lab("R-101", "Worst place in the world")
         teacher = Teacher("John", "Smith")
         block.assign_lab(lab)
@@ -396,7 +396,7 @@ class TestCourse:
         this Course. """
         course = Course(1, "Course 1", "fall")
         block = Block("mon", "8:30", 1.5, 1)
-        section = Section("420", 1.5, "Section 1")
+        section = Section("420", 1.5, "Section 1", id=1)
         stream = Stream()
         section.add_block(block)
         section.assign_stream(stream)
@@ -415,7 +415,7 @@ class TestCourse:
         """Verifies that has_stream() returns true if the passed Stream exists within the Course."""
         course = Course(1, "Course 1", "fall")
         block = Block("mon", "8:30", 1.5, 1)
-        section = Section("420", 1.5, "Section 1")
+        section = Section("420", 1.5, "Section 1", id=1)
         stream = Stream()
         section.add_block(block)
         section.assign_stream(stream)
@@ -427,7 +427,7 @@ class TestCourse:
         Stream. """
         course = Course(1, "Course 1", "fall")
         block = Block("mon", "8:30", 1.5, 1)
-        section = Section("420", 1.5, "Section 1")
+        section = Section("420", 1.5, "Section 1", id=1)
         stream = Stream()
         section.add_block(block)
         section.assign_stream(stream)
@@ -440,7 +440,7 @@ class TestCourse:
         """Verifies that has_stream() returns false if no input is specified."""
         course = Course(1, "Course 1", "fall")
         block = Block("mon", "8:30", 1.5, 1)
-        section = Section("420", 1.5, "Section 1")
+        section = Section("420", 1.5, "Section 1", id=1)
         stream = Stream()
         section.add_block(block)
         section.assign_stream(stream)
@@ -452,7 +452,7 @@ class TestCourse:
         Course. """
         course = Course(1, "Course 1", "fall")
         block = Block("mon", "8:30", 1.5, 1)
-        section = Section("420", 1.5, "Section 1")
+        section = Section("420", 1.5, "Section 1", id=1)
         section.add_block(block)
         course.add_section(section)
         teacher = Teacher("John", "Smith")
@@ -465,7 +465,7 @@ class TestCourse:
         object. """
         course = Course(1, "Course 1", "fall")
         block = Block("mon", "8:30", 1.5, 1)
-        section = Section("420", 1.5, "Section 1")
+        section = Section("420", 1.5, "Section 1", id=1)
         section.add_block(block)
         course.add_section(section)
         bad_teach = "foo"
@@ -477,7 +477,7 @@ class TestCourse:
         """Verifies that assign_lab() can assign a legitimate Lab to all Sections of the Course."""
         course = Course(1, "Course 1", "fall")
         block = Block("mon", "8:30", 1.5, 1)
-        section = Section("420", 1.5, "Section 1")
+        section = Section("420", 1.5, "Section 1", id=1)
         section.add_block(block)
         course.add_section(section)
         lab = Lab()
@@ -488,7 +488,7 @@ class TestCourse:
         """Verifies that assign_lab throws an exception when it receives a non-Lab object."""
         course = Course(1, "Course 1", "fall")
         block = Block("mon", "8:30", 1.5, 1)
-        section = Section("420", 1.5, "Section 1")
+        section = Section("420", 1.5, "Section 1", id=1)
         section.add_block(block)
         course.add_section(section)
 
@@ -502,7 +502,7 @@ class TestCourse:
         of the Course. """
         course = Course(1, "Course 1", "fall")
         block = Block("mon", "8:30", 1.5, 1)
-        section = Section("420", 1.5, "Section 1")
+        section = Section("420", 1.5, "Section 1", id=1)
         section.add_block(block)
         course.add_section(section)
 
@@ -515,7 +515,7 @@ class TestCourse:
         object. """
         course = Course(1, "Course 1", "fall")
         block = Block("mon", "8:30", 1.5, 1)
-        section = Section("420", 1.5, "Section 1")
+        section = Section("420", 1.5, "Section 1", id=1)
         section.add_block(block)
         course.add_section(section)
 
@@ -529,7 +529,7 @@ class TestCourse:
         Course. """
         course = Course(1, "Course 1", "fall")
         block = Block("mon", "8:30", 1.5, 1)
-        section = Section("420", 1.5, "Section 1")
+        section = Section("420", 1.5, "Section 1", id=1)
         section.add_block(block)
         course.add_section(section)
         teacher_1 = Teacher("John", "Smith")
@@ -544,7 +544,7 @@ class TestCourse:
         object. """
         course = Course(1, "Course 1", "fall")
         block = Block("mon", "8:30", 1.5, 1)
-        section = Section("420", 1.5, "Section 1")
+        section = Section("420", 1.5, "Section 1", id=1)
         section.add_block(block)
         course.add_section(section)
         teacher_1 = Teacher("John", "Smith")
@@ -558,7 +558,7 @@ class TestCourse:
         """Verifies that remove_all_teachers() works as intended."""
         course = Course(1, "Course 1", "fall")
         block = Block("mon", "8:30", 1.5, 1)
-        section = Section("420", 1.5, "Section 1")
+        section = Section("420", 1.5, "Section 1", id=1)
         section.add_block(block)
         course.add_section(section)
         teacher_1 = Teacher("John", "Smith")
@@ -574,7 +574,7 @@ class TestCourse:
         """Verifies that remove_stream() works as intended."""
         course = Course(1, "Course 1", "fall")
         block = Block("mon", "8:30", 1.5, 1)
-        section = Section("420", 1.5, "Section 1")
+        section = Section("420", 1.5, "Section 1", id=1)
         section.add_block(block)
         course.add_section(section)
         stream_1 = Stream()
@@ -588,7 +588,7 @@ class TestCourse:
         """Verifies that remove_stream() raises an exception when receiving a non-Stream object."""
         course = Course(1, "Course 1", "fall")
         block = Block("mon", "8:30", 1.5, 1)
-        section = Section("420", 1.5, "Section 1")
+        section = Section("420", 1.5, "Section 1", id=1)
         section.add_block(block)
         course.add_section(section)
         stream_1 = Stream()
@@ -602,7 +602,7 @@ class TestCourse:
         """Verifies that remove_all_streams() works as intended."""
         course = Course(1, "Course 1", "fall")
         block = Block("mon", "8:30", 1.5, 1)
-        section = Section("420", 1.5, "Section 1")
+        section = Section("420", 1.5, "Section 1", id=1)
         section.add_block(block)
         course.add_section(section)
         stream_1 = Stream()
@@ -616,7 +616,7 @@ class TestCourse:
         """Verifies that get_new_number() works as intended."""
         course = Course(1, "Course 1", "fall")
         block = Block("mon", "8:30", 1.5, 1)
-        section = Section("420", 1.5, "Section 1")
+        section = Section("420", 1.5, "Section 1", id=1)
         section.add_block(block)
         course.add_section(section)
         num = 420
@@ -628,7 +628,7 @@ class TestCourse:
         isn't in use. """
         course = Course(1, "Course 1", "fall")
         block = Block("mon", "8:30", 1.5, 1)
-        section = Section("420", 1.5, "Section 1")
+        section = Section("420", 1.5, "Section 1", id=1)
         section.add_block(block)
         course.add_section(section)
         num = 421
