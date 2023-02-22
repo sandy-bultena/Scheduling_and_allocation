@@ -28,7 +28,7 @@ class TestTeacher:
     def test_id(self):
         """"Verifies that Teacher IDs are incremented automatically."""
         teach = Teacher("John", "Smith")
-        max_id = max(t.id for t in dbTeacher)
+        max_id = max(t.id for t in dbTeacher) # this works
         assert max_id == teach.id
 
     def test_firstname_getter(self):
