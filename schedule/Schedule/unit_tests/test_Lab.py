@@ -48,7 +48,7 @@ class TestLab:
         """Verifies that the last Lab created will have the highest ID."""
         lab1 = Lab("R-101", "Worst place in the world")
         lab2 = Lab("R-102", "Second-worst place in the world")
-        assert lab2.id == getattr(lab2, '_max_id')
+        assert lab2.id == 2
 
     def test_number_getter(self):
         """Verifies that number getter works as intended."""
@@ -100,7 +100,7 @@ class TestLab:
         dur = 2.0
         lab = Lab()
         lab.add_unavailable(day, start, dur)
-        slot_id = getattr(TimeSlot, '_max_id')
+        slot_id = getattr(lab, '_unavailable')[1].id
         lab.remove_unavailable(slot_id)
         assert len(getattr(lab, '_unavailable')) == 0
 
@@ -113,7 +113,7 @@ class TestLab:
         lab = Lab()
         lab.add_unavailable(day, start, dur)
         bad_id = 9999
-        slot_key = getattr(TimeSlot, '_max_id')
+        slot_key = getattr(lab, '_unavailable')[1].id
         lab.remove_unavailable(bad_id)
         assert len(getattr(lab, '_unavailable')) == 1 \
                and getattr(lab, '_unavailable')[slot_key].start == start
@@ -125,7 +125,7 @@ class TestLab:
         dur = 2.0
         lab = Lab()
         lab.add_unavailable(day, start, dur)
-        slot_id = getattr(TimeSlot, '_max_id')
+        slot_id = getattr(lab, '_unavailable')[1].id
         slot = lab.get_unavailable(slot_id)
         assert slot.id == slot_id and slot.start == start and slot.day == day and slot.duration == dur
 

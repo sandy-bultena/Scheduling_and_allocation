@@ -31,7 +31,7 @@ class Lab:
     # new
     # --------------------------------------------------------------------
 
-    def __init__(self, number: str = "100", descr: str = ''):
+    def __init__(self, number: str = "100", descr: str = '', id: int = None):
         """Creates and returns a new Lab object."""
         self.number = number
         self.descr = descr
@@ -42,8 +42,9 @@ class Lab:
 
     @db_session
     @staticmethod
-    def __create_entity(instance : Lab):
-        entity_block = dbLab(name = instance.name, number = instance.number, allocation = instance.needs_allocation)
+    def __create_entity(instance: Lab):
+        entity_block = dbLab(number=instance.number,
+                             description=instance.descr)
         commit()
         return max(s.id for s in dbLab) if not None else 1
 
