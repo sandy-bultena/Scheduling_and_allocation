@@ -13,15 +13,23 @@ from Lab import Lab
 from Teacher import Teacher
 from Stream import Stream
 
-db = define_database(host=HOST, passwd=PASSWD, db=DB_NAME, provider=PROVIDER, user=USERNAME)
+db : Database
+
+@pytest.fixture(scope="module", autouse=True)
+def before_and_after_module():
+    global db
+    db = define_database(host=HOST, passwd=PASSWD, db=DB_NAME, provider=PROVIDER, user=USERNAME)
+    init_scenario_and_schedule()
+    yield
+    db.drop_all_tables(with_all_data = True)
+    db.disconnect()
+    db.provider = db.schema = None
 
 @db_session
 def init_scenario_and_schedule():
     sc = dbScenario()
     flush()
     s = dbSchedule(semester="Winter 2023", official=False, scenario_id=sc.id)
-
-init_scenario_and_schedule()
 
 @pytest.fixture(autouse=True)
 def before_and_after():

@@ -11,7 +11,16 @@ from Course import Course
 from database.PonyDatabaseConnection import define_database, Schedule as dbSchedule, Scenario as dbScenario
 from pony.orm import *
 
-db = define_database(host=HOST, passwd=PASSWD, db=DB_NAME, provider=PROVIDER, user=USERNAME)
+db : Database
+
+@pytest.fixture(scope="module", autouse=True)
+def before_and_after_module():
+    global db
+    db = define_database(host=HOST, passwd=PASSWD, db=DB_NAME, provider=PROVIDER, user=USERNAME)
+    yield
+    db.drop_all_tables(with_all_data = True)
+    db.disconnect()
+    db.provider = db.schema = None
 
 @db_session
 def init_scenario_schedule_course():

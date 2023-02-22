@@ -4,6 +4,7 @@ sys.path.append(path.dirname(path.dirname(__file__)))
 import pytest
 from unit_tests.db_constants import *
 from database.PonyDatabaseConnection import define_database
+from pony.orm import *
 
 from Conflict import Conflict
 
@@ -12,7 +13,16 @@ conflict_types.append(Conflict.TIME_LAB)
 conflict_types.append(Conflict.TIME_STREAM)
 conflict_types.append(Conflict.TIME_TEACHER)
 
-db = define_database(host=HOST, passwd=PASSWD, db=DB_NAME, provider=PROVIDER, user=USERNAME)
+db : Database
+
+@pytest.fixture(scope="module", autouse=True)
+def before_and_after_module():
+    global db
+    db = define_database(host=HOST, passwd=PASSWD, db=DB_NAME, provider=PROVIDER, user=USERNAME)
+    yield
+    db.drop_all_tables(with_all_data = True)
+    db.disconnect()
+    db.provider = db.schema = None
 
 @pytest.fixture(autouse=True)
 def before_and_after():

@@ -10,7 +10,16 @@ from Block import Block
 from database.PonyDatabaseConnection import define_database
 from pony.orm import *
 
-db = define_database(host=HOST, passwd=PASSWD, db=DB_NAME, provider=PROVIDER, user=USERNAME)
+db : Database
+
+@pytest.fixture(scope="module", autouse=True)
+def before_and_after_module():
+    global db
+    db = define_database(host=HOST, passwd=PASSWD, db=DB_NAME, provider=PROVIDER, user=USERNAME)
+    yield
+    db.drop_all_tables(with_all_data = True)
+    db.disconnect()
+    db.provider = db.schema = None
 
 @pytest.fixture(autouse=True)
 def before_and_after():
