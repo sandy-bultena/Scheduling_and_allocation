@@ -70,7 +70,7 @@ class Section():
         self.number = number
         self.hours = hours
         self._num_students = 0
-        self._course = None
+        self._course = course
 
         self.__id = id if id else Section.__create_entity(self, schedule_id)
         Section.__instances[self.__id] = self

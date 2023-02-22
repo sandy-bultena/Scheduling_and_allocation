@@ -35,16 +35,16 @@ class Course:
     # -------------------------------------------------------------------
     # new
     # --------------------------------------------------------------------
-    def __init__(self, number: str = "", name: str = "", semester: str = "", *args, id : int = None):
+    def __init__(self, number: str = "", name: str = "New Course", semester: str = "", *args, id : int = None):
         """Creates and returns a course object.
         
         Parameter **number**: str -> The alphanumeric course number.
 
         Parameter **name**: str -> the name of the course."""
         if len(args) > 0: raise ValueError("Error: too many positional arguments")
-        self.number = number
-        self.name = name
-        self.semester = semester
+        self.number = str(number)
+        self.name = str(name)
+        self.semester = str(semester)
         self._allocation = True
         self._sections = {}
 
