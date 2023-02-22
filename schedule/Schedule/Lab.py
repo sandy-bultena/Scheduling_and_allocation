@@ -43,10 +43,10 @@ class Lab:
     @db_session
     @staticmethod
     def __create_entity(instance: Lab):
-        entity_block = dbLab(number=instance.number,
+        entity_lab = dbLab(number=instance.number,
                              description=instance.descr)
         commit()
-        return max(s.id for s in dbLab) if not None else 1
+        return entity_lab.get_pk()
 
     # =================================================================
     # id

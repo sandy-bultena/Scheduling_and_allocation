@@ -102,7 +102,7 @@ class TimeSlot:
     def __create_entity(instance : TimeSlot):
         entity_block = dbTimeSlot(day = instance.day, duration = instance.duration, start = instance.start, movable = instance.movable)
         commit()
-        return max(t.id for t in dbTimeSlot) if not None else 1
+        return entity_block.get_pk()
 
     # ====================================
     # id

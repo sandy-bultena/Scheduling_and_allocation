@@ -78,12 +78,12 @@ class Section():
     @db_session
     @staticmethod
     def __create_entity(instance: Section, schedule_id: int):
-        entity_block = dbSection(name=instance.name, number=instance.number, hours=instance.hours,
+        entity_section = dbSection(name=instance.name, number=instance.number, hours=instance.hours,
                                  num_students=instance.num_students,
                                  course_id=instance._course.id,
                                  schedule_id=schedule_id)
         commit()
-        return max(s.id for s in dbSection) if not None else 1
+        return entity_section.get_pk()
 
     @staticmethod
     def __validate_hours(hours):

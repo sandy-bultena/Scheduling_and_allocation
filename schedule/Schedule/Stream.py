@@ -33,9 +33,9 @@ class Stream():
     @db_session
     @staticmethod
     def __create_entity(instance : Stream):
-        entity_block = dbStream(number = instance.number, descr = instance.descr)
+        entity_stream = dbStream(number = instance.number, descr = instance.descr)
         commit()
-        return max(s.id for s in dbStream) if not None else 1
+        return entity_stream.get_pk()
     
     # ========================================================
     # ITERATING RELATED (STATIC)

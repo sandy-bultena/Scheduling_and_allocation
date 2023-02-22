@@ -79,7 +79,7 @@ class Block(TimeSlot):
     def __create_entity(instance: Block):
         entity_block = dbBlock(time_slot_id=instance.time_id, number=instance.number)
         commit()
-        return max(b.id for b in dbBlock) if not None else 1
+        return entity_block.get_pk()
 
     # =================================================================
     # number

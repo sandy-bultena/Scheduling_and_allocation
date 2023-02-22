@@ -1,19 +1,31 @@
 import sys
 from os import path
-
 sys.path.append(path.dirname(path.dirname(__file__)))
+import pytest
+from unit_tests.db_constants import *
 
 from Stream import Stream
 from Block import Block
 from Section import Section
-import pytest
+from Course import Course
+from database.PonyDatabaseConnection import define_database, Schedule as dbSchedule, Scenario as dbScenario
+from pony.orm import *
 
+db = define_database(host=HOST, passwd=PASSWD, db=DB_NAME, provider=PROVIDER, user=USERNAME)
+
+@db_session
+def init_scenario_schedule_course():
+    sc = dbScenario()
+    flush()
+    s = dbSchedule(semester="Winter 2023", official=False, scenario_id=sc.id)
 
 @pytest.fixture(autouse=True)
-def run_before_and_after():
-    Stream._max_id = 0
+def before_and_after():
+    db.create_tables()
     Stream.reset()
-
+    yield
+    db.drop_table(table_name = 'stream', if_exists = True, with_all_data = True)
+    db.drop_table(table_name = 'course', if_exists = True, with_all_data = True)
 
 def test_constructor_default_values():
     """Checks that the constructor uses default values when arguments aren't provided"""
@@ -70,8 +82,9 @@ def test_confirm_can_get_by_id():
 
 def test_share_blocks_finds_shared():
     """Confirm that share_blocks finds streams with both blocks"""
+    c = Course(semester = "summer")
     b1 = b2 = Block('Mon', '13:00', 2, 1)
-    se = Section()
+    se = Section(course = c, schedule_id = 1)
     s = Stream()
     se.assign_stream(s)
     b1.section = b2.section = se
@@ -80,11 +93,12 @@ def test_share_blocks_finds_shared():
 
 def test_share_blocks_ignores_non_shared():
     """Confirm that share_blocks ignores streams without both blocks"""
+    c = Course(semester = "summer")
     b1 = b2 = Block('Mon', '13:00', 2, 1)
-    se = Section()
+    se = Section(course = c, schedule_id = 1)
     s = Stream()
     b1.section = se
-    b2.section = Section()
+    b2.section = Section(course = c, schedule_id = 1)
     se.assign_stream(s)
     assert not Stream.share_blocks(b1, b2)
 

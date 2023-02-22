@@ -54,10 +54,9 @@ class Course:
     @db_session
     @staticmethod
     def __create_entity(instance : Course):
-        entity_block = dbCourse(name = instance.name, number = instance.number, allocation = instance.needs_allocation)
+        entity_course = dbCourse(name = instance.name, number = instance.number, allocation = instance.needs_allocation)
         commit()
-        return max(s.id for s in dbCourse) if not None else 1
-
+        return entity_course.get_pk()
     # =================================================================
     # id
     # =================================================================

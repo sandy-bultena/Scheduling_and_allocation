@@ -43,9 +43,9 @@ class Teacher:
     @db_session
     @staticmethod
     def __create_entity(instance : Teacher):
-        entity_block = dbTeacher(first_name = instance.firstname, last_name = instance.lastname, dept = instance.dept)
+        entity_teacher = dbTeacher(first_name = instance.firstname, last_name = instance.lastname, dept = instance.dept)
         commit()
-        return max(t.id for t in dbTeacher) if not None else 1
+        return entity_teacher.get_pk()
 
     # =================================================================
     # id
