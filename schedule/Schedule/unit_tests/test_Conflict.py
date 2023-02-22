@@ -1,7 +1,9 @@
-import pytest
 import sys
 from os import path
 sys.path.append(path.dirname(path.dirname(__file__)))
+import pytest
+from unit_tests.db_constants import *
+from database.PonyDatabaseConnection import define_database
 
 from Conflict import Conflict
 
@@ -10,8 +12,10 @@ conflict_types.append(Conflict.TIME_LAB)
 conflict_types.append(Conflict.TIME_STREAM)
 conflict_types.append(Conflict.TIME_TEACHER)
 
+db = define_database(host=HOST, passwd=PASSWD, db=DB_NAME, provider=PROVIDER, user=USERNAME)
+
 @pytest.fixture(autouse=True)
-def run_before_and_after():
+def before_and_after():
     Conflict.reset()
 
 def test_constructor_fails_with_invalid_arguments():
@@ -36,7 +40,7 @@ def test_conflict_created_success():
     assert c.type is Conflict.AVAILABILITY
     assert c.blocks == blocks
 
-def test_confirm_Conflict_can_be_iterated():
+def test_confirm_conflict_can_be_iterated():
     """Confirm that Conflict can be iterated over"""
     Conflict(Conflict.TIME_LAB, [1])
     Conflict(Conflict.TIME_TEACHER, [2])
