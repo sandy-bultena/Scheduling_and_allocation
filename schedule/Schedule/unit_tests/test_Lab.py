@@ -273,11 +273,10 @@ def test_remove_gets_database_labs():
     database. """
     lab = Lab("R-101", "Worst place in the world")
     lab.add_unavailable("mon", "8:00", 1.5)
+    commit()
     lab.delete()
     commit()
     d_slots = select(s for s in dbTimeSlot)
-    # Currently this is failing because the database doesn't know that an unavailable timeslot
-    # has been added to this block.
     assert len(d_slots) == 0
 
 

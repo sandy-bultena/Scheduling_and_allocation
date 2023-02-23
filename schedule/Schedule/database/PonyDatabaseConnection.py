@@ -194,7 +194,7 @@ def define_entities(db):
         start = Required(str, max_len=5)
         movable = Optional(bool, default=True, sql_default='1')
         block_id = Optional('Block', cascade_delete=True)
-        unavailable_lab_id = Optional(Lab)
+        unavailable_lab_id = Optional(Lab, cascade_delete=True)
 
     class Scenario(db.Entity):
         # id = PrimaryKey(int)

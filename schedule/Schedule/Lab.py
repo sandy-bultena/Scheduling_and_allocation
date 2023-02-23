@@ -1,7 +1,7 @@
 from __future__ import annotations
 from Time_slot import TimeSlot
 
-from database.PonyDatabaseConnection import Lab as dbLab
+from database.PonyDatabaseConnection import Lab as dbLab, TimeSlot as dbTimeSlot
 from pony.orm import *
 
 """ SYNOPSIS/EXAMPLE:
@@ -44,7 +44,7 @@ class Lab:
     @staticmethod
     def __create_entity(instance: Lab):
         entity_lab = dbLab(number=instance.number,
-                             description=instance.descr)
+                           description=instance.descr)
         commit()
         return entity_lab.get_pk()
 
@@ -103,8 +103,17 @@ class Lab:
 
         # Save it.
         self._unavailable[slot.id] = slot
+        self.__add_entity_unavailable(slot)
 
         return self
+
+    @db_session
+    def __add_entity_unavailable(self, instance: TimeSlot):
+        """Links the passed TimeSlot's entity to this Lab's corresponding entity in the database."""
+        entity_lab = dbLab.get(id=self.id)
+        entity_slot = dbTimeSlot.get(id=instance.id)
+        if entity_lab is not None and entity_slot is not None:
+            entity_slot.unavailable_lab_id = entity_lab
 
     # =================================================
     # remove_unavailable
@@ -240,7 +249,6 @@ class Lab:
             # Finally, remove the Lab itself from the list of instances.
             del Lab.__instances[self.__id]
 
-
     @db_session
     @staticmethod
     def __delete_entity(instance: Lab):
@@ -248,6 +256,10 @@ class Lab:
         database. """
         entity_lab = dbLab.get(id=instance.id)
         if entity_lab is not None:
+            # Cannot get the database to enact a cascade delete of the timeslots when lab is
+            # deleted, so the unavailable timeslots must be deleted manually.
+            for slot in entity_lab.unavailable_slots:
+                slot.delete()
             entity_lab.delete()
 
 
