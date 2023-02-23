@@ -6,7 +6,7 @@ from Stream import Stream
 from Teacher import Teacher
 from Lab import Lab
 
-from database.PonyDatabaseConnection import Course as dbCourse
+from database.PonyDatabaseConnection import Course as dbCourse, Section as dbSection
 from pony.orm import *
 
 '''SYNOPSIS
@@ -103,15 +103,15 @@ class Course:
         return self.__semester
 
     @semester.setter
-    def semester(self, semester: str):
-        semester = semester.lower()
+    def semester(self, new_semester: str):
+        new_semester = new_semester.lower()
         # Warn the user if they entered a value other than summer, winter, or fall. Was
         # originally a generic Warning, but pony.orm.dbapiprovider overrides this with its own
         # Warning class, so I changed it to a more specific UserWarning.
-        if not re.match("^(summer|winter|fall)", semester):
-            warn(f"invalid semester for course; {semester}", UserWarning, stacklevel=2)
-            semester = ""
-        self.__semester = semester
+        if not re.match("^(summer|winter|fall)", new_semester):
+            warn(f"invalid semester for course; {new_semester}", UserWarning, stacklevel=2)
+            new_semester = ""
+        self.__semester = new_semester
 
     # =================================================================
     # number
@@ -158,8 +158,16 @@ class Course:
             # ----------------------------------------------------------
             self._sections[section.number] = section
             section.course = self
+            self.__add_entity_section(section.id)
 
         return self
+
+    @db_session
+    def __add_entity_section(self, sect_id: int):
+        d_sect = dbSection.get(id=sect_id)
+        if d_sect is not None:
+            d_course = dbCourse[self.id]
+            d_course.sections.add(d_sect)
 
     # =================================================================
     # get_section
