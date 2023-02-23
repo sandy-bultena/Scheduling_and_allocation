@@ -8,7 +8,7 @@ from unit_tests.db_constants import *
 from Lab import Lab
 from Time_slot import TimeSlot
 from Block import Block
-from database.PonyDatabaseConnection import define_database, Lab as dLab
+from database.PonyDatabaseConnection import define_database, Lab as dbLab, TimeSlot as dbTimeSlot
 from pony.orm import *
 
 db: Database
@@ -263,8 +263,22 @@ def test_remove_gets_database():
     lab = Lab("R-101", "Worst place in the world")
     lab.delete()
     commit()
-    d_labs = select(l for l in dLab)
+    d_labs = select(l for l in dbLab)
     assert len(d_labs) == 0
+
+
+@db_session
+def test_remove_gets_database_labs():
+    """Verifies that delete() removes the records of the Lab's unavailable time slots from the
+    database. """
+    lab = Lab("R-101", "Worst place in the world")
+    lab.add_unavailable("mon", "8:00", 1.5)
+    lab.delete()
+    commit()
+    d_slots = select(s for s in dbTimeSlot)
+    # Currently this is failing because the database doesn't know that an unavailable timeslot
+    # has been added to this block.
+    assert len(d_slots) == 0
 
 
 def test_get_good():
