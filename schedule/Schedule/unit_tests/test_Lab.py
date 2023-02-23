@@ -95,6 +95,19 @@ def test_add_unavailable():
            and slot.start == start and slot.duration == dur
 
 
+@db_session
+def test_add_unavailable_adds_to_db():
+    """Verifies that add_unavailable() adds a TimeSlot record to the database."""
+    day = "mon"
+    start = "8:30"
+    dur = 2.0
+    lab = Lab()
+    lab.add_unavailable(day, start, dur)
+    commit()
+    d_slots = select(s for s in dbTimeSlot)
+    assert len(d_slots) == 1
+
+
 def test_remove_unavailable_good():
     """Verifies that remove_unavailable() can remove a TimeSlot from Lab based on the received
     TimeSlot ID. """
