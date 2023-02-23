@@ -192,6 +192,14 @@ class Teacher:
         """Removes this Teacher from the Teachers object."""
         if self.id in Teacher.__instances.keys():
             del Teacher.__instances[self.id]
+            self.__delete_entity_teacher()
+
+    @db_session
+    def __delete_entity_teacher(self):
+        """Removes the corresponding Teacher record from the database."""
+        d_teacher = dbTeacher.get(id=self.id)
+        if d_teacher is not None:
+            d_teacher.delete()
 
     # =================================================================
     # disjoint
