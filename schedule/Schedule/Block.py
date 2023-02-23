@@ -5,7 +5,7 @@ from Teacher import Teacher
 from Time_slot import TimeSlot
 
 from database.PonyDatabaseConnection import Block as dbBlock, TimeSlot as dbTimeSlot, Lab as dbLab, \
-    Teacher as dbTeacher
+    Teacher as dbTeacher, Section as dbSection
 from pony.orm import *
 
 """ SYNOPSIS:
@@ -194,8 +194,16 @@ class Block(TimeSlot):
     def section(self, section: Section):
         if isinstance(section, Section):
             self.__section = section
+            self.__set_entity_section(section.id)
         else:
             raise TypeError("<{section}>: invalid section - must be a Section object.")
+
+    @db_session
+    def __set_entity_section(self, section_id: int):
+        d_section = dbSection.get(id=section_id)
+        if d_section is not None:
+            d_block = dbBlock[self.id]
+            d_block.section_id = d_section
 
     # =================================================================
     # assign_lab

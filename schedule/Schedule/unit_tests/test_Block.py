@@ -11,7 +11,8 @@ from Teacher import Teacher
 from Time_slot import TimeSlot
 from pony.orm import *
 from database.PonyDatabaseConnection import define_database, Block as dbBlock, \
-    TimeSlot as dbTimeSlot, Lab as dbLab, Teacher as dbTeacher
+    TimeSlot as dbTimeSlot, Lab as dbLab, Teacher as dbTeacher, Scenario as dbScenario, \
+    Schedule as dbSchedule, Course as dbCourse, Section as dbSection
 from unit_tests.db_constants import *
 
 db: Database
@@ -250,6 +251,32 @@ def test_section_setter_bad():
     with pytest.raises(TypeError) as e:
         block.section = bad_sect
     assert "invalid section" in str(e.value).lower()
+
+
+@db_session
+def test_section_setter_updates_database():
+    """Verifies that the section setter updates the database when it receives a Section
+    containing a valid Schedule ID. """
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+
+    d_scenario = dbScenario(name="Test")
+    flush()
+    d_schedule = dbSchedule(semester="fall", official=False, scenario_id=d_scenario.id)
+    flush()
+    d_course = dbCourse(name="Test")
+    flush()
+    sect = Section(course=d_course, schedule_id=d_schedule.id)
+    commit()
+    block.section = sect
+    commit()
+    d_block = dbBlock[block.id]
+    d_sect = dbSection[sect.id]
+    # Note that section_id is NOT an integer; it's an object reference to a Section entity.
+    assert d_block.section_id == d_sect
 
 
 def test_assign_lab_good():
