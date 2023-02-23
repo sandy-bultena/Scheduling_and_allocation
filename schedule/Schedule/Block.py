@@ -4,7 +4,8 @@ from Section import Section
 from Teacher import Teacher
 from Time_slot import TimeSlot
 
-from database.PonyDatabaseConnection import Block as dbBlock, TimeSlot as dbTimeSlot, Lab as dbLab
+from database.PonyDatabaseConnection import Block as dbBlock, TimeSlot as dbTimeSlot, Lab as dbLab, \
+    Teacher as dbTeacher
 from pony.orm import *
 
 """ SYNOPSIS:
@@ -311,6 +312,14 @@ class Block(TimeSlot):
         self._teachers[teacher.id] = teacher
 
         return self
+
+    @db_session
+    def __assign_entity_teacher(self, teacher_id: int):
+        """Connects this Block's database entity to that of the Teacher with the passed ID."""
+        entity_teacher = dbTeacher.get(id=teacher_id)
+        if entity_teacher is not None:
+            entity_block = dbBlock[self.id]
+            entity_block.teachers.add(entity_teacher)
 
     # =================================================================
     # remove_teacher
