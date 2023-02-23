@@ -249,8 +249,16 @@ class Course:
         Returns None."""
         for section in self.sections():
             self.remove_section(section)
-        # TODO: Remove this Course from the CourseMeta's instances.
-        if Course.__instances[self.id]: del Course.__instances[self.id]
+        if Course.__instances[self.id]:
+            del Course.__instances[self.id]
+            self.__delete_entity()
+
+    @db_session
+    def __delete_entity(self):
+        """Removes this Course's corresponding entry from the database."""
+        d_course = dbCourse.get(id=self.id)
+        if d_course is not None:
+            d_course.delete()
 
     # =================================================================
     # sections

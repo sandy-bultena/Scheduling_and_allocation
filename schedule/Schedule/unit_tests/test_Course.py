@@ -285,6 +285,16 @@ def test_delete():
     assert len(course.sections()) == 0 and course not in Course.list()
 
 
+@db_session
+def test_delete_updates_database():
+    """Verifies that delete() removes the Course record from the database."""
+    course = Course(1, semester="fall")
+    course.delete()
+    commit()
+    d_courses = select(c for c in dbCourse)
+    assert len(d_courses) == 0
+
+
 def test_sections():
     """Verifies that sections() returns a list of all the Sections assigned to this Course."""
     course = Course(1, semester="summer")
