@@ -228,12 +228,17 @@ class Course:
 
         if section.number in getattr(self, '_sections', {}):
             del self._sections[section.number]
-
-        # TODO: Decide whether this should be in the if statement. If it's invalid, we may not
-        #  want to delete it.
-        section.delete()
+            self.__remove_entity_section(section.id)
+            section.delete()
 
         return self
+
+    @db_session
+    def __remove_entity_section(self, section_id: int):
+        d_sect = dbSection[section_id]
+        if d_sect is not None:
+            d_course = dbCourse[self.id]
+            d_course.sections.remove(d_sect)
 
     # =================================================================
     # delete

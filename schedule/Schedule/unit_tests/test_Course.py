@@ -254,6 +254,25 @@ def test_remove_section_no_crash():
     assert len(course.sections()) == 1 and section_1 in course.sections()
 
 
+@db_session
+def test_remove_section_updates_database():
+    """Verifies that remove_section breaks the connection and deletes the passed Section."""
+    course = Course(1, semester="summer")
+    d_scenario = dbScenario(name="Test")
+    flush()
+    d_schedule = dbSchedule(semester="fall", official=False, scenario_id=d_scenario.id)
+    flush()
+    sect = Section(course=course, schedule_id=d_schedule.id)
+    commit()
+    course.add_section(sect)
+    commit()
+    course.remove_section(sect)
+    commit()
+    d_sects = select(s for s in dbSection)
+    d_course = dbCourse[course.id]
+    assert len(d_sects) == 0 and len(d_course.sections) == 0
+
+
 def test_delete():
     """Verifies that delete() will remove all Sections from the Course, and remove the Course
     from the backend list of Courses. """
