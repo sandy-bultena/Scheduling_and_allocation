@@ -92,7 +92,7 @@ def test_confirm_can_get_by_id():
 
 def test_share_blocks_finds_shared():
     """Confirm that share_blocks finds streams with both blocks"""
-    c = Course(semester = "summer")
+    c = Course()
     b1 = b2 = Block('Mon', '13:00', 2, 1)
     se = Section(course = c, schedule_id = 1)
     s = Stream()
@@ -103,7 +103,7 @@ def test_share_blocks_finds_shared():
 
 def test_share_blocks_ignores_non_shared():
     """Confirm that share_blocks ignores streams without both blocks"""
-    c = Course(semester = "summer")
+    c = Course()
     b1 = b2 = Block('Mon', '13:00', 2, 1)
     se = Section(course = c, schedule_id = 1)
     s = Stream()
