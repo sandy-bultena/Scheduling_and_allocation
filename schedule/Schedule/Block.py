@@ -124,7 +124,7 @@ class Block(TimeSlot):
             # Contrary to what you might expect, entity_block.time_slot_id is a TimeSlot entity
             # reference, not an integer.
             entity_slot: dbTimeSlot = entity_block.time_slot_id
-            entity_block.delete()
+            # Deleting the instance's TimeSlot entity will cascade delete its Block entity too.
             entity_slot.delete()
 
     # =================================================================
