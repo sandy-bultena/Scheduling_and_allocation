@@ -238,9 +238,22 @@ class Block(TimeSlot):
 
         # If the labs dict contains an entry for the specified Lab, remove it.
         if lab.id in self._labs.keys():
+            self.__remove_entity_lab(lab.id)
             del self._labs[lab.id]
 
         return self
+
+    @db_session
+    def __remove_entity_lab(self, lab_id: int):
+        """Breaks the connection between the corresponding database entities for this Block and
+        the passed Lab, with deleting either of them. """
+        entity_lab = dbLab.get(id=lab_id)
+        if entity_lab is not None:
+            entity_block = dbBlock[self.id]
+            # Set.remove() breaks the connection between the Block and the Lab without actually
+            # deleting either record. Only the record in the lookup table seems to be affected.
+            # The responsibility of actually deleting the Lab record will be handled elsewhere.
+            entity_block.labs.remove(entity_lab)
 
     # =================================================================
     # remove_all_labs
