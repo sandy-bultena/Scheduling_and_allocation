@@ -3,7 +3,7 @@ from os import path
 sys.path.append(path.dirname(path.dirname(__file__)))
 import pytest
 from unit_tests.db_constants import *
-from database.PonyDatabaseConnection import define_database, Schedule as dbSchedule, Scenario as dbScenario
+from database.PonyDatabaseConnection import define_database, Schedule as dbSchedule, Scenario as dbScenario, Section as dbSection
 from pony.orm import *
 
 from Section import Section
@@ -134,16 +134,19 @@ def test_hours_can_be_added():
     s.add_hours(to_add)
     assert s.hours == hours + to_add
 
+@db_session
 def test_delete_deletes_all():
     """Checks that the delete method removes the Section and all Blocks from respective lists"""
     c = Course(semester = "summer")
     s = Section(course=c, schedule_id=1)
+    id = s.id
     b1 = Block('Mon', '13:00', 2, 1)
     b2 = Block('Mon', '13:00', 2, 2)
     b3 = Block('Mon', '13:00', 2, 3)
     s.add_block(b1).add_block(b2).add_block(b3)
     s.delete()
     assert s not in Section.list()
+    assert dbSection.get(id = id) is None
     assert b1 not in Block.list()
     assert b2 not in Block.list()
     assert b3 not in Block.list()

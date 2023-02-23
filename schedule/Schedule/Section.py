@@ -468,10 +468,12 @@ class Section():
     # --------------------------------------------------------
     # delete
     # --------------------------------------------------------
+    @db_session
     def delete(self) -> None:
         """ Delete this object and all its dependants """
         for b in self.blocks:
             self.remove_block(b)
+        if dbSection.get(id = self.id): dbSection.get(id = self.id).delete()    # should cascade and delete all associated blocks
         if self.id in Section.__instances: del Section.__instances[self.id]
 
     # NOTE: There's another method here called "block" in the Perl version, but from what I can tell it's the same thing as get_block_by_id with a different implementation

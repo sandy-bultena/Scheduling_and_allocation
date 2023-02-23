@@ -8,7 +8,7 @@ from Stream import Stream
 from Block import Block
 from Section import Section
 from Course import Course
-from database.PonyDatabaseConnection import define_database, Schedule as dbSchedule, Scenario as dbScenario
+from database.PonyDatabaseConnection import define_database, Schedule as dbSchedule, Scenario as dbScenario, Stream as dbStream
 from pony.orm import *
 
 db : Database
@@ -17,6 +17,7 @@ db : Database
 def before_and_after_module():
     global db
     db = define_database(host=HOST, passwd=PASSWD, db=DB_NAME, provider=PROVIDER, user=USERNAME)
+    init_scenario_schedule_course()
     yield
     db.drop_all_tables(with_all_data = True)
     db.disconnect()
@@ -111,9 +112,11 @@ def test_share_blocks_ignores_non_shared():
     se.assign_stream(s)
     assert not Stream.share_blocks(b1, b2)
 
-
+@db_session
 def test_confirm_delete():
     """Confirm that calling delete will remove the stream"""
     s = Stream()
+    id = s.id
     s.delete()
     assert s not in Stream.list()
+    assert dbStream.get(id = id) is None
