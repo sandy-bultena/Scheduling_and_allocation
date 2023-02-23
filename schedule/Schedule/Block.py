@@ -517,7 +517,7 @@ class Block(TimeSlot):
     # List [Tuple]
     # ===================================
     @staticmethod
-    def list():
+    def list() -> tuple[Block]:
         """Returns a tuple containing all Block objects."""
         return tuple(Block.__instances.values())
 

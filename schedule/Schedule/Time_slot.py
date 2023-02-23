@@ -183,7 +183,7 @@ class TimeSlot:
             new_dur = .5
         else:
             temp = 2 * new_dur
-            rounded = int(temp + 0.5)
+            rounded = int(float(temp) + 0.5)
             new_dur = rounded / 2
         # No TimeSlot can be longer than 8 hours.
         if new_dur > 8:

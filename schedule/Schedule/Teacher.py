@@ -128,7 +128,7 @@ class Teacher:
         return f"{self.firstname} {self.lastname}"
 
     @staticmethod
-    def list():
+    def list() -> tuple[Teacher]:
         """Returns an immutable tuple containing all occurrences of Teachers."""
         return tuple(Teacher.__instances.values())
 

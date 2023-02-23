@@ -43,28 +43,19 @@ class Schedule:
         self.official = official
         self.scenario = scenario
         self.descr = descr
+    
+    # ========================================================
+    # PROPERTIES
+    # ========================================================
+    @property
+    def id(self) -> int:
+        return self._id
 
     # ========================================================
     # METHODS
     # ========================================================
     
     # Read and Write will need to be replaced with DB-relevant methods, see connection syntax below
-    """
-    # pip install mysql-connector-python
-
-    import mysql.connector
-
-    db = mysql.connector.connect(
-        host = server_ip,
-        username = username,
-        password = password
-    )
-
-    cursor = db.cursor()
-
-    # connect to DB, create tables, etc
-    cursor.execute("command")
-    """
 
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
     # Static Methods
@@ -76,50 +67,50 @@ class Schedule:
     @staticmethod
     def read_DB(id):
         sched = db.Schedule.get(id=id)
-        scenario = db.Scenario.get(id=sched.scenario_id)
+        scenario = db.Scenario.get(id=sched.scenario_id.id)
         # create Model version of scenario
         schedule = Schedule(id, sched.semester, sched.official, scenario, sched.description)
 
         # create all courses
         for course in select(c for c in db.Course):
-            c = Course(course.number, course.name)
+            c = Course(course.number, course.name, id=course.id)
             c.needs_allocation = course.allocation
         
         # create all labs
         for lab in select(l for l in db.Lab):
-            l = Lab(l.number, l.description)
+            l1 = Lab(lab.number, lab.description, id=lab.id)
             # set up unavailable times
-            for slot in select(ts for ts in db.TimeSlot if ts.unavailable_lab_id == lab.id):
+            for slot in select(ts for ts in db.TimeSlot if ts.unavailable_lab_id.id == lab.id):
                 ts = TimeSlot(slot.day, slot.start, slot.duration, slot.movable, id = slot.id)
-                l.add_unavailable(ts)
+                l1.add_unavailable_slot(ts)
 
         # create all teachers
         for teacher in select(t for t in db.Teacher): Schedule.__create_teacher(teacher.id)
         
         # add release for this schedule to any teachers
-        for schedule_teacher in select(t for t in db.Schedule_Teacher if t.schedule_id == id):
-            Schedule.__create_teacher(schedule_teacher.teacher_id).release = schedule_teacher.work_release
+        for schedule_teacher in select(t for t in db.Schedule_Teacher if t.schedule_id.id == id):
+            Schedule.__create_teacher(schedule_teacher.teacher_id.id).release = schedule_teacher.work_release
         
         # create all streams
         for stream in select(s for s in db.Stream): Schedule.__create_stream(stream.id)
             
         # create all sections in this schedule
-        for section in select(s for s in db.Section if s.schedule_id == id):
-            s = Section(section.number, section.hours, section.name, Course.get(section.course_id, id = section.id))
+        for section in select(s for s in db.Section if s.schedule_id.id == id):
+            s = Section(section.number, section.hours, section.name, Course.get(section.course_id.id), id = section.id)
             s.num_students = section.num_students
-            Course.get(section.course_id).add_section(s)
+            Course.get(section.course_id.id).add_section(s)
             # identify teachers and set allocation
-            for section_teacher in select(t for t in db.Section_Teacher if t.section_id == section.id):
-                t = Schedule.__create_teacher(section_teacher.teacher_id)
+            for section_teacher in select(t for t in db.Section_Teacher if t.section_id.id == section.id):
+                t = Schedule.__create_teacher(section_teacher.teacher_id.id)
                 s.assign_teacher(t)
                 s.set_teacher_allocation(t, section_teacher.allocation)
             # identify section-stream connections and update accordingly
             for section_stream in section.streams:
-                st = Schedule.__create_stream(section_stream.stream)
+                st = Schedule.__create_stream(section_stream.id)
                 s.assign_stream(st)
             # identify, create, and assign blocks
-            for block in select(b for b in db.Block if b.section_id == s.id):
-                slot = db.TimeSlot.get(id = block.time_slot_id)
+            for block in select(b for b in db.Block if b.section_id.id == s.id):
+                slot = db.TimeSlot.get(id = block.time_slot_id.id)
                 b = Block(slot.day, slot.start, slot.duration, block.number, id = block.id, time_slot_id = slot.id)
                 s.add_block(b)
                 for l in block.labs: b.assign_lab(Lab.get(l.id))
@@ -137,10 +128,10 @@ class Schedule:
             
     @staticmethod
     def __create_stream(id : int) -> Stream:
-        """ Takes a given ID and returns the Stream model object with given ID. If it doesn't exist, creates it from the database. """
+        """ Takes a given ID and returns the Stream model object with given ID. If it doesn't exist locally, creates it from the database, and adds to database if not already present. """
         if Stream.get(id): return Stream.get(id)
         stream = db.Stream.get(id = id)
-        return Stream(stream.number, stream.descr)
+        return Stream(stream.number, stream.descr, id = id)
 
     #region Read & Write YAML (TEMPORARY)
     # --------------------------------------------------------
