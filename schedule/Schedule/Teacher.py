@@ -25,7 +25,7 @@ class Teacher:
     # new
     # --------------------------------------------------------------------
 
-    def __init__(self, firstname: str, lastname: str, dept: str = "", *args, id : int = None):
+    def __init__(self, firstname: str, lastname: str, dept: str = "", *args, id: int = None):
         """Creates a Teacher object.
         
         Parameter **firstname:** str -> first name of the teacher.
@@ -42,8 +42,9 @@ class Teacher:
 
     @db_session
     @staticmethod
-    def __create_entity(instance : Teacher):
-        entity_teacher = dbTeacher(first_name = instance.firstname, last_name = instance.lastname, dept = instance.dept)
+    def __create_entity(instance: Teacher):
+        entity_teacher = dbTeacher(first_name=instance.firstname, last_name=instance.lastname,
+                                   dept=instance.dept)
         commit()
         return entity_teacher.get_pk()
 

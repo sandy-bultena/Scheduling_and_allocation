@@ -4,7 +4,8 @@ from Section import Section
 from Teacher import Teacher
 from Time_slot import TimeSlot
 
-from database.PonyDatabaseConnection import Block as dbBlock, TimeSlot as dbTimeSlot
+from database.PonyDatabaseConnection import Block as dbBlock, TimeSlot as dbTimeSlot, Lab as dbLab, \
+    Teacher as dbTeacher
 from pony.orm import *
 
 """ SYNOPSIS:
@@ -212,8 +213,18 @@ class Block(TimeSlot):
         # TODO: Check if this function allows multiple labs to be assigned at once in the perl
         #  version
         self._labs[lab.id] = lab
+        self.__assign_entity_lab(lab.id)
 
         return self
+
+    @db_session
+    def __assign_entity_lab(self, lab_id: int):
+        entity_lab = dbLab.get(id=lab_id)
+        if entity_lab is not None:
+            entity_block = dbBlock[self.id]
+            # Add the lab to the entity Block's list of labs. This will automatically add the
+            # Block to the lab's list of blocks, too.
+            entity_block.labs.add(entity_lab)
 
     # =================================================================
     # remove_lab
@@ -223,18 +234,27 @@ class Block(TimeSlot):
 
         Returns the Block object."""
 
-        # If the Block doesn't already have a labs dict, create one.
-        # if not hasattr(self, '_labs'):
-        #     self._labs = {}
-
         if not isinstance(lab, Lab):
             raise TypeError(f"<{lab}>: invalid lab - must be a Lab object.")
 
         # If the labs dict contains an entry for the specified Lab, remove it.
         if lab.id in self._labs.keys():
+            self.__remove_entity_lab(lab.id)
             del self._labs[lab.id]
 
         return self
+
+    @db_session
+    def __remove_entity_lab(self, lab_id: int):
+        """Breaks the connection between the corresponding database entities for this Block and
+        the passed Lab, with deleting either of them. """
+        entity_lab = dbLab.get(id=lab_id)
+        if entity_lab is not None:
+            entity_block = dbBlock[self.id]
+            # Set.remove() breaks the connection between the Block and the Lab without actually
+            # deleting either record. Only the record in the lookup table seems to be affected.
+            # The responsibility of actually deleting the Lab record will be handled elsewhere.
+            entity_block.labs.remove(entity_lab)
 
     # =================================================================
     # remove_all_labs
@@ -285,17 +305,21 @@ class Block(TimeSlot):
         """Assigns a new teacher to this Block.
         
         Returns the Block object."""
-        # If this Block doesn't already contain a Teachers dict, create one.
-        # if not hasattr(self, '_teachers'):
-        #     self._teachers = {}
-
-        # Verify that this teacher is, in fact, a Teacher. 
+        # Verify that this teacher is, in fact, a Teacher.
         if not isinstance(teacher, Teacher):
             raise TypeError(f"<{teacher}>: invalid teacher - must be a Teacher object.")
 
         self._teachers[teacher.id] = teacher
 
         return self
+
+    @db_session
+    def __assign_entity_teacher(self, teacher_id: int):
+        """Connects this Block's database entity to that of the Teacher with the passed ID."""
+        entity_teacher = dbTeacher.get(id=teacher_id)
+        if entity_teacher is not None:
+            entity_block = dbBlock[self.id]
+            entity_block.teachers.add(entity_teacher)
 
     # =================================================================
     # remove_teacher
@@ -304,11 +328,7 @@ class Block(TimeSlot):
         """Removes the specified Teacher from this Block.
         
         Returns the Block object."""
-        # If this Block doesn't already contain a Teachers dict, create one.
-        # if not hasattr(self, '_teachers'):
-        #     self._teachers = {}
-
-        # Verify that the teacher is, in fact, a Teacher. 
+        # Verify that the teacher is, in fact, a Teacher.
         if not isinstance(teacher, Teacher):
             raise TypeError(f"<{teacher}>: invalid teacher - must be a Teacher object.")
 
@@ -325,10 +345,6 @@ class Block(TimeSlot):
         """Removes ALL teachers from this Block.
         
         Returns the Block object."""
-        # If this Block doesn't already contain a Teachers dict, create one.
-        # if not hasattr(self, '_teachers'):
-        #     self._teachers = {}
-
         for teacher in list(self._teachers.values()):
             self.remove_teacher(teacher)
 
@@ -339,9 +355,6 @@ class Block(TimeSlot):
     # =================================================================
     def teachers(self):
         """Returns a list of teachers assigned to this Block."""
-        # If this Block doesn't already have a teachers dict, create one.
-        # if not hasattr(self, '_teachers'):
-        #     self._teachers = {}
         return list(self._teachers.values())
 
     # =================================================================
@@ -378,9 +391,6 @@ class Block(TimeSlot):
         Returns the Block object."""
         if not isinstance(block, Block):
             raise TypeError(f"<{block}>: invalid block - must be a Block object.")
-
-        """if not hasattr(self, '_sync'):
-            self._sync = []"""
         self._sync.append(block)
 
         return self
@@ -404,11 +414,6 @@ class Block(TimeSlot):
     # =================================================================
     def synced(self):
         """Returns an array ref of the Blocks which are synced to this Block."""
-
-        # If the sync array doesn't exist, create it.
-        """if not hasattr(self, '_sync'):
-            self._sync = []"""
-
         return self._sync
 
     # =================================================================
@@ -424,9 +429,6 @@ class Block(TimeSlot):
     @property
     def conflicted(self):
         """Gets and sets conflicted field."""
-        # if not hasattr(self, '_conflicted'):
-        #     self._conflicted = 0
-
         return self._conflicted
 
     @conflicted.setter

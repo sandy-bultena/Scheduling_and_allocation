@@ -11,7 +11,7 @@ from Teacher import Teacher
 from Time_slot import TimeSlot
 from pony.orm import *
 from database.PonyDatabaseConnection import define_database, Block as dbBlock, \
-    TimeSlot as dbTimeSlot
+    TimeSlot as dbTimeSlot, Lab as dbLab
 from unit_tests.db_constants import *
 
 db: Database
@@ -277,6 +277,24 @@ def test_assign_lab_bad():
     assert "invalid lab" in str(e.value).lower()
 
 
+@db_session
+def test_assign_lab_updates_database():
+    """Verifies that _assign_lab() connects the Block's corresponding database entity to that of
+    the passed Lab. """
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    lab = Lab()
+    block.assign_lab(lab)
+    commit()
+    d_block = dbBlock[1]
+    d_lab = dbLab[1]
+    assert len(d_block.labs) == 1 and len(d_lab.blocks) == 1 and d_lab in d_block.labs \
+           and d_block in d_lab.blocks
+
+
 def test_remove_lab_good():
     """Verifies that remove_lab() can successfully remove a valid Lab object from this Block."""
     day = "mon"
@@ -319,6 +337,24 @@ def test_remove_lab_no_crash():
     other_lab = Lab("R-101", "dummy")
     block.remove_lab(other_lab)
     assert lab in getattr(block, "_labs").values()
+
+
+@db_session
+def test_remove_lab_affects_database():
+    """Verifies that remove_lab() breaks the connection between an entity Block and an entity
+    Lab, without destroying their records in the database. """
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    lab = Lab()
+    block.assign_lab(lab)
+    block.remove_lab(lab)
+    commit()
+    d_block = dbBlock[block.id]
+    d_lab = dbLab[lab.id]
+    assert d_block not in d_lab.blocks and d_lab not in d_block.labs
 
 
 def test_remove_all_labs():
