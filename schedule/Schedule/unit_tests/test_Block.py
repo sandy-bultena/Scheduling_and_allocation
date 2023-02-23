@@ -523,6 +523,24 @@ def test_remove_teacher_no_crash():
         teach.id] == teach
 
 
+@db_session
+def test_remove_teacher_updates_database():
+    """Verifies that remove_teacher() breaks the connection between the records for this Block
+    and the Teacher in the database, without deleting said records. """
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    teach = Teacher("John", "Smith")
+    block.assign_teacher(teach)
+    block.remove_teacher(teach)
+    commit()
+    d_block = dbBlock[block.id]
+    d_teach = dbTeacher[teach.id]
+    assert d_block not in d_teach.blocks and d_teach not in d_block.teachers
+
+
 def test_remove_all_teachers():
     """Verifies that remove_all_teachers() works as intended."""
     day = "mon"

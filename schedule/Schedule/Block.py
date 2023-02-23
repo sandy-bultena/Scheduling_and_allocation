@@ -327,8 +327,18 @@ class Block(TimeSlot):
         # If the teachers dict contains an entry for this Teacher, remove it.
         if teacher.id in self._teachers.keys():
             del self._teachers[teacher.id]
+            self.__remove_entity_teacher(teacher.id)
 
         return self
+
+    @db_session
+    def __remove_entity_teacher(self, teacher_id: int):
+        """Breaks the connection between the records for this Block and the passed Teacher in the
+        database. """
+        entity_teacher = dbTeacher.get(id=teacher_id)
+        if entity_teacher is not None:
+            entity_block = dbBlock[self.id]
+            entity_block.teachers.remove(entity_teacher)
 
     # =================================================================
     # remove_all_teachers
