@@ -339,6 +339,23 @@ def test_remove_lab_no_crash():
     assert lab in getattr(block, "_labs").values()
 
 
+@db_session
+def test_remove_lab_affects_database():
+    """Verifies that remove_lab() breaks the connection between an entity Block and an entity
+    Lab, without destroying their records in the database. """
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    lab = Lab()
+    block.assign_lab(lab)
+    block.remove_lab(lab)
+    commit()
+    d_block = dbBlock[block.id]
+    d_lab = dbLab[lab.id]
+    assert d_block not in d_lab.blocks and d_lab not in d_block.labs
+
 def test_remove_all_labs():
     """Verifies that remove_all_labs works as intended, removing all Labs from the current
     Block. """
