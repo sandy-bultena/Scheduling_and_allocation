@@ -1,5 +1,6 @@
 import sys
 from os import path
+
 sys.path.append(path.dirname(path.dirname(__file__)))
 import pytest
 from unit_tests.db_constants import *
@@ -7,27 +8,29 @@ from unit_tests.db_constants import *
 from Lab import Lab
 from Time_slot import TimeSlot
 from Block import Block
-from database.PonyDatabaseConnection import define_database
+from database.PonyDatabaseConnection import define_database, Lab as dLab
 from pony.orm import *
 
-db : Database
+db: Database
+
 
 @pytest.fixture(scope="module", autouse=True)
 def before_and_after_module():
     global db
     db = define_database(host=HOST, passwd=PASSWD, db=DB_NAME, provider=PROVIDER, user=USERNAME)
     yield
-    db.drop_all_tables(with_all_data = True)
+    db.drop_all_tables(with_all_data=True)
     db.disconnect()
     db.provider = db.schema = None
+
 
 @pytest.fixture(autouse=True)
 def before_and_after():
     db.create_tables()
     yield
-    db.drop_table(table_name = 'lab', if_exists = True, with_all_data = True)
-    db.drop_table(table_name = 'block', if_exists = True, with_all_data = True)
-    db.drop_table(table_name = 'time_slot', if_exists = True, with_all_data = True)
+    db.drop_table(table_name='lab', if_exists=True, with_all_data=True)
+    db.drop_table(table_name='block', if_exists=True, with_all_data=True)
+    db.drop_table(table_name='time_slot', if_exists=True, with_all_data=True)
 
 
 def test_id():
@@ -37,17 +40,20 @@ def test_id():
     lab = Lab()
     assert lab.id == 1  # The first Lab created will always have an ID of 1.
 
+
 def test_id_multiple_labs():
     """Verifies that the last Lab created will have the highest ID."""
     lab1 = Lab("R-101", "Worst place in the world")
     lab2 = Lab("R-102", "Second-worst place in the world")
     assert lab2.id == 2
 
+
 def test_number_getter():
     """Verifies that number getter works as intended."""
     num = "R-101"
     lab = Lab(num)
     assert lab.number == num
+
 
 def test_number_setter():
     """Verifies that the number setter works as intended."""
@@ -56,12 +62,14 @@ def test_number_setter():
     lab.number = num
     assert lab.number != "100" and lab.number == num
 
+
 def test_descr_getter():
     """Verifies that Lab's descr getter works as intended."""
     room = "R-101"
     descr = "Worst place in the world."
     lab = Lab(room, descr)
     assert lab.descr == descr
+
 
 def test_descr_setter():
     """Verifies that the descr setter works as intended."""
@@ -70,12 +78,13 @@ def test_descr_setter():
     lab.descr = descr
     assert lab.descr == descr
 
+
 def test_add_unavailable():
     """Verifies that add_unavailable() creates a TimeSlot object with the passed-in values,
     which is stored in the Lab's _unavailable attribute. """
     # Reset the TimeSlot class's max_id to 0 to avoid KeyErrors when all tests are run
     # simultaneously.
-    #TimeSlot._max_id = 0
+    # TimeSlot._max_id = 0
     day = "mon"
     start = "8:30"
     dur = 2.0
@@ -84,6 +93,7 @@ def test_add_unavailable():
     slot = getattr(lab, '_unavailable')[1]
     assert type(slot) is TimeSlot and slot.day == day \
            and slot.start == start and slot.duration == dur
+
 
 def test_remove_unavailable_good():
     """Verifies that remove_unavailable() can remove a TimeSlot from Lab based on the received
@@ -96,6 +106,7 @@ def test_remove_unavailable_good():
     slot_id = getattr(lab, '_unavailable')[1].id
     lab.remove_unavailable(slot_id)
     assert len(getattr(lab, '_unavailable')) == 0
+
 
 def test_remove_unavailable_no_crash():
     """Verifies that remove_unavailable will not crash the program when attempting to remove a
@@ -111,6 +122,7 @@ def test_remove_unavailable_no_crash():
     assert len(getattr(lab, '_unavailable')) == 1 \
            and getattr(lab, '_unavailable')[slot_key].start == start
 
+
 def test_get_unavailable_good():
     """Verifies that get_unavailable() can retrieve a specified TimeSlot from the Lab."""
     day = "mon"
@@ -121,6 +133,7 @@ def test_get_unavailable_good():
     slot_id = getattr(lab, '_unavailable')[1].id
     slot = lab.get_unavailable(slot_id)
     assert slot.id == slot_id and slot.start == start and slot.day == day and slot.duration == dur
+
 
 def test_get_unavailable_bad_input():
     """Verifies that get_unavailable returns None when trying to retrieve a nonexistent TimeSlot
@@ -133,6 +146,7 @@ def test_get_unavailable_bad_input():
     bad_id = 999
     no_slot = lab.get_unavailable(bad_id)
     assert no_slot is None
+
 
 def test_unavailable():
     """Verifies that unavailable() returns a list of all unavailable TimeSlots for this Lab."""
@@ -148,12 +162,14 @@ def test_unavailable():
     slots = lab.unavailable()
     assert len(slots) == 2 and slots[0].day == day_1 and slots[1].day == day_2
 
+
 def test_unavailable_no_slots():
     """Verifies that unavailable() returns an empty list if no TimeSlots have been assigned to
     this Lab. """
     lab = Lab()
     slots = lab.unavailable()
     assert type(slots) is list and len(slots) == 0
+
 
 def test_print_description_full():
     """Verifies that print_description() returns a string containing the Lab's number and
@@ -164,6 +180,7 @@ def test_print_description_full():
     to_string = lab.print_description()
     assert f"{num}: {desc}" in to_string
 
+
 def test_print_description_short():
     """Verifies that print_description() returns a string containing only the Lab's number if it
     lacks a description attribute. """
@@ -171,6 +188,7 @@ def test_print_description_short():
     lab = Lab(num)
     desc = lab.print_description()
     assert num in desc
+
 
 def test_list():
     """Verifies that list() returns a tuple of all extant Lab objects."""
@@ -180,11 +198,13 @@ def test_list():
     labs = Lab.list()
     assert len(labs) == 2 and lab1 in labs and lab2 in labs
 
+
 def test_list_empty():
     """Verifies that list() returns an empty tuple if no Labs have been created."""
     Lab._Lab__instances = {}
     labs = Lab.list()
     assert len(labs) == 0
+
 
 def test_share_blocks_true():
     """Verifies that the static share_blocks() method returns true if two Blocks are sharing the
@@ -196,6 +216,7 @@ def test_share_blocks_true():
     block_2.assign_lab(lab)
     assert Lab.share_blocks(block_1, block_2) is True
 
+
 def test_share_blocks_false():
     """Verifies that share_blocks() returns false if two Blocks are not sharing the same Lab."""
     lab = Lab()
@@ -203,6 +224,7 @@ def test_share_blocks_false():
     block_2 = Block("wed", "8:30", 1.5, 2)
     block_1.assign_lab(lab)
     assert Lab.share_blocks(block_1, block_2) is False
+
 
 def test_remove():
     """Verifies that the static remove() method works as intended."""
@@ -212,6 +234,7 @@ def test_remove():
     lab1.delete()
     labs = Lab.list()
     assert len(labs) == 1 and lab1 not in labs
+
 
 # def test_remove_bad():
 # """Verifies that remove() raises an exception when trying to delete a non-Lab object."""
@@ -233,6 +256,17 @@ def test_remove_gets_slots():
     lab1.delete()
     assert lab1 not in Lab.list() and len(TimeSlot.list()) == 0
 
+
+@db_session
+def test_remove_gets_database():
+    """Verifies that delete() removes the corresponding Lab's entity from the database."""
+    lab = Lab("R-101", "Worst place in the world")
+    lab.delete()
+    commit()
+    d_labs = select(l for l in dLab)
+    assert len(d_labs) == 0
+
+
 def test_get_good():
     """Verifies that the static get() method works as intended."""
     Lab._Lab__instances = {}
@@ -240,6 +274,7 @@ def test_get_good():
     lab1 = Lab("R-101", "Worst place in the world")
     lab2 = Lab("R-102", "Second-worst place in the world")
     assert Lab.get(2) == lab2
+
 
 def test_get_bad():
     """Verifies that get() returns None when given an invalid ID."""
@@ -250,12 +285,14 @@ def test_get_bad():
     bad_id = 666
     assert Lab.get(bad_id) is None
 
+
 def test_get_by_number_good():
     """Verifies that get_by_number() returns the first Lab matching the passed room number."""
     Lab._Lab__instances = {}
     room = "R-101"
     lab = Lab(room, "The worst place in the world")
     assert Lab.get_by_number(room) == lab
+
 
 def test_get_by_number_bad():
     lab1 = Lab("R-101", "Worst place in the world")

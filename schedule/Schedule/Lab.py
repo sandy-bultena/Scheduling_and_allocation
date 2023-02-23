@@ -228,18 +228,27 @@ class Lab:
     def delete(self):
         """Removes this Lab from the Labs object, along with its unavailable TimeSlots."""
         # Remove the passed Lab object only if it's actually contained in the list of instances.
-        # if lab_obj.id in Lab.__instances.keys():
-        #     for slot in lab_obj.unavailable():
-        #         TimeSlot._TimeSlot__instances.delete(slot)
-        #         del lab_obj._unavailable[slot.id]
-        #     del Lab.__instances[lab_obj.id]
         if self in Lab.__instances.values():
             # Remove any TimeSlots associated with this Lab.
             for slot in self.unavailable():
                 TimeSlot._TimeSlot__instances.remove(slot)
                 del self._unavailable[slot.id]
-            # Then remove the Lab itself from the list of instances.
+
+            # Then remove the Lab entity and its TimeSlot entities from the database.
+            Lab.__delete_entity(self)
+
+            # Finally, remove the Lab itself from the list of instances.
             del Lab.__instances[self.__id]
+
+
+    @db_session
+    @staticmethod
+    def __delete_entity(instance: Lab):
+        """Removes the Lab's corresponding records from the Lab and TimeSlot tables of the
+        database. """
+        entity_lab = dbLab.get(id=instance.id)
+        if entity_lab is not None:
+            entity_lab.delete()
 
 
 # =================================================================
