@@ -126,9 +126,17 @@ class Lab:
         Returns the modified Lab object.
         """
         if target_id in self._unavailable.keys():
+            self.__delete_unavailable_entity(target_id)
             del self._unavailable[target_id]
 
         return self
+
+    @db_session
+    def __delete_unavailable_entity(self, slot_id: int):
+        """Removes a TimeSlot entity with the passed ID from the database."""
+        entity_slot = dbTimeSlot.get(id=slot_id)
+        if entity_slot is not None:
+            entity_slot.delete()
 
     # =================================================================
     # get_unavailable

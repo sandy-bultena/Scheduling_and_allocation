@@ -136,6 +136,22 @@ def test_remove_unavailable_no_crash():
            and getattr(lab, '_unavailable')[slot_key].start == start
 
 
+@db_session
+def test_remove_unavailable_gets_database():
+    """Verifies that remove_unavailable() will remove the TimeSlot's record from the database as
+    well. """
+    day = "mon"
+    start = "8:30"
+    dur = 2.0
+    lab = Lab()
+    lab.add_unavailable(day, start, dur)
+    slot_id = getattr(lab, '_unavailable')[1].id
+    lab.remove_unavailable(slot_id)
+    commit()
+    d_slots = select(s for s in dbTimeSlot)
+    assert len(d_slots) == 0
+
+
 def test_get_unavailable_good():
     """Verifies that get_unavailable() can retrieve a specified TimeSlot from the Lab."""
     day = "mon"
