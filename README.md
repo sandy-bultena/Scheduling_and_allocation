@@ -30,10 +30,13 @@ Assuming that you installed perl into /usr/local/bin...
 sudo /usr/local/bin/cpan install YAML
 sudo /usr/local/bin/cpan -fi Tk         # must force install Tk
 sudo /usr/local/bin/cpan install Text::CSV
+
+sudo /usr/local/bin/cpan install Excel::Writer::XLSX
 sudo /usr/local/bin/cpan install PDF::API2
 ```
 
-### Install Scheduler and AllocationManager
+### Install Scheduler
+
 Download zip file and unzip
 
 From a terminal window (bash)
