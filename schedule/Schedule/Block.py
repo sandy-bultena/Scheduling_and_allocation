@@ -110,6 +110,7 @@ class Block(TimeSlot):
         # itself in Python, I don't believe that this method is needed. Block._instances.remove(
         # self) self = None
         if self in Block.__instances.values():
+            Block._TimeSlot__instances.remove(self)
             del Block.__instances[self._block_id]
 
     # =================================================================
