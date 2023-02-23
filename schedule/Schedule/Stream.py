@@ -110,6 +110,9 @@ class Stream():
     # --------------------------------------------------------
     # delete
     # --------------------------------------------------------
+    @db_session
     def delete(self):
         """ Deletes the current instance of Stream """
-        if self.id in Stream.__instances: del Stream.__instances[self.id]
+        if self.id in Stream.__instances:
+            if dbStream.get(id = self.id): dbStream.get(id = self.id).delete()
+            del Stream.__instances[self.id]
