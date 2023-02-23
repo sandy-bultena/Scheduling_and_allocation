@@ -4,7 +4,7 @@ from Section import Section
 from Teacher import Teacher
 from Time_slot import TimeSlot
 
-from database.PonyDatabaseConnection import Block as dbBlock
+from database.PonyDatabaseConnection import Block as dbBlock, TimeSlot as dbTimeSlot
 from pony.orm import *
 
 """ SYNOPSIS:
@@ -110,8 +110,22 @@ class Block(TimeSlot):
         # itself in Python, I don't believe that this method is needed. Block._instances.remove(
         # self) self = None
         if self in Block.__instances.values():
+            Block.__delete_entity(self)
             Block._TimeSlot__instances.remove(self)
             del Block.__instances[self._block_id]
+
+    @db_session
+    @staticmethod
+    def __delete_entity(instance: Block):
+        """Removes the corresponding records for a passed Block object from the Block and
+        TimeSlot tables of the database. """
+        entity_block = dbBlock.get(id=instance.id)
+        if entity_block is not None:
+            # Contrary to what you might expect, entity_block.time_slot_id is a TimeSlot entity
+            # reference, not an integer.
+            entity_slot: dbTimeSlot = entity_block.time_slot_id
+            entity_block.delete()
+            entity_slot.delete()
 
     # =================================================================
     # start

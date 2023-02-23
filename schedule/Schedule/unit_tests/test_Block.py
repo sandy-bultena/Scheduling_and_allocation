@@ -10,7 +10,8 @@ from Lab import Lab
 from Teacher import Teacher
 from Time_slot import TimeSlot
 from pony.orm import *
-from database.PonyDatabaseConnection import define_database
+from database.PonyDatabaseConnection import define_database, Block as dbBlock, \
+    TimeSlot as dbTimeSlot
 from unit_tests.db_constants import *
 
 db: Database
@@ -101,6 +102,23 @@ def test_delete_gets_underlying_time_slot():
     block = Block(day, start, dur, num)
     block.delete()
     assert block not in TimeSlot.list()
+
+
+@db_session
+def test_delete_removes_block_from_database():
+    """Verifies that the delete() method removes the Block's corresponding record in the
+    database. """
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    block.delete()
+    commit()  # necessary to ensure that the Block actually gets deleted in this test.
+    d_blocks = select(b for b in dbBlock)
+    d_slots = select(t for t in dbTimeSlot)
+    assert len(d_blocks) == 0 and len(d_slots) == 0
+
 
 def test_start_getter():
     """Verifies that the start getter works as intended. Same as TimeSlot.start getter."""
