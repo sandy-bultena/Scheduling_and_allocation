@@ -273,11 +273,6 @@ class Block(TimeSlot):
     # =================================================================
     def labs(self):
         """Returns a list of the labs assigned to this block."""
-
-        # If the Block doesn't already have a labs dict, create one.
-        # if not hasattr(self, '_labs'):
-        #     self._labs = {}
-
         return list(self._labs.values())
 
     # =================================================================
@@ -287,10 +282,6 @@ class Block(TimeSlot):
         """Returns true if the Block has the specified Lab."""
         if not lab or not isinstance(lab, Lab):
             return False
-
-        # If the Block doesn't already have a labs dict, create one.
-        # if not hasattr(self, '_labs'):
-        #     self._labs = {}
 
         for key in self._labs:
             if self._labs[key].id == lab.id:
@@ -310,6 +301,7 @@ class Block(TimeSlot):
             raise TypeError(f"<{teacher}>: invalid teacher - must be a Teacher object.")
 
         self._teachers[teacher.id] = teacher
+        self.__assign_entity_teacher(teacher.id)
 
         return self
 

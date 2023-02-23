@@ -11,7 +11,7 @@ from Teacher import Teacher
 from Time_slot import TimeSlot
 from pony.orm import *
 from database.PonyDatabaseConnection import define_database, Block as dbBlock, \
-    TimeSlot as dbTimeSlot, Lab as dbLab
+    TimeSlot as dbTimeSlot, Lab as dbLab, Teacher as dbTeacher
 from unit_tests.db_constants import *
 
 db: Database
@@ -459,6 +459,23 @@ def test_assign_teacher_bad():
     with pytest.raises(TypeError) as e:
         block.assign_teacher(bad_teach)
     assert "invalid teacher" in str(e.value).lower()
+
+
+@db_session
+def test_assign_teacher_updates_database():
+    """Verifies that assign_teacher() connects this Block's corresponding entity to the Teacher's
+    corresponding entity."""
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    block = Block(day, start, dur, num)
+    teach = Teacher("John", "Smith")
+    block.assign_teacher(teach)
+    commit()
+    d_block = dbBlock[block.id]
+    d_teach = dbTeacher[teach.id]
+    assert d_teach in d_block.teachers and d_block in d_teach.blocks
 
 
 def test_remove_teacher_good():
