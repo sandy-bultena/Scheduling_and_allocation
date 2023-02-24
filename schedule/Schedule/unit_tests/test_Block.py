@@ -32,13 +32,13 @@ def before_and_after_module():
 def run_before():
     db.create_tables()
     yield
-    # self.db.drop_all_tables(with_all_data=True)
-    db.drop_table(table_name='lab', if_exists=True, with_all_data=True)
-    db.drop_table(table_name='block', if_exists=True, with_all_data=True)
-    db.drop_table(table_name='time_slot', if_exists=True, with_all_data=True)
-    db.drop_table(table_name='section', if_exists=True, with_all_data=True)
-    db.drop_table(table_name='teacher', if_exists=True, with_all_data=True)
-    db.drop_table(table_name='course', if_exists=True, with_all_data=True)
+    db.drop_all_tables(with_all_data=True)
+    # db.drop_table(table_name='lab', if_exists=True, with_all_data=True)
+    # db.drop_table(table_name='block', if_exists=True, with_all_data=True)
+    # db.drop_table(table_name='time_slot', if_exists=True, with_all_data=True)
+    # db.drop_table(table_name='section', if_exists=True, with_all_data=True)
+    # db.drop_table(table_name='teacher', if_exists=True, with_all_data=True)
+    # db.drop_table(table_name='course', if_exists=True, with_all_data=True)
     # The code below prevents us from getting a BindingError when this function is called
     # after the first test. Makes the test suite run really slow, but at least it ensures
     # that all the tests pass. Based on a solution found here:
