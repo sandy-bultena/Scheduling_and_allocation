@@ -99,12 +99,12 @@ class Lab:
         #     self._unavailable: dict[int, TimeSlot] = {}
 
         # Create a TimeSlot.
-        slot = TimeSlot(day, start, duration)
-
-        # Save it.
+        return self.add_unavailable_slot(TimeSlot(day, start, duration))
+    
+    def add_unavailable_slot(self, slot : TimeSlot) -> Lab:
+        """Adds an existing time slot to this lab's unavailable times."""
         self._unavailable[slot.id] = slot
         self.__add_entity_unavailable(slot)
-
         return self
 
     @db_session
@@ -190,7 +190,7 @@ class Lab:
     # get_by_number
     # =================================================================
     @staticmethod
-    def get_by_number(number: str):
+    def get_by_number(number: str) -> Lab | None:
         """Returns the Lab which matches this Lab number, if it exists."""
         if not number:
             return
@@ -204,7 +204,7 @@ class Lab:
     # get
     # =================================================================
     @staticmethod
-    def get(lab_id: int):
+    def get(lab_id: int) -> Lab | None:
         """Returns the Lab object matching the specified ID, if it exists."""
         # for lab in Lab.__instances.values():
         #     if lab.id == lab_id:

@@ -4,7 +4,9 @@ sys.path.append(path.dirname(path.dirname(__file__)))
 import pytest
 from unit_tests.db_constants import *
 from pony.orm import *
-from database.PonyDatabaseConnection import define_database, Schedule as dbSchedule, Scenario as dbScenario
+from database.PonyDatabaseConnection import\
+    define_database, Schedule as dbSchedule, Scenario as dbScenario, Lab as dbLab, Teacher as dbTeacher, Section_Teacher as dbSecTeach,\
+    Course as dbCourse, TimeSlot as dbTimeSlot, Section as dbSection, Stream as dbStream, Block as dbBlock, Schedule_Teacher as dbSchedTeach
 
 from Schedule import Schedule
 from Teacher import Teacher
@@ -16,6 +18,7 @@ from Section import Section
 from Block import Block
 
 db : Database
+s : Schedule
 
 @pytest.fixture(scope="module", autouse=True)
 def before_and_after_module():
@@ -29,6 +32,7 @@ def before_and_after_module():
 
 @db_session
 def init_scenario_and_schedule():
+    global s
     sc = dbScenario()
     flush()
     s = dbSchedule(semester="Winter 2023", official=False, scenario_id=sc.id)
@@ -62,8 +66,8 @@ def test_streams_get():
 
 def test_courses_get():
     """Checks that courses method returns correct list"""
-    c1 = Course("1", semester="summer")
-    c2 = Course("1", semester="summer")
+    c1 = Course("1")
+    c2 = Course("1")
     assert c1 in Schedule.courses()
     assert c2 in Schedule.courses()
 
@@ -84,7 +88,7 @@ def test_conflicts_get():
 def test_get_sections_for_teacher():
     """Checks that sections_for_teacher method returns correct sections"""
     t1 = Teacher("Jane", "Doe")
-    c = Course(semester="summer")
+    c = Course()
     
     s1 = Section("1", course=c, schedule_id=1)
     s1.add_block(Block('mon', '13:00', 2, 1))
@@ -104,21 +108,21 @@ def test_get_sections_for_teacher():
 def test_get_courses_for_teacher():
     """Checks that courses_for_teacher method returns correct courses"""
     t1 = Teacher("Jane", "Doe")
-    c = Course(semester="summer")
+    c = Course()
 
     s1 = Section("1", course=c, schedule_id=1)
     s1.add_block(Block('mon', '13:00', 2, 1))
-    c1 = Course(1, semester="summer")
+    c1 = Course(1)
     c1.add_section(s1)
     s1.assign_teacher(t1)
 
     s2 = Section("2", course=c, schedule_id=1)
     s2.add_block(Block('mon', '13:00', 2, 1))
-    c2 = Course(2, semester="summer")
+    c2 = Course(2)
     c2.add_section(s1)
     s2.assign_teacher(t1)
 
-    c3 = Course(3, semester="summer")
+    c3 = Course(3)
     
     courses = Schedule.courses_for_teacher(t1)
     assert c1 in courses
@@ -128,17 +132,17 @@ def test_get_courses_for_teacher():
 def test_get_allocated_courses_for_teacher():
     """Checks that allocated_courses_for_teacher method returns correct courses"""
     t1 = Teacher("Jane", "Doe")
-    c = Course(semester="summer")
+    c = Course()
 
     s1 = Section("1", course=c, schedule_id=1)
     s1.add_block(Block('mon', '13:00', 2, 1))
-    c1 = Course(1, semester="summer")
+    c1 = Course(1)
     c1.add_section(s1)
     s1.assign_teacher(t1)
 
     s2 = Section("2", course=c, schedule_id=1)
     s2.add_block(Block('mon', '13:00', 2, 1))
-    c2 = Course(2, semester="summer")
+    c2 = Course(2)
     c2.add_section(s1)
     c2.needs_allocation = False
     s2.assign_teacher(t1)
@@ -184,7 +188,7 @@ def test_get_blocks_in_lab():
 def test_get_sections_for_stream():
     """Checks that sections_for_stream method returns correct sections"""
     st = Stream()
-    c = Course(semester="summer")
+    c = Course()
 
     s1 = Section("1", course=c, schedule_id=1)
     s1.assign_stream(st)
@@ -202,7 +206,7 @@ def test_get_sections_for_stream():
 def test_get_blocks_for_stream():
     """Checks that blocks_for_stream method returns correct sections"""
     st = Stream()
-    c = Course(semester="summer")
+    c = Course()
 
     s1 = Section("1", course=c, schedule_id=1)
     b1 = Block('mon', '13:00', 2, 1)
@@ -225,7 +229,7 @@ def test_get_blocks_for_stream():
 
 def test_course_remove():
     """Checks that courses can be removed"""
-    c1 = Course(1, semester="summer")
+    c1 = Course(1)
     Schedule.remove_course(c1)
     assert c1 not in Course.list()
 
@@ -252,7 +256,7 @@ def test_calculate_conflicts():
     t2 = Teacher("John", "Doe")
     t3 = Teacher("Joe", "Doe")
     t4 = Teacher("J", "D")
-    c = Course(semester="summer")
+    c = Course()
 
     l1 = Lab()
     st1 = Stream()
@@ -343,7 +347,7 @@ def test_calculate_conflicts():
 def test_teacher_stats():
     """Checks that the teacher_stats method gives all and only relevant and accurate information"""
     t1 = Teacher("Jane", "Doe")
-    c = Course(semester="summer")
+    c = Course()
 
     tue_block = Block('tue', "15:00", 1, 50)
     wed_block = Block('wed', "15:00", 1, 51)
@@ -355,8 +359,8 @@ def test_teacher_stats():
     s2.add_block(wed_block)
     s2.add_block(thu_block)
 
-    c1 = Course("C1", "Course #1", semester="summer")
-    Course("C2", "Course #2", semester="summer")
+    c1 = Course("C1", "Course #1")
+    Course("C2", "Course #2")
     c1.add_section(s1)
     c1.add_section(s2)
 
@@ -381,7 +385,7 @@ def test_teacher_stats():
 def test_teacher_details():
     """Checks that the teacher_details method gives all and only relevant and accurate information"""
     t1 = Teacher("Jane", "Doe")
-    c = Course(semester="summer")
+    c = Course()
 
     l1 = Lab("P327")
     l2 = Lab("P326")
@@ -401,8 +405,8 @@ def test_teacher_details():
     s2.add_block(wed_block)
     s2.add_block(thu_block)
 
-    c1 = Course("C1", "Course #1", semester="summer")
-    Course("C2", "Course #2", semester="summer")
+    c1 = Course("C1", "Course #1")
+    Course("C2", "Course #2")
     c1.add_section(s1)
     c1.add_section(s2)
 
@@ -433,10 +437,10 @@ def test_teacher_details():
     assert str(l3) in dets
     assert f"{l1}, {l2}" in dets
 
-def test_clear_Course(semester="summer"):
+def test_clear_Course():
     """Checks that the clear_all_from_course method correctly clears course"""
     t1 = Teacher("Jane", "Doe")
-    c = Course(semester="summer")
+    c = Course()
 
     tue_block = Block('tue', "15:00", 1, 50)
     wed_block = Block('wed', "15:00", 1, 51)
@@ -455,7 +459,7 @@ def test_clear_Course(semester="summer"):
     s1.assign_stream(Stream())
     s2.assign_stream(Stream())
 
-    c1 = Course("C1", "Course #1", semester="summer")
+    c1 = Course("C1", "Course #1")
     c1.add_section(s1)
     c1.add_section(s2)
 
@@ -476,7 +480,7 @@ def test_clear_Course(semester="summer"):
 
 def test_clear_section():
     """Checks that the clear_all_from_section method correctly clears section"""
-    c = Course(semester="summer")
+    c = Course()
     s1 = Section("S1", course=c, schedule_id=1)
     
     tue_block = Block('tue', "15:00", 1, 50)
@@ -506,3 +510,81 @@ def test_clear_block():
 
     assert not b1.teachers()
     assert not b1.labs()
+
+@db_session
+def test_read_db():
+    """Checks that the read_DB method correctly reads the database and creates required model objects & conflict"""
+    c1 = dbCourse(name="Course 1")
+    c2 = dbCourse(name="Course 2")
+    c3 = dbCourse(name="Course 3")
+    c4 = dbCourse(name="Course 4")
+    st1 = dbStream(number="3A")
+    st2 = dbStream(number="3B")
+    st3 = dbStream(number="3C")
+    st4 = dbStream(number="3D")
+    t1 = dbTeacher(first_name="Jane", last_name="Doe")
+    t2 = dbTeacher(first_name="John", last_name="Doe")
+    t3 = dbTeacher(first_name="Joe", last_name="Smith")
+    l1 = dbLab(number="P325")
+    l2 = dbLab(number="P326")
+    l3 = dbLab(number="P327")
+    flush()
+
+    ts1 = dbTimeSlot(day="mon", duration=1, start="8:00", unavailable_lab_id=l1.id)
+    ts2 = dbTimeSlot(day="tue", duration=1, start="9:00")
+    ts3 = dbTimeSlot(day="wed", duration=2, start="10:00")
+    ts4 = dbTimeSlot(day="wed", duration=2, start="10:00")
+    se1 = dbSection(course_id=c1.id, schedule_id=s.id)
+    se2 = dbSection(course_id=c2.id, schedule_id=s.id)
+    se3 = dbSection(course_id=c3.id, schedule_id=s.id)
+    se4 = dbSection(course_id=c4.id, schedule_id=s.id)
+    se1.streams.add(st1)
+    se2.streams.add(st2)
+    se3.streams.add(st3)
+    se4.streams.add(st4)
+    sc_te1 = dbSchedTeach(teacher_id=t1.id, schedule_id=s.id, work_release=3)
+    sc_te2 = dbSchedTeach(teacher_id=t2.id, schedule_id=s.id, work_release=4)
+    sc_te3 = dbSchedTeach(teacher_id=t3.id, schedule_id=s.id, work_release=5)
+    flush()
+
+    se_te1 = dbSecTeach(teacher_id=t1.id, section_id=se1.id, allocation=3)
+    se_te2 = dbSecTeach(teacher_id=t2.id, section_id=se2.id, allocation=4)
+    se_te3 = dbSecTeach(teacher_id=t3.id, section_id=se3.id, allocation=5)
+    b1 = dbBlock(section_id=se1.id, time_slot_id=ts2.id, number=3)
+    b2 = dbBlock(section_id=se2.id, time_slot_id=ts3.id, number=2)
+    b3 = dbBlock(section_id=se4.id, time_slot_id=ts4.id, number=4)
+    b1.teachers.add(t1)
+    b2.teachers.add(t2)
+    b3.teachers.add(t2)
+    b1.labs.add(l1)
+    b2.labs.add(l2)
+    b3.labs.add(l3)
+    flush()
+
+    schedule = Schedule.read_DB(1)
+    
+    assert len(Course.list()) == 4
+    for c in Course.list(): assert len(c.sections()) == 1
+    assert len(Stream.list()) == 4
+    assert len(Teacher.list()) == 3
+    for t in Teacher.list(): assert t.release
+    assert len(Lab.list()) == 3
+    assert Lab.get(1).get_unavailable(ts1.id)
+
+    assert len(Section.list()) == 4
+    for se in Section.list():
+        assert len(se.teachers) == 1
+        assert len(se.streams) == 1
+
+    assert len(Block.list()) == 3
+    for b in Block.list():
+        assert len(b.teachers()) == 1
+        assert len(b.labs()) == 1
+    
+    assert len(Conflict.list()) == 1
+    assert Conflict.list()[0].type == Conflict.TIME
+    assert Block.list()[1].conflicted
+    assert Block.list()[2].conflicted
+
+    assert schedule
+    assert schedule.id == s.id

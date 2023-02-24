@@ -513,7 +513,7 @@ class Course:
     # =======================================
 
     @staticmethod
-    def list():
+    def list() -> tuple[Course]:
         """Returns a list of all Course objects."""
         return tuple(Course.__instances.values())
 
@@ -521,7 +521,7 @@ class Course:
     # get
     # =================================================================
     @staticmethod
-    def get(c_id: int):
+    def get(c_id: int) -> Course | None:
         """Returns the Course object with the matching ID."""
         return Course.__instances.get(c_id)
 
@@ -529,7 +529,7 @@ class Course:
     # get_by_number
     # =================================================================
     @staticmethod
-    def get_by_number(number):
+    def get_by_number(number) -> Course | None:
         """Return the Course which matches this Course number, if it exists."""
         if not number: return
 
@@ -542,7 +542,7 @@ class Course:
     # courses list for allocation
     # =================================================================
     @staticmethod
-    def allocation_list():
+    def allocation_list() -> list[Course]:
         """Returns a sorted list of the Courses that need allocation."""
         courses = list(filter(lambda x: x.needs_allocation, Course.list()))
         courses = sorted(courses, key=lambda c: c.number)
