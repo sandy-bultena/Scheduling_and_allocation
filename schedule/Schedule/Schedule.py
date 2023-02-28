@@ -125,13 +125,14 @@ class Schedule:
             # TimeSlot.save() as written by Evan
             # return entity object at the end
             d_slot = db.TimeSlot.get(id=model_time_slot.id)
-            if d_slot is not None:
-                d_slot.day = model_time_slot.day
-                d_slot.duration = model_time_slot.duration
-                d_slot.start = model_time_slot.start
-                d_slot.movable = model_time_slot.movable
+            if not d_slot: d_slot = db.TimeSlot(day=model_time_slot.day, duration=model_time_slot.duration, start=model_time_slot.start)
+            d_slot.day = model_time_slot.day
+            d_slot.duration = model_time_slot.duration
+            d_slot.start = model_time_slot.start
+            d_slot.movable = model_time_slot.movable
 
             return d_slot
+        
         # scenario changes, once that's implemented
 
         # update any schedule changes
