@@ -118,6 +118,48 @@ class Schedule:
         
         Schedule.calculate_conflicts()
         return schedule
+    
+    @db_session
+    def write_DB(self):
+        def save_time_slot(model_time_slot):
+            # TimeSlot.save() as written by Evan
+            # return entity object at the end
+            return None
+        # scenario changes, once that's implemented
+
+        # update any schedule changes
+        sched = db.Schedule.get(id=self.id)
+        sched.semester = self.semester
+        sched.official = self.official
+        sched.description = self.descr
+
+        # update all courses
+        for c in Course.list():
+            cc = db.Course.get(id=c.id)
+            cc.name = c.name
+            cc.number = c.number
+            cc.allocation = c.needs_allocation
+        
+        # update all teachers
+        for t in Teacher.list():
+            tt = db.Teacher.get(id=t.id)
+            tt.first_name = t.firstname
+            tt.last_name = t.lastname
+            tt.dept = t.dept
+        
+        # update all streams
+        for st in Stream.list():
+            sst = db.Stream.get(id=st.id)
+            sst.number = st.number
+            sst.descr = st.descr
+        
+        # update all streams
+        for l in Lab.list():
+            ll = db.Lab.get(id=l.id)
+            ll.number = l.number
+            ll.description = l.descr
+            for ts in l.unavailable(): ll.unavailable_slots.add(save_time_slot(ts))
+        pass
             
     @staticmethod
     def __create_teacher(id : int) -> Teacher:

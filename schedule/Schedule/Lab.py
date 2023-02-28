@@ -182,7 +182,7 @@ class Lab:
     # list [tuple]
     # ===================================
     @staticmethod
-    def list():
+    def list() -> tuple[Lab]:
         """Returns an immutable tuple containing all instances of the Lab class."""
         return tuple(Lab.__instances.values())
 
