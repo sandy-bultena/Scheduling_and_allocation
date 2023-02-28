@@ -136,6 +136,7 @@ class Schedule:
         # update all courses
         for c in Course.list():
             cc = db.Course.get(id=c.id)
+            if not cc: cc = db.Course(name=c.name)
             cc.name = c.name
             cc.number = c.number
             cc.allocation = c.needs_allocation
@@ -143,23 +144,55 @@ class Schedule:
         # update all teachers
         for t in Teacher.list():
             tt = db.Teacher.get(id=t.id)
+            if not tt: tt = db.Teacher(first_name=t.firstname, last_name=t.lastname)
             tt.first_name = t.firstname
             tt.last_name = t.lastname
             tt.dept = t.dept
+            if t.release:
+                sched_t = db.Schedule_Teacher.get(teacher_id = tt, schedule_id = sched)
+                if not sched_t: sched_t = db.Schedule_Teacher(teacher_id = tt, schedule_id = sched)
+                sched_t.work_release = t.release
         
         # update all streams
         for st in Stream.list():
             sst = db.Stream.get(id=st.id)
+            if not sst: sst = db.Stream(number=st.number)
             sst.number = st.number
             sst.descr = st.descr
         
-        # update all streams
+        # update all labs
         for l in Lab.list():
             ll = db.Lab.get(id=l.id)
+            if not ll: ll = db.Lab(number=l.number)
             ll.number = l.number
             ll.description = l.descr
-            for ts in l.unavailable(): ll.unavailable_slots.add(save_time_slot(ts))
-        pass
+            for ts in l.unavailable():
+                e_ts = save_time_slot(ts)
+                if e_ts not in ll.unavailable_slots: ll.unavailable_slots.add(e_ts)
+
+        # update all sections
+        for se in Section.list():
+            c = db.Course.get(id=se.course.id)
+            sse = db.Section.get(id=se.id)
+            if not sse: sse = db.Section(course_id=c, schedule_id=sched)
+            sse.name = se.name
+            sse.number = se.number
+            sse.hours = se.hours
+            sse.num_students = se.num_students
+            sse.course_id = c
+            sse.schedule_id = sched
+            for t in se.teachers:
+                tt = db.Teacher.get(id=tt)
+                se_t = db.Section_Teacher.get(teacher_id=tt, section_id=sse)
+                if not se_t: se_t = db.Section_Teacher(teacher_id=tt, section_id=sse)
+                se_t.allocation = se.get_teacher_allocation(t)
+            for st in se.streams:
+                e_st = db.Stream.get(id=st.id)
+                if e_st not in sse.streams: sse.streams.add(e_st)
+            
+        # update all blocks
+        for b in Block.list():
+            pass
             
     @staticmethod
     def __create_teacher(id : int) -> Teacher:
