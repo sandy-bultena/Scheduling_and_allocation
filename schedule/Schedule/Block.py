@@ -562,11 +562,12 @@ class Block(TimeSlot):
                 d_teach = dbTeacher.get(id=t.id)
                 if d_teach not in d_block.teachers:
                     d_block.teachers.add(d_teach)
-            d_sect = dbSection.get(id=self.section.id)
-            if d_sect:
-                d_block.section = d_sect
+            if self.section:
+                d_sect = dbSection.get(id=self.section.id)
+                if d_sect:
+                    d_block.section = d_sect
             d_block.number = self.number
-        return self
+        return d_block
 
 
 # =================================================================

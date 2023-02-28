@@ -937,3 +937,18 @@ def test_get_day_blocks_empty_list():
     bad_day = "fri"
     friday_blocks = Block.get_day_blocks(bad_day, unfiltered_blocks)
     assert len(friday_blocks) == 0
+
+
+@db_session
+def test_save_simple():
+    """Verifies that save() works as intended."""
+    block = Block("mon", "10:00", 2.5, 1)
+    flush()
+    block.day = "tue"
+    block.start = "9:30"
+    block.duration = 3.0
+    d_block = block.save()
+    d_slot = d_block.time_slot_id
+    assert d_block.id == block.id and d_slot.day == block.day \
+        and d_slot.start == block.start \
+        and d_slot.duration == block.duration
