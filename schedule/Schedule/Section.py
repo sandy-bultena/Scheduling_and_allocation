@@ -113,14 +113,14 @@ class Section():
     def get(id: int) -> Section:
         """ Gets a Section with a given ID. If ID doesn't exist, returns None."""
         return Section.__instances[id] if id in Section.__instances else None
-
-    # --------------------------------------------------------
+    
+    # =================================================================
     # reset
-    # --------------------------------------------------------
+    # =================================================================
     @staticmethod
     def reset():
-        """ Deletes all Sections """
-        for s in Section.list(): s.delete()
+        """Reset the local list of sections"""
+        Section.__instances = {}
 
     # ========================================================
     # PROPERTIES

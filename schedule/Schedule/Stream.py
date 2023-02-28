@@ -56,14 +56,14 @@ class Stream():
     def get(id: int) -> Stream:
         """ Gets a Stream with a given ID. If ID doesn't exist, returns None."""
         return Stream.__instances[id] if id in Stream.__instances else None
-
-    # --------------------------------------------------------
+    
+    # =================================================================
     # reset
-    # --------------------------------------------------------
+    # =================================================================
     @staticmethod
     def reset():
-        """ Deletes all Streams """
-        for s in Stream.list(): s.delete()
+        """Reset the local list of streams"""
+        Stream.__instances = {}
 
     # ========================================================
     # PROPERTIES

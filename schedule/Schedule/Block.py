@@ -526,8 +526,8 @@ class Block(TimeSlot):
     # ===================================
     @staticmethod
     def reset():
-        """Resets the list of Block objects."""
-        for b in Block.list(): b.delete()
+        """Resets the local list of Block objects."""
+        Block.__instances = {}
 
     # =================================================================
     # get_day_blocks ($day, $blocks)

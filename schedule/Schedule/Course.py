@@ -559,7 +559,14 @@ class Course:
         cc.number = self.number
         cc.allocation = self.needs_allocation
         return cc
-
+    
+    # =================================================================
+    # reset
+    # =================================================================
+    @staticmethod
+    def reset():
+        """Reset the local list of courses"""
+        Course.__instances = {}
 
 # =================================================================
 # footer

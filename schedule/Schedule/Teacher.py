@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import List
 
-from database.PonyDatabaseConnection import Teacher as dbTeacher
+from database.PonyDatabaseConnection import Teacher as dbTeacher, Schedule_Teacher as dbSchedTeach
 from pony.orm import *
 
 
@@ -231,16 +231,28 @@ class Teacher:
         return True
 
     @db_session
-    def save(self):
+    def save(self, schedule = None):
         """Saves the Teacher object to the database."""
         d_teach = dbTeacher.get(id=self.id)
-        if d_teach:
-            d_teach.first_name = self.firstname
-            d_teach.last_name = self.lastname
-            d_teach.dept = self.dept
-            # No need to update the Teacher's schedules/sections/blocks sets; those are handled
-            # elsewhere.
+        if not d_teach: d_teach = dbTeacher(first_name=self.firstname, last_name=self.lastname)
+        d_teach.first_name = self.firstname
+        d_teach.last_name = self.lastname
+        d_teach.dept = self.dept
+        # No need to update the Teacher's schedules/sections/blocks sets; those are handled
+        # elsewhere.
+        if schedule:
+            sched_t = dbSchedTeach.get(teacher_id = d_teach, schedule_id = schedule)
+            if not sched_t: sched_t = dbSchedTeach(teacher_id = d_teach, schedule_id = schedule, work_release = self.release)
+            sched_t.work_release = self.release
         return d_teach
+    
+    # =================================================================
+    # reset
+    # =================================================================
+    @staticmethod
+    def reset():
+        """Reset the local list of teachers"""
+        Teacher.__instances = {}
 
 
 # =================================================================

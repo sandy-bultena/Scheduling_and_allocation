@@ -280,6 +280,14 @@ class Lab:
             # No need to update unavailable_slots or blocks; they get updated each time this
             # class's associated methods are called.
         return d_lab
+    
+    # =================================================================
+    # reset
+    # =================================================================
+    @staticmethod
+    def reset():
+        """Reset the local list of labs"""
+        Lab.__instances = {}
 
 
 # =================================================================

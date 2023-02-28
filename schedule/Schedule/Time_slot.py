@@ -4,19 +4,6 @@ import re
 from database.PonyDatabaseConnection import TimeSlot as dbTimeSlot
 from pony.orm import *
 
-#
-# Synopsis
-#
-
-# 
-#    use Schedule::Time_slot;
-#    
-#    my $time_slot = Time_slot->new (-day=>"Wed",
-#                                    -start=>"9:30",
-#                                    -duration=>1.5,
-#                                    -movable=>1);
-
-
 """ SYNOPSIS/EXAMPLE:
 
     from Schedule.Time_slot import TimeSlot
@@ -379,6 +366,14 @@ class TimeSlot:
             d_slot.start = self.start
             d_slot.movable = self.movable
         return d_slot
+    
+    # =================================================================
+    # reset
+    # =================================================================
+    @staticmethod
+    def reset():
+        """Reset the local list of time slots"""
+        TimeSlot.__instances = []
 
 
 # =================================================================
