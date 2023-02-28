@@ -42,13 +42,7 @@ def before_and_after():
     db.create_tables()
     Block.reset()
     yield
-    db.drop_table(table_name = 'teacher', if_exists = True, with_all_data = True)
-    db.drop_table(table_name = 'stream', if_exists = True, with_all_data = True)
-    db.drop_table(table_name = 'section', if_exists = True, with_all_data = True)
-    db.drop_table(table_name = 'block', if_exists = True, with_all_data = True)
-    db.drop_table(table_name = 'course', if_exists = True, with_all_data = True)
-    db.drop_table(table_name = 'lab', if_exists = True, with_all_data = True)
-    db.drop_table(table_name = 'time_slot', if_exists = True, with_all_data = True)
+    db.drop_all_tables(with_all_data=True)
 
 def test_teachers_get():
     """Checks that teachers method returns correct list"""
