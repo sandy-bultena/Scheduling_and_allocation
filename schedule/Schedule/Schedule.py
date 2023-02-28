@@ -70,7 +70,14 @@ class Schedule:
         sched = db.Schedule.get(id=id)
         scenario = db.Scenario.get(id=sched.scenario_id.id)
         # create Model version of scenario
-        schedule = Schedule(id, sched.semester, sched.official, scenario, sched.description)
+        # placeholder dict
+        scen = {
+            "name": scenario.name,
+            "description": scenario.description,
+            "year": scenario.year,
+            "id": scenario.id
+        }
+        schedule = Schedule(id, sched.semester, sched.official, scen, sched.description)
 
         # create all courses
         for course in select(c for c in db.Course):
@@ -138,9 +145,20 @@ class Schedule:
 
         # update any schedule changes
         sched = db.Schedule.get(id=self.id)
+        # NEEDS TO BE CHANGED ONCE SCENARIO IS IMPLEMENTED
+            # currently uses self.scenario since its a entity object,
+            # but when Scenario is implemented it will be a model object
+            # and will need to be converted (above)
+        # essentially placeholder code until Scenario is properly implemented
+        scen = db.Scenario.get(id=self.scenario.get("id", 1))
+        if not scen: scen = db.Scenario()
+
+        if not sched: sched = db.Schedule(semester=self.semester, official=self.official, scenario_id=scen)
         sched.semester = self.semester
         sched.official = self.official
         sched.description = self.descr
+
+        flush()
 
         # update all courses
         for c in Course.list():
@@ -159,7 +177,7 @@ class Schedule:
             tt.dept = t.dept
             if t.release:
                 sched_t = db.Schedule_Teacher.get(teacher_id = tt, schedule_id = sched)
-                if not sched_t: sched_t = db.Schedule_Teacher(teacher_id = tt, schedule_id = sched)
+                if not sched_t: sched_t = db.Schedule_Teacher(teacher_id = tt, schedule_id = sched, work_release = t.release)
                 sched_t.work_release = t.release
         
         # update all streams
@@ -178,10 +196,13 @@ class Schedule:
             for ts in l.unavailable():
                 e_ts = save_time_slot(ts)
                 if e_ts not in ll.unavailable_slots: ll.unavailable_slots.add(e_ts)
+        
+        flush()
 
         # update all sections
         for se in Section.list():
             c = db.Course.get(id=se.course.id)
+            if not c: c = db.Course(name="INVALID COURSE")
             sse = db.Section.get(id=se.id)
             if not sse: sse = db.Section(course_id=c, schedule_id=sched)
             sse.name = se.name
@@ -191,12 +212,14 @@ class Schedule:
             sse.course_id = c
             sse.schedule_id = sched
             for t in se.teachers:
-                tt = db.Teacher.get(id=tt)
+                tt = db.Teacher.get(id=t.id)
+                if not tt: tt = db.Teacher(first_name="INVALID", last_name="TEACHER")
                 se_t = db.Section_Teacher.get(teacher_id=tt, section_id=sse)
-                if not se_t: se_t = db.Section_Teacher(teacher_id=tt, section_id=sse)
+                if not se_t: se_t = db.Section_Teacher(teacher_id=tt, section_id=sse, allocation=se.get_teacher_allocation(t))
                 se_t.allocation = se.get_teacher_allocation(t)
             for st in se.streams:
                 e_st = db.Stream.get(id=st.id)
+                if not e_st: e_st = db.Stream(number="NA")
                 if e_st not in sse.streams: sse.streams.add(e_st)
             
         # update all blocks
