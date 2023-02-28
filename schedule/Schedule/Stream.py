@@ -9,6 +9,7 @@ from pony.orm import *
     stream = Stream(number = "P322")
 """
 
+
 class Stream():
     """ Describes a group of students whose classes cannot overlap. """
     _max_id = 0
@@ -17,7 +18,7 @@ class Stream():
     # ========================================================
     # CONSTRUCTOR
     # ========================================================
-    def __init__(self, number : str = "A", descr : str = "", *args, id : int = None):
+    def __init__(self, number: str = "A", descr: str = "", *args, id: int = None):
         """
         Creates an instance of the Stream class.
         - Parameter number -> defines the stream number.
@@ -32,11 +33,11 @@ class Stream():
 
     @db_session
     @staticmethod
-    def __create_entity(instance : Stream):
-        entity_stream = dbStream(number = instance.number, descr = instance.descr)
+    def __create_entity(instance: Stream):
+        entity_stream = dbStream(number=instance.number, descr=instance.descr)
         commit()
         return entity_stream.get_pk()
-    
+
     # ========================================================
     # ITERATING RELATED (STATIC)
     # ========================================================
@@ -47,15 +48,15 @@ class Stream():
     def list() -> tuple[Stream]:
         """ Gets all instances of Stream. Returns a tuple object. """
         return tuple(Stream.__instances.values())
-    
+
     # --------------------------------------------------------
     # get
     # --------------------------------------------------------
     @staticmethod
-    def get(id : int) -> Stream:
+    def get(id: int) -> Stream:
         """ Gets a Stream with a given ID. If ID doesn't exist, returns None."""
         return Stream.__instances[id] if id in Stream.__instances else None
-    
+
     # --------------------------------------------------------
     # reset
     # --------------------------------------------------------
@@ -67,7 +68,7 @@ class Stream():
     # ========================================================
     # PROPERTIES
     # ========================================================
-    
+
     # --------------------------------------------------------
     # id
     # --------------------------------------------------------
@@ -75,7 +76,7 @@ class Stream():
     def id(self) -> int:
         """ Gets the id of the Stream. """
         return self.__id
-    
+
     # ========================================================
     # METHODS
     # ========================================================
@@ -99,14 +100,14 @@ class Stream():
     def __str__(self) -> str:
         """ Returns a text string with the Stream's number """
         return self.number
-    
+
     # --------------------------------------------------------
     # print_description     # note: called print_description2 in the Perl version
     # --------------------------------------------------------
     def print_description(self) -> str:
         """ Returns a text string that describes the Stream """
         return f"{self.number}: {self.descr}"
-    
+
     # --------------------------------------------------------
     # delete
     # --------------------------------------------------------
@@ -114,5 +115,20 @@ class Stream():
     def delete(self):
         """ Deletes the current instance of Stream """
         if self.id in Stream.__instances:
-            if dbStream.get(id = self.id): dbStream.get(id = self.id).delete()
+            if dbStream.get(id=self.id): dbStream.get(id=self.id).delete()
             del Stream.__instances[self.id]
+
+    # --------------------------------------------------------
+    # save
+    # --------------------------------------------------------
+    @db_session
+    def save(self):
+        """Saves this Stream to the database.
+
+        Returns the corresponding Stream entity."""
+        d_stream = dbStream.get(id=self.id)
+        if not d_stream:
+            d_stream = dbStream(number=self.number)
+        d_stream.number = self.number
+        d_stream.descr = self.descr
+        return d_stream

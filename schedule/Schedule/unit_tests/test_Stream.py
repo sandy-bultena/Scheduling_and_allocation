@@ -120,3 +120,13 @@ def test_confirm_delete():
     s.delete()
     assert s not in Stream.list()
     assert dbStream.get(id = id) is None
+
+
+@db_session
+def test_save():
+    """Confirm that save saves the stream to the database."""
+    s = Stream()
+    flush()
+    s.descr = "All New, All Different Stream!"
+    d_s = s.save()
+    assert d_s.descr == s.descr and d_s.number == s.number
