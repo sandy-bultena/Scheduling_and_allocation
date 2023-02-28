@@ -340,3 +340,14 @@ def test_get_by_number_bad():
     lab1 = Lab("R-101", "Worst place in the world")
     bad_room = "foo"
     assert Lab.get_by_number(bad_room) is None
+
+
+@db_session
+def test_save():
+    """Verifies that save() works as intended."""
+    lab = Lab("R-101", "Worst place in the world")
+    flush()
+    lab.number = "R-102"
+    lab.descr = "Second-worst place in the world"
+    d_lab = lab.save()
+    assert d_lab.number == lab.number and d_lab.description == lab.descr

@@ -100,8 +100,8 @@ class Lab:
 
         # Create a TimeSlot.
         return self.add_unavailable_slot(TimeSlot(day, start, duration))
-    
-    def add_unavailable_slot(self, slot : TimeSlot) -> Lab:
+
+    def add_unavailable_slot(self, slot: TimeSlot) -> Lab:
         """Adds an existing time slot to this lab's unavailable times."""
         self._unavailable[slot.id] = slot
         self.__add_entity_unavailable(slot)
@@ -269,6 +269,17 @@ class Lab:
             for slot in entity_lab.unavailable_slots:
                 slot.delete()
             entity_lab.delete()
+
+    @db_session
+    def save(self):
+        """Saves this Lab in the database, updating its corresponding Lab entity."""
+        d_lab = dbLab.get(id=self.id)
+        if d_lab:
+            d_lab.number = self.number
+            d_lab.description = self.descr
+            # No need to update unavailable_slots or blocks; they get updated each time this
+            # class's associated methods are called.
+        return d_lab
 
 
 # =================================================================
