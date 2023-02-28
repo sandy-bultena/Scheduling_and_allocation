@@ -1,29 +1,33 @@
 import sys
 from os import path
+
 sys.path.append(path.dirname(path.dirname(__file__)))
 import pytest
 from unit_tests.db_constants import *
 
 from Time_slot import TimeSlot
-from database.PonyDatabaseConnection import define_database
+from database.PonyDatabaseConnection import define_database, TimeSlot as dbTimeSlot
 from pony.orm import *
 
-db : Database
+db: Database
+
 
 @pytest.fixture(scope="module", autouse=True)
 def before_and_after_module():
     global db
     db = define_database(host=HOST, passwd=PASSWD, db=DB_NAME, provider=PROVIDER, user=USERNAME)
     yield
-    db.drop_all_tables(with_all_data = True)
+    db.drop_all_tables(with_all_data=True)
     db.disconnect()
     db.provider = db.schema = None
+
 
 @pytest.fixture(autouse=True)
 def before_and_after():
     db.create_tables()
     yield
-    db.drop_table(table_name = 'time_slot', if_exists = True, with_all_data = True)
+    db.drop_table(table_name='time_slot', if_exists=True, with_all_data=True)
+
 
 @db_session
 def test_id():
@@ -35,11 +39,13 @@ def test_id():
     last_slot = slots[-1]
     assert last_slot.id == len(slots)
 
+
 @db_session
 def test_day_getter_default():
     """Verifies that a TimeSlot is created with a default day value of 'mon'."""
     slot = TimeSlot()
     assert slot.day == 'mon'
+
 
 @db_session
 def test_day_setter():
@@ -50,11 +56,13 @@ def test_day_setter():
     real_val = 'sun'
     assert slot.day == real_val
 
+
 @db_session
 def test_start_getter_default():
     """Verifies that a TimeSlot is created with a default start value of '8:00'."""
     slot = TimeSlot()
     assert slot.start == "8:00"
+
 
 @db_session
 def test_start_setter():
@@ -63,12 +71,14 @@ def test_start_setter():
     slot.start = new_start
     assert slot.start == new_start
 
+
 @db_session
 def test_end_default():
     """Verifies that a TimeSlot with default values with have an end of '9:30'."""
     slot = TimeSlot()
     expected_end = "9:30"
     assert slot.end() == expected_end
+
 
 @db_session
 def test_duration_getter_default():
@@ -77,6 +87,7 @@ def test_duration_getter_default():
     expected_dur = 1.5
     assert slot.duration == expected_dur
 
+
 @db_session
 def test_duration_setter():
     """Verifies that TimeSlot's duration setter works."""
@@ -84,6 +95,7 @@ def test_duration_setter():
     new_dur = 3
     slot.duration = new_dur
     assert slot.duration == new_dur
+
 
 @db_session
 def test_duration_setter_changes_end():
@@ -94,11 +106,13 @@ def test_duration_setter_changes_end():
     expected_end = "11:00"
     assert slot.end() == expected_end
 
+
 @db_session
 def test_movable_getter_default():
     """Verifies that a TimeSlot with default values is movable."""
     slot = TimeSlot()
     assert slot.movable is True
+
 
 @db_session
 def test_movable_setter():
@@ -107,12 +121,14 @@ def test_movable_setter():
     slot.movable = False
     assert slot.movable is False
 
+
 @db_session
 def test_start_number_getter_default():
     """Verifies that the start number for a TimeSlot with default values is 8."""
     slot = TimeSlot()
     expected_start_num = 8
     assert slot.start_number == expected_start_num
+
 
 @db_session
 def test_start_number_setter():
@@ -124,12 +140,14 @@ def test_start_number_setter():
     bad_start = "12:00"
     assert slot.start_number == new_start_num and slot.start != bad_start
 
+
 @db_session
 def test_day_number_getter_default():
     """Verifies that a TimeSlot with default values will have a day_number of 1."""
     slot = TimeSlot()
     expected_day_num = 1
     assert slot.day_number == expected_day_num
+
 
 @db_session
 def test_day_number_setter():
@@ -141,6 +159,7 @@ def test_day_number_setter():
     bad_day = "fri"
     assert slot.day_number == new_day_num and slot.day != bad_day
 
+
 @db_session
 def test_snap_to_time():
     """Verifies that snap_to_time adjusts the TimeSlot's start property to the nearest half-hour."""
@@ -149,6 +168,7 @@ def test_snap_to_time():
     slot.snap_to_time()
     expected_start = "13:00"
     assert slot.start == expected_start
+
 
 @db_session
 def test__snap_to_time_bad_value_to_minimum():
@@ -160,6 +180,7 @@ def test__snap_to_time_bad_value_to_minimum():
     expected_start = "8:00"
     assert slot.start == expected_start
 
+
 @db_session
 def test_snap_to_time_bad_value_to_maximum():
     """Verifies that snap_to_time adjusts TimeSlot's start property to the maximum value of 18
@@ -169,6 +190,7 @@ def test_snap_to_time_bad_value_to_maximum():
     slot.snap_to_time()
     expected_start = "16:30"
     assert slot.start == expected_start
+
 
 @db_session
 def test_snap_to_day_with_args():
@@ -180,12 +202,14 @@ def test_snap_to_day_with_args():
     expected_day = "thu"
     assert slot.day == expected_day
 
+
 @db_session
 def test_conflicts_time():
     """Verifies that conflicts_time works as intended."""
     slot1 = TimeSlot()
     slot2 = TimeSlot("monday", "9:00")
     assert slot1.conflicts_time(slot2) is True
+
 
 @db_session
 def test_conflicts_time_different_days():
@@ -194,6 +218,7 @@ def test_conflicts_time_different_days():
     slot1 = TimeSlot()
     slot2 = TimeSlot("Tuesday")
     assert slot1.conflicts_time(slot2) is False
+
 
 @db_session
 def test_list():
@@ -205,6 +230,7 @@ def test_list():
     slots = TimeSlot.list()
     assert len(slots) == 2 and slot1 in slots and slot2 in slots
 
+
 @db_session
 def test_list_no_slots():
     """Verifies that the static list() method returns an empty tuple if no TimeSlots have been
@@ -212,3 +238,26 @@ def test_list_no_slots():
     TimeSlot._TimeSlot__instances = []
     slots = TimeSlot.list()
     assert len(slots) == 0
+
+
+@db_session
+def test_no_alterations():
+    """Verifies that changing the properties of a model TimeSlot doesn't affect its corresponding
+    entity TimeSlot. """
+    slot = TimeSlot()
+    flush()
+    slot.duration = 2.5
+    d_slot = dbTimeSlot[slot.id]
+    assert slot.duration != d_slot.duration
+
+
+@db_session
+def test_save():
+    """Verifies that the save() method updates the TimeSlot database record."""
+    slot = TimeSlot()
+    flush()
+    slot.duration = 2.5
+    slot.save()
+    commit()
+    d_slot = dbTimeSlot[slot.id]
+    assert d_slot.duration == slot.duration
