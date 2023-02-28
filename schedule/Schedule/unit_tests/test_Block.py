@@ -952,3 +952,4 @@ def test_save_simple():
     assert d_block.id == block.id and d_slot.day == block.day \
         and d_slot.start == block.start \
         and d_slot.duration == block.duration
+

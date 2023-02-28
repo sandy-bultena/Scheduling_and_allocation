@@ -554,18 +554,24 @@ class Block(TimeSlot):
         d_block = dbBlock.get(id=self.id)
         if d_block is not None:
             d_block.time_slot_id = d_slot
-            for l in self.labs():
-                d_lab = dbLab.get(id=l.id)
-                if d_lab not in d_block.labs:
-                    d_block.labs.add(d_lab)
-            for t in self.teachers():
-                d_teach = dbTeacher.get(id=t.id)
-                if d_teach not in d_block.teachers:
-                    d_block.teachers.add(d_teach)
-            if self.section:
-                d_sect = dbSection.get(id=self.section.id)
-                if d_sect:
-                    d_block.section = d_sect
+            # NOTE: No need to manually save these, because assign_lab() and remove_lab() are
+            # already updating the database record.
+            # for l in self.labs():
+            #     d_lab = dbLab.get(id=l.id)
+            #     if d_lab not in d_block.labs:
+            #         d_block.labs.add(d_lab)
+
+            # Same for assign_teacher() and remove()teacher.
+            # for t in self.teachers():
+            #     d_teach = dbTeacher.get(id=t.id)
+            #     if d_teach not in d_block.teachers:
+            #         d_block.teachers.add(d_teach)
+
+            # NOTE: Same with the Section setter.
+            # if self.section:
+            #     d_sect = dbSection.get(id=self.section.id)
+            #     if d_sect:
+            #         d_block.section = d_sect
             d_block.number = self.number
         return d_block
 
