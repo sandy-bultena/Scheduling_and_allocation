@@ -21,6 +21,8 @@ sched : Schedule
 def pre_init():
     global db
     db = define_database(host=HOST, passwd=PASSWD, db=DB_NAME, provider=PROVIDER, user=USERNAME)
+    db.drop_all_tables(with_all_data = True)
+    db.create_tables()
 
 @db_session
 def init():
@@ -33,30 +35,30 @@ def init():
 def main():
     global db
 
-    c1 = dbCourse(name="Course 1")
-    c2 = dbCourse(name="Course 2")
-    c3 = dbCourse(name="Course 3")
-    c4 = dbCourse(name="Course 4")
-    st1 = dbStream(number="3A")
-    st2 = dbStream(number="3B")
-    st3 = dbStream(number="3C")
-    st4 = dbStream(number="3D")
-    t1 = dbTeacher(first_name="Jane", last_name="Doe")
-    t2 = dbTeacher(first_name="John", last_name="Doe")
-    t3 = dbTeacher(first_name="Joe", last_name="Smith")
-    l1 = dbLab(number="P325")
-    l2 = dbLab(number="P326")
-    l3 = dbLab(number="P327")
+    c1 = dbCourse(name="Course 1", number="101-NYA", allocation=True)
+    c2 = dbCourse(name="Course 2", number="102-NYA", allocation=False)
+    c3 = dbCourse(name="Course 3", number="103-NYA", allocation=True)
+    c4 = dbCourse(name="Course 4", number="104-NYA", allocation=False)
+    st1 = dbStream(number="3A", descr="First Stream")
+    st2 = dbStream(number="3B", descr="Second Stream")
+    st3 = dbStream(number="3C", descr="Third Stream")
+    st4 = dbStream(number="3D", descr="Fourth Stream")
+    t1 = dbTeacher(first_name="Jane", last_name="Doe", dept="Computer Science")
+    t2 = dbTeacher(first_name="John", last_name="Doe", dept="English")
+    t3 = dbTeacher(first_name="Joe", last_name="Smith", dept="Science")
+    l1 = dbLab(number="P325", description="Computer Lab 1")
+    l2 = dbLab(number="P326", description="Computer Lab 2")
+    l3 = dbLab(number="P327", description="Computer Lab 3")
     flush()
 
     ts1 = dbTimeSlot(day="mon", duration=1, start="8:00", unavailable_lab_id=l1.id)
-    ts2 = dbTimeSlot(day="tue", duration=1, start="9:00")
+    ts2 = dbTimeSlot(day="tue", duration=1, start="9:00", movable = False)
     ts3 = dbTimeSlot(day="wed", duration=2, start="10:00")
     ts4 = dbTimeSlot(day="wed", duration=2, start="10:00")
-    se1 = dbSection(course_id=c1.id, schedule_id=s.id)
-    se2 = dbSection(course_id=c2.id, schedule_id=s.id)
-    se3 = dbSection(course_id=c3.id, schedule_id=s.id)
-    se4 = dbSection(course_id=c4.id, schedule_id=s.id)
+    se1 = dbSection(course_id=c1.id, schedule_id=s.id, name="Section 1", number="SE1", hours=1, num_students=10)
+    se2 = dbSection(course_id=c2.id, schedule_id=s.id, name="Section 2", number="SE2", hours=2, num_students=20)
+    se3 = dbSection(course_id=c3.id, schedule_id=s.id, name="Section 3", number="SE3", num_students=30)
+    se4 = dbSection(course_id=c4.id, schedule_id=s.id, name="Section 4", number="SE4", hours=2, num_students=40)
     se1.streams.add(st1)
     se2.streams.add(st2)
     se3.streams.add(st3)
@@ -87,6 +89,8 @@ def mid():
     db.disconnect()
     db.provider = db.schema = None
     db = define_database(host=HOST, passwd=PASSWD, db=DB_NAME, provider=PROVIDER, user=USERNAME)
+    db.drop_all_tables(with_all_data = True)
+    db.create_tables()
 
 pre_init()
 init()
