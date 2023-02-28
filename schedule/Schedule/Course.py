@@ -553,8 +553,7 @@ class Course:
     @db_session
     def save(self):
         cc = dbCourse.get(id=self.id)
-        if not cc:
-            cc = dbCourse(name=self.name)
+        if not cc: cc = dbCourse(name=self.name)
         cc.name = self.name
         cc.number = self.number
         cc.allocation = self.needs_allocation

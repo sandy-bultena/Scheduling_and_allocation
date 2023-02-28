@@ -36,8 +36,16 @@ class Schedule:
     # ========================================================
     # CONSTRUCTOR
     # ========================================================
-    def __init__(self, id, semester, official, scenario, descr = ""):
-        """ Creates an instance of the Schedule class. """
+    def __init__(self, id : int, semester : str, official : bool, scenario : dict, descr : str = ""):
+        """
+        Creates an instance of the Schedule class.
+        
+        - Parameter id -> The ID of the current schedule.
+        - Parameter semester -> The semester the schedule applies to. Ideally formatted "Season Year" (i.e. "Winter 2023")
+        - Parameter official -> Whether the schedule is "official" (confirmed) or pending
+        - Parameter scenario -> A dict defining the schedule's scenario. Includes name, description, year, and id
+        - Parameter descr -> A description of the schedule and any unique notes
+        """
         self._id = id
         self.semester = semester
         self.official = official
@@ -77,7 +85,6 @@ class Schedule:
 
         sched = db.Schedule.get(id=id)
         scenario = db.Scenario.get(id=sched.scenario_id.id)
-        # create Model version of scenario
         # placeholder dict
         scen = {
             "name": scenario.name,
@@ -127,7 +134,7 @@ class Schedule:
             # identify, create, and assign blocks
             for block in select(b for b in db.Block if b.section_id.id == s.id):
                 slot = db.TimeSlot.get(id = block.time_slot_id.id)
-                b = Block(slot.day, slot.start, slot.duration, block.number, id = block.id, time_slot_id = slot.id)
+                b = Block(slot.day, slot.start, slot.duration, block.number, movable = slot.movable, id = block.id, time_slot_id = slot.id)
                 s.add_block(b)
                 for l in block.labs: b.assign_lab(Lab.get(l.id))
                 for t in block.teachers: b.assign_teacher(Teacher.get(t.id))
@@ -137,28 +144,9 @@ class Schedule:
     
     @db_session
     def write_DB(self):
-        def save_time_slot(model_time_slot):
-            # TimeSlot.save() as written by Evan
-            # return entity object at the end
-            d_slot = db.TimeSlot.get(id=model_time_slot.id)
-            if not d_slot: d_slot = db.TimeSlot(day=model_time_slot.day, duration=model_time_slot.duration, start=model_time_slot.start)
-            d_slot.day = model_time_slot.day
-            d_slot.duration = model_time_slot.duration
-            d_slot.start = model_time_slot.start
-            d_slot.movable = model_time_slot.movable
-
-            return d_slot
-        
-        # scenario changes, once that's implemented
-
         # update any schedule changes
         sched = db.Schedule.get(id=self.id)
-        # NEEDS TO BE CHANGED ONCE SCENARIO IS IMPLEMENTED
-            # currently uses self.scenario since its a entity object,
-            # but when Scenario is implemented it will be a model object
-            # and will need to be converted (above)
-        # essentially placeholder code until Scenario is properly implemented
-        scen = db.Scenario.get(id=self.scenario.get("id", 1))
+        scen = db.Scenario.get(id=self.scenario.get("id", 1))   # assumes Scenario 1 if id isn't stored
         if not scen: scen = db.Scenario()
 
         if not sched: sched = db.Schedule(semester=self.semester, official=self.official, scenario_id=scen)

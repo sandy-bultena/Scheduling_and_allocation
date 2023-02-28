@@ -112,8 +112,8 @@ class Lab:
         """Links the passed TimeSlot's entity to this Lab's corresponding entity in the database."""
         entity_lab = dbLab.get(id=self.id)
         entity_slot = dbTimeSlot.get(id=instance.id)
-        if entity_lab is not None and entity_slot is not None:
-            entity_slot.unavailable_lab_id = entity_lab
+        if entity_lab and entity_slot:
+            entity_lab.unavailable_slots.add(entity_slot)
 
     # =================================================
     # remove_unavailable
@@ -157,9 +157,9 @@ class Lab:
     # unavailable
     # =================================================================
 
-    def unavailable(self):
+    def unavailable(self) -> tuple[TimeSlot]:
         """Returns all unavailable time slot objects for this lab."""
-        return list(self._unavailable.values())
+        return tuple(self._unavailable.values())
 
     # =================================================================
     # __str__
@@ -274,11 +274,11 @@ class Lab:
     def save(self):
         """Saves this Lab in the database, updating its corresponding Lab entity."""
         d_lab = dbLab.get(id=self.id)
-        if d_lab:
-            d_lab.number = self.number
-            d_lab.description = self.descr
-            # No need to update unavailable_slots or blocks; they get updated each time this
-            # class's associated methods are called.
+        if not d_lab: d_lab = dbLab(number=self.number)
+        d_lab.number = self.number
+        d_lab.description = self.descr
+        for s in self.unavailable(): s.save() # should already be saved (in unavailable_add), but just to be safe
+            # avoids a (likely testing-exlusive) issue where TimeSlots aren't saved; in test case, this is due to switching databases, which shouldn't happen in practice
         return d_lab
     
     # =================================================================

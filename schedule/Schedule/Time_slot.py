@@ -348,7 +348,7 @@ class TimeSlot:
         return (self_start < rhs_end) and (rhs_start < self_end)
 
     @staticmethod
-    def list():
+    def list() -> tuple[TimeSlot]:
         return tuple(TimeSlot.__instances)
 
     # =================================================================
@@ -360,11 +360,11 @@ class TimeSlot:
 
         Returns the corresponding TimeSlot database entity."""
         d_slot = dbTimeSlot.get(id=self.id)
-        if d_slot is not None:
-            d_slot.day = self.day
-            d_slot.duration = self.duration
-            d_slot.start = self.start
-            d_slot.movable = self.movable
+        d_slot = dbTimeSlot(day=self.day, duration=self.duration, start=self.start)
+        d_slot.day = self.day
+        d_slot.duration = self.duration
+        d_slot.start = self.start
+        d_slot.movable = self.movable
         return d_slot
     
     # =================================================================

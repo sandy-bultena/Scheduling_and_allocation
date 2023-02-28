@@ -52,7 +52,7 @@ class Block(TimeSlot):
     # Constructor
     # =================================================================
 
-    def __init__(self, day: str, start: str, duration: float, number: int, *args, id: int = None,
+    def __init__(self, day: str, start: str, duration: float, number: int, movable = True, *args, id: int = None,
                  time_slot_id: int = None) -> None:
         """Creates a new Block object.
         
@@ -65,7 +65,7 @@ class Block(TimeSlot):
         if (id and not time_slot_id) or (time_slot_id and not id): raise ValueError(
             "Error: id and time_slot_id must be both defined or neither defined")
         if len(args) > 0: raise ValueError("Error: too many positional arguments")
-        super().__init__(day, start, duration, id=time_slot_id)
+        super().__init__(day, start, duration, movable=movable, id=time_slot_id)
         self.number = number  # NOTE: Based on the code found in CSV.pm and Section.pm
         self.__section = None
         self._teachers = dict()
@@ -551,28 +551,29 @@ class Block(TimeSlot):
     @db_session
     def save(self):
         d_slot = super().save()
+        flush()
         d_block = dbBlock.get(id=self.id)
-        if d_block is not None:
-            d_block.time_slot_id = d_slot
-            # NOTE: No need to manually save these, because assign_lab() and remove_lab() are
-            # already updating the database record.
-            # for l in self.labs():
-            #     d_lab = dbLab.get(id=l.id)
-            #     if d_lab not in d_block.labs:
-            #         d_block.labs.add(d_lab)
+        if not d_block: d_block = dbBlock(number=self.number, time_slot_id = d_slot)
+        d_block.time_slot_id = d_slot
+        # NOTE: No need to manually save these, because assign_lab() and remove_lab() are
+        # already updating the database record.
+        # for l in self.labs():
+        # d_lab = dbLab.get(id=l.id)
+        # if d_lab not in d_block.labs:
+        #     d_block.labs.add(d_lab)
 
-            # Same for assign_teacher() and remove()teacher.
-            # for t in self.teachers():
-            #     d_teach = dbTeacher.get(id=t.id)
-            #     if d_teach not in d_block.teachers:
-            #         d_block.teachers.add(d_teach)
+        # Same for assign_teacher() and remove()teacher.
+        # for t in self.teachers():
+        # d_teach = dbTeacher.get(id=t.id)
+        # if d_teach not in d_block.teachers:
+        #     d_block.teachers.add(d_teach)
 
-            # NOTE: Same with the Section setter.
-            # if self.section:
-            #     d_sect = dbSection.get(id=self.section.id)
-            #     if d_sect:
-            #         d_block.section = d_sect
-            d_block.number = self.number
+        # NOTE: Same with the Section setter.
+        # if self.section:
+        # d_sect = dbSection.get(id=self.section.id)
+        # if d_sect:
+        #     d_block.section = d_sect
+        d_block.number = self.number
         return d_block
 
 

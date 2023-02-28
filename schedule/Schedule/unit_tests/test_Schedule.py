@@ -16,8 +16,10 @@ from Lab import Lab
 from Conflict import Conflict
 from Section import Section
 from Block import Block
+from Time_slot import TimeSlot
 
 db : Database
+new_db : Database   # only used in write DB test
 s : Schedule
 
 @pytest.fixture(scope="module", autouse=True)
@@ -508,8 +510,9 @@ def test_clear_block():
     assert not b1.labs()
 
 @db_session
-def populate_db():
+def populate_db(sid : int = None):
     """Populates the DB with dummy data"""
+    if not sid: sid = s.id
     c1 = dbCourse(name="Course 1", number="101-NYA", allocation=True)
     c2 = dbCourse(name="Course 2", number="102-NYA", allocation=False)
     c3 = dbCourse(name="Course 3", number="103-NYA", allocation=True)
@@ -527,20 +530,20 @@ def populate_db():
     flush()
 
     ts1 = dbTimeSlot(day="mon", duration=1, start="8:00", unavailable_lab_id=l1.id)
-    ts2 = dbTimeSlot(day="tue", duration=2, start="9:00", movable = False)
-    ts3 = dbTimeSlot(day="wed", duration=3, start="10:00")
-    ts4 = dbTimeSlot(day="wed", duration=4, start="11:00")
-    se1 = dbSection(course_id=c1.id, schedule_id=s.id, name="Section 1", number="SE1", num_students=10)
-    se2 = dbSection(course_id=c2.id, schedule_id=s.id, name="Section 2", number="SE2", num_students=20)
-    se3 = dbSection(course_id=c3.id, schedule_id=s.id, name="Section 3", number="SE3", num_students=30)
-    se4 = dbSection(course_id=c4.id, schedule_id=s.id, name="Section 4", number="SE4", num_students=40)
+    ts2 = dbTimeSlot(day="tue", duration=2, start="8:00", movable = False)
+    ts3 = dbTimeSlot(day="wed", duration=3, start="9:00")
+    ts4 = dbTimeSlot(day="wed", duration=3, start="10:00")
+    se1 = dbSection(course_id=c1.id, schedule_id=sid, name="Section 1", number="SE1", num_students=10)
+    se2 = dbSection(course_id=c2.id, schedule_id=sid, name="Section 2", number="SE2", num_students=20)
+    se3 = dbSection(course_id=c3.id, schedule_id=sid, name="Section 3", number="SE3", num_students=30)
+    se4 = dbSection(course_id=c4.id, schedule_id=sid, name="Section 4", number="SE4", num_students=40)
     se1.streams.add(st1)
     se2.streams.add(st2)
     se3.streams.add(st3)
     se4.streams.add(st4)
-    sc_te1 = dbSchedTeach(teacher_id=t1.id, schedule_id=s.id, work_release=3)
-    sc_te2 = dbSchedTeach(teacher_id=t2.id, schedule_id=s.id, work_release=4)
-    sc_te3 = dbSchedTeach(teacher_id=t3.id, schedule_id=s.id, work_release=5)
+    sc_te1 = dbSchedTeach(teacher_id=t1.id, schedule_id=sid, work_release=3)
+    sc_te2 = dbSchedTeach(teacher_id=t2.id, schedule_id=sid, work_release=4)
+    sc_te3 = dbSchedTeach(teacher_id=t3.id, schedule_id=sid, work_release=5)
     flush()
 
     se_te1 = dbSecTeach(teacher_id=t1.id, section_id=se1.id, allocation=3)
@@ -555,12 +558,25 @@ def populate_db():
     b1.labs.add(l1)
     b2.labs.add(l2)
     b3.labs.add(l3)
+    flush()
+
+    return {
+        "c1": c1.id, "c2": c2.id, "c3": c3.id, "c4": c4.id,
+        "st1": st1.id, "st2": st2.id, "st3": st3.id, "st4": st4.id,
+        "t1": t1.id, "t2": t2.id, "t3": t3.id,
+        "l1": l1.id, "l2": l2.id, "l3": l3.id,
+        "ts1": ts1.id, "ts2": ts2.id, "ts3": ts3.id, "ts4": ts4.id,
+        "se1": se1.id, "se2": se2.id, "se3": se3.id, "se4": se4.id,
+        "b1": b1.id, "b2": b2.id, "b3": b3.id,
+    }
 
 def test_read_db():
     """Checks that the read_DB method correctly reads the database and creates required model objects & conflict"""
     populate_db()
 
     schedule = Schedule.read_DB(1)
+
+    assert len(TimeSlot.list()) == 4
     
     assert len(Course.list()) == 4
     for c in Course.list(): assert len(c.sections()) == 1
@@ -580,6 +596,7 @@ def test_read_db():
         assert len(b.teachers()) == 1
         assert len(b.labs()) == 1
     
+    for c in Conflict.list(): print(c.type)
     assert len(Conflict.list()) == 1
     assert Conflict.list()[0].type == Conflict.TIME
     assert Block.list()[1].conflicted
@@ -588,14 +605,26 @@ def test_read_db():
     assert schedule
     assert schedule.id == s.id
 
-def test_write_db():
+@pytest.fixture
+def after_write():
+    # reconnects to the original DB. run after test_write_db
+    global new_db
+    global db
+    yield
+    #new_db.drop_all_tables(with_all_data=True)  # drop all tables to be safe
+    new_db.disconnect()
+    new_db.provider = new_db.schema = None
+    db = define_database(host=HOST, passwd=PASSWD, db=DB_NAME, provider=PROVIDER, user=USERNAME)
+
+def test_write_db(after_write):
     """
     Checks that the write_DB method correctly writes to the database
     NOTE: THIS TEST WILL LIKELY FAIL IF THE ABOVE TEST FAILS
     IF THEY BOTH FAIL, FIX THE ABOVE ONE FIRST
     """
     global db
-    populate_db()
+    global new_db
+    ids = populate_db()
     schedule = Schedule.read_DB(1)
 
     # disconnect from existing database
@@ -642,13 +671,13 @@ def test_write_db():
     assert len(Teacher.list()) == 3
     for i, t in enumerate(Teacher.list()):
         assert t.release == i + 3
-        assert t.firstname.startswith(i)
-        assert t.lastname.startswith(i)
-        assert t.dept.startswith(i)
+        assert t.firstname.startswith(str(i))
+        assert t.lastname.startswith(str(i))
+        assert t.dept.startswith(str(i))
 
     # confirm correct number of labs and data was transferred correctly
     assert len(Lab.list()) == 3
-    assert Lab.get(1).get_unavailable(1)
+    assert Lab.get(1).get_unavailable(ids.get("ts1"))
     for i, l in enumerate(Lab.list()):
         assert l.number == f"P32{i}"
         assert l.descr == f"Computer Lab {i+1}"
@@ -671,12 +700,6 @@ def test_write_db():
         assert b.number == i+1
         
         # time slot values
-        assert b.duration == i+1
+        assert b.duration == max(i+1, 3)
         assert b.start == f"{i+9}:00"
     assert not Block.list()[0].movable
-
-    # correct the database connection, in case this isn't the last test run
-    new_db.drop_all_tables(with_all_data=True)  # drop all tables to be safe
-    new_db.disconnect()
-    new_db.provider = new_db.schema = None
-    db = define_database(host=HOST, passwd=PASSWD, db=DB_NAME, provider=PROVIDER, user=USERNAME)
