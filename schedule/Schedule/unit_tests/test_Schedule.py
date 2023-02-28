@@ -616,6 +616,10 @@ def after_write():
     new_db.provider = new_db.schema = None
     db = define_database(host=HOST, passwd=PASSWD, db=DB_NAME, provider=PROVIDER, user=USERNAME)
 
+# CURRENT TEST STATE:
+# FAILS
+# Block-related timeslots seem to be created twice for some reason
+# Lab-related timeslot is created, but loses it's association
 def test_write_db(after_write):
     """
     Checks that the write_DB method correctly writes to the database
