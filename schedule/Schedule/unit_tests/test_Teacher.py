@@ -255,3 +255,12 @@ def test_disjoint_false():
     set_1 = [teach_1, teach_2]
     set_2 = [teach_2, teach_3]
     assert Teacher.disjoint(set_1, set_2) is False
+
+
+@db_session
+def test_save():
+    teach = Teacher("John", "Smith")
+    flush()
+    teach.dept = "Social Studies"
+    d_teach = teach.save()
+    assert d_teach.dept == teach.dept

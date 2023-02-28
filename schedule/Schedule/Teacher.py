@@ -230,6 +230,18 @@ class Teacher:
 
         return True
 
+    @db_session
+    def save(self):
+        """Saves the Teacher object to the database."""
+        d_teach = dbTeacher.get(id=self.id)
+        if d_teach:
+            d_teach.first_name = self.firstname
+            d_teach.last_name = self.lastname
+            d_teach.dept = self.dept
+            # No need to update the Teacher's schedules/sections/blocks sets; those are handled
+            # elsewhere.
+        return d_teach
+
 
 # =================================================================
 # footer
