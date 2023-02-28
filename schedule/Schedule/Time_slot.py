@@ -99,8 +99,9 @@ class TimeSlot:
 
     @db_session
     @staticmethod
-    def __create_entity(instance : TimeSlot):
-        entity_block = dbTimeSlot(day = instance.day, duration = instance.duration, start = instance.start, movable = instance.movable)
+    def __create_entity(instance: TimeSlot):
+        entity_block = dbTimeSlot(day=instance.day, duration=instance.duration,
+                                  start=instance.start, movable=instance.movable)
         commit()
         return entity_block.get_pk()
 
@@ -362,6 +363,22 @@ class TimeSlot:
     @staticmethod
     def list():
         return tuple(TimeSlot.__instances)
+
+    # =================================================================
+    # save
+    # =================================================================
+    @db_session
+    def save(self) -> dbTimeSlot:
+        """Saves this TimeSlot to the database, updating its corresponding record.
+
+        Returns the corresponding TimeSlot database entity."""
+        d_slot = dbTimeSlot.get(id=self.id)
+        if d_slot is not None:
+            d_slot.day = self.day
+            d_slot.duration = self.duration
+            d_slot.start = self.start
+            d_slot.movable = self.movable
+        return d_slot
 
 
 # =================================================================
