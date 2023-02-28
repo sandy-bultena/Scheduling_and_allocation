@@ -65,6 +65,7 @@ class Schedule:
     # read_DB
     # --------------------------------------------------------
     @staticmethod
+    @db_session
     def read_DB(id):
         sched = db.Schedule.get(id=id)
         scenario = db.Scenario.get(id=sched.scenario_id.id)
