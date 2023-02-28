@@ -188,6 +188,17 @@ def test_get_new_number_no_blocks():
     assert Section(course=Course(),schedule_id=1).get_new_number() == 1
 
 
+@db_session
+def test_save():
+    c = Course()
+    s = Section(course=c, schedule_id=1)
+    flush()
+    s.name = "Test Section"
+    s.hours = 2.0
+    s.num_students = 24
+    d_sched = s.save(dbSchedule[1])
+    assert d_sched.name == s.name and d_sched.hours == s.hours\
+           and d_sched.num_students == s.num_students
 #endregion
 
 #region Block

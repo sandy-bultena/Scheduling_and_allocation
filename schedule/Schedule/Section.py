@@ -4,7 +4,8 @@ from Stream import Stream
 from Teacher import Teacher
 import re
 
-from database.PonyDatabaseConnection import Section as dbSection
+from database.PonyDatabaseConnection import Section as dbSection, Course as dbCourse, \
+    Schedule as dbSchedule, Teacher as dbTeacher, Section_Teacher
 from pony.orm import *
 
 """
@@ -517,3 +518,31 @@ class Section():
         while (self.get_block(number)):
             number += 1
         return number
+
+    @db_session
+    def save(self, sched: dbSchedule):
+        """Saves this Section to the database as part of a passed Schedule entity."""
+        c = dbCourse.get(id=self.course.id)
+        if not c:
+            dbCourse(name="INVALID COURSE")
+        sse = dbSection.get(id=self.id)
+        if not sse:
+            sse = dbSection(course_id=c, schedule_id = sched)
+        sse.name = self.name
+        sse.number = self.number
+        sse.hours = self.hours
+        sse.num_students = self.num_students
+        sse.course_id = c
+        sse.schedule_id = sched
+        for t in self.teachers:
+            d_t = t.save()
+            if not d_t:
+                d_t = dbTeacher(first_name="INVALID", last_name="TEACHER")
+            se_t = Section_Teacher.get(teacher_id=d_t, section_id=sse)
+            if not se_t:
+                se_t = Section_Teacher(teacher_id=d_t, section_id=sse,
+                                       allocation=self.get_teacher_allocation(t))
+            se_t.allocation = self.get_teacher_allocation(t)
+        for b in self.blocks:
+            b.save()
+        return sse
