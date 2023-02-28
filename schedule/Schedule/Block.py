@@ -545,6 +545,29 @@ class Block(TimeSlot):
         day_blocks = filter(lambda x: x.day == day, blocks)
         return list(day_blocks)
 
+    # =================================================================
+    # save()
+    # =================================================================
+    @db_session
+    def save(self):
+        d_slot = super().save()
+        d_block = dbBlock.get(id=self.id)
+        if d_block is not None:
+            d_block.time_slot_id = d_slot
+            for l in self.labs():
+                d_lab = dbLab.get(id=l.id)
+                if d_lab not in d_block.labs:
+                    d_block.labs.add(d_lab)
+            for t in self.teachers():
+                d_teach = dbTeacher.get(id=t.id)
+                if d_teach not in d_block.teachers:
+                    d_block.teachers.add(d_teach)
+            d_sect = dbSection.get(id=self.section.id)
+            if d_sect:
+                d_block.section = d_sect
+            d_block.number = self.number
+        return self
+
 
 # =================================================================
 # footer
