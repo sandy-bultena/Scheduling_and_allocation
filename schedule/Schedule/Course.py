@@ -35,7 +35,7 @@ class Course:
     # -------------------------------------------------------------------
     # new
     # --------------------------------------------------------------------
-    def __init__(self, number: str = "", name: str = "New Course", *args, id : int = None):
+    def __init__(self, number: str = "", name: str = "New Course", *args, id: int = None):
         """Creates and returns a course object.
         
         Parameter **number**: str -> The alphanumeric course number.
@@ -53,10 +53,12 @@ class Course:
 
     @db_session
     @staticmethod
-    def __create_entity(instance : Course):
-        entity_course = dbCourse(name = instance.name, number = instance.number, allocation = instance.needs_allocation)
+    def __create_entity(instance: Course):
+        entity_course = dbCourse(name=instance.name, number=instance.number,
+                                 allocation=instance.needs_allocation)
         commit()
         return entity_course.get_pk()
+
     # =================================================================
     # id
     # =================================================================
@@ -547,6 +549,16 @@ class Course:
         courses = list(filter(lambda x: x.needs_allocation, Course.list()))
         courses = sorted(courses, key=lambda c: c.number)
         return courses
+
+    @db_session
+    def save(self):
+        cc = dbCourse.get(id=self.id)
+        if not cc:
+            cc = dbCourse(name=self.name)
+        cc.name = self.name
+        cc.number = self.number
+        cc.allocation = self.needs_allocation
+        return cc
 
 
 # =================================================================

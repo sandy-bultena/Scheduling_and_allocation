@@ -817,3 +817,16 @@ def test_allocation_list_sorted():
     course_2 = Course("11111", "Course 2")
     courses = Course.allocation_list()
     assert len(courses) == 2 and courses[0] == course_2 and courses[1] == course_1
+
+
+@db_session
+def test_save():
+    """Verifies that save() works as intended."""
+    course = Course("24601", "Course 1")
+    flush()
+    course.needs_allocation = False
+    course.number = "11111"
+    d_course = course.save()
+    assert d_course.allocation == course.needs_allocation \
+           and d_course.number == course.number \
+           and d_course.name == course.name
