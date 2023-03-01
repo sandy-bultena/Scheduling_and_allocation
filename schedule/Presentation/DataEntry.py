@@ -38,6 +38,7 @@ class DataEntry:
     # =================================================================
     max_id = 0
     Delete_queue = deque()
+    views_manager = None
     room_index = 1
     id_index = 0
 
@@ -128,6 +129,7 @@ class DataEntry:
         - Parameter dirty_ptr: a reference to the dirty pointer.
         - Parameter views_manager: the object which manages the views.
         """
+        DataEntry.views_manager = views_manager
         DataEntry.Delete_queue = []
 
         self._dirty_ptr(dirty_ptr)
@@ -289,6 +291,47 @@ class DataEntry:
 
         # if there have been changes, set global dirty flag and do what is necessary.
         if dirty_flag > 0:
-            self.set_dirty()
+            self._set_dirty()
         DataEntry.currently_saving = 0
-        # endregion
+
+    # =================================================================
+    # delete object
+    # =================================================================
+    def _cb_delete_obj(self, data):
+        """Save delete requests, to be processed later."""
+
+        # Create a queue so we can delete the objects when the new info is saved.
+        obj = self.schedulable_list_obj.get(data[DataEntry.id_index])
+        if obj:
+            DataEntry.Delete_queue.extend([self.schedulable_list_obj, obj])
+    # endregion
+    #region PRIVATE PROPERTIES AND METHODS
+    # =================================================================
+    # set dirty flag
+    # =================================================================
+    @property
+    def _col_methods(self):
+        """Gets or sets the methods required to get or set the property for each column."""
+        return self.__col_methods
+
+    @_col_methods.setter
+    def _col_methods(self, methods: list[str]):
+        self.__col_methods = methods
+
+    @property
+    def _col_sortby(self):
+        """Gets or sets the method which gets the property which tells us how to sort the
+        individual objects. """
+        return self.__col_sortby
+
+    @_col_sortby.setter
+    def _col_sortby(self, sorter):
+        self.__col_sortby = sorter
+
+    def _set_dirty(self):
+        """Data has changed, process accordingly."""
+        self.dirty = True
+        self.refresh()
+        if DataEntry.views_manager:
+            DataEntry.views_manager.redraw_all_views()
+
