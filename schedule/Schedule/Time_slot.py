@@ -360,7 +360,8 @@ class TimeSlot:
 
         Returns the corresponding TimeSlot database entity."""
         d_slot = dbTimeSlot.get(id=self.id)
-        d_slot = dbTimeSlot(day=self.day, duration=self.duration, start=self.start)
+        if d_slot is None:
+            d_slot = dbTimeSlot(day=self.day, duration=self.duration, start=self.start)
         d_slot.day = self.day
         d_slot.duration = self.duration
         d_slot.start = self.start

@@ -193,11 +193,11 @@ def test_unavailable():
 
 
 def test_unavailable_no_slots():
-    """Verifies that unavailable() returns an empty list if no TimeSlots have been assigned to
+    """Verifies that unavailable() returns an empty tuple if no TimeSlots have been assigned to
     this Lab. """
     lab = Lab()
     slots = lab.unavailable()
-    assert type(slots) is list and len(slots) == 0
+    assert type(slots) is tuple and len(slots) == 0
 
 
 def test_print_description_full():
