@@ -30,7 +30,7 @@ class DataEntry:
     # Class Variables
     # =================================================================
     max_id = 0
-    delete_queue = []
+    Delete_queue = []
     room_index = 1
     id_index = 0
 
@@ -107,4 +107,89 @@ class DataEntry:
     def col_widths(self, widths: list[int]):
         self._col_widths = widths
 
+    # =================================================================
+    # new
+    # =================================================================
+    def __init__(self, frame, schedulable_list_obj, schedule, dirty_ptr, views_manager):
+        """
+        Creates the basic DataEntry (a simple matrix).
+
+        - Parameter frame: the Tk frame where this object's Entry widgets will be drawn.
+        - Parameter schedulable_list_obj: The type of schedulable object this Entry will handle
+        (Teacher | Lab | Stream).
+        - Parameter schedule: the Schedule object.
+        - Parameter dirty_ptr: a reference to the dirty pointer.
+        - Parameter views_manager: the object which manages the views.
+        """
+        self._dirty_ptr(dirty_ptr)
+        self.schedulable_list_obj = schedulable_list_obj
+        self.schedule = schedule
+
+        # ---------------------------------------------------------------
+        # get objects to process?
+        # ---------------------------------------------------------------
+        objs = schedulable_list_obj.list()
+        rows = len(objs)
+
+        # ---------------------------------------------------------------
+        # what are the columns?
+        # ---------------------------------------------------------------
+        methods = []
+        titles = []
+        disabled = []
+        widths = []
+        sort_by = ''
+        delete_sub = None  # TODO: Come back to these two. They seem to be unfinished or unused.
+        de = None
+
+        if self.type.lower() is 'teacher':
+            methods.extend(["id", "firstname", "lastname", "release"])
+            titles.extend(['id', 'first name', 'last name', 'RT'])
+            widths.extend([4, 20, 20, 8])
+            sort_by = 'lastname'
+
+        elif self.type.lower() is 'lab':
+            methods.extend(["id", "number", "descr"])
+            titles.extend(['id', 'room', 'description'])
+            widths.extend([4, 7, 40])
+            sort_by = 'number'
+
+        elif self.type.lower() is 'stream':
+            methods.extend(["id", "number", "descr"])
+            titles.extend(['id', 'number', 'description'])
+            widths.extend([4, 10, 40])
+            sort_by = 'number'
+
+        self._col_sortby = sort_by
+        self._col_methods = methods
+        self.col_titles = titles
+        self.col_widths = widths
+
+        # ---------------------------------------------------------------
+        # create the table entry object
+        # ---------------------------------------------------------------
+        gui = DataEntryTk(self, frame, _cb_delete_obj, _cb_save)
+        self.gui = gui
+
+        row = self.refresh()
+
+    # =================================================================
+    # refresh the tables
+    # =================================================================
+    def refresh(self, list_obj=None):
+        if list_obj: self.schedulable_list_obj = list_obj
+
+        objs: list = self.schedulable_list_obj.list()
+        sort_by = self._col_sortby
+
+        # Create a 2-d array of the data that needs to be displayed.
+        data = []
+        for obj in sorted(objs, key=sort_by):
+            row = []
+            for method in self._col_methods:
+                row.append(obj.method)
+            data.append(row)
+
+        # refresh the GUI
+        self.gui.refresh(data)
 

@@ -1,3 +1,4 @@
+from builtins import function
 from tkinter import *
 from tkinter import ttk
 
@@ -34,10 +35,10 @@ class DataEntryTK:
         self.titles = data_entry.col_titles
         self.col_widths = data_entry.col_widths
 
-        #TODO: Pick up from here when the power comes back on.
+        # TODO: Pick up from here when the power comes back on.
         # self.de = self.frame.
         for title in self.titles:
-            #TODO: Tkinter doesn't have an equivalent table widget. Figure something out.
+            # TODO: Tkinter doesn't have an equivalent table widget. Figure something out.
             # This may present a solution: https://www.geeksforgeeks.org/create-table-using-tkinter/
             continue
 
@@ -48,5 +49,3 @@ class DataEntryTK:
         all_data = []
 
         # Loop over the rows & columns of the table to fill the array with all its data.
-        
-    
