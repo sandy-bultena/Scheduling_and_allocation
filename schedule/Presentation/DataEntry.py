@@ -304,8 +304,9 @@ class DataEntry:
         obj = self.schedulable_list_obj.get(data[DataEntry.id_index])
         if obj:
             DataEntry.Delete_queue.extend([self.schedulable_list_obj, obj])
+
     # endregion
-    #region PRIVATE PROPERTIES AND METHODS
+    # region PRIVATE PROPERTIES AND METHODS
     # =================================================================
     # set dirty flag
     # =================================================================
@@ -334,4 +335,20 @@ class DataEntry:
         self.refresh()
         if DataEntry.views_manager:
             DataEntry.views_manager.redraw_all_views()
+    # endregion
 
+
+'''
+=head1 AUTHOR
+Sandy Bultena, Ian Clement, Jack Burns. Converted to Python by Evan Laverdiere.
+=head1 COPYRIGHT
+Copyright (c) 2020, Jack Burns, Sandy Bultena, Ian Clement. 
+All Rights Reserved.
+This module is free software. It may be used, redistributed
+and/or modified under the terms of the Perl Artistic License
+     (see http://www.perl.com/perl/misc/Artistic.html)
+=cut
+
+1;
+
+'''
