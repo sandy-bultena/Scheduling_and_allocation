@@ -35,12 +35,16 @@ class DataEntryTK:
         self.titles = data_entry.col_titles
         self.col_widths = data_entry.col_widths
 
-        # TODO: Pick up from here when the power comes back on.
+        # TODO: Pick up from here tomorrow.
         # self.de = self.frame.
-        for title in self.titles:
+        # for title in self.titles:
             # TODO: Tkinter doesn't have an equivalent table widget. Figure something out.
             # This may present a solution: https://www.geeksforgeeks.org/create-table-using-tkinter/
-            continue
+            # continue
+        for r in range(len(self.data_entry.schedulable_list_obj.list()) + 1):
+            for c in range(len(self.titles)):
+                if r == 0:
+                    e = Label(self.frame, width=self.col_widths[c], text=self.titles[c])
 
     def refresh(self, data):
         pass
