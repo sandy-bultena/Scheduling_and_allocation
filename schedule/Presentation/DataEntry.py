@@ -69,3 +69,42 @@ class DataEntry:
         if is_dirty is not None:
             self.__dirty_ptr = is_dirty
         return self.__dirty_ptr
+
+    @property
+    def type(self) -> str:
+        """Gets the Schedulable type (Teacher/Lab/Stream)."""
+        return self.schedule.get_schedulable_object_type(self.schedulable_list_obj)
+
+    @property
+    def schedulable_class(self):
+        """Gets the Scheduable class name (Teacher / Lab / Stream)"""
+        return self.type.title()
+
+    @property
+    def schedulable_list_obj(self):
+        """Gets or sets the object containing the list of schedulable objects."""
+        return self._list_obj
+
+    @schedulable_list_obj.setter
+    def schedulable_list_obj(self, new_obj):
+        self._list_obj = new_obj
+
+    @property
+    def col_titles(self):
+        """Gets or sets the titles for each individual column."""
+        return self._col_titles
+
+    @col_titles.setter
+    def col_titles(self, titles: list[str]):
+        self._col_titles = titles
+
+    @property
+    def col_widths(self):
+        """Gets or sets the widths required for each individual column."""
+        return self._col_widths
+
+    @col_widths.setter
+    def col_widths(self, widths: list[int]):
+        self._col_widths = widths
+
+
