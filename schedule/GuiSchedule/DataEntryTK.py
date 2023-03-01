@@ -25,7 +25,7 @@ object, and can not be edited.
 
 
 class DataEntryTK:
-    def __init__(self, data_entry, frame: Frame, del_callback, save_callback):
+    def __init__(self, data_entry, frame: Frame, del_callback: function, save_callback: function):
         self.data_entry = data_entry
         self.frame = frame
         self.del_callback = del_callback
