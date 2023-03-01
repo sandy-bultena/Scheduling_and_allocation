@@ -112,7 +112,7 @@ class Block(TimeSlot):
         # self) self = None
         if self in Block.__instances.values():
             Block.__delete_entity(self)
-            Block._TimeSlot__instances.remove(self)
+            if self.time_id in Block._TimeSlot__instances: del Block._TimeSlot__instances[self.time_id]
             del Block.__instances[self._block_id]
 
     @db_session
