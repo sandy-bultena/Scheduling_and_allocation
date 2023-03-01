@@ -2,6 +2,9 @@
 A manual test for the Schedule.write_DB() method. Initializes and populates the DB_NAME database,
 then reads the data using Schedule.read_DB() and disconnects from the DB. Then creates a new DB with "_2" appended to the name,
 which is populated by using Schedule.write_DB() on the read_DB generated object.
+
+NOTE: This script will not clear either database before or after it is run. The end result will include DB_NAME with its starting data and the dummy data, as well as
+DB_NAME_2 with the same data.
 """
 import sys
 from os import path

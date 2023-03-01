@@ -23,7 +23,7 @@ class TimeSlot:
     # =================================================================
     # Class/Global Variables
     # =================================================================
-    __instances = []
+    __instances = {}
     WEEK = {
         "mon": 1,
         "tue": 2,
@@ -82,7 +82,7 @@ class TimeSlot:
         self.movable = movable
 
         self.__id = id if id else TimeSlot.__create_entity(self)
-        TimeSlot.__instances.append(self)
+        TimeSlot.__instances[self.__id] = self
 
     @db_session
     @staticmethod
@@ -349,7 +349,11 @@ class TimeSlot:
 
     @staticmethod
     def list() -> tuple[TimeSlot]:
-        return tuple(TimeSlot.__instances)
+        return tuple(TimeSlot.__instances.values())
+    
+    @staticmethod
+    def get(id : int) -> TimeSlot:
+        return TimeSlot.__instances.get(id, None)
 
     # =================================================================
     # save
@@ -359,9 +363,8 @@ class TimeSlot:
         """Saves this TimeSlot to the database, updating its corresponding record.
 
         Returns the corresponding TimeSlot database entity."""
-        d_slot = dbTimeSlot.get(id=self.id)
-        if d_slot is None:
-            d_slot = dbTimeSlot(day=self.day, duration=self.duration, start=self.start)
+        d_slot = dbTimeSlot.get(id=self.__id)   # use the __id so it refers to the time slot's ID correctly, not block ID (when relevant)
+        if not d_slot: d_slot = dbTimeSlot(day=self.day, duration=self.duration, start=self.start)
         d_slot.day = self.day
         d_slot.duration = self.duration
         d_slot.start = self.start
@@ -374,7 +377,7 @@ class TimeSlot:
     @staticmethod
     def reset():
         """Reset the local list of time slots"""
-        TimeSlot.__instances = []
+        TimeSlot.__instances = dict()
 
 
 # =================================================================

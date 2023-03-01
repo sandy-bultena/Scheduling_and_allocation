@@ -44,7 +44,7 @@ def before_and_after():
 #region General & Properties
 def test_constructor_default_values():
     """Checks that the constructor uses default values"""
-    c = Course(semester = "summer")
+    c = Course()
     s = Section(course=c, schedule_id=1)
     assert isinstance(s.number, str)
     assert s.hours
@@ -55,7 +55,7 @@ def test_section_created_success():
     number = "3A"
     hours = 2
     name = "My Section"
-    c = Course(semester = "summer")
+    c = Course()
     s = Section(number, hours, name, c, schedule_id=1)
     assert s.name == name
     assert s.hours == hours
@@ -63,13 +63,13 @@ def test_section_created_success():
 
 def test_section_is_added_to_collection():
     """Checks that newly created Section is added to the collection"""
-    c = Course(semester = "summer")
+    c = Course()
     s = Section(course=c, schedule_id=1)
     assert s in Section.list()
 
 def test_set_hours_valid():
     """Checks that valid hours can be set"""
-    c = Course(semester = "summer")
+    c = Course()
     s = Section(course=c, schedule_id=1)
     hours = 2
     s.hours = hours
@@ -77,7 +77,7 @@ def test_set_hours_valid():
 
 def test_set_hours_invalid():
     """Checks that invalid hours can't be set"""
-    c = Course(semester = "summer")
+    c = Course()
     s = Section(course=c, schedule_id=1)
     hours = "string"
     with pytest.raises(TypeError) as e:
@@ -94,7 +94,7 @@ def test_set_hours_invalid():
 def test_get_title():
     """Checks that title is retrievable and includes name or number"""
     name = "My Section"
-    c = Course(semester = "summer")
+    c = Course()
     assert name in Section(name=name, course=c, schedule_id=1).title
 
     number = "3A"
@@ -102,7 +102,7 @@ def test_get_title():
 
 def test_set_course_valid():
     """Checks that valid courses can be set"""
-    c = Course(semester = "summer")
+    c = Course()
     s = Section(course=c, schedule_id=1)
     c2 = Course("1")
     s.course = c2
@@ -110,7 +110,7 @@ def test_set_course_valid():
 
 def test_set_course_invalid():
     """Checks that invalid courses can't be set"""
-    c = Course(semester = "summer")
+    c = Course()
     s = Section(course=c, schedule_id=1)
     c2 = 1
     with pytest.raises(TypeError) as e:
@@ -119,7 +119,7 @@ def test_set_course_invalid():
 
 def test_set_num_students():
     """Checks that num_students can be set"""
-    c = Course(semester = "summer")
+    c = Course()
     s = Section(course=c, schedule_id=1)
     num = 20
     s.num_students = num
@@ -129,7 +129,7 @@ def test_hours_can_be_added():
     """Checks that hours can be added (rather than set)"""
     hours = 1
     to_add = 10
-    c = Course(semester = "summer")
+    c = Course()
     s = Section(hours = hours, course=c, schedule_id=1)
     s.add_hours(to_add)
     assert s.hours == hours + to_add
@@ -137,7 +137,7 @@ def test_hours_can_be_added():
 @db_session
 def test_delete_deletes_all():
     """Checks that the delete method removes the Section and all Blocks from respective lists"""
-    c = Course(semester = "summer")
+    c = Course()
     s = Section(course=c, schedule_id=1)
     id = s.id
     b1 = Block('Mon', '13:00', 2, 1)
