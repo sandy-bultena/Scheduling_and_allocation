@@ -1,3 +1,10 @@
+from collections import deque
+from time import sleep
+
+import schedule.Schedule.Lab
+import schedule.Schedule.Stream
+import schedule.Schedule.Teacher
+
 '''
 =head1 NAME
 DataEntry - provides methods/objects for entering teachers/labs/etc data
@@ -30,7 +37,7 @@ class DataEntry:
     # Class Variables
     # =================================================================
     max_id = 0
-    Delete_queue = []
+    Delete_queue = deque()
     room_index = 1
     id_index = 0
 
@@ -121,6 +128,8 @@ class DataEntry:
         - Parameter dirty_ptr: a reference to the dirty pointer.
         - Parameter views_manager: the object which manages the views.
         """
+        DataEntry.Delete_queue = []
+
         self._dirty_ptr(dirty_ptr)
         self.schedulable_list_obj = schedulable_list_obj
         self.schedule = schedule
@@ -184,7 +193,7 @@ class DataEntry:
 
         # Create a 2-d array of the data that needs to be displayed.
         data = []
-        for obj in sorted(objs, key=sort_by):
+        for obj in sorted(objs, key=lambda x: x.sort_by):
             row = []
             for method in self._col_methods:
                 row.append(obj.method)
@@ -193,3 +202,93 @@ class DataEntry:
         # refresh the GUI
         self.gui.refresh(data)
 
+        DataEntry.Delete_queue = []
+
+    # =================================================================
+    # Save updated data
+    # =================================================================
+    currently_saving = 0  # Static counter which keeps track of how many files are currently being
+
+    # saved.
+
+    # region CALLBACKS (EVENT HANDLERS)
+    def _cb_save(self):
+        """Save any changes that the user entered in the GUI form."""
+        schedule = self.schedule
+        dirty_flag = 0
+
+        # Get data from the GUI object.
+        all_data = self.gui.get_all_data()
+
+        # Just in case saving is already in progress, wait before continuing.
+        if DataEntry.currently_saving > 2:
+            return  # 2 is too many.
+        if DataEntry.currently_saving:
+            sleep(1)
+        DataEntry.currently_saving += 1
+
+        # Read data from the data object.
+        for row in all_data:
+            data = row.copy()
+
+            # If this is an empty row, do nothing.
+            if data is None:
+                continue  # Not the right if-statement. Come back to this.
+
+            # --------------------------------------------------------------------
+            # if this row has an ID, then we need to update the
+            # corresponding object
+            # --------------------------------------------------------------------
+            if data[DataEntry.id_index] and data[DataEntry.id_index] != '':
+                schedulable_list_obj = self._list_obj
+                o = schedulable_list_obj.get(data[DataEntry.id_index])
+
+                # Loop over each method used to get info about this object.
+                col = 1
+                for method in self._col_methods:
+                    # Set dirty flag if new data is not the same as the currently set property.
+                    dirty_flag += 1 if o.method != data[col - 1] else 0
+
+                    # Set the property to the data. TODO: Verify that this works.
+                    eval(f"{o}.{method} = {data[col - 1]}")
+
+            # --------------------------------------------------------------------
+            # if this row does not have an ID, then we need to create
+            # corresponding object
+            # --------------------------------------------------------------------
+            else:
+                schedulable_list_obj = self._list_obj
+
+                # Create parameters to pass to the new object.
+                parms = {}
+                col = 1
+                for method in self._col_methods:
+                    parms[method] = data[col - 1]
+                    col += 1
+
+                # Create the new Object and add it to the list.
+                new_obj = eval(f"{self.schedulable_class}({parms})")
+                eval(f"{self.schedulable_list_obj.add(new_obj)}")
+
+                dirty_flag += 1
+        # ------------------------------------------------------------------------
+        # go through delete queue and apply changes
+        # ------------------------------------------------------------------------
+        while len(DataEntry.Delete_queue) > 0:
+            schedulable_list_obj = DataEntry.Delete_queue.popleft()
+            o = DataEntry.Delete_queue.popleft()
+
+            if o:
+                dirty_flag += 1
+                if isinstance(o, schedule.Schedule.Teacher.Teacher):
+                    schedule.remove_teacher(o)
+                elif isinstance(o, schedule.Schedule.Stream.Stream):
+                    schedule.remove_stream(o)
+                elif isinstance(o, schedule.Schedule.Lab.Lab):
+                    schedule.remove_lab(o)
+
+        # if there have been changes, set global dirty flag and do what is necessary.
+        if dirty_flag > 0:
+            self.set_dirty()
+        DataEntry.currently_saving = 0
+        # endregion
