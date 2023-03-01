@@ -36,3 +36,17 @@ class DataEntryTK:
 
         #TODO: Pick up from here when the power comes back on.
         # self.de = self.frame.
+        for title in self.titles:
+            #TODO: Tkinter doesn't have an equivalent table widget. Figure something out.
+            # This may present a solution: https://www.geeksforgeeks.org/create-table-using-tkinter/
+            continue
+
+    def refresh(self, data):
+        pass
+
+    def get_all_data(self):
+        all_data = []
+
+        # Loop over the rows & columns of the table to fill the array with all its data.
+        
+    
