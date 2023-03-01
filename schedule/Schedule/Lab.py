@@ -277,8 +277,9 @@ class Lab:
         if not d_lab: d_lab = dbLab(number=self.number)
         d_lab.number = self.number
         d_lab.description = self.descr
-        for s in self.unavailable(): s.save() # should already be saved (in unavailable_add), but just to be safe
+        # should already be saved (in unavailable_add), but just to be safe
             # avoids a (likely testing-exlusive) issue where TimeSlots aren't saved; in test case, this is due to switching databases, which shouldn't happen in practice
+        for s in self.unavailable(): d_lab.unavailable_slots.add(s.save())
         return d_lab
     
     # =================================================================

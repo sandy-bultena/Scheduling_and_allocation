@@ -68,12 +68,11 @@ class Schedule:
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
     # --------------------------------------------------------
-    # read_DB
+    # reset_local
     # --------------------------------------------------------
     @staticmethod
-    @db_session
-    def read_DB(id):
-        # wipe all existing model data
+    def reset_local():
+        """ Reset the local model data """
         Block.reset()
         Course.reset()
         Lab.reset()
@@ -82,6 +81,15 @@ class Schedule:
         Teacher.reset()
         TimeSlot.reset()
         Conflict.reset()
+
+    # --------------------------------------------------------
+    # read_DB
+    # --------------------------------------------------------
+    @staticmethod
+    @db_session
+    def read_DB(id):
+        # wipe all existing model data
+        Schedule.reset_local()
 
         sched = db.Schedule.get(id=id)
         scenario = db.Scenario.get(id=sched.scenario_id.id)
@@ -154,6 +162,7 @@ class Schedule:
         sched.official = self.official
         sched.description = self.descr
 
+        # save schedule & scenario to in-memory db
         flush()
 
         # update all courses
@@ -164,15 +173,20 @@ class Schedule:
         
         # update all streams
         for st in Stream.list(): st.save()
+
+        # update all time slots
+        for t in TimeSlot.list(): t.save()
+
+        # save courses, teachers, streams, and time slots to in-memory db
+        flush()
         
         # update all labs
         for l in Lab.list(): l.save()
-        
-        flush()
 
         # update all sections
         for se in Section.list(): se.save(sched)
         
+        # save labs and sections to in-memory db
         flush()
 
         # update all blocks
@@ -191,201 +205,6 @@ class Schedule:
         if Stream.get(id): return Stream.get(id)
         stream = db.Stream.get(id = id)
         return Stream(stream.number, stream.descr, id = id)
-
-    #region Read & Write YAML (TEMPORARY)
-    # --------------------------------------------------------
-    # read_YAML
-    # --------------------------------------------------------
-    @staticmethod
-    def read_YAML(file : str):
-        schedule = Schedule()
-        if os.path.isfile(file):
-            try:
-                f = open(file, "r")
-                # same as below -_ substitution, but specifically for mangled names (_Class__var)
-                raw_yaml = re.sub(r"^(\s*)_[a-zA-Z]*?__", "", f.read())
-                # regex substitution replaces - or _ at the beginning of variable names, since the manual casting assumes clean var names
-                # take out any tags, since we're bypassing them and initializing classes manually
-                    # this is a terrible thing and should NOT be done in a long-term project, absolutely not scalable
-                raw_yaml = re.sub(r'!.*$', '', re.sub(r"^(\s*)[_-]([^- ])", r"\1\2", raw_yaml, flags=re.MULTILINE), flags=re.MULTILINE)
-                # enclose timestamps in single quotes to avoid sexagesimal conversion (9:00 -> 540 seconds)
-                raw_yaml = re.sub(r'(\s)(\d+):(\d+)(\s)', r"\1'\2:\3'\4", raw_yaml)
-                max_ids = {}
-                (
-                    yaml_contents, max_ids['block'], max_ids['course'], max_ids['lab'],
-                    max_ids['section'], max_ids['teacher'], max_ids['timeslot'], max_ids['stream'] 
-                ) = yaml.safe_load_all(raw_yaml)
-                
-                # set max IDs so that there's no accidental overlap with automatic calculation & manual overwrite
-                Schedule.__set_max_ids(max_ids)
-
-                for c in yaml_contents['conflicts']['list']: Schedule.__create_conflict(c)
-                for c in yaml_contents['courses']['list'].values(): Schedule.__create_course(c)
-                for l in yaml_contents['labs']['list'].values(): Schedule.__create_lab(l)
-                for s in yaml_contents['streams']['list'].values(): Schedule.__create_stream_yaml(s)
-                for t in yaml_contents['teachers']['list'].values(): Schedule.__create_teacher_yaml(t)
-
-                # set max IDs again so it now matches with the stored value
-                Schedule.__set_max_ids(max_ids)
-                return schedule
-            except Exception as e:
-                print(f"Cannot read from file {file}: {str(e)}")
-                # should probably be replaced with tkinter error screen
-                return
-            finally:
-                f.close()
-        
-        raise f"File {file} does not exist"
-        # should probably be replaced with tkinter error screen
-
-    # --------------------------------------------------------
-    # write_YAML
-    # --------------------------------------------------------
-    @staticmethod
-    def write_YAML(file : str) -> bool:
-        """
-        Writes all schedule data to specified YAML file
-        - Parameter file -> The file to output to
-        """
-        if os.path.isfile(file):
-            try:
-                f = open(file, "w")
-                dic = dict(
-                    conflicts = dict( list = Conflict.list() ),
-                    courses = dict( list = Course.list() ),
-                    labs = dict( list = Lab.list() ),
-                    streams = dict( list = Stream.list() ),
-                    teachers = dict( list = Teacher.list() )
-                )
-                yam = yaml.dump_all([
-                    dic, Block._max_id, Course._max_id, Lab._max_id, Section._max_id,
-                    Teacher._max_id, TimeSlot._max_id, Stream._max_id
-                    ], explicit_start=True)
-                f.write(yam)
-                return True
-            except Exception as e:
-                print(f"Cannot write to file {file}: {str(e)}")
-                # should probably be replaced with tkinter error screen
-                return False
-            finally: f.close()
-
-    # ========================================================
-    # BAD METHODS - TEMPORARY FOR YAML FILE
-    # break all kinds of conventions but they're temporary
-    # DO NOT REPLICATE THIS ANYWHERE ELSE IT'S HARD TO USE AND NOT SCALABLE
-    # ========================================================
-    
-    @staticmethod
-    def __create_conflict(conflict : dict) -> Conflict:
-        conflicts = list(filter(lambda i : i.id == conflict.get('id', -1), Conflict))
-        if len(conflicts) == 0:
-            blocks = []
-            for b in conflict.get('blocks'): blocks.append(Schedule.__create_block(b))
-            c = Conflict(type = conflict.get('type', 1), blocks = blocks)
-            
-            return c
-        else: return conflicts[0]
-
-    @staticmethod
-    def __create_block(block : dict) -> Block:
-        blocks = list(filter(lambda i : i.id == block.get('id', -1), Block))
-        if len(blocks) == 0:
-            b = Block(block.get('day', ''), block.get('start', ''), block.get('duration', 0), block.get('number', 0))
-            old_id = b.id
-            b._Block__id = block.get('id', b.id)
-            del Block._Block__instances[old_id]
-            Block._Block__instances[b.id] = b
-            b.conflicted = block.get('conflicted', b.conflicted)
-            # don't set day_number, its calculated based on day
-            # don't set start_number, its calculated based on start
-            for k in block.get('labs', {}).keys(): b.assign_lab(Schedule.__create_lab(block.get('labs', {})[k]))
-            b.movable = block.get('movable', b.movable)
-            if block.get('section'): b.section = Schedule.__create_section(block.get('section'))
-            for k in block.get('teachers', {}).keys(): b.assign_teacher(Schedule.__create_teacher_yaml(block.get('teachers', {})[k]))
-            b._Block__sync = block.get('sync', [])
-
-            return b
-        else: return blocks[0]
-
-    @staticmethod
-    def __create_section(section : dict) -> Section:
-        sections = list(filter(lambda i : i.id == section.get('id', -1), Section) )
-        if len(sections) == 0:
-            s = Section(section.get('number', ''), section.get('hours', 0), section.get('name', ''))
-            if section.get('course'): s.course = Schedule.__create_course(section.get('course'))
-            for k in section.get('blocks', {}).keys(): s.add_block(Schedule.__create_block(section.get('blocks', {})[k]))
-            old_id = s.id
-            s._Section__id = section.get('id', s.id)
-            del Section._Section__instances[old_id]
-            Section._Section__instances[s.id] = s
-            s._allocation = section.get('allocation', s._allocation)
-            s.num_students = section.get('num_students', s.num_students)
-            for k in section.get('streams', {}).keys(): s.assign_stream(Schedule.__create_stream_yaml(section.get('streams', {})[k]))
-            for k in section.get('teachers', {}).keys(): s.assign_teacher(Schedule.__create_teacher_yaml(section.get('teachers', {})[k]))
-            return s
-        else: return sections[0]
-
-    @staticmethod
-    def __create_lab(lab : dict) -> Lab:
-        if Lab.get(lab.get('id', -1)): return Lab.get(lab.get('id', -1))
-        else:
-            l =  Lab(lab.get('number', ''), lab.get('descr', ''))
-            old_id = l.id
-            l._Lab__id = lab.get('id', l.id)
-            del Lab._instances[old_id]
-            Lab._instances[l.id] = l
-            return l
-
-    @staticmethod
-    def __create_teacher_yaml(teacher : dict) -> Teacher:
-        if Teacher.get(teacher.get('id', -1)): return Teacher.get(teacher.get('id', -1))
-        else:
-            t = Teacher(teacher.get('fname', ''), teacher.get('lname', ''), teacher.get('dept', ''))
-            t.release = teacher.get('release', t.release)
-            old_id = t.id
-            t._Teacher__id = teacher.get('id', t.id)
-            del Teacher._instances[old_id]
-            Teacher._instances[t.id] = t
-            return t
-
-    @staticmethod
-    def __create_course(course : dict) -> Course:
-        if Course.get(course.get('id', -1)): return Course.get(course.get('id', -1))
-        else:
-            c = Course(number = course.get('number', ''), name = course.get('name', ''), semester = course.get('semester', ''))
-            c._allocation = course.get('allocation', c.allocation)
-            old_id = c.id
-            c._Course__id = course.get('id', c.id)
-            del Course._instances[old_id]
-            Course._instances[c.id] = c
-            for k in course.get('sections', {}).keys(): c.assign_section(Schedule.__create_section(course.get('sections', {})[k]))
-            return c
-        
-    @staticmethod
-    def __create_stream_yaml(stream : dict) -> Stream:
-        if Stream.get(stream.get('id', -1)): return Stream.get(stream.get('id', -1))
-        else:
-            s = Stream(stream.get('number', 'A'), stream.get('descr', ''))
-            old_id = s.id
-            s._Stream__id = stream.get('id', s.id)
-            del Stream._Stream__instances[old_id]
-            Stream._Stream__instances[s.id] = s
-            return s
-
-#endregion
-
-    # --------------------------------------------------------
-    # __set_max_ids - Sets the max IDs of each class to specified values or 0. Unsure if it'll be useful for DB, but just in case listed separately from YAML methods
-    # --------------------------------------------------------
-    @staticmethod
-    def __set_max_ids(max_ids : dict):
-        Block._max_id = max_ids.get("block", 0)
-        Course._max_id = max_ids.get("course", 0)
-        Lab._max_id = max_ids.get("lab", 0)
-        Section._max_id = max_ids.get("section", 0)
-        Teacher._max_id = max_ids.get("teacher", 0)
-        TimeSlot._max_id = max_ids.get("timeslot", 0)
-        Stream._max_id = max_ids.get("stream", 0)
 
     # --------------------------------------------------------
     # teachers
