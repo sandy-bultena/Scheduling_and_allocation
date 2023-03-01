@@ -1,9 +1,11 @@
 from collections import deque
 from time import sleep
 
-import schedule.Schedule.Lab
+from schedule.Schedule.Lab import Lab
 import schedule.Schedule.Stream
 import schedule.Schedule.Teacher
+from schedule.Schedule.Schedule import Schedule
+from schedule.GuiSchedule.DataEntryTK import DataEntryTK
 
 '''
 =head1 NAME
@@ -51,7 +53,7 @@ class DataEntry:
         return self._gui
 
     @gui.setter
-    def gui(self, val):
+    def gui(self, val: DataEntryTK):
         self._gui = val
 
     @property
@@ -60,7 +62,7 @@ class DataEntry:
         return self._schedule
 
     @schedule.setter
-    def schedule(self, sched):
+    def schedule(self, sched: Schedule):
         self._schedule = sched
 
     @property
@@ -118,7 +120,7 @@ class DataEntry:
     # =================================================================
     # new
     # =================================================================
-    def __init__(self, frame, schedulable_list_obj, schedule, dirty_ptr, views_manager):
+    def __init__(self, frame, schedulable_list_obj, schedule: Schedule, dirty_ptr, views_manager):
         """
         Creates the basic DataEntry (a simple matrix).
 
@@ -179,7 +181,10 @@ class DataEntry:
         # ---------------------------------------------------------------
         # create the table entry object
         # ---------------------------------------------------------------
-        gui = DataEntryTk(self, frame, _cb_delete_obj, _cb_save)
+        # NOTE: Creating an unrelated object within another object is considered bad practice.
+        # Ideally it would be better to pass this DataEntryTK object in, already created.
+        # But, this is a first draft, so here it will stay for now.
+        gui = DataEntryTK(self, frame, self._cb_delete_obj, self._cb_save)
         self.gui = gui
 
         row = self.refresh()
