@@ -71,8 +71,7 @@ class TableEntry(Frame):
         self._reverse = {}
         self._lookup = []
         self._te_init()
-        self.test_label = Label(self, text="Can you see me, tommy?").grid(row=0, column=0)
-        
+
     def _te_init(self):
         # Create header row.
         self._create_header_row()
@@ -85,7 +84,7 @@ class TableEntry(Frame):
         xtot = 0
         # for col in self.columns:
         #     w = self.get_widget
-        self.configure(width=1000)
+        self.configure(width=500)
 
     # ===================================================================
     # basic getter/setters
@@ -126,7 +125,7 @@ class TableEntry(Frame):
         for c in range(0, cols):
             if c >= len(titles):
                 titles.append('')
-            w = Label(self, text=titles[c], bg="yellow", width=50)
+            w = Label(self, text=titles[c])
             w.grid(column=c, row=0, sticky="nwes")
             row_lookups.append(w)
             self._reverse[w] = [0, c]
