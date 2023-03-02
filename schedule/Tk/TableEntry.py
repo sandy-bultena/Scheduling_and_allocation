@@ -17,19 +17,19 @@ class TableEntry(Frame):
     # populate
     # ===================================================================
     def populate(self, **args):
-        pane = Frame(self, name='tableEntry', border=2, relief='flat')
-        pane.pack(side='left', fill='both')
-
-        self.pane = pane
-        x_scrollbar = Scrollbar(self.pane, elementborderwidth=2,
-                                relief='ridge',
-                                width=12,
-                                orient=HORIZONTAL)
-
-        y_scrollbar = Scrollbar(self.pane, elementborderwidth=2,
-                                relief='ridge',
-                                width=12,
-                                orient=VERTICAL)
+        # pane = Frame(self, name='tableEntry', border=2, relief='flat')
+        # pane.pack(side='left', fill='both')
+        #
+        # self.pane = pane
+        # x_scrollbar = Scrollbar(self.pane, elementborderwidth=2,
+        #                         relief='ridge',
+        #                         width=12,
+        #                         orient=HORIZONTAL)
+        #
+        # y_scrollbar = Scrollbar(self.pane, elementborderwidth=2,
+        #                         relief='ridge',
+        #                         width=12,
+        #                         orient=VERTICAL)
 
         # ---------------------------------------------------------------
         # create defaults here, because ConfigSpecs doesn't set
@@ -61,7 +61,15 @@ class TableEntry(Frame):
         # TODO: The call to configure() fails because Frame doesn't have a "-rows" option.
         # configure = dict(defaults, **args)
         # self.configure(configure)
-        self.titles = args['titles'] if args['titles'] else []
+        self.__titles = args['titles'] if args['titles'] else []
+        self.__columns = args['columns'] if args['columns'] else 0
+        self.__rows = args['rows'] if args['rows'] else 0
+
+        # ---------------------------------------------------------------
+        # where we keep lookup info (widget to cell, cell to widget)
+        # ---------------------------------------------------------------
+        self._reverse = {}
+        self._lookup = []
         self._te_init()
         
     def _te_init(self):
@@ -69,13 +77,14 @@ class TableEntry(Frame):
         self._create_header_row()
         
         # add rows
-        # for row in self.rows:
-        #     self.add_empty_row(row)
+        for row in range(1, self.__rows):
+            self.add_empty_row(row)
             
         # Calculate the width of the row, to set the pane width.
-        xot = 0
+        xtot = 0
         # for col in self.columns:
         #     w = self.get_widget
+        self.configure(width=1000)
 
     # ===================================================================
     # basic getter/setters
@@ -95,6 +104,7 @@ class TableEntry(Frame):
     def titles(self):
         # NOTE: The Frame widget doesn't have a config option for 'titles' in Tkinter, and the
         # Scrollable and Pane widgets from Perl TK don't exist here. Have to improvise.
+        return self.__titles
         return self.cget('titles')
 
     @titles.setter
@@ -107,10 +117,24 @@ class TableEntry(Frame):
     # ===================================================================
     def _create_header_row(self):
         self._title_widgets = []
-        cols = self.columns # Fails because Frame doesn't have an option called "-columns"
+        cols = self.__columns # Fails because Frame doesn't have an option called "-columns"
         titles = self.titles
-        colwidths = self.colwidths
+        # colwidths = self.colwidths
+        row_lookups = []
 
-        for c in cols:
-            pass
+        for c in range(0, cols):
+            if c >= len(titles):
+                titles.append('')
+            w = Label(self, text=titles[c], bg="yellow")
+            w.grid(column=c, sticky="nwes", row=0)
+            row_lookups.append(w)
+            self._reverse[w] = [0, c]
+        self._lookup.append(row_lookups)
+
+    def add_empty_row(self, row):
+        # colwidths = self.colwidths
+        # disabled = self.disabled
+        for c in range(1, self.__columns):
+            # Get the width of the columns from somewhere.
+            old = None
 
