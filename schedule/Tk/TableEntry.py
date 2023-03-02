@@ -10,12 +10,13 @@ from tkinter import ttk
 class TableEntry(Frame):
     def __init__(self, parent):
         super().__init__(parent)
+        self.populate()
 
     # ===================================================================
     # populate
     # ===================================================================
     def populate(self, *args):
-        pane = Frame(self, name='TableEntry', border=2, relief='flat')
+        pane = Frame(self, name='tableEntry', border=2, relief='flat')
         pane.pack(side='left', fill='both')
 
         self.pane = pane
@@ -33,3 +34,24 @@ class TableEntry(Frame):
         # those specifications until later, but we need this stuff
         # now
         # ---------------------------------------------------------------
+        defaults = {
+            'rows': 10,             # Number of rows to start
+            'bg_entry': '#ffffff',  # Background color of the entry widget.
+            'columns': 10,          # Number of columns
+            'titles': [],           # Title of columns
+            'colwidths': [],        # Width of columns
+            'disabled': [],         # Which columns are read-only
+            'defwidth': 8           # Default width of the columns
+        }
+
+        bg = self.winfo_toplevel().cget('bg')  #TODO: Verify the actual property name.
+
+        # ---------------------------------------------------------------
+        # define ConfigSpecs
+        # ---------------------------------------------------------------
+        #super().populate(*args)
+        # NOTE: The above line of code seems to be something unique to Perl/TK. Tkinter does not
+        # seem to have a "populate" method, as far as I can tell.
+        # self.configure(
+        #
+        # )
