@@ -137,7 +137,7 @@ class TableEntry(Frame):
     def add_empty_row(self, row: int):
         # colwidths = self.colwidths
         # disabled = self.disabled
-        for c in range(1, self.__columns):
+        for c in range(1, self.__columns + 1):
             # Get the width of the columns from somewhere.
 
             # if something's already here, delete it. TODO: Come back to this.
@@ -152,7 +152,7 @@ class TableEntry(Frame):
                 disabledforeground='black',
                 relief='flat'
                 )
-            if c == 0:
+            if c == 1:
                 w.configure(state='disabled')
             w.grid(column=c, row=row, sticky='nwes')
 
@@ -177,5 +177,12 @@ class TableEntry(Frame):
 
             # Keep the row count up to date.
             # Add a delete button in the first column.
+            self._put_delete(row)
 
+    def _put_delete(self, row: int):
+        del_button = Button(self.pane,
+                            relief='flat',
+                            text='X'
+                            )
+        del_button.grid(column=0, sticky='nwes', row=row)
 
