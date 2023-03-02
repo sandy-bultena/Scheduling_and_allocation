@@ -224,7 +224,7 @@ def test_conflicts_time_different_days():
 def test_list():
     """Verifies that the static list() method returns a tuple containing all extant TimeSlot
     objects. """
-    TimeSlot._TimeSlot__instances = []
+    TimeSlot.reset()
     slot1 = TimeSlot()
     slot2 = TimeSlot("Tuesday")
     slots = TimeSlot.list()
@@ -235,7 +235,7 @@ def test_list():
 def test_list_no_slots():
     """Verifies that the static list() method returns an empty tuple if no TimeSlots have been
     created yet. """
-    TimeSlot._TimeSlot__instances = []
+    TimeSlot.reset()
     slots = TimeSlot.list()
     assert len(slots) == 0
 

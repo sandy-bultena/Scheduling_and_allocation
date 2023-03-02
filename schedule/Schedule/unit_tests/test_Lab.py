@@ -221,7 +221,7 @@ def test_print_description_short():
 
 def test_list():
     """Verifies that list() returns a tuple of all extant Lab objects."""
-    Lab._Lab__instances = {}
+    Lab.reset()
     lab1 = Lab("R-101", "Worst place in the world")
     lab2 = Lab("R-102", "Second-worst place in the world")
     labs = Lab.list()
@@ -230,7 +230,7 @@ def test_list():
 
 def test_list_empty():
     """Verifies that list() returns an empty tuple if no Labs have been created."""
-    Lab._Lab__instances = {}
+    Lab.reset()
     labs = Lab.list()
     assert len(labs) == 0
 
@@ -257,7 +257,7 @@ def test_share_blocks_false():
 
 def test_remove():
     """Verifies that the static remove() method works as intended."""
-    Lab._Lab__instances = {}
+    Lab.reset()
     lab1 = Lab("R-101", "Worst place in the world")
     lab2 = Lab("R-102", "Second-worst place in the world")
     lab1.delete()
@@ -277,8 +277,8 @@ def test_remove():
 
 def test_remove_gets_slots():
     """Verifies that remove() deletes any TimeSlots in the Block's unavailable attribute."""
-    Lab._Lab__instances = {}
-    TimeSlot._TimeSlot__instances = []
+    Lab.reset()
+    TimeSlot.reset()
     lab1 = Lab("R-101", "Worst place in the world")
     lab2 = Lab("R-102", "Second-worst place in the world")
     lab1.add_unavailable("mon", "8:00", 1.5)
@@ -311,8 +311,7 @@ def test_remove_gets_database_labs():
 
 def test_get_good():
     """Verifies that the static get() method works as intended."""
-    Lab._Lab__instances = {}
-    Lab._max_id = 0
+    Lab.reset()
     lab1 = Lab("R-101", "Worst place in the world")
     lab2 = Lab("R-102", "Second-worst place in the world")
     assert Lab.get(2) == lab2
@@ -320,8 +319,7 @@ def test_get_good():
 
 def test_get_bad():
     """Verifies that get() returns None when given an invalid ID."""
-    Lab._Lab__instances = {}
-    Lab._max_id = 0
+    Lab.reset()
     lab1 = Lab("R-101", "Worst place in the world")
     lab2 = Lab("R-102", "Second-worst place in the world")
     bad_id = 666
@@ -330,7 +328,7 @@ def test_get_bad():
 
 def test_get_by_number_good():
     """Verifies that get_by_number() returns the first Lab matching the passed room number."""
-    Lab._Lab__instances = {}
+    Lab.reset()
     room = "R-101"
     lab = Lab(room, "The worst place in the world")
     assert Lab.get_by_number(room) == lab
