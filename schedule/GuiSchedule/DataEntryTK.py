@@ -40,6 +40,7 @@ class DataEntryTK:
         # for title in self.titles:
             # TODO: Tkinter doesn't have an equivalent table widget. Figure something out.
             # This may present a solution: https://www.geeksforgeeks.org/create-table-using-tkinter/
+            # NOTE: Above solution does work, but TableEntry is a custom widget Sandy made.
             # continue
         for r in range(len(self.data_entry.schedulable_list_obj.list()) + 1):
             for c in range(len(self.titles)):
