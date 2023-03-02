@@ -17,19 +17,19 @@ class TableEntry(Frame):
     # populate
     # ===================================================================
     def populate(self, **args):
-        # pane = Frame(self, name='tableEntry', border=2, relief='flat')
-        # pane.pack(side='left', fill='both')
-        #
+        self.pane = Frame(self, name='tableEntry', border=2, relief='flat')
+        self.pane.grid(row=0, column=0)
+
         # self.pane = pane
-        # x_scrollbar = Scrollbar(self.pane, elementborderwidth=2,
-        #                         relief='ridge',
-        #                         width=12,
-        #                         orient=HORIZONTAL)
-        #
-        # y_scrollbar = Scrollbar(self.pane, elementborderwidth=2,
-        #                         relief='ridge',
-        #                         width=12,
-        #                         orient=VERTICAL)
+        x_scrollbar = Scrollbar(self.pane, elementborderwidth=2,
+                                relief='ridge',
+                                width=12,
+                                orient=HORIZONTAL)
+
+        y_scrollbar = Scrollbar(self.pane, elementborderwidth=2,
+                                relief='ridge',
+                                width=12,
+                                orient=VERTICAL)
 
         # ---------------------------------------------------------------
         # create defaults here, because ConfigSpecs doesn't set
@@ -71,6 +71,7 @@ class TableEntry(Frame):
         self._reverse = {}
         self._lookup = []
         self._te_init()
+        self.test_label = Label(self, text="Can you see me, tommy?").grid(row=0, column=0)
         
     def _te_init(self):
         # Create header row.
@@ -125,8 +126,8 @@ class TableEntry(Frame):
         for c in range(0, cols):
             if c >= len(titles):
                 titles.append('')
-            w = Label(self, text=titles[c], bg="yellow")
-            w.grid(column=c, sticky="nwes", row=0)
+            w = Label(self, text=titles[c], bg="yellow", width=50)
+            w.grid(column=c, row=0, sticky="nwes")
             row_lookups.append(w)
             self._reverse[w] = [0, c]
         self._lookup.append(row_lookups)
