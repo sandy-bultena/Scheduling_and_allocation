@@ -51,7 +51,7 @@ class DataEntryTK:
             colwidths=self.col_widths,
             delete=[self.del_callback, self.data_entry]
         )
-        self.de.pack(sid='top', expand=1, fill="both")
+        self.de.pack(side='top', expand=1, fill="both")
 
     def refresh(self, data):
         pass

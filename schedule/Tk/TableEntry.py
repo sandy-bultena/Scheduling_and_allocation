@@ -63,6 +63,10 @@ class TableEntry(Frame):
         # self.configure(configure)
         self.__titles = args['titles'] if args['titles'] else []
         self.__columns = args['columns'] if args['columns'] else 0
+        if args.get('colwidths'):
+            self.__colwidths = args['colwidths']
+        else:
+            self.__colwidths = defaults['colwidths']
         self.__rows = args['rows'] if args['rows'] else 0
 
         # ---------------------------------------------------------------
@@ -175,11 +179,12 @@ class TableEntry(Frame):
             # Make sure these bindings happen _before_ the other class bindings.
             # self.bindtags()
 
-            # Keep the row count up to date.
-            # Add a delete button in the first column.
-            self._put_delete(row)
+        # Keep the row count up to date. TODO
+        # Add a delete button in the first column.
+        self._put_delete(row)
 
     def _put_delete(self, row: int):
+        # TODO: Expand later once the red X image has been added. Placeholder for now.
         del_button = Button(self.pane,
                             relief='flat',
                             text='X'
