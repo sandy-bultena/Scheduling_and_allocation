@@ -248,7 +248,7 @@ class Lab:
         if self in Lab.__instances.values():
             # Remove any TimeSlots associated with this Lab.
             for slot in self.unavailable():
-                TimeSlot._TimeSlot__instances.remove(slot)
+                if slot.id in TimeSlot._TimeSlot__instances: del TimeSlot._TimeSlot__instances[slot.id]
                 del self._unavailable[slot.id]
 
             # Then remove the Lab entity and its TimeSlot entities from the database.
