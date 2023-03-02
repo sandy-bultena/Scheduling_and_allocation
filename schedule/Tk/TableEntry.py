@@ -69,7 +69,7 @@ class TableEntry(Frame):
         # where we keep lookup info (widget to cell, cell to widget)
         # ---------------------------------------------------------------
         self._reverse = {}
-        self._lookup = []
+        self._lookup = [[] * 1 for i in range(self.__rows)]
         self._te_init()
 
     def _te_init(self):
@@ -84,7 +84,7 @@ class TableEntry(Frame):
         xtot = 0
         # for col in self.columns:
         #     w = self.get_widget
-        self.configure(width=500)
+        # self.configure(width=500)
 
     # ===================================================================
     # basic getter/setters
@@ -122,19 +122,60 @@ class TableEntry(Frame):
         # colwidths = self.colwidths
         row_lookups = []
 
-        for c in range(0, cols):
-            if c >= len(titles):
+        for c in range(1, cols + 1):
+            if c - 1 >= len(titles):
                 titles.append('')
-            w = Label(self, text=titles[c])
+            w = Label(self.pane, text=titles[c - 1])
             w.grid(column=c, row=0, sticky="nwes")
             row_lookups.append(w)
             self._reverse[w] = [0, c]
         self._lookup.append(row_lookups)
 
-    def add_empty_row(self, row):
+    # ===================================================================
+    # add empty_row
+    # ===================================================================
+    def add_empty_row(self, row: int):
         # colwidths = self.colwidths
         # disabled = self.disabled
         for c in range(1, self.__columns):
             # Get the width of the columns from somewhere.
-            old = None
+
+            # if something's already here, delete it. TODO: Come back to this.
+            # old = self._lookup[row][c]
+            # if old:
+            #     old.destroy()
+
+            # Make the entry widget.
+            w = Entry(
+                self.pane,
+                # bg=self.cget('bg_entry'),
+                disabledforeground='black',
+                relief='flat'
+                )
+            if c == 0:
+                w.configure(state='disabled')
+            w.grid(column=c, row=row, sticky='nwes')
+
+            # Key bindings for this entry widget. TODO: Implement _nextCell & _prevCell functions.
+            w.bind("<Tab>", print("Going to next cell"))
+            w.bind("<Key-Return>", print("Going to previous cell"))
+            '''
+            $w->bind( "<Shift-Tab>",      [ \&_prevCell,   $t ] );
+            $w->bind( "<Key-Left>",       [ \&_prevCell,   $t ] );
+            $w->bind( "<Key-leftarrow>",  [ \&_prevCell,   $t ] );
+            $w->bind( "<Key-Up>",         [ \&_prevRow,    $t ] );
+            $w->bind( "<Key-uparrow>",    [ \&_prevRow,    $t ] );
+            $w->bind( "<Key-Down>",       [ \&_nextRow,    $t ] );
+            $w->bind( "<Key-downarrow>",  [ \&_nextRow,    $t ] );
+            $w->bind( "<Key-Right>",      [ \&_nextCell,   $t ] );
+            $w->bind( "<Key-rightarrow>", [ \&_nextCell,   $t ] );
+            $w->bind( "<Button>",         [ \&_select_all, $t ] );
+            '''
+
+            # Make sure these bindings happen _before_ the other class bindings.
+            # self.bindtags()
+
+            # Keep the row count up to date.
+            # Add a delete button in the first column.
+
 
