@@ -1,6 +1,7 @@
 import tkinter
 from tkinter import *
 from tkinter import ttk
+from typing import Any
 
 
 # ===================================================================
@@ -8,14 +9,14 @@ from tkinter import ttk
 # ===================================================================
 
 class TableEntry(Frame):
-    def __init__(self, parent):
+    def __init__(self, parent, **kwargs):
         super().__init__(parent)
-        self.populate()
+        self.populate(**kwargs)
 
     # ===================================================================
     # populate
     # ===================================================================
-    def populate(self, *args):
+    def populate(self, **args):
         pane = Frame(self, name='tableEntry', border=2, relief='flat')
         pane.pack(side='left', fill='both')
 
@@ -24,6 +25,7 @@ class TableEntry(Frame):
                                 relief='ridge',
                                 width=12,
                                 orient=HORIZONTAL)
+
         y_scrollbar = Scrollbar(self.pane, elementborderwidth=2,
                                 relief='ridge',
                                 width=12,
@@ -34,7 +36,7 @@ class TableEntry(Frame):
         # those specifications until later, but we need this stuff
         # now
         # ---------------------------------------------------------------
-        defaults = {
+        defaults: dict[str, Any] = {
             'rows': 10,             # Number of rows to start
             'bg_entry': '#ffffff',  # Background color of the entry widget.
             'columns': 10,          # Number of columns
@@ -55,3 +57,60 @@ class TableEntry(Frame):
         # self.configure(
         #
         # )
+
+        # TODO: The call to configure() fails because Frame doesn't have a "-rows" option.
+        # configure = dict(defaults, **args)
+        # self.configure(configure)
+        self.titles = args['titles'] if args['titles'] else []
+        self._te_init()
+        
+    def _te_init(self):
+        # Create header row.
+        self._create_header_row()
+        
+        # add rows
+        # for row in self.rows:
+        #     self.add_empty_row(row)
+            
+        # Calculate the width of the row, to set the pane width.
+        xot = 0
+        # for col in self.columns:
+        #     w = self.get_widget
+
+    # ===================================================================
+    # basic getter/setters
+    # ===================================================================
+    @property
+    def rows(self):
+        return self.cget('rows')
+
+    @property
+    def columns(self):
+        return self.cget('columns')
+
+    # ===================================================================
+    # reconfigure the titles of the columns
+    # ===================================================================
+    @property
+    def titles(self):
+        # NOTE: The Frame widget doesn't have a config option for 'titles' in Tkinter, and the
+        # Scrollable and Pane widgets from Perl TK don't exist here. Have to improvise.
+        return self.cget('titles')
+
+    @titles.setter
+    def titles(self, r):
+        if r:
+            self.configure()
+
+    # ===================================================================
+    # insert header_row
+    # ===================================================================
+    def _create_header_row(self):
+        self._title_widgets = []
+        cols = self.columns # Fails because Frame doesn't have an option called "-columns"
+        titles = self.titles
+        colwidths = self.colwidths
+
+        for c in cols:
+            pass
+

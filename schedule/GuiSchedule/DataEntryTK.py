@@ -1,6 +1,7 @@
 from builtins import function
 from tkinter import *
 from tkinter import ttk
+from schedule.Tk.TableEntry import TableEntry
 
 '''
 package DataEntryTk;
@@ -35,17 +36,22 @@ class DataEntryTK:
         self.titles = data_entry.col_titles
         self.col_widths = data_entry.col_widths
 
-        # TODO: Pick up from here tomorrow.
-        # self.de = self.frame.
-        # for title in self.titles:
-            # TODO: Tkinter doesn't have an equivalent table widget. Figure something out.
-            # This may present a solution: https://www.geeksforgeeks.org/create-table-using-tkinter/
-            # NOTE: Above solution does work, but TableEntry is a custom widget Sandy made.
-            # continue
+        # TODO: Tkinter doesn't have an equivalent table widget. Figure something out.
+        # This may present a solution: https://www.geeksforgeeks.org/create-table-using-tkinter/
+        # NOTE: Above solution does work, but TableEntry is a custom widget Sandy made.
+        # continue
         for r in range(len(self.data_entry.schedulable_list_obj.list()) + 1):
             for c in range(len(self.titles)):
                 if r == 0:
                     e = Label(self.frame, width=self.col_widths[c], text=self.titles[c])
+        self.de = TableEntry(
+            self.frame,
+            columns=len(self.titles),
+            titles=self.titles,
+            colwidths=self.col_widths,
+            delete=[self.del_callback, self.data_entry]
+        )
+        self.de.pack(sid='top', expand=1, fill="both")
 
     def refresh(self, data):
         pass
