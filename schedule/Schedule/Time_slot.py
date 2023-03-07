@@ -1,8 +1,11 @@
 from __future__ import annotations
 import re
+from ScheduleEnums import WeekDay, WeekDayNumber
 
 from database.PonyDatabaseConnection import TimeSlot as dbTimeSlot
 from pony.orm import *
+
+# TODO: Print statements are not good in a gui app.  Maybe we should change them log?
 
 """ SYNOPSIS/EXAMPLE:
 
@@ -24,26 +27,8 @@ class TimeSlot:
     # Class/Global Variables
     # =================================================================
     __instances = {}
-    WEEK = {
-        "mon": 1,
-        "tue": 2,
-        "wed": 3,
-        "thu": 4,
-        "fri": 5,
-        "sat": 6,
-        "sun": 7
-    }
     MAX_HOUR_DIV = 2
-    REVERSE_WEEK = {
-        1: "mon",
-        2: "tue",
-        3: "wed",
-        4: "thu",
-        5: "fri",
-        6: "sat",
-        7: "sun"
-    }
-    DEFAULT_DAY = "mon"
+    DEFAULT_DAY = WeekDay.Monday.value
     DEFAULT_START = "8:00"
     DEFAULT_DURATION = 1.5
 
@@ -54,7 +39,7 @@ class TimeSlot:
     def __init__(self, day: str = DEFAULT_DAY,
                  start: str = DEFAULT_START,
                  duration: float = DEFAULT_DURATION,
-                 movable=True, *args, id: int = None):
+                 movable=True, id: int = None):
         """
         Creates a new TimeSlot object.
 
@@ -63,6 +48,8 @@ class TimeSlot:
 
         day: str
             'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat' or 'Sun'.
+            Weekday
+            Weekday.Monday, Weekday.Tuesday ...
         
         start: str
             Start time using the 24hr clock (i.e., 1PM is "13:00")
@@ -73,7 +60,9 @@ class TimeSlot:
         movable: bool
             Whether this time_slot can be moved or not.
         """
-        if len(args) > 0: raise ValueError("Error: too many positional arguments")
+        # NOTE: Doing this so that day_number will also be set
+        #       The order that these are implemented is important
+        day = TimeSlot.DEFAULT_DAY
         self.day_number = 0
         self.start_number = 0
         self.day = day
@@ -109,23 +98,26 @@ class TimeSlot:
         return self.__day
 
     @day.setter
+    # TODO:  Do we really want this to be so flexible that users can specify an
+    #        integer instead of a string or Weekday object?
     def day(self, new_day: str):
-        # Convert the string to lowercase and remove any extraneous characters beyond the ones we
-        # want.
-        new_day = new_day[0:3].lower()
 
-        # If this is one of the seven valid days, set it.
-        if new_day in TimeSlot.WEEK.keys():
-            self.__day = new_day
-            self.day_number = TimeSlot.WEEK[new_day]
-        elif re.search("^[1-7]$", new_day):
-            self.day_number = int(new_day)
-            self.__day = TimeSlot.REVERSE_WEEK[int(new_day)]
-        else:
-            # If it's not valid, set the day to the default value of Monday.
+        try:
+            # if representing day as an integer
+            if isinstance(new_day, int):
+                self.__day = WeekDayNumber(new_day).name
+                self.day_number = new_day
+
+            # if representing day as a string
+            else:
+                self.__day = WeekDay.validate(new_day)
+                self.day_number = WeekDayNumber[self.__day].value
+
+        # bad inputs, default to default_day
+        except ValueError:
             print(f"<{new_day}>: invalid day specified... setting to {TimeSlot.DEFAULT_DAY}")
             self.__day = TimeSlot.DEFAULT_DAY
-            self.day_number = TimeSlot.WEEK[TimeSlot.DEFAULT_DAY]
+            self.day_number = WeekDayNumber[TimeSlot.DEFAULT_DAY].value
 
     # ====================================
     # start
@@ -234,6 +226,11 @@ class TimeSlot:
         To set the day according to the data in this property, use the method snap_to_day()."""
         return self.__day_number
 
+    # TODO: we should not allow someone to change the day_number without also changing
+    #       the day string.
+    #       question: do we want day_number to be only a getter, and let user's only set the day,
+    #       or do we want to let the user specify day_number, and we update the day string
+    #       appropriately?
     @day_number.setter
     def day_number(self, new_val: int):
         self.__day_number = new_val
@@ -302,15 +299,8 @@ class TimeSlot:
         Resets the 'day' property to the appropriate string.
 
         """
-        day = self._snap_to_day(*args)
-
-        # NOTE: Function's return value is not being used at all. Commenting out these lines
-        # of code.
-        # changed = False
-        # if TimeSlot.reverse_week[day] != self.day:
-        #     changed = True
-        self.day = TimeSlot.REVERSE_WEEK[day]
-        # return day
+        day_of_week = self._snap_to_day(*args)
+        self.day = WeekDayNumber(day_of_week).name
 
     def _snap_to_day(self, *args: int):
         min_day = args[0] if len(args) >= 1 else 1
@@ -318,10 +308,10 @@ class TimeSlot:
 
         r_day = self.day_number
 
-        day = r_day if r_day == int(r_day) else int(r_day + 0.5)
-        day = min_day if not day else day
-        day = max_day if day > max_day else day
-        return day
+        day_of_week = r_day if r_day == int(r_day) else int(r_day + 0.5)
+        day_of_week = min_day if not day_of_week else day_of_week
+        day_of_week = max_day if day_of_week > max_day else day_of_week
+        return day_of_week
 
     # =================================================================
     # conflicts
@@ -350,9 +340,9 @@ class TimeSlot:
     @staticmethod
     def list() -> tuple[TimeSlot]:
         return tuple(TimeSlot.__instances.values())
-    
+
     @staticmethod
-    def get(id : int) -> TimeSlot:
+    def get(id: int) -> TimeSlot:
         return TimeSlot.__instances.get(id, None)
 
     # =================================================================
@@ -363,14 +353,15 @@ class TimeSlot:
         """Saves this TimeSlot to the database, updating its corresponding record.
 
         Returns the corresponding TimeSlot database entity."""
-        d_slot = dbTimeSlot.get(id=self.__id)   # use the __id so it refers to the time slot's ID correctly, not block ID (when relevant)
+        d_slot = dbTimeSlot.get(
+            id=self.__id)  # use the __id so it refers to the time slot's ID correctly, not block ID (when relevant)
         if not d_slot: d_slot = dbTimeSlot(day=self.day, duration=self.duration, start=self.start)
         d_slot.day = self.day
         d_slot.duration = self.duration
         d_slot.start = self.start
         d_slot.movable = self.movable
         return d_slot
-    
+
     # =================================================================
     # reset
     # =================================================================
@@ -387,6 +378,8 @@ class TimeSlot:
 =head1 AUTHOR
 
 Sandy Bultena, Ian Clement, Jack Burns
+
+converted to python by Jacob Levy and Even Laverdiere
 
 =head1 COPYRIGHT
 

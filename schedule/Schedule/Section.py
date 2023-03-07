@@ -47,7 +47,7 @@ class Section():
     # ========================================================
     # CONSTRUCTOR
     # ========================================================
-    def __init__(self, number: str = "", hours=1.5, name: str = "", course : Course = None, *args, id: int = None,
+    def __init__(self, number: str = "", hours=1.5, name: str = "", course : Course = None,  id: int = None,
                  schedule_id: int = None):
         """
         Creates an instance of the Section class.
@@ -55,7 +55,6 @@ class Section():
         - Parameter hours -> The hours of class the section has per week.
         - Parameter name -> The section's name.
         """
-        if len(args) > 0: raise ValueError("Error: too many positional arguments")
         if not id and not schedule_id: raise ValueError("Error: id or schedule_id must be defined")
 
         # LEAVE IN:
@@ -446,6 +445,10 @@ class Section():
         """
         for b in blocks:
             # removed check to avoid circular dependency
+            # TODO: Watch this video, it will explain how to get rid of circular dependencies
+            #       https://www.youtube.com/watch?v=UnKa_t-M_kM
+            #       TLDR: just import, don't use 'from'
+            #       Too many objects have 'id' as a attribute
             # if not isinstance(b, Block): raise f"{b}: invalid block - must be a Block object"
             if not hasattr(b, 'id'): raise TypeError(f"{b}: invalid block - no id found")
             self._blocks[b.id] = b
@@ -477,7 +480,6 @@ class Section():
         if dbSection.get(id = self.id): dbSection.get(id = self.id).delete()    # should cascade and delete all associated blocks
         if self.id in Section.__instances: del Section.__instances[self.id]
 
-    # NOTE: There's another method here called "block" in the Perl version, but from what I can tell it's the same thing as get_block_by_id with a different implementation
 
     # --------------------------------------------------------
     # __str__
@@ -498,16 +500,6 @@ class Section():
             if b.conflicted: return True
         return False
 
-        # --------------------------------------------------------
-        # conflicts - seemingly unused and/or abandoned
-        # --------------------------------------------------------
-        # def conflicts(self) -> list:
-        """ Gets a list of conflicts related to this section """
-        """conflicts = []
-        for b in self.blocks:
-            if hasattr(b, 'conflicts'): conflicts.extend(b.conflicts())
-        return conflicts"""
-
     # --------------------------------------------------------
     # get_new_number
     # --------------------------------------------------------
@@ -515,7 +507,7 @@ class Section():
         """ Gets the first unused block number """
         number = 1
         if not self.blocks: return number
-        while (self.get_block(number)):
+        while self.get_block(number):
             number += 1
         return number
 

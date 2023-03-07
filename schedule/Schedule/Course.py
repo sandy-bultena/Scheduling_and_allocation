@@ -6,16 +6,23 @@ from Stream import Stream
 from Teacher import Teacher
 from Lab import Lab
 
+# TODO: Watch this video, it will explain how to get rid of circular dependencies
+# https://www.youtube.com/watch?v=UnKa_t-M_kM
+# TLDR: just import Stream, import Teacher, and don't use 'from'
+# TODO: Fix the validation of Section is a section type
+
 from database.PonyDatabaseConnection import Course as dbCourse, Section as dbSection
 from pony.orm import *
+
 
 '''SYNOPSIS
 
     from Schedule.Course import Course
     from Schedule.Block import Block
     from Schedule.Section import Section
+    from DaysOfWeek import WeekDays
 
-    block = Block(day = "Wed", start = "9:30", duration = 1.5)
+    block = Block(day = WeekDay.Wednesday, start = "9:30", duration = 1.5)
     section = Section(number = 1, hours = 6)
     course = Course(name = "Basket Weaving", number="420-ABC-DEF")
     
@@ -35,16 +42,15 @@ class Course:
     # -------------------------------------------------------------------
     # new
     # --------------------------------------------------------------------
-    def __init__(self, number: str = "", name: str = "New Course", *args, id: int = None):
+    def __init__(self, number: str = "", name: str = "New Course", id: int = None):
         """Creates and returns a course object.
-        
+
         Parameter **number**: str -> The alphanumeric course number.
 
         Parameter **name**: str -> the name of the course."""
-        if len(args) > 0: raise ValueError("Error: too many positional arguments")
+
         self.number = str(number)
         self.name = str(name)
-        # self.semester = str(semester)
         self._allocation = True
         self._sections = {}
 
@@ -85,36 +91,15 @@ class Course:
     @property
     def needs_allocation(self) -> bool:
         """Does this course need to be allocated (i.e., to have a teacher assigned)?
-        
+
         For example, Math and Human Relations do not need to be allocated to one of our teachers.
-        
+
         Defaults to true."""
         return self._allocation
 
     @needs_allocation.setter
     def needs_allocation(self, allocation: bool):
         self._allocation = allocation
-
-    # =================================================================
-    # semester
-    # =================================================================
-
-    # @property
-    # def semester(self):
-    #     """Gets or sets the Course's semester (accepted values: 'summer', 'winter', 'fall',
-    #     or blank). """
-    #     return self.__semester
-    #
-    # @semester.setter
-    # def semester(self, new_semester: str):
-    #     new_semester = new_semester.lower()
-    #     # Warn the user if they entered a value other than summer, winter, or fall. Was
-    #     # originally a generic Warning, but pony.orm.dbapiprovider overrides this with its own
-    #     # Warning class, so I changed it to a more specific UserWarning.
-    #     if not re.match("^(summer|winter|fall)", new_semester):
-    #         warn(f"invalid semester for course; {new_semester}", UserWarning, stacklevel=2)
-    #         new_semester = ""
-    #     self.__semester = new_semester
 
     # =================================================================
     # number
@@ -133,12 +118,13 @@ class Course:
     # =================================================================
     def add_section(self, *sections):
         """Assign a Section to this Course.
-        
+
         Returns the modified Course object."""
         # In Perl, this function is structured in a way that allows it to take multiple sections
         # and add them all to the Course, one at a time. However, it is never actually used that
         # way. I am preserving the original structure just in case.
         for section in sections:
+            # TODO: Fix
             # Verify that this is actually a Section object. NOTE: the Section import has been
             # taken out to avoid a circular dependency.
             if not hasattr(section, "number") or f"Section {section.number}" not in str(section):
@@ -147,12 +133,7 @@ class Course:
             # -------------------------------------------------------
             # Section numbers must be unique for this Course.
             # -------------------------------------------------------
-            duplicate = False
-            for sec in self._sections.values():
-                if section.number == sec.number:
-                    duplicate = True
-                    break
-            if duplicate:
+            if section.number in (sec.number for sec in self._sections.values()):
                 raise Exception(
                     f"<{section.number}>: section number is not unique for this Course.")
 
@@ -187,45 +168,37 @@ class Course:
     # =================================================================
     def get_section_by_id(self, sect_id):
         """Gets the Section from this Course that matches the passed section ID, if it exists.
-        
-        Returns the Section if found, or None otherwise."""
-        # if hasattr(self, '_sections'):
-        sections = self.sections()
-        for i in sections:
-            if i.id == sect_id:
-                return i
 
-        return None
+        Returns the Section if found, or None otherwise."""
+        found = [section for section in self.sections() if section.id == sect_id]
+        return found[0] if found else None
 
     # =================================================================
     # get_section_by_name
     # =================================================================
-    def get_section_by_name(self, name: str):
+    def get_section_by_name(self, name: str) -> list:
         """Gets the Section from this Course that has the passed section name, if it exists.
-        
+
         Returns a list containing the Section if found, or an empty list otherwise."""
         # NOTE: This method is coded to return an array in the Perl code. However, the one place
         # where this function is being called--AssignToResource.pm--only cares about the first
         # element of the returned array. I'm keeping the structure as-is, but this will probably
         # need revision.
-        to_return = []
         if name:
-            sections = self.sections()
-            # for i in sections:
-            #     if i.name == name:
-            #         to_return.append(i)
-            to_return = [s for s in sections if s.name == name]
-        return to_return
+            sections = [s for s in self.sections() if s.name == name]
+            return sections
+        return []
 
     # =================================================================
     # remove_section
     # =================================================================
     def remove_section(self, section):
         """Removes the passed Section from this Course, if it exists.
-        
+
         Returns the modified Course object."""
         # Verify that the section is indeed a Section object. NOTE: the Section import has been
         # taken out to avoid a circular dependency.
+        # TODO: Fix
         if not hasattr(section, "number") or f"Section {section.number}" not in str(section):
             raise TypeError(f"<{section}>: invalid section - must be a Section object")
 
@@ -248,7 +221,7 @@ class Course:
     # =================================================================
     def delete(self):
         """Delete this object (and all its dependants).
-        
+
         Returns None."""
         for section in self.sections():
             self.remove_section(section)
@@ -267,6 +240,7 @@ class Course:
     # sections
     # =================================================================
     def sections(self):
+        # TODO: fix, once you have got rid of the circular dependencies
         """Returns a list of all the Sections assigned to this Course."""
         return list(getattr(self, '_sections', {}).values())
 
@@ -356,10 +330,11 @@ class Course:
     def print_description2(self):
         """Returns a brief string containing the Course's number and name, in the format 'Number:
         Name'. """
-        return self.__str__()
-
-    def __str__(self) -> str:
         return f"{self.number}: {self.name}"
+
+    # NOTE: in perl, the string method is overloaded by print_description, not print_description2
+    def __str__(self) -> str:
+        return self.print_description()
 
     # =================================================================
     # teachers
@@ -381,11 +356,7 @@ class Course:
         """Returns true if the passed Teacher is assigned to this Course."""
         if not teacher or not isinstance(teacher, Teacher):
             return False
-
-        for t in self.teachers():
-            if t.id == teacher.id:
-                return True
-        return False
+        return teacher.id in (adult.id for adult in self.teachers)
 
     # =================================================================
     # streams
@@ -408,18 +379,14 @@ class Course:
         if not stream:
             return False
 
-        for s in self.streams():
-            if s.id == stream.id:
-                return True
-
-        return False
+        return stream.id in (s.id for s in self.streams())
 
     # =================================================================
     # assign_teacher
     # =================================================================
     def assign_teacher(self, teacher: Teacher):
         """Assigns a Teacher to all Sections of this Course.
-        
+
         Returns the modified Course object."""
         if teacher:
             for section in self.sections():
@@ -432,7 +399,7 @@ class Course:
     # =================================================================
     def assign_lab(self, lab: Lab):
         """Assigns a Lab to all Sections of this Course.
-        
+
         Returns the modified Course object."""
         if lab:
             for section in self.sections():
@@ -445,7 +412,7 @@ class Course:
     # =================================================================
     def assign_stream(self, stream: Stream):
         """Assigns a Stream to all Sections of this Course.
-        
+
         Returns the modified Course object."""
         if stream:
             for section in self.sections():
@@ -458,7 +425,7 @@ class Course:
     # =================================================================
     def remove_teacher(self, teacher: Teacher):
         """Removes the passed Teacher from all Blocks in this Course.
-        
+
         Returns the modified Course object."""
         for section in self.sections():
             section.remove_teacher(teacher)
@@ -470,7 +437,7 @@ class Course:
     # =================================================================
     def remove_all_teachers(self):
         """Removes all Teachers from all Blocks in this Course.
-        
+
         Returns the modified Course object."""
         for teacher in self.teachers():
             self.remove_teacher(teacher)
@@ -482,7 +449,7 @@ class Course:
     # =================================================================
     def remove_stream(self, stream):
         """Removes the specified Stream from this Course.
-        
+
         Returns the modified Course object."""
         for section in self.sections():
             section.remove_stream(stream)
@@ -494,7 +461,7 @@ class Course:
     # =================================================================
     def remove_all_streams(self):
         """Removes all Streams from all Sections of this Course.
-        
+
         Returns the modified Course object."""
         for stream in self.streams():
             self.remove_stream(stream)
@@ -558,7 +525,7 @@ class Course:
         cc.number = self.number
         cc.allocation = self.needs_allocation
         return cc
-    
+
     # =================================================================
     # reset
     # =================================================================
@@ -566,6 +533,7 @@ class Course:
     def reset():
         """Reset the local list of courses"""
         Course.__instances = {}
+
 
 # =================================================================
 # footer

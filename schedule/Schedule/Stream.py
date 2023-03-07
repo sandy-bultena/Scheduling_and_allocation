@@ -7,10 +7,12 @@ from pony.orm import *
     from Schedule.Stream import Stream
 
     stream = Stream(number = "P322")
+    
+    all_labs = Stream.list()
 """
 
 
-class Stream():
+class Stream:
     """ Describes a group of students whose classes cannot overlap. """
     _max_id = 0
     __instances = dict()
@@ -18,13 +20,12 @@ class Stream():
     # ========================================================
     # CONSTRUCTOR
     # ========================================================
-    def __init__(self, number: str = "A", descr: str = "", *args, id: int = None):
+    def __init__(self, number: str = "A", descr: str = "", id: int = None):
         """
         Creates an instance of the Stream class.
         - Parameter number -> defines the stream number.
         - Parameter desc -> defines the stream description.
         """
-        if len(args) > 0: raise ValueError("Error: too many positional arguments")
         self.number = number
         self.descr = descr
 
@@ -56,7 +57,7 @@ class Stream():
     def get(id: int) -> Stream:
         """ Gets a Stream with a given ID. If ID doesn't exist, returns None."""
         return Stream.__instances[id] if id in Stream.__instances else None
-    
+
     # =================================================================
     # reset
     # =================================================================
@@ -104,9 +105,22 @@ class Stream():
     # --------------------------------------------------------
     # print_description     # note: called print_description2 in the Perl version
     # --------------------------------------------------------
-    def print_description(self) -> str:
+    # TODO: In the code in branch MVP, print_descrition2 was renamed
+    #       which we should do then, so I am putting this back to
+    #       print_description2.
+    #       -- update tests as necessary
+    def print_description2(self) -> str:
         """ Returns a text string that describes the Stream """
         return f"{self.number}: {self.descr}"
+
+    # --------------------------------------------------------
+    # conversion to string
+    # --------------------------------------------------------
+    def __str__(self) -> str:
+        return self.number
+
+    def __repl__(self) -> str:
+        return self.__str__()
 
     # --------------------------------------------------------
     # delete

@@ -42,3 +42,6 @@ __pycache__/
 
 # PyTest cache
 .pytest_cache/
+
+# Not sure where this came from, but I don't want it
+.idea/

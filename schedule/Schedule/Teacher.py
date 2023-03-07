@@ -4,15 +4,24 @@ from typing import List
 from database.PonyDatabaseConnection import Teacher as dbTeacher, Schedule_Teacher as dbSchedTeach
 from pony.orm import *
 
+"""
+SYNOPSIS
 
-# SYNOPSIS
+    from Teacher import Teacher
+    mouse    = Teacher(firstname = "Micky", 
+                      lastname  = "Mouse",
+                      dept      = "Disney"
+                      )
+    duck    = Teacher(firstname = "Donald", 
+                      lastname  = "Duck",
+                      dept      = "Mouse"
+                      )
+    for teacher in Teachers.List():
+        print (teacher)
+    
+    Teacher.remove(duck);
 
-#    use Schedule::Teacher;
-
-#    my $teacher = Teacher->new (-firstname => $name, 
-#                                -lastname => $lname,
-#                                -dept     => $dept
-#                               );
+"""
 
 
 class Teacher:
@@ -25,13 +34,12 @@ class Teacher:
     # new
     # --------------------------------------------------------------------
 
-    def __init__(self, firstname: str, lastname: str, dept: str = "", *args, id: int = None):
+    def __init__(self, firstname: str, lastname: str, dept: str = "", id: int = None):
         """Creates a Teacher object.
         
         Parameter **firstname:** str -> first name of the teacher.
         Parameter **lastname:** str -> last name of the teacher.
         Parameter **dept:** str -> department that this teacher is associated with (optional)"""
-        if len(args) > 0: raise ValueError("Error: too many positional arguments")
         self.firstname = firstname
         self.lastname = lastname
         self.dept = dept
@@ -117,7 +125,7 @@ class Teacher:
     # endregion
 
     # =================================================================
-    # print_description
+    # default string
     # =================================================================
     def print_description(self):
         """Returns a text string that describes the Teacher."""
@@ -127,6 +135,12 @@ class Teacher:
     def __str__(self):
         return f"{self.firstname} {self.lastname}"
 
+    def __repl__(self):
+        return self.__str__()
+
+    # =================================================================
+    # get all teachers
+    # =================================================================
     @staticmethod
     def list() -> tuple[Teacher]:
         """Returns an immutable tuple containing all occurrences of Teachers."""
@@ -165,9 +179,6 @@ class Teacher:
     @staticmethod
     def get(teacher_id: int):
         """Returns the Teacher object matching the passed ID, if it exists."""
-        # for teacher in Teacher.__instances.values():
-        #     if teacher.id == teacher_id:
-        #         return teacher
         if teacher_id in Teacher.__instances.keys():
             return Teacher.__instances[teacher_id]
         return None
@@ -192,6 +203,10 @@ class Teacher:
         """Removes this Teacher from the Teachers object."""
         if self.id in Teacher.__instances.keys():
             del Teacher.__instances[self.id]
+
+            # TODO: BIG QUESTION:  DELETING A TEACHER ... IS THIS DELETING A TEACHER
+            #       FROM THE CURRENT SCHEDULE, OR ARE WE DELETING A TEACHER FROM THE DATABASE?
+            #       SHOULD THERE BE A DIFFERENCE?
             self.__delete_entity_teacher()
 
     @db_session
@@ -231,7 +246,7 @@ class Teacher:
         return True
 
     @db_session
-    def save(self, schedule = None):
+    def save(self, schedule=None):
         """Saves the Teacher object to the database."""
         d_teach = dbTeacher.get(id=self.id)
         if not d_teach: d_teach = dbTeacher(first_name=self.firstname, last_name=self.lastname)
@@ -241,11 +256,11 @@ class Teacher:
         # No need to update the Teacher's schedules/sections/blocks sets; those are handled
         # elsewhere.
         if schedule:
-            sched_t = dbSchedTeach.get(teacher_id = d_teach, schedule_id = schedule)
-            if not sched_t: sched_t = dbSchedTeach(teacher_id = d_teach, schedule_id = schedule, work_release = self.release)
+            sched_t = dbSchedTeach.get(teacher_id=d_teach, schedule_id=schedule)
+            if not sched_t: sched_t = dbSchedTeach(teacher_id=d_teach, schedule_id=schedule, work_release=self.release)
             sched_t.work_release = self.release
         return d_teach
-    
+
     # =================================================================
     # reset
     # =================================================================

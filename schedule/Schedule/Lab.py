@@ -1,5 +1,6 @@
 from __future__ import annotations
 from Time_slot import TimeSlot
+from ScheduleEnums import WeekDay
 
 from database.PonyDatabaseConnection import Lab as dbLab, TimeSlot as dbTimeSlot
 from pony.orm import *
@@ -67,7 +68,7 @@ class Lab:
         return self.__number
 
     @number.setter
-    def number(self, new_value):
+    def number(self, new_value: str):
         self.__number = new_value
 
     # =================================================================
@@ -86,7 +87,7 @@ class Lab:
     # =================================================
     # add_unavailable
     # =================================================
-    def add_unavailable(self, day: str, start: str, duration: float):
+    def add_unavailable(self, day: WeekDay, start: str, duration: float):
         """Creates a time slot where this lab is not available.
         
         - Parameter day => 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'
@@ -95,10 +96,9 @@ class Lab:
 
         - Parameter duration => how long does this class last, in hours
         """
-        # if not hasattr(self, '_unavailable'):
-        #     self._unavailable: dict[int, TimeSlot] = {}
 
         # Create a TimeSlot.
+        day = WeekDay.validate(day)
         return self.add_unavailable_slot(TimeSlot(day, start, duration))
 
     def add_unavailable_slot(self, slot: TimeSlot) -> Lab:
@@ -193,12 +193,11 @@ class Lab:
     def get_by_number(number: str) -> Lab | None:
         """Returns the Lab which matches this Lab number, if it exists."""
         if not number:
-            return
+            return None
 
-        for lab in Lab.list():
-            if lab.number == number:
-                return lab
-        return None
+        found = [lab for lab in Lab.list() if lab.number == number]
+        return found[0] if found else None
+
 
     # =================================================================
     # get

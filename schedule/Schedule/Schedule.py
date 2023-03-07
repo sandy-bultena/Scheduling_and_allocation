@@ -6,14 +6,16 @@ from Stream import Stream
 from Section import Section
 from Block import Block
 from Time_slot import TimeSlot
+from ScheduleEnums import ConflictType
 import os
 import re
 import yaml # might require pip install pyyaml
+# TODO: Remove yaml if you no longer no need it.
 
 import database.PonyDatabaseConnection as db
 from pony.orm import *
 
-
+# TODO: Update the synopsis
 """ SYNOPSIS/EXAMPLE:
     from Schedule.Schedule import Schedule
 
@@ -201,7 +203,8 @@ class Schedule:
             
     @staticmethod
     def __create_stream(id : int) -> Stream:
-        """ Takes a given ID and returns the Stream model object with given ID. If it doesn't exist locally, creates it from the database, and adds to database if not already present. """
+        """ Takes a given ID and returns the Stream model object with given ID.
+        If it doesn't exist locally, creates it from the database, and adds to database if not already present. """
         if Stream.get(id): return Stream.get(id)
         stream = db.Stream.get(id = id)
         return Stream(stream.number, stream.descr, id = id)
@@ -210,8 +213,8 @@ class Schedule:
     # teachers
     # --------------------------------------------------------
     @staticmethod
-    def teachers() -> list[Teacher]:
-        """Returns the list of Teachers"""
+    def teachers() -> tuple[Teacher]:
+        """Returns a tuple of all the Teacher objects"""
         return Teacher.list()
 
     # --------------------------------------------------------
@@ -219,15 +222,15 @@ class Schedule:
     # --------------------------------------------------------
     @staticmethod
     def streams() -> tuple[Stream]:
-        """Returns the list of Streams"""
+        """Returns a tuple of all the Stream objects"""
         return Stream.list()
 
     # --------------------------------------------------------
     # courses
     # --------------------------------------------------------
     @staticmethod
-    def courses() -> list[Course]:
-        """Returns the list of Courses"""
+    def courses() -> tuple[Course]:
+        """Returns a tuple of all the Course objects"""
         return Course.list()
 
     # --------------------------------------------------------
@@ -235,7 +238,7 @@ class Schedule:
     # --------------------------------------------------------
     @staticmethod
     def labs() -> list[Lab]:
-        """Returns the list of Labs"""
+        """Returns a tuple of all the Lab objects"""
         return Lab.list()
 
     # --------------------------------------------------------
@@ -243,20 +246,36 @@ class Schedule:
     # --------------------------------------------------------
     @staticmethod
     def conflicts() -> list[Conflict]:
-        """Returns the list of Conflicts"""
+        """Returns the a tuple of all the Conflict objects"""
         return Conflict.list()
 
     # --------------------------------------------------------
     # sections_for_teacher
     # --------------------------------------------------------
     @staticmethod
-    def sections_for_teacher(teacher : Teacher) -> list[Section]:
+    def sections_for_teacher(teacher : Teacher) -> list [Section]:
+        # TODO is there any reason why we are returning a list, and not just a set?
+        #      -- it seems like a waste of time to convert a set to a list
+        #      -- or, we can return a tuple, which is immutable.
+
         """
-        Returns a list of Sections that the given Teacher teaches
+        Returns a tuple of Sections that the given Teacher teaches
         - Parameter teacher -> The Teacher who's Sections should be found
         """
         if not isinstance(teacher, Teacher): raise TypeError(f"{teacher} must be an object of type Teacher")
         outp = set()
+        # TODO: Comparing to perl code, this only works if courses,
+        #       which may previously exist, but then are removed from the schedule, also remove
+        #       the sections, labs, blocks, etc from their lists,
+        #       ... if that is taken care of, then this code is ok, (it looks like it is, but we have to be sure)
+        #       ... otherwise, you have to verify that the section, lab, block, etc belongs to a course
+        #           that belongs to this schedule.
+        #       ...
+        #       ... Example, we may have a scenario that has complementary xyz in that schedule,
+        #           and it is removed, and replaced with course abc.  Sections lists should be
+        #           updated accordingly
+        #       questions: Do you have a test for dropping a course, and validating that
+        #           the lists of teachers, blocks, labs, etc are updated?
         for s in Section.list():
             if teacher in s.teachers: outp.add(s)
         return list(outp)
@@ -266,6 +285,8 @@ class Schedule:
     # --------------------------------------------------------
     @staticmethod
     def courses_for_teacher(teacher : Teacher) -> list[Course]:
+        # TODO is there any reason why we are returning a list, and not just a set?
+        #      --- sets don't allow duplicates, which is good, but do we need to return a list?
         """
         Returns a list of Courses that the given Teacher teaches
         - Parameter teacher -> The Teacher who's Courses should be found
@@ -281,6 +302,8 @@ class Schedule:
     # --------------------------------------------------------
     @staticmethod
     def allocated_courses_for_teacher(teacher : Teacher) -> list[Course]:
+        # TODO: if we decide to return a 'set' for the other collections, then this should
+        #       be a set as well, just for consistency
         """
         Returns a list of courses that this teacher teaches, which is an allocated type course
         - Parameter teacher -> The Teacher to check
@@ -293,10 +316,14 @@ class Schedule:
     # --------------------------------------------------------
     @staticmethod
     def blocks_for_teacher(teacher : Teacher) -> list[Block]:
+        # TODO is there any reason why we are returning a list, and not just a set?
+        #      --- sets don't allow duplicates, which is good, but do we need to return a list?
         """
         Returns a list of Blocks that the given Teacher teaches
         - Parameter teacher -> The Teacher who's Blocks should be found
         """
+        # TODO: see above comments for sections_for_teachers
+
         if not isinstance(teacher, Teacher): raise TypeError(f"{teacher} must be an object of type Teacher")
         outp = set()
         for b in Block.list():
@@ -308,10 +335,13 @@ class Schedule:
     # --------------------------------------------------------
     @staticmethod
     def blocks_in_lab(lab : Lab) -> list[Lab]:
+        # TODO is there any reason why we are returning a list, and not just a set?
+        #      --- sets don't allow duplicates, which is good, but do we need to return a list?
         """
         Returns a list of Blocks using the given Lab
         - Parameter lab -> The Lab that should be found
         """
+        # TODO: see above comments for sections_for_teachers
         if not isinstance(lab, Lab): raise TypeError(f"{lab} must be an object of type Lab")
         outp = set()
         for b in Block.list():
@@ -323,10 +353,13 @@ class Schedule:
     # --------------------------------------------------------
     @staticmethod
     def sections_for_stream(stream : Stream) -> list[Section]:
+        # TODO is there any reason why we are returning a list, and not just a set?
+        #      --- sets don't allow duplicates, which is good, but do we need to return a list?
         """
         Returns a list of Sections assigned to the given Stream
         - Parameter stream -> The Stream that should be found
         """
+        # TODO: see above comments for sections_for_teachers
         if not isinstance(stream, Stream): raise TypeError(f"{stream} must be an object of type Stream")
         outp = set()
         for s in Section.list():
@@ -338,6 +371,8 @@ class Schedule:
     # --------------------------------------------------------
     @staticmethod
     def blocks_for_stream(stream : Stream) -> list[Block]:
+        # TODO is there any reason why we are returning a list, and not just a set?
+        #      --- sets don't allow duplicates, which is good, but do we need to return a list?
         """
         Returns a list of Blocks in the given Stream
         - Parameter stream -> The Stream who's Blocks should be found
@@ -397,12 +432,13 @@ class Schedule:
     @staticmethod
     def calculate_conflicts():
         """Reviews the schedule, and creates a list of Conflict objects as necessary"""
-        def __new_conflict(type, blocks):
+        def __new_conflict(type:ConflictType, blocks):
             Conflict(type, blocks)
-            for b in blocks: b.conflicted = type
-        # create list of all blocks -> no longer needed
+            for b in blocks: b.conflicted = type.value
+
         # reset the conflict list
         Conflict.reset()
+
         # reset all blocks conflicted tags
         for b in Block.list(): b.reset_conflicted()
 
@@ -418,18 +454,18 @@ class Schedule:
                     is_conflict = False
                     # if teachers/labs/streams share these blocks its a real conflict
                     # and must be dealt with
-                    if (Teacher.share_blocks(b, bb)):
+                    if Teacher.share_blocks(b, bb):
                         is_conflict = True
-                        b.conflicted = bb.conflicted = Conflict.TIME_TEACHER
-                    if (Lab.share_blocks(b, bb)):
+                        b.conflicted = bb.conflicted = ConflictType.TIME_TEACHER.value
+                    if Lab.share_blocks(b, bb):
                         is_conflict = True
-                        b.conflicted = bb.conflicted = Conflict.TIME_LAB
-                    if (Stream.share_blocks(b, bb)):
+                        b.conflicted = bb.conflicted = ConflictType.TIME_LAB.value
+                    if Stream.share_blocks(b, bb):
                         is_conflict = True
-                        b.conflicted = bb.conflicted = Conflict.TIME_STREAM
+                        b.conflicted = bb.conflicted = ConflictType.TIME_STREAM.value
                     
                     # create a conflict object and mark the blocks as conflicting
-                    if is_conflict: __new_conflict(Conflict.TIME, [b, bb])
+                    if is_conflict: __new_conflict(ConflictType.TIME, [b, bb])
 
         # ---------------------------------------------------------
         # check for lunch break conflicts by teacher
@@ -447,7 +483,7 @@ class Schedule:
                 blocks_by_day[b.day_number].append(b)
             
             for blocks in blocks_by_day.values():
-                # don't know how this could occur, in Python or Perl
+                # don't know how this could occur, but just being careful
                 if not blocks: continue
 
                 # check for the existence of a lunch break in any of the :30 periods
@@ -458,7 +494,7 @@ class Schedule:
                     if has_lunch: break
                 
                 # if no lunch, create a conflict obj and mark blocks as conflicted
-                if not has_lunch: __new_conflict(Conflict.LUNCH, blocks)
+                if not has_lunch: __new_conflict(ConflictType.LUNCH, blocks)
 
         # ---------------------------------------------------------
         # check for 4 day schedule or 32 hrs max
@@ -473,7 +509,7 @@ class Schedule:
                 blocks_by_day[b.day_number].append(b)
 
             # if < 4 days, create a conflict and mark the blocks as conflicted
-            if len(blocks_by_day.keys()) < 4 and blocks: __new_conflict(Conflict.MINIMUM_DAYS, blocks)
+            if len(blocks_by_day.keys()) < 4 and blocks: __new_conflict(ConflictType.MINIMUM_DAYS, blocks)
             
             # if they have more than 32 hours worth of classes
             availability = 0
@@ -484,7 +520,7 @@ class Schedule:
                 availability += day_end - day_start - 0.5
             
             # if over limit, create conflict
-            if availability > 32: __new_conflict(Conflict.AVAILABILITY, blocks)
+            if availability > 32: __new_conflict(ConflictType.AVAILABILITY, blocks)
         
         # Perl ver. returns self here
 
@@ -525,6 +561,11 @@ class Schedule:
         )
         hours_of_work = 0
 
+        # TODO: match is not in versions of python prior to 3.10
+        #       AND is not to a switch statement (generally speaking)
+        #       see https://www.youtube.com/watch?v=ASRqxDGutpA
+        #       ... I don't care if you use it, but you should be aware
+        #           that there is no performance boost for using it.
         for b in blocks:
             hours_of_work += b.duration
             match b.day.lower():

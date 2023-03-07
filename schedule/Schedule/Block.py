@@ -3,6 +3,7 @@ from Lab import Lab
 from Section import Section
 from Teacher import Teacher
 from Time_slot import TimeSlot
+from ScheduleEnums import WeekDay
 
 from database.PonyDatabaseConnection import Block as dbBlock, TimeSlot as dbTimeSlot, Lab as dbLab, \
     Teacher as dbTeacher, Section as dbSection
@@ -52,20 +53,21 @@ class Block(TimeSlot):
     # Constructor
     # =================================================================
 
-    def __init__(self, day: str, start: str, duration: float, number: int, movable = True, *args, id: int = None,
+    def __init__(self, day: str, start: str, duration: float, number: int, movable: bool = True, id: int = None,
                  time_slot_id: int = None) -> None:
         """Creates a new Block object.
         
-        - Parameter day: str -> 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'
+        - Parameter day: str -> a valid Weekday enum, ex: Weekday.Monday
         - Parameter start: str -> start time using 24 h clock (i.e 1pm is "13:00")
         - Parameter duration: float -> how long does this class last, in hours
         - Parameter number: int -> A number representing this specific Block.
         """
         self._sync = list()
-        if (id and not time_slot_id) or (time_slot_id and not id): raise ValueError(
-            "Error: id and time_slot_id must be both defined or neither defined")
-        if len(args) > 0: raise ValueError("Error: too many positional arguments")
-        super().__init__(day, start, duration, movable=movable, id=time_slot_id)
+        if (id and not time_slot_id) or (time_slot_id and not id):
+            raise ValueError("Error: id and time_slot_id must be both defined or neither defined")
+
+        day = WeekDay.validate(day)
+        super().__init__(day, start, duration, movable, id=time_slot_id)
         self.number = number  # NOTE: Based on the code found in CSV.pm and Section.pm
         self.__section = None
         self._teachers = dict()
@@ -158,7 +160,8 @@ class Block(TimeSlot):
         return super().day
 
     @day.setter
-    def day(self, new_day):
+    def day(self, new_day: str):
+        day = WeekDay.validate(day)
         super(Block, self.__class__).day.fset(self, new_day)
 
         # If there are synchronized blocks, change them too.
@@ -208,20 +211,14 @@ class Block(TimeSlot):
     # =================================================================
     # assign_lab
     # =================================================================
-    def assign_lab(self, lab: Lab):
-        """Assign a lab to this block."""
+    def assign_lab(self, *args):
+        """Assign a lab, or labs, to this block"""
+        for lab in args:
+            if not isinstance(lab, Lab):
+                raise TypeError(f"<{lab}>: invalid lab - must be a Lab object.")
 
-        # If the Block doesn't already have a labs dict, create one.
-        # if not hasattr(self, '_labs'):
-        #     self._labs = {}
-
-        if not isinstance(lab, Lab):
-            raise TypeError(f"<{lab}>: invalid lab - must be a Lab object.")
-
-        # TODO: Check if this function allows multiple labs to be assigned at once in the perl
-        #  version
-        self._labs[lab.id] = lab
-        self.__assign_entity_lab(lab.id)
+            self._labs[lab.id] = lab
+            self.__assign_entity_lab(lab.id)
 
         return self
 
@@ -290,26 +287,23 @@ class Block(TimeSlot):
         """Returns true if the Block has the specified Lab."""
         if not lab or not isinstance(lab, Lab):
             return False
-
-        for key in self._labs:
-            if self._labs[key].id == lab.id:
-                return True
-
-        return False
+        return lab.id in self._labs
 
     # =================================================================
     # assign_teacher
     # =================================================================
-    def assign_teacher(self, teacher):
-        """Assigns a new teacher to this Block.
+    def assign_teacher(self, *args):
+        """Assigns a new teacher, or new teachers to this Block.
         
         Returns the Block object."""
-        # Verify that this teacher is, in fact, a Teacher.
-        if not isinstance(teacher, Teacher):
-            raise TypeError(f"<{teacher}>: invalid teacher - must be a Teacher object.")
 
-        self._teachers[teacher.id] = teacher
-        self.__assign_entity_teacher(teacher.id)
+        for teacher in args:
+            # Verify that this teacher is, in fact, a Teacher.
+            if not isinstance(teacher, Teacher):
+                raise TypeError(f"<{teacher}>: invalid teacher - must be a Teacher object.")
+
+            self._teachers[teacher.id] = teacher
+            self.__assign_entity_teacher(teacher.id)
 
         return self
 
@@ -374,11 +368,7 @@ class Block(TimeSlot):
         """Returns True if this Block has the specified Teacher."""
         if not teacher or not isinstance(teacher, Teacher):
             return False
-
-        for key in self._teachers:
-            if self._teachers[key].id == teacher.id:
-                return True
-        return False
+        return teacher.id in self._teachers
 
     # =================================================================
     # teachersObj
@@ -442,13 +432,11 @@ class Block(TimeSlot):
         return self._conflicted
 
     @conflicted.setter
-    def conflicted(self, new_conf: int):
-        # if not hasattr(self, '_conflicted'):
-        #     self._conflicted = 0
-        self._conflicted = self.conflicted | new_conf
+    def conflicted(self, new_conflict_number: int):
+        self._conflicted = self.conflicted | new_conflict_number
 
     # =================================================================
-    # is_conflicted
+    # is_conflicted  # existential crisis :)
     # =================================================================
     def is_conflicted(self):
         """Returns true if there is a conflict with this Block, false otherwise.
@@ -495,12 +483,11 @@ class Block(TimeSlot):
     # =================================================================
     # def conflicts(self):
     #     """Returns a list of the conflicts related to this Block."""
-    #     # NOTE: This function appears to be unfinished. There is no way to actually assign
-    #     # anything to Block's -conflicts attributes in the original Perl code.
-    #     if not hasattr(self, '_conflicts'):
-    #         self._conflicts = []
-    #
-    #     return self._conflicts
+    #     # No longer needed, because the old program used to keep a list
+    #       of conflicts, whereas the newer version just kept a number
+    #       with each bit representing a type of conflict.
+    #       No more list required.
+    #       TODO: Delete this comment once you have read it.
 
     # ===================================
     # Refresh Number
@@ -533,17 +520,16 @@ class Block(TimeSlot):
     # get_day_blocks ($day, $blocks)
     # =================================================================
     @staticmethod
-    def get_day_blocks(day: str, blocks: list):
+    def get_day_blocks(day: WeekDay, blocks: list):
         """Returns an array of all blocks within a specific day.
 
-        Parameter day: str -> three-letter day of the week (mon, tue, etc.)
+        Parameter day: WeekDay -> a weekday object
         Parameter blocks: list -> An array of AssignBlocks."""
         # NOTE: Day was an integer according to the original Perl documentation, but that won't
-        # work here because TimeSlot.day returns a string.
+        # work here because TimeSlot.day returns a WeekDay object.
         if not blocks or type(blocks[0]) is not Block:
             return []
-        day_blocks = filter(lambda x: x.day == day, blocks)
-        return list(day_blocks)
+        return [block for block in blocks if block.day == day.name]
 
     # =================================================================
     # save()
@@ -557,9 +543,11 @@ class Block(TimeSlot):
         d_block.time_slot_id = d_slot
 
         # theoretically this shouldn't need to be done, since the relationship is added in the add methods
-        # however, it can cause inconsistency issues if the lab/teacher stops existing in the DB but still exists locally
+        # however, it can cause inconsistency issues if the lab/teacher stops existing in the DB but still
+        # exists locally
         # (which shouldn't happen, but for example does when switching DBs in testing)
         # essentially just safer to define the relationship again
+
         for l in self.labs(): d_block.labs.add(l.save())
         for t in self.teachers(): d_block.teachers.add(t.save())
         # section-block relationship is set up in Section.save()

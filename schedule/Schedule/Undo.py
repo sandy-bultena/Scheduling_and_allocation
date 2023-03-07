@@ -1,3 +1,6 @@
+
+# TODO: Update Synopsis to read schedule from database
+
 """
     from Schedule.Undo import Undo
     
@@ -27,7 +30,7 @@ class Undo:
         - Parameter origin_start -> defines the time of the Block before the moved.
         - Parameter origin_day -> defines the day of the Block before the moved.
         - Parameter origin_obj -> defines the object the Block was associated with before moving. (Teacher/Lab/Stream).
-        - Paremeter move_type -> defines the type of movement made (within schedule, across schedules, etc).
+        - Parameter move_type -> defines the type of movement made (within schedule, across schedules, etc).
         - Parameter new_obj -> defines the object the Block is associated with after moving (Teacher/Lab/Stream).
         """
         Undo._max_id += 1
