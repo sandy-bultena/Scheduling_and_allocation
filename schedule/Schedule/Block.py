@@ -471,7 +471,7 @@ class Block(TimeSlot):
 
         return text
 
-    def print_description_2(self):
+    def short_description(self):
         """Prints an alternate text string that describes this Block.
         
         Includes information which directly relates to this Block ONLY."""

@@ -6,7 +6,7 @@ from Stream import Stream
 from Section import Section
 from Block import Block
 from Time_slot import TimeSlot
-from ScheduleEnums import ConflictType
+from ScheduleEnums import ConflictType, ViewType
 import os
 import re
 import yaml # might require pip install pyyaml
@@ -674,3 +674,22 @@ class Schedule:
         # done manually in Perl ver
         block.remove_all_teachers()
         block.remove_all_labs()
+
+    # --------------------------------------------------------
+    # get block infor for specified ViewType object
+    # --------------------------------------------------------
+    def get_blocks_for_obj(self, obj) -> tuple[Block]:
+        """ Returns a tuple of blocks associated with the specified ViewType object"""
+        if isinstance(obj,Teacher): return self.blocks_for_teacher(obj)
+        if isinstance(obj,Lab): return self.blocks_for_lab(obj)
+        if isinstance(obj,Stream): return self.blocks_for_stream(obj)
+        return tuple()
+
+    @staticmethod
+    def get_view_type_of_object(obj)->ViewType:
+        # was originally named: get_scheduable_object_type
+        """Returns the type of the ViewType object"""
+        for vtype in ViewType:
+            if isinstance(obj,vtype.value): return vtype
+        return None
+

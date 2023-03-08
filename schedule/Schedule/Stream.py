@@ -103,13 +103,9 @@ class Stream:
         return self.number
 
     # --------------------------------------------------------
-    # print_description     # note: called print_description2 in the Perl version
+    # short_description
     # --------------------------------------------------------
-    # TODO: In the code in branch MVP, print_descrition2 was renamed
-    #       which we should do then, so I am putting this back to
-    #       print_description2.
-    #       -- update tests as necessary
-    def print_description2(self) -> str:
+    def short_description(self) -> str:
         """ Returns a text string that describes the Stream """
         return f"{self.number}: {self.descr}"
 
