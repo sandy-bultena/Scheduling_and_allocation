@@ -6,6 +6,6 @@ use lib "$FindBin::Bin/";
 use lib "$FindBin::Bin/Library";
 our $BinDir = "$FindBin::Bin/";
 
-use Presentation::AllocationManager;
+use Presentation::Scheduler;
 
-AllocationManager::main();
+Scheduler::main();
