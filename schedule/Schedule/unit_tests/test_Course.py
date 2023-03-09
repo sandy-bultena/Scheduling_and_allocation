@@ -402,9 +402,9 @@ def test_section_bad():
     assert course.section(bad_num) is None
 
 
-def test_print_description_full():
-    """Verifies that print_description() returns a detailed string containing information on the Course, its Sections,
-    its Blocks, its Teachers, and its Labs."""
+def test_str_representation_full():
+    """Verifies that the string representation returns a detailed string containing information on the Course,
+    its Sections, its Blocks, its Teachers, and its Labs."""
     course = Course(1, "Course 1")
     block = Block("mon", "8:30", 1.5, 1)
     section = Section("420", 1.5, "Section 1", id=1)
@@ -414,7 +414,7 @@ def test_print_description_full():
     block.assign_teacher(teacher)
     section.add_block(block)
     course.add_section(section)
-    description = course.print_description()
+    description = str(course)
     print(description)
     assert f"{course.number} {course.name}" in description \
            and f"Section {section.number}" in description \
@@ -423,11 +423,11 @@ def test_print_description_full():
            and f"teachers: {teacher.firstname} {teacher.lastname}" in description
 
 
-def test_print_description2():
-    """Verifies that print_description2() prints a brief string containing the Course's
+def test_description():
+    """Verifies that description prints a brief string containing the Course's
     number and name. """
     course = Course(1, "Course 1")
-    description = course.print_description2()
+    description = course.description
     print(description)
     assert f"{course.number}: {course.name}" in description
 

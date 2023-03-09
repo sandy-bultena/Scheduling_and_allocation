@@ -14,7 +14,6 @@ from Lab import Lab
 from database.PonyDatabaseConnection import Course as dbCourse, Section as dbSection
 from pony.orm import *
 
-
 '''SYNOPSIS
 
     from Schedule.Course import Course
@@ -100,6 +99,14 @@ class Course:
     @needs_allocation.setter
     def needs_allocation(self, allocation: bool):
         self._allocation = allocation
+
+    # =================================================================
+    # description - replaces print_description_2
+    # =================================================================
+    @property
+    def description(self):
+        """Returns text string that describes this Block."""
+        return f"{self.number}: {self.name}"
 
     # =================================================================
     # number
@@ -295,9 +302,9 @@ class Course:
             return self._sections[section_number]
 
     # =================================================================
-    # print_description
+    # string representation of the object
     # =================================================================
-    def print_description(self):
+    def __str__(self):
         """Returns a text string that describes the Course, its Sections, its Blocks,
         its Teachers, and its Labs. """
         text = ''
@@ -323,18 +330,10 @@ class Course:
                 text += "\n"
 
         return text
+    def __repr__(self) -> str:
+        return self.description
 
-    # =================================================================
-    # print_description2
-    # =================================================================
-    def print_description2(self):
-        """Returns a brief string containing the Course's number and name, in the format 'Number:
-        Name'. """
-        return f"{self.number}: {self.name}"
 
-    # NOTE: in perl, the string method is overloaded by print_description, not print_description2
-    def __str__(self) -> str:
-        return self.print_description()
 
     # =================================================================
     # teachers

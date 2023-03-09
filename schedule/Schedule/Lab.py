@@ -171,12 +171,8 @@ class Lab:
             return f"{self.__number}"
         return f"{self.__number}: {self.__descr}"
 
-    # =================================================================
-    # print_description
-    # =================================================================
-    def print_description(self) -> str:
-        """Returns a text string that describes the Lab."""
-        return self.__str__()
+    def __repr__(self):
+        return str(self)
 
     # ===================================
     # list [tuple]

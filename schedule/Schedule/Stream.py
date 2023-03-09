@@ -96,27 +96,23 @@ class Stream:
         return False
 
     # --------------------------------------------------------
-    # __str__
+    # conversion to string
     # --------------------------------------------------------
     def __str__(self) -> str:
         """ Returns a text string with the Stream's number """
         return self.number
 
+    def __repl__(self) -> str:
+        return str(self)
+
     # --------------------------------------------------------
-    # short_description
+    # description
     # --------------------------------------------------------
-    def short_description(self) -> str:
-        """ Returns a text string that describes the Stream """
+    @property
+    def description(self) -> str:
+        """ Returns a text string that describes the Stream (number & descr) """
         return f"{self.number}: {self.descr}"
 
-    # --------------------------------------------------------
-    # conversion to string
-    # --------------------------------------------------------
-    def __str__(self) -> str:
-        return self.number
-
-    def __repl__(self) -> str:
-        return self.__str__()
 
     # --------------------------------------------------------
     # delete

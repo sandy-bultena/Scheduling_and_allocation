@@ -127,16 +127,11 @@ class Teacher:
     # =================================================================
     # default string
     # =================================================================
-    def print_description(self):
-        """Returns a text string that describes the Teacher."""
-
-        return self.__str__()
-
     def __str__(self):
         return f"{self.firstname} {self.lastname}"
 
     def __repl__(self):
-        return self.__str__()
+        return str(self)
 
     # =================================================================
     # get all teachers

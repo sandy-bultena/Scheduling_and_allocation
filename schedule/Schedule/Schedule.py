@@ -9,8 +9,6 @@ from Time_slot import TimeSlot
 from ScheduleEnums import ConflictType, ViewType
 import os
 import re
-import yaml # might require pip install pyyaml
-# TODO: Remove yaml if you no longer no need it.
 
 import database.PonyDatabaseConnection as db
 from pony.orm import *

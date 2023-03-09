@@ -47,7 +47,7 @@ class Section():
     # ========================================================
     # CONSTRUCTOR
     # ========================================================
-    def __init__(self, number: str = "", hours=1.5, name: str = "", course : Course = None,  id: int = None,
+    def __init__(self, number: str = "", hours=1.5, name: str = "", course: Course = None, id: int = None,
                  schedule_id: int = None):
         """
         Creates an instance of the Section class.
@@ -79,9 +79,9 @@ class Section():
     @staticmethod
     def __create_entity(instance: Section, schedule_id: int):
         entity_section = dbSection(name=instance.name, number=instance.number, hours=instance.hours,
-                                 num_students=instance.num_students,
-                                 course_id=instance._course.id,
-                                 schedule_id=schedule_id)
+                                   num_students=instance.num_students,
+                                   course_id=instance._course.id,
+                                   schedule_id=schedule_id)
         commit()
         return entity_section.get_pk()
 
@@ -112,7 +112,7 @@ class Section():
     def get(id: int) -> Section:
         """ Gets a Section with a given ID. If ID doesn't exist, returns None."""
         return Section.__instances[id] if id in Section.__instances else None
-    
+
     # =================================================================
     # reset
     # =================================================================
@@ -477,9 +477,9 @@ class Section():
         """ Delete this object and all its dependants """
         for b in self.blocks:
             self.remove_block(b)
-        if dbSection.get(id = self.id): dbSection.get(id = self.id).delete()    # should cascade and delete all associated blocks
+        if dbSection.get(id=self.id): dbSection.get(
+            id=self.id).delete()  # should cascade and delete all associated blocks
         if self.id in Section.__instances: del Section.__instances[self.id]
-
 
     # --------------------------------------------------------
     # __str__
@@ -490,6 +490,9 @@ class Section():
             return f"Section {self.number}: {self.name}"
         else:
             return f"Section {self.number}"
+
+    def __repr__(self):
+        return str(self)
 
     # --------------------------------------------------------
     # is_conflicted
@@ -517,7 +520,7 @@ class Section():
         c = self.course.save()
 
         sse = dbSection.get(id=self.id)
-        if not sse: sse = dbSection(course_id=c, schedule_id = sched)
+        if not sse: sse = dbSection(course_id=c, schedule_id=sched)
 
         sse.name = self.name
         sse.number = self.number
@@ -535,8 +538,8 @@ class Section():
                 se_t = Section_Teacher(teacher_id=d_t, section_id=sse,
                                        allocation=self.get_teacher_allocation(t))
             se_t.allocation = self.get_teacher_allocation(t)
-        
+
         for b in self.blocks: sse.blocks.add(b.save())
-        
+
         for st in self.streams: sse.streams.add(st.save())
         return sse

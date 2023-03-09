@@ -811,8 +811,8 @@ def test_is_conflicted():
     assert block1.is_conflicted() is True
 
 
-def test_print_description_full():
-    """Verifies that print_description returns a description containing info about the Block,
+def test_string_representation():
+    """Verifies that string_representation returns a description containing info about the Block,
     its assigned Labs, and its Section. """
     day = "mon"
     start = "8:30"
@@ -825,13 +825,13 @@ def test_print_description_full():
     block.section = sect
     block.assign_lab(lab1)
     block.assign_lab(lab2)
-    desc = block.print_description()
+    desc = str(block)
     assert str(sect.number) in desc and day in desc and start in desc and lab1.number in desc \
            and lab2.number in desc
 
 
-def test_print_description_short():
-    """Verifies that print_description returns information about just the Block if it has no
+def test_string_representation_no_section():
+    """Verifies that string representation returns information about just the Block if it has no
     assigned Section. """
     day = "mon"
     start = "8:30"
@@ -842,21 +842,21 @@ def test_print_description_short():
     lab2 = Lab("R-102", "Second-worst place in the world")
     block.assign_lab(lab1)
     block.assign_lab(lab2)
-    desc = block.print_description()
+    desc = str(block)
     assert day in desc \
            and start in desc and lab1.number in desc and lab1.descr in desc \
            and lab2.number in desc and lab2.descr in desc
 
 
-def test_print_description_2():
-    """Verifies that print_description_2() works as intended: returning information about just
+def test_description():
+    """Verifies that short_description() works as intended: returning information about just
     the Block itself. """
     day = "mon"
     start = "8:30"
     dur = 2
     num = 1
     block = Block(day, start, dur, num)
-    desc = block.print_description_2()
+    desc = block.description
     assert f"{num} : {day}, {start} {dur:.1f} hour(s)" in desc
 
 

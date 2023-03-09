@@ -81,7 +81,7 @@ def test_confirm_description_includes_num_and_descr():
     num = "3A"
     descr = "Third year, first section"
     s = Stream(num, descr)
-    assert num in s.print_description() and descr in s.print_description()
+    assert num in s.description and descr in s.description
 
 
 def test_confirm_can_get_by_id():
@@ -111,6 +111,8 @@ def test_share_blocks_ignores_non_shared():
     b2.section = Section(course = c, schedule_id = 1)
     se.assign_stream(s)
     assert not Stream.share_blocks(b1, b2)
+
+
 
 @db_session
 def test_confirm_delete():

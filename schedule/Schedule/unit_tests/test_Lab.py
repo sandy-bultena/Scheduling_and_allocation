@@ -200,22 +200,24 @@ def test_unavailable_no_slots():
     assert type(slots) is tuple and len(slots) == 0
 
 
-def test_print_description_full():
-    """Verifies that print_description() returns a string containing the Lab's number and
+def test_string_representation_full():
+    """Verifies that the string representation returns a string containing the Lab's number and
     description attributes. """
     num = "R-101"
     desc = "Worst place in the world."
     lab = Lab(num, desc)
-    to_string = lab.print_description()
+    to_string = str(lab)
     assert f"{num}: {desc}" in to_string
 
 
-def test_print_description_short():
-    """Verifies that print_description() returns a string containing only the Lab's number if it
+def test_string_representation_short():
+    """Verifies that string representation returns a string containing only the Lab's number if it
     lacks a description attribute. """
+    # TODO: This is not a valid test, because it could include a lot of stuff besides 'num' and it would
+    #       still return true.
     num = "R-101"
     lab = Lab(num)
-    desc = lab.print_description()
+    desc = str(lab)
     assert num in desc
 
 

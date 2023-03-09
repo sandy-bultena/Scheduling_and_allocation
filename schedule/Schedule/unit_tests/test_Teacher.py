@@ -119,12 +119,12 @@ def test_release_setter():
     assert new_release == teach.release
 
 
-def test_print_description():
-    """Verifies that print_description() returns a string containing the Teacher's full name."""
+def test_string_representation():
+    """Verifies that the str representation of this object returns a string containing the Teacher's full name."""
     f_name = "John"
     l_name = "Smith"
     teach = Teacher(f_name, l_name)
-    assert f"{f_name} {l_name}" in teach.print_description()
+    assert f"{f_name} {l_name}" in str(teach)
 
 
 def test_share_blocks_true():

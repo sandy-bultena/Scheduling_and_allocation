@@ -85,6 +85,15 @@ class Block(TimeSlot):
         return entity_block.get_pk()
 
     # =================================================================
+    # description - replaces print_description_2
+    # =================================================================
+    @property
+    def description(self):
+        """Returns text string that describes this Block."""
+        text = f"{self.number} : {self.day}, {self.start} {self.duration} hour(s)"
+        return text
+
+    # =================================================================
     # number
     # =================================================================
 
@@ -446,14 +455,9 @@ class Block(TimeSlot):
         return self.conflicted != 0
 
     # =================================================================
-    # print_description
+    # string representation of object
     # =================================================================
-    def print_description(self):
-        """Returns a text string that describes the Block.
-        
-        Includes information on any Section and Labs related to this Block."""
-        return self.__str__()
-
+    # TODO: Remove this once tests are updated not to use it
     def __str__(self) -> str:
         """Returns a text string that describes the Block.
         
@@ -471,12 +475,9 @@ class Block(TimeSlot):
 
         return text
 
-    def short_description(self):
-        """Prints an alternate text string that describes this Block.
-        
-        Includes information which directly relates to this Block ONLY."""
-        text = f"{self.number} : {self.day}, {self.start} {self.duration} hour(s)"
-        return text
+    def __repr__(self):
+        return self.description
+
 
     # =================================================================
     # conflicts
@@ -539,7 +540,7 @@ class Block(TimeSlot):
         d_slot = super().save()
         flush()
         d_block = dbBlock.get(id=self.id)
-        if not d_block: d_block = dbBlock(number=self.number, time_slot_id = d_slot)
+        if not d_block: d_block = dbBlock(number=self.number, time_slot_id=d_slot)
         d_block.time_slot_id = d_slot
 
         # theoretically this shouldn't need to be done, since the relationship is added in the add methods
