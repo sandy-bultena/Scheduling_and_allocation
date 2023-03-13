@@ -1,76 +1,69 @@
 import sys
 from os import path
+
 sys.path.append(path.dirname(path.dirname(__file__)))
+from Tk.scrolled import Scrolled
 
 from tkinter import *
 import PerlLib.Colour as Colour
 
 
+
+
 class NumStudentsTk:
     def __init__(self, frame, semesters: [str]):
-        self.panes = dict()
-        self.frame = frame
+        """displays the number of students per course, per valid semester"""
+        panes = dict()
 
         # make as many panes as there are semesters
-        for semester in semesters:
-            panes[semester] =
+        for col, semester in enumerate(semesters):
+            panes[semester.name] = Scrolled(
+                self.frame,
+                scrollbars=E,
+                border=5,
+                relief=FLAT,
+            )
+            panes[semester.name].grid(colum=col, row=0, sticky="nsew")
+            frame.gridColumnconfigure(col, weight=1);
+
+        frame.gridRowconfigure(0, weight=1);
+        self.panes = panes
+
+    # @student_info:
+    #  [
+    #   { semester=semester_name,
+    #     course =
+    #     { short_description=
+    #       { section_number =
+    #         { student_number = number
+    #           validate = function
+    #         }
+    #        }
+    #      }
+    #     }
+    #    }
+    #  ]
+    def refresh(self, student_info=None):
+        if student_info is None: return
+
+        # loop over semesters
+        for info_by_semester in student_info:
+            pane = self.panes[info_by_semester["semester"]]
+            if pane is None: continue
+
+            # loop over courses
+            for row, course_descr in enumerate(sorted(info_by_semester["courses"],key=info_by_semester["courses"].key)):
+                Label(pane,
+                      text=course_descr,
+                      anchor=W,
+                      width=40
+                      ).grid("-","-","-",sticky='nsew')
+
+                # for each section in a course
+
 
     """
-
-sub new {
-#ADDING A SCROLLBAR
-myscrollbar=Scrollbar(frame,orient="vertical")
-myscrollbar.pack(side="right",fill="y")
-#Add Entry Widgets
-Label(frame, text= "Username").pack()
-username= Entry(frame, width= 20)
-username.pack()
-
-
-    # make as many panes as there are semesters
-    foreach my $semester ( sort @$semesters ) {
-        if ( $panes{$semester} ) {
-            $panes{$semester}->destroy;
-        }
-
-        $panes{$semester} = $frame->Scrolled(
-            "Frame",
-            -scrollbars => 'oe',
-            -border     => 5,
-            -relief     => 'flat',
-        )->grid( -column => $col, -row => 0, -sticky => 'nsew' );
-        $frame->gridColumnconfigure( $col, -weight => 1 );
-        $col++;
-    }
-    $frame->gridRowconfigure( 0, -weight => 1 );
-    $self->panes( \%panes );
-    return $self;
-}
-
-sub panes {
-    my $self = shift;
-    $self->{-panes} = {} unless $self->{-panes};
-    $self->{-panes} = shift if @_;
-    return $self->{-panes};
-}
-
 sub refresh {
-    my $self         = shift;
-    my $student_info = shift;
-
-    foreach my $info_by_semester ( @$student_info ) {
-        my $pane     = $self->panes->{$info_by_semester->{-semester}};
-        next unless $pane;
-
-        my $row = 0;
-        foreach my $course_descr (sort keys %{$info_by_semester->{-courses}}) {
-            my $info_by_course = $info_by_semester->{-courses}->{$course_descr};
-            $pane->Label(
-                -text   => $course_descr,
-                -anchor => 'w',
-                -width  => 40,
-            )->grid( '-', "-", '-', -sticky => 'nsew' );
-            $row++;
 
             foreach my $section_descr ( sort keys %$info_by_course )
             {
