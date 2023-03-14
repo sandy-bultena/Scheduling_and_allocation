@@ -1,7 +1,8 @@
+# IF IMPORTING TIMESLOT AND BLOCK, ALWAYS IMPORT BLOCK FIRST
+    # If importing other packages that import Block, import them first or import Block explicitly
 from __future__ import annotations
 import re
 from warnings import warn
-
 from ScheduleEnums import WeekDay, WeekDayNumber
 
 from database.PonyDatabaseConnection import TimeSlot as dbTimeSlot

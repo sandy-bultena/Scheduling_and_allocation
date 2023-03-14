@@ -6,6 +6,7 @@ sys.path.append(path.dirname(path.dirname(__file__)))
 import pytest
 from unit_tests.db_constants import *
 
+import Block
 from Time_slot import TimeSlot
 from ScheduleEnums import WeekDay
 from database.PonyDatabaseConnection import define_database, TimeSlot as dbTimeSlot

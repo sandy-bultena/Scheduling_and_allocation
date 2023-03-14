@@ -38,7 +38,7 @@ class Conflict:
     # ========================================================
     # CONSTRUCTOR
     # ========================================================
-    def __init__(self, type: ConflictType, blocks: list[Block.Block]):
+    def __init__(self, type: ConflictType, blocks: list):
         """
         Creates an instance of the Conflict class.
         - Parameter type -> defines the type of conflict.
@@ -167,7 +167,7 @@ class Conflict:
     # --------------------------------------------------------
     # add_block
     # --------------------------------------------------------
-    def add_block(self, new_block : Block.Block):
+    def add_block(self, new_block : Block):
         """
         Adds a new affected block to the conflict.
         - Parameter new_block -> the new block to be added.

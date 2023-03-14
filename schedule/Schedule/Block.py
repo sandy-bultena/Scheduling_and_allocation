@@ -1,8 +1,8 @@
 from __future__ import annotations
+from Time_slot import TimeSlot
 from Lab import Lab
 import Section
-from Teacher import Teacher
-from Time_slot import TimeSlot
+import Teacher
 from ScheduleEnums import WeekDay
 
 from database.PonyDatabaseConnection import Block as dbBlock, TimeSlot as dbTimeSlot, Lab as dbLab, \
@@ -70,7 +70,7 @@ class Block(TimeSlot):
         super().__init__(day, start, duration, movable, id=time_slot_id)
         self.number = number  # NOTE: Based on the code found in CSV.pm and Section.pm
         self.__section = None
-        self._teachers : dict[int, Teacher] = dict()
+        self._teachers : dict[int, Teacher.Teacher] = dict()
         self._labs = {}
         self._conflicted = 0
 
@@ -114,7 +114,7 @@ class Block(TimeSlot):
     # delete
     # =================================================================
     def delete(self):
-        """Delete this Block object and all its dependents."""
+        """Delete this Block object and all its dependen"""
         # self = None NOTE: So far as I can tell, the only place this method is being called is
         # in Section's remove_block( ) method, to destroy the reference to a local Block
         # parameter after said Block has already been removed from Section's array/hash of
@@ -300,14 +300,14 @@ class Block(TimeSlot):
     # =================================================================
     # assign_teacher
     # =================================================================
-    def assign_teacher(self, *args : Teacher) -> Block:
+    def assign_teacher(self, *args : Teacher.Teacher) -> Block:
         """Assigns a new teacher, or new teachers to this Block.
         
         Returns the Block object."""
 
         for teacher in args:
             # Verify that this teacher is, in fact, a Teacher.
-            if not isinstance(teacher, Teacher):
+            if not isinstance(teacher, Teacher.Teacher):
                 raise TypeError(f"<{teacher}>: invalid teacher - must be a Teacher object.")
 
             self._teachers[teacher.id] = teacher
@@ -326,12 +326,12 @@ class Block(TimeSlot):
     # =================================================================
     # remove_teacher
     # =================================================================
-    def remove_teacher(self, teacher : Teacher) -> Block:
+    def remove_teacher(self, teacher : Teacher.Teacher) -> Block:
         """Removes the specified Teacher from this Block.
         
         Returns the Block object."""
         # Verify that the teacher is, in fact, a Teacher.
-        if not isinstance(teacher, Teacher):
+        if not isinstance(teacher, Teacher.Teacher):
             raise TypeError(f"<{teacher}>: invalid teacher - must be a Teacher object.")
 
         # If the teachers dict contains an entry for this Teacher, remove it.
@@ -365,23 +365,23 @@ class Block(TimeSlot):
     # =================================================================
     # teachers
     # =================================================================
-    def teachers(self) -> tuple[Teacher]:
+    def teachers(self) -> tuple[Teacher.Teacher]:
         """Returns a list of teachers assigned to this Block."""
         return tuple(self._teachers.values())
 
     # =================================================================
     # has_teacher
     # =================================================================
-    def has_teacher(self, teacher : Teacher) -> bool:
+    def has_teacher(self, teacher : Teacher.Teacher) -> bool:
         """Returns True if this Block has the specified Teacher."""
-        if not teacher or not isinstance(teacher, Teacher):
+        if not teacher or not isinstance(teacher, Teacher.Teacher):
             return False
         return teacher.id in self._teachers
 
     # =================================================================
     # teachersObj
     # =================================================================
-    def teachersObj(self) -> dict[int, Teacher]:
+    def teachersObj(self) -> dict[int, Teacher.Teacher]:
         """Returns a list of teacher objects to this Block."""
         # NOTE: Not entirely sure what this is meant to be doing in the original Perl.
         # ADDENDUM: There are no references to this method anywhere in the code beyond here.
@@ -450,7 +450,7 @@ class Block(TimeSlot):
         """Returns true if there is a conflict with this Block, false otherwise.
 
         Returns a number representing the type of conflict with this Block, or 0 if there are no
-        conflicts. """
+        conflic """
         return self.conflicted != 0
 
     # =================================================================
@@ -493,7 +493,7 @@ class Block(TimeSlot):
     # ===================================
     @staticmethod
     def list() -> tuple[Block]:
-        """Returns a tuple containing all Block objects."""
+        """Returns a tuple containing all Block objec"""
         return tuple(Block.__instances.values())
 
     # ===================================
@@ -501,7 +501,7 @@ class Block(TimeSlot):
     # ===================================
     @staticmethod
     def reset():
-        """Resets the local list of Block objects."""
+        """Resets the local list of Block objec"""
         Block.__instances = {}
 
     # =================================================================

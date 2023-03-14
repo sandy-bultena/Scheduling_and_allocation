@@ -1,7 +1,7 @@
 from __future__ import annotations
+import Block
 import Time_slot
 from ScheduleEnums import WeekDay
-import Block
 
 from database.PonyDatabaseConnection import Lab as dbLab, TimeSlot as dbTimeSlot
 from pony.orm import *
@@ -14,7 +14,6 @@ from pony.orm import *
     lab = Lab(number = "P322")
     lab.add_unavailable(day = "Mon", start = "3:22", duration = 5)
 """
-
 
 class Lab:
     """

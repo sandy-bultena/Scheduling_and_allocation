@@ -6,8 +6,8 @@ import pytest
 from unit_tests.db_constants import *
 
 from Lab import Lab
-from Time_slot import TimeSlot
 from Block import Block
+from Time_slot import TimeSlot
 from database.PonyDatabaseConnection import define_database, Lab as dbLab, TimeSlot as dbTimeSlot
 from pony.orm import *
 

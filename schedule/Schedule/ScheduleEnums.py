@@ -1,3 +1,4 @@
+from __future__ import annotations
 from enum import Enum
 import sys
 from os import path
@@ -50,16 +51,6 @@ class WeekDayNumber(ExtendedEnum):
     sun = 7
 
 
-class ViewType(ExtendedEnum):
-    import Teacher
-    import Lab
-    import Stream
-    lab = Lab
-    teacher = Teacher
-    stream = Stream
-    none = None
-
-
 class SemesterType(ExtendedEnum):
     fall = 1
     winter = 2
@@ -100,3 +91,13 @@ class ConflictType(ExtendedEnum):
             cls.TIME_STREAM: "time overlap",
             cls.AVAILABILITY: "not available"
         }
+
+
+class ViewType(ExtendedEnum):
+    import Teacher
+    import Lab
+    import Stream
+    lab = Lab
+    teacher = Teacher
+    stream = Stream
+    none = None

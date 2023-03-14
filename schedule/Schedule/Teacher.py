@@ -3,7 +3,9 @@ from __future__ import annotations
 from database.PonyDatabaseConnection import Teacher as dbTeacher, Schedule_Teacher as dbSchedTeach
 from pony.orm import *
 import Block
-import Schedule
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    import Schedule
 
 """
 SYNOPSIS

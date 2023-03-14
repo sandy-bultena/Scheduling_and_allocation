@@ -1,7 +1,7 @@
 from __future__ import annotations
 import Course
 from Stream import Stream
-from Teacher import Teacher
+import Teacher
 import Block
 import Lab
 import re
@@ -62,7 +62,7 @@ class Section():
         # LEAVE IN:
         # Allows for teacher allocations to be tracked & calculated correctly in AllocationManager,
         # since Blocks are ignored there
-        self._teachers : dict[int, Teacher] = {}
+        self._teachers : dict[int, Teacher.Teacher] = {}
         self._allocation : dict[int, float] = {}
 
         self._streams : dict[int, Stream] = {}
@@ -201,7 +201,7 @@ class Section():
     # teachers
     # --------------------------------------------------------
     @property
-    def teachers(self) -> tuple[Teacher]:
+    def teachers(self) -> tuple[Teacher.Teacher]:
         """ Gets all teachers assigned to all blocks in this section """
         teachers = set()
         for b in self.blocks:
@@ -290,12 +290,12 @@ class Section():
     # --------------------------------------------------------
     # assign_teacher
     # --------------------------------------------------------
-    def assign_teacher(self, teacher : Teacher) -> Section:
+    def assign_teacher(self, teacher : Teacher.Teacher) -> Section:
         """
         Assign a teacher to the section
         - Parameter teacher -> The teacher to be assigned
         """
-        if not isinstance(teacher, Teacher): raise TypeError(
+        if not isinstance(teacher, Teacher.Teacher): raise TypeError(
             f"{type(teacher)}: invalid teacher - must be a Teacher object")
         if teacher:
             for b in self.blocks:
@@ -307,7 +307,7 @@ class Section():
     # --------------------------------------------------------
     # set_teacher_allocation
     # --------------------------------------------------------
-    def set_teacher_allocation(self, teacher : Teacher, hours : float | int) -> Section:
+    def set_teacher_allocation(self, teacher : Teacher.Teacher, hours : float | int) -> Section:
         """
         Assign number of hours to teacher for this section. Set hours to 0 to remove teacher from this section
         - Parameter teacher -> The teacher to allocate hours to
@@ -325,7 +325,7 @@ class Section():
     # --------------------------------------------------------
     # get_teacher_allocation
     # --------------------------------------------------------
-    def get_teacher_allocation(self, teacher : Teacher) -> float:
+    def get_teacher_allocation(self, teacher : Teacher.Teacher) -> float:
         """
         Get the number of hours assigned to this teacher for this section
         - Parameter teacher -> The teacher to find allocation hours for
@@ -342,12 +342,12 @@ class Section():
     # --------------------------------------------------------
     # remove_teacher
     # --------------------------------------------------------
-    def remove_teacher(self, teacher : Teacher) -> Section:
+    def remove_teacher(self, teacher : Teacher.Teacher) -> Section:
         """
         Removes teacher from all blocks in this section
         - Parameter teacher -> The teacher to be removed
         """
-        if not isinstance(teacher, Teacher): raise TypeError(
+        if not isinstance(teacher, Teacher.Teacher): raise TypeError(
             f"{type(teacher)}: invalid teacher - must be a Teacher object")
         for b in self.blocks: b.remove_teacher(teacher)
         if teacher in self.teachers: del self._teachers[teacher.id]
@@ -366,12 +366,12 @@ class Section():
     # --------------------------------------------------------
     # has_teacher
     # --------------------------------------------------------
-    def has_teacher(self, teacher : Teacher) -> bool:
+    def has_teacher(self, teacher : Teacher.Teacher) -> bool:
         """
         Checks if section has teacher
         - Parameter teacher -> The teacher to check
         """
-        if not isinstance(teacher, Teacher): raise TypeError(
+        if not isinstance(teacher, Teacher.Teacher): raise TypeError(
             f"{type(teacher)}: invalid teacher - must be a Teacher object")
         if not teacher: return False
         return len(list(filter(lambda a: a.id == teacher.id, self.teachers))) > 0
