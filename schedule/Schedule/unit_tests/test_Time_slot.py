@@ -1,11 +1,13 @@
 import sys
 from os import path
 
+
 sys.path.append(path.dirname(path.dirname(__file__)))
 import pytest
 from unit_tests.db_constants import *
 
 from Time_slot import TimeSlot
+from ScheduleEnums import WeekDay
 from database.PonyDatabaseConnection import define_database, TimeSlot as dbTimeSlot
 from pony.orm import *
 
@@ -206,7 +208,7 @@ def test_snap_to_day_with_args():
     """Verifies that TimeSlot's snap_to_day method adjusts its day property to the correct value
     when it is outside a specified date range. """
     slot = TimeSlot()
-    slot.day = "sun"
+    slot.day = WeekDay.Friday
     slot.snap_to_day(3, 4)
     expected_day = "thu"
     assert slot.day == expected_day
@@ -225,7 +227,7 @@ def test_conflicts_time_different_days():
     """Verifies that conflicts_time registers no conflict when two TimeSlots are on different
     days. """
     slot1 = TimeSlot()
-    slot2 = TimeSlot("Tuesday")
+    slot2 = TimeSlot(WeekDay.Tuesday.value)
     assert slot1.conflicts_time(slot2) is False
 
 

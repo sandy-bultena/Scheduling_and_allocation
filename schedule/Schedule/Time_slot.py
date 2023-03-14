@@ -64,7 +64,7 @@ class TimeSlot:
         """
         # NOTE: Doing this so that day_number will also be set
         #       The order that these are implemented is important
-        day = TimeSlot.DEFAULT_DAY
+        # day = TimeSlot.DEFAULT_DAY
         self.day_number = 0
         self.start_number = 0
         self.day = day
