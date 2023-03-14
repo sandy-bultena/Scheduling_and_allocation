@@ -53,7 +53,7 @@ class Block(TimeSlot):
     # Constructor
     # =================================================================
 
-    def __init__(self, day: str, start: str, duration: float, number: int, movable: bool = True, id: int = None,
+    def __init__(self, day: str, start: str, duration: float, number: int, movable: bool = True, *, id: int = None,
                  time_slot_id: int = None) -> None:
         """Creates a new Block object.
         

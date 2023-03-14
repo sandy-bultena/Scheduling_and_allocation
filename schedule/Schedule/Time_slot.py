@@ -39,7 +39,7 @@ class TimeSlot:
     def __init__(self, day: str = DEFAULT_DAY,
                  start: str = DEFAULT_START,
                  duration: float = DEFAULT_DURATION,
-                 movable=True, id: int = None):
+                 movable=True, *, id: int = None):
         """
         Creates a new TimeSlot object.
 

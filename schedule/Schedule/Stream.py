@@ -20,7 +20,7 @@ class Stream:
     # ========================================================
     # CONSTRUCTOR
     # ========================================================
-    def __init__(self, number: str = "A", descr: str = "", id: int = None):
+    def __init__(self, number: str = "A", descr: str = "", *, id: int = None):
         """
         Creates an instance of the Stream class.
         - Parameter number -> defines the stream number.

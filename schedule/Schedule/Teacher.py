@@ -34,7 +34,7 @@ class Teacher:
     # new
     # --------------------------------------------------------------------
 
-    def __init__(self, firstname: str, lastname: str, dept: str = "", id: int = None):
+    def __init__(self, firstname: str, lastname: str, dept: str = "", *, id: int = None):
         """Creates a Teacher object.
         
         Parameter **firstname:** str -> first name of the teacher.
