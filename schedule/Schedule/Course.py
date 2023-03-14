@@ -9,6 +9,7 @@ import Section
 
 from database.PonyDatabaseConnection import Course as dbCourse, Section as dbSection
 from pony.orm import *
+from ScheduleEnums import SemesterType
 
 '''SYNOPSIS
 
@@ -37,17 +38,18 @@ class Course:
     # -------------------------------------------------------------------
     # new
     # --------------------------------------------------------------------
-    def __init__(self, number: str = "", name: str = "New Course", *, id: int = None):
+    def __init__(self, number: str = "", name: str = "New Course", semester : SemesterType = SemesterType.any, needs_allocation : bool = True, *, id: int = None):
         """Creates and returns a course object.
 
         Parameter **number**: str -> The alphanumeric course number.
 
         Parameter **name**: str -> the name of the course."""
 
-        self.number = str(number)
-        self.name = str(name)
-        self._allocation = True
-        self._sections = {}
+        self.number : str = str(number)
+        self.name : str = str(name)
+        self.needs_allocation : bool = needs_allocation
+        self._sections : dict[int, Section.Section] = {}
+        self.semester : SemesterType = SemesterType.validate(semester)
 
         self.__id = id if id else Course.__create_entity(self)
         Course.__instances[self.__id] = self
@@ -55,8 +57,7 @@ class Course:
     @db_session
     @staticmethod
     def __create_entity(instance: Course):
-        entity_course = dbCourse(name=instance.name, number=instance.number,
-                                 allocation=instance.needs_allocation)
+        entity_course = dbCourse(name=instance.name, number=instance.number, allocation=instance.needs_allocation, semester=instance.semester)
         commit()
         return entity_course.get_pk()
 
@@ -79,22 +80,6 @@ class Course:
     @name.setter
     def name(self, new_name: str):
         self.__name = new_name
-
-    # =================================================================
-    # needs allocation
-    # =================================================================
-    @property
-    def needs_allocation(self) -> bool:
-        """Does this course need to be allocated (i.e., to have a teacher assigned)?
-
-        For example, Math and Human Relations do not need to be allocated to one of our teachers.
-
-        Defaults to true."""
-        return self._allocation
-
-    @needs_allocation.setter
-    def needs_allocation(self, allocation: bool):
-        self._allocation = allocation
 
     # =================================================================
     # description - replaces print_description_2
@@ -520,6 +505,7 @@ class Course:
         cc.name = self.name
         cc.number = self.number
         cc.allocation = self.needs_allocation
+        cc.semester = self.semester
         return cc
 
     # =================================================================
