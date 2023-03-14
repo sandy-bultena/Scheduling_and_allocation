@@ -70,7 +70,7 @@ class Block(TimeSlot):
         super().__init__(day, start, duration, movable, id=time_slot_id)
         self.number = number  # NOTE: Based on the code found in CSV.pm and Section.pm
         self.__section = None
-        self._teachers = dict()
+        self._teachers : dict[int, Teacher] = dict()
         self._labs = {}
         self._conflicted = 0
 
@@ -88,7 +88,7 @@ class Block(TimeSlot):
     # description - replaces print_description_2
     # =================================================================
     @property
-    def description(self):
+    def description(self) -> str:
         """Returns text string that describes this Block."""
         text = f"{self.number} : {self.day}, {self.start} {self.duration} hour(s)"
         return text
@@ -98,7 +98,7 @@ class Block(TimeSlot):
     # =================================================================
 
     @property
-    def number(self):
+    def number(self) -> int:
         """Gets and sets the Block number."""
         return self.__number
 
@@ -143,7 +143,7 @@ class Block(TimeSlot):
     # start
     # =================================================================
     @property
-    def start(self):
+    def start(self) -> str:
         """Get/set the start time of the Block, in 24hr clock."""
         return super().start
 
@@ -164,7 +164,7 @@ class Block(TimeSlot):
     # day
     # =================================================================
     @property
-    def day(self):
+    def day(self) -> int:
         """Get/set the day of the block, in numeric format (1 for Monday, 7 for Sunday)."""
         return super().day
 
@@ -185,12 +185,12 @@ class Block(TimeSlot):
     # ==================================================================
 
     @property
-    def id(self):
+    def id(self) -> int:
         """Gets the Block id."""
         return self._block_id
 
     @property
-    def time_id(self):
+    def time_id(self) -> int:
         """Gets the associated Time Slot's id."""
         return super().id
 
@@ -198,7 +198,7 @@ class Block(TimeSlot):
     # section
     # =================================================================
     @property
-    def section(self):
+    def section(self) -> Section.Section:
         """Gets and sets the course Section object which contains this Block."""
         return self.__section
 
@@ -220,7 +220,7 @@ class Block(TimeSlot):
     # =================================================================
     # assign_lab
     # =================================================================
-    def assign_lab(self, *args):
+    def assign_lab(self, *args : Lab) -> Block:
         """Assign a lab, or labs, to this block"""
         for lab in args:
             if not isinstance(lab, Lab):
@@ -243,7 +243,7 @@ class Block(TimeSlot):
     # =================================================================
     # remove_lab
     # =================================================================
-    def remove_lab(self, lab: Lab):
+    def remove_lab(self, lab: Lab) -> Block:
         """Removes the specified Lab from this Block.
 
         Returns the Block object."""
@@ -273,7 +273,7 @@ class Block(TimeSlot):
     # =================================================================
     # remove_all_labs
     # =================================================================
-    def remove_all_labs(self):
+    def remove_all_labs(self) -> Block:
         """Removes ALL Labs from this Block.
         
         Returns the Block object."""
@@ -285,14 +285,14 @@ class Block(TimeSlot):
     # =================================================================
     # labs
     # =================================================================
-    def labs(self) -> list[Lab]:
+    def labs(self) -> tuple[Lab]:
         """Returns a list of the labs assigned to this block."""
-        return list(self._labs.values())
+        return tuple(self._labs.values())
 
     # =================================================================
     # has_lab
     # =================================================================
-    def has_lab(self, lab: Lab):
+    def has_lab(self, lab: Lab) -> bool:
         """Returns true if the Block has the specified Lab."""
         if not lab or not isinstance(lab, Lab):
             return False
@@ -301,7 +301,7 @@ class Block(TimeSlot):
     # =================================================================
     # assign_teacher
     # =================================================================
-    def assign_teacher(self, *args):
+    def assign_teacher(self, *args : Teacher) -> Block:
         """Assigns a new teacher, or new teachers to this Block.
         
         Returns the Block object."""
@@ -327,7 +327,7 @@ class Block(TimeSlot):
     # =================================================================
     # remove_teacher
     # =================================================================
-    def remove_teacher(self, teacher):
+    def remove_teacher(self, teacher : Teacher) -> Block:
         """Removes the specified Teacher from this Block.
         
         Returns the Block object."""
@@ -354,7 +354,7 @@ class Block(TimeSlot):
     # =================================================================
     # remove_all_teachers
     # =================================================================
-    def remove_all_teachers(self):
+    def remove_all_teachers(self) -> Block:
         """Removes ALL teachers from this Block.
         
         Returns the Block object."""
@@ -366,14 +366,14 @@ class Block(TimeSlot):
     # =================================================================
     # teachers
     # =================================================================
-    def teachers(self) -> list[Teacher]:
+    def teachers(self) -> tuple[Teacher]:
         """Returns a list of teachers assigned to this Block."""
-        return list(self._teachers.values())
+        return tuple(self._teachers.values())
 
     # =================================================================
     # has_teacher
     # =================================================================
-    def has_teacher(self, teacher):
+    def has_teacher(self, teacher : Teacher) -> bool:
         """Returns True if this Block has the specified Teacher."""
         if not teacher or not isinstance(teacher, Teacher):
             return False
@@ -382,7 +382,7 @@ class Block(TimeSlot):
     # =================================================================
     # teachersObj
     # =================================================================
-    def teachersObj(self):
+    def teachersObj(self) -> dict[int, Teacher]:
         """Returns a list of teacher objects to this Block."""
         # NOTE: Not entirely sure what this is meant to be doing in the original Perl.
         # ADDENDUM: There are no references to this method anywhere in the code beyond here.

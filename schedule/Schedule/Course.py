@@ -238,10 +238,9 @@ class Course:
     # =================================================================
     # sections
     # =================================================================
-    def sections(self) -> list[Section.Section]:
-        # TODO: fix, once you have got rid of the circular dependencies
+    def sections(self) -> tuple[Section.Section]:
         """Returns a list of all the Sections assigned to this Course."""
-        return list(getattr(self, '_sections', {}).values())
+        return tuple(self._sections.values())
 
     # =================================================================
     # number of sections
