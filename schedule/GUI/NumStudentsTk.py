@@ -1,4 +1,6 @@
+from __future__ import annotations
 import sys
+from dataclasses import dataclass, field
 from os import path
 
 sys.path.append(path.dirname(path.dirname(__file__)))
@@ -8,96 +10,151 @@ from tkinter import *
 import PerlLib.Colour as Colour
 
 
+def example():
+    # setting up the data
+    data = NumStudentsData()
+    for semester_name in ("fall", "winter"):
+        semester = NumStudentsDataSemester(name=semester_name)
+        data.semesters.append(semester)
+        for course_name in ("abc", "def", "ghi", "jkl"):
+            course = NumStudentsDataCourse(name=course_name)
+            semester.courses.append(course)
+            for section_name in ("1", "2"):
+                section = NumStudentsDataSection(name=section_name, num_students=10)
+
+                # function to validate and save the data when changed in the gui
+                def validate(entry_input: str):
+                    if entry_input.isdigit():
+                        section.num_students = int(entry_input)
+                        print(data)
+                        return True
+                    elif entry_input == "":
+                        section.num_students = 0
+                        print(data)
+                        return True
+                    else:
+                        return False
+
+                section.data_validate = validate
+                course.sections.append(section)
+
+    print_data(data)
+
+    mw = Tk()
+    frame = Frame(mw)
+    frame.pack()
+    gui=NumStudentsTk(frame, (sem.name for sem in data.semesters))
+    gui.refresh(data)
+    mw.mainloop()
+
+
+def print_data(data):
+    for semester in data.semesters:
+        print(semester.name)
+        for course in semester.courses:
+            print(semester.name, course.name)
+            for section in course.sections:
+                print(semester.name, course.name,section.name, section.num_students)
 
 
 class NumStudentsTk:
-    def __init__(self, frame, semesters: [str]):
-        """displays the number of students per course, per valid semester"""
+    """Displays all course/sections/student_numbers for each semester"""
+
+    def __init__(self, frame, semesters: list[str]):
+        """creates the Panes for each semester"""
         panes = dict()
+        self.root = frame
 
         # make as many panes as there are semesters
         for col, semester in enumerate(semesters):
-            panes[semester.name] = Scrolled(
-                self.frame,
+            f = Scrolled(
+                self.root,
+                "Frame",
                 scrollbars=E,
                 border=5,
                 relief=FLAT,
             )
-            panes[semester.name].grid(colum=col, row=0, sticky="nsew")
-            frame.gridColumnconfigure(col, weight=1);
+            f.grid(column=col, row=0, sticky="nsew")
+            f.columnconfigure(col, weight=1);
 
-        frame.gridRowconfigure(0, weight=1);
+            panes[semester] = f.widget
+    #        Label(f,text=semester).pack()
+
+        frame.rowconfigure(0, weight=1);
         self.panes = panes
 
-    # @student_info:
-    #  [
-    #   { semester=semester_name,
-    #     course =
-    #     { short_description=
-    #       { section_number =
-    #         { student_number = number
-    #           validate = function
-    #         }
-    #        }
-    #      }
-    #     }
-    #    }
-    #  ]
-    def refresh(self, student_info=None):
-        if student_info is None: return
+    def refresh(self, data: NumStudentsData = None):
+        """ Refreshes all the information"""
+        if data is None: return
 
         # loop over semesters
-        for info_by_semester in student_info:
-            pane = self.panes[info_by_semester["semester"]]
+        for col, semester in enumerate(data.semesters):
+            pane = self.panes[semester.name]
             if pane is None: continue
 
             # loop over courses
-            for row, course_descr in enumerate(sorted(info_by_semester["courses"],key=info_by_semester["courses"].key)):
+            row = 0
+            for course in sorted(semester.courses):
                 Label(pane,
-                      text=course_descr,
+                      text=course.name,
                       anchor=W,
                       width=40
-                      ).grid("-","-","-",sticky='nsew')
+                      ).grid(column=col,row=row, columnspan=2, sticky='nsew')
+                row = row + 1
 
                 # for each section in a course
+                for section in sorted(course.sections):
+                    Label(pane,
+                          width=4,
+                          text=section.name,
+                          anchor=E
+                          ).grid(column=0, row=row, sticky="nsew")
+
+                    reg = self.root.register(section.data_validate)
+                    entry = Entry(pane,
+                                  text=str(section.num_students),
+                                  justify='right',
+                                  validate='key',
+                                  validatecommand=(reg, '%P'),
+                                  invalidcommand=self.root.register(pane.bell),
+                                  width=8
+                                  )
+                    entry.grid(column=1, row=row, sticky='nw')
+                    # entry.bind("<Return>", entry.focusNext)
+                    # entry.bind("FocisIn>", pane.see(entry))
+
+                    row = row + 1
 
 
-    """
-sub refresh {
+@dataclass
+class NumStudentsDataSection:
+    name: str
+    num_students: int
+    data_validate: callable = None
 
-            foreach my $section_descr ( sort keys %$info_by_course )
-            {
-                my $info_by_section = $info_by_course->{$section_descr};
-                $pane->Label(
-                    -width  => 4,
-                    -text   => $section_descr,
-                    -anchor => 'e',
-                )->grid( -column => 0, -row => $row, -sticky => 'nsew' );
-
-                my $e = $pane->Entry(
-                    -textvariable => $info_by_section->{-student_number},
-                    -justify  => 'right',
-                    -validate => 'key',
-                    -validatecommand => $info_by_section->{-validate_sub},
-                    -invalidcommand => sub { $pane->bell },
-                    -width          => 8,
-                  )->grid(
-                    -column => 1,
-                    -row    => $row,
-                    -sticky => 'nw'
-                  );
-                $e->bind( "<Return>",  sub { $e->focusNext; } );
-                $e->bind( "<FocusIn>", sub { $pane->see($e) } );
-
-                $row++;
-            }
-
-        }
-
-    }
-}
+    def __lt__(self, obj):
+        return self.name < obj.name
 
 
-1;
+@dataclass
+class NumStudentsDataCourse:
+    name: str
+    sections: list[NumStudentsDataSection] = field(default_factory=list)
 
-    """
+    def __lt__(self, obj):
+        return self.name < obj.name
+
+
+@dataclass
+class NumStudentsDataSemester:
+    name: str
+    courses: list[NumStudentsDataCourse] = field(default_factory=list)
+
+
+@dataclass
+class NumStudentsData:
+    semesters: list[NumStudentsDataSemester] = field(default_factory=list)
+
+
+if __name__ == "__main__":
+    example()
