@@ -15,6 +15,7 @@ from database.PonyDatabaseConnection import define_database, Course as dbCourse,
     Section as dbSection, Schedule as dbSchedule, Scenario as dbScenario
 from pony.orm import *
 from unit_tests.db_constants import *
+from ScheduleEnums import SemesterType
 
 db: Database
 
@@ -32,18 +33,29 @@ def before_and_after_module():
 @pytest.fixture(autouse=True)
 def before_and_after():
     db.create_tables()
+    Course.reset()
     yield
     db.drop_all_tables(with_all_data=True)
 
 
 def test_id():
     """Verifies that Course's ID property increments automatically."""
-    Course._max_id = 0
     courses = []
     for i in range(5):
         courses.append(Course(i))
     assert courses[-1].id == len(courses)
 
+def test_full_constructor():
+    """Verifies that constructor parameters are applied correctly"""
+    num = "102-NYA-043"
+    name = "My Course"
+    sem = SemesterType.summer
+    allo = False
+    c = Course(num, name, sem, allo)
+    assert c.name == name
+    assert c.number == num
+    assert c.semester == SemesterType.validate(sem)
+    assert c.needs_allocation == allo
 
 def test_name_getter():
     """Verifies that name getter works as intended."""
@@ -57,46 +69,6 @@ def test_name_setter():
     name = "Intro to Programming"
     course.name = name
     assert name == course.name
-
-
-def test_needs_allocation_getter():
-    """Verifies that needs_allocation getter works as intended, returning a default value of
-    True. """
-    course = Course(1)
-    assert course.needs_allocation is True
-
-
-def test_needs_allocation_setter():
-    """Verifies that needs_allocation setter works as intended."""
-    course = Course(1)
-    course.needs_allocation = False
-    assert course.needs_allocation is False
-
-
-# def test_semester_getter():
-#     """Verifies that the semester getter works as intended."""
-#     semester = "fall"
-#     course = Course(1, "Intro to Programming", semester)
-#     assert course.semester == semester
-
-
-# def test_semester_setter_good():
-#     """Verifies that the semester setter accepts an appropriate value, in lowercase."""
-#     course = Course(1, semester="summer")
-#     semester = "FaLl"
-#     course.semester = semester
-#     assert semester.lower() == course.semester
-
-
-# def test_semester_setter_bad():
-#     """Verifies that the semester setter raises a warning without crashing the program when it receives an invalid
-#     input, and sets the value of semester to an empty string. """
-#     course = Course(1, semester="summer")
-#     bad_semester = "foo"
-#     with pytest.warns(UserWarning) as w:
-#         course.semester = bad_semester
-#     assert "invalid semester for course" in str(w[0].message) and course.semester == ''
-
 
 def test_number_getter():
     """Verifies that the number getter works as intended."""
@@ -751,16 +723,12 @@ def test_new_number_unused_number():
 
 def test_get_good():
     """Verifies that the static get() method works as intended."""
-    Course._Course__instances = {}
-    Course._max_id = 0
     course = Course(1, "Course 1")
     assert Course.get(1) == course
 
 
 def test_get_bad_id():
     """Verifies that get() returns None if there's no Course with the passed ID"""
-    Course._Course__instances = {}
-    Course._max_id = 0
     course = Course(1, "Course 1")
     bad_num = 666
     assert Course.get(bad_num) is None
@@ -769,8 +737,6 @@ def test_get_bad_id():
 def test_get_by_number_good():
     """Verifies that get_by_number() returns the first Course matching the passed number."""
     num = "420-6P3-AB"
-    Course._Course__instances = {}
-    Course._max_id = 0
     course_1 = Course(num, "Course 1")
     course_2 = Course("11111", "Course 2")
     assert Course.get_by_number(num) == course_1
@@ -778,8 +744,6 @@ def test_get_by_number_good():
 
 def test_get_by_number_bad():
     """Verifies that get_by_number() returns None if no matching Course is found."""
-    Course._Course__instances = {}
-    Course._max_id = 0
     num = "420-6P3-AB"
     course_1 = Course(num, "Course 1")
     course_2 = Course("11111", "Course 2")
@@ -789,8 +753,6 @@ def test_get_by_number_bad():
 
 def test_get_by_number_no_input():
     """Verifies that get_by_number() returns None when receiving None or an empty string."""
-    Course._Course__instances = {}
-    Course._max_id = 0
     num = "420-6P3-AB"
     course_1 = Course(num, "Course 1")
     course_2 = Course("11111", "Course 2")
@@ -800,8 +762,6 @@ def test_get_by_number_no_input():
 
 def test_allocation_list():
     """Verifies that allocation_list() returns a list of the courses in need of allocation."""
-    Course._Course__instances = {}
-    Course._max_id = 0
     course_1 = Course("24601", "Course 1")
     course_2 = Course("11111", "Course 2")
     course_2.needs_allocation = False
@@ -811,8 +771,6 @@ def test_allocation_list():
 
 def test_allocation_list_sorted():
     """Verifies that the list returned by allocation_list() is sorted by Course number."""
-    Course._Course__instances = {}
-    Course._max_id = 0
     course_1 = Course("24601", "Course 1")
     course_2 = Course("11111", "Course 2")
     courses = Course.allocation_list()

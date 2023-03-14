@@ -103,8 +103,7 @@ class Schedule:
 
         # create all courses
         for course in select(c for c in db.Course):
-            c = Course(course.number, course.name, id=course.id)
-            c.needs_allocation = course.allocation
+            Course(course.number, course.name, course.semester, course.allocation, id=course.id)
         
         # create all labs
         for lab in select(l for l in db.Lab):
@@ -257,18 +256,6 @@ class Schedule:
         """
         if not isinstance(teacher, Teacher): raise TypeError(f"{teacher} must be an object of type Teacher")
         outp = set()
-        # TODO: Comparing to perl code, this only works if courses,
-        #       which may previously exist, but then are removed from the schedule, also remove
-        #       the sections, labs, blocks, etc from their lists,
-        #       ... if that is taken care of, then this code is ok, (it looks like it is, but we have to be sure)
-        #       ... otherwise, you have to verify that the section, lab, block, etc belongs to a course
-        #           that belongs to this schedule.
-        #       ...
-        #       ... Example, we may have a scenario that has complementary xyz in that schedule,
-        #           and it is removed, and replaced with course abc.  Sections lists should be
-        #           updated accordingly
-        #       questions: Do you have a test for dropping a course, and validating that
-        #           the lists of teachers, blocks, labs, etc are updated?
         for s in Section.list():
             if teacher in s.teachers: outp.add(s)
         return tuple(outp)
@@ -309,7 +296,6 @@ class Schedule:
         Returns a list of Blocks that the given Teacher teaches
         - Parameter teacher -> The Teacher who's Blocks should be found
         """
-        # TODO: see above comments for sections_for_teachers
 
         if not isinstance(teacher, Teacher): raise TypeError(f"{teacher} must be an object of type Teacher")
         outp = set()
@@ -326,7 +312,6 @@ class Schedule:
         Returns a list of Blocks using the given Lab
         - Parameter lab -> The Lab that should be found
         """
-        # TODO: see above comments for sections_for_teachers
         if not isinstance(lab, Lab): raise TypeError(f"{lab} must be an object of type Lab")
         outp = set()
         for b in Block.list():
@@ -342,7 +327,6 @@ class Schedule:
         Returns a list of Sections assigned to the given Stream
         - Parameter stream -> The Stream that should be found
         """
-        # TODO: see above comments for sections_for_teachers
         if not isinstance(stream, Stream): raise TypeError(f"{stream} must be an object of type Stream")
         outp = set()
         for s in Section.list():
