@@ -52,10 +52,10 @@ def test_day_getter_default():
 @db_session
 def test_day_setter():
     slot = TimeSlot()
-    new_day = 7
+    new_day = WeekDay.Friday.value
     slot.day = new_day
 
-    real_val = 'sun'
+    real_val = 'fri'
     assert slot.day == real_val
 
 
