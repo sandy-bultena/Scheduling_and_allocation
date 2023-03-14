@@ -37,7 +37,7 @@ class Course:
     # -------------------------------------------------------------------
     # new
     # --------------------------------------------------------------------
-    def __init__(self, number: str = "", name: str = "New Course", id: int = None):
+    def __init__(self, number: str = "", name: str = "New Course", *, id: int = None):
         """Creates and returns a course object.
 
         Parameter **number**: str -> The alphanumeric course number.

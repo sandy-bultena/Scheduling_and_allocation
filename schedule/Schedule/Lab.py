@@ -32,7 +32,7 @@ class Lab:
     # new
     # --------------------------------------------------------------------
 
-    def __init__(self, number: str = "100", descr: str = '', id: int = None):
+    def __init__(self, number: str = "100", descr: str = '', *, id: int = None):
         """Creates and returns a new Lab object."""
         self.number = number
         self.descr = descr
