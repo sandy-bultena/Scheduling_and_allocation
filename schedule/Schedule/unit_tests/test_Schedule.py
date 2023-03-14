@@ -17,6 +17,7 @@ from Conflict import Conflict
 from Section import Section
 from Block import Block
 from Time_slot import TimeSlot
+from ScheduleEnums import ConflictType
 
 db : Database
 new_db : Database = None   # only used in write DB test
@@ -326,16 +327,16 @@ def test_calculate_conflicts():
         conflict_block_sets.append(set(i.blocks))
 
     # check for correct number of instances of each type
-    assert conflict_types[Conflict.TIME] == 3   # TIME_TEACHER, TIME_LAB, & TIME_STREAM
-    assert conflict_types[Conflict.LUNCH] == 1
-    assert conflict_types[Conflict.MINIMUM_DAYS] == 1
-    assert conflict_types[Conflict.AVAILABILITY] == 1
+    assert conflict_types[ConflictType.TIME] == 3   # TIME_TEACHER, TIME_LAB, & TIME_STREAM
+    assert conflict_types[ConflictType.LUNCH] == 1
+    assert conflict_types[ConflictType.MINIMUM_DAYS] == 1
+    assert conflict_types[ConflictType.AVAILABILITY] == 1
     assert len(conflict_block_sets) == 6        # 6 total conflicts
     
     # check that each instance points to the correct blocks for non-TIME conflicts
-    assert set(conflict_values[Conflict.LUNCH].blocks) == lunch_conflicted
-    assert set(conflict_values[Conflict.MINIMUM_DAYS].blocks) == min_days_conflicted
-    assert set(conflict_values[Conflict.AVAILABILITY].blocks) == availability_conflicted
+    assert set(conflict_values[ConflictType.LUNCH].blocks) == lunch_conflicted
+    assert set(conflict_values[ConflictType.MINIMUM_DAYS].blocks) == min_days_conflicted
+    assert set(conflict_values[ConflictType.AVAILABILITY].blocks) == availability_conflicted
 
     # check that 3 TIME conflict block lists are included in block lists
     assert time_lab_conflicted in conflict_block_sets
@@ -513,10 +514,10 @@ def test_clear_block():
 def populate_db(sid : int = None):
     """Populates the DB with dummy data"""
     if not sid: sid = s.id
-    c1 = dbCourse(name="Course 1", number="101-NYA", allocation=True)
-    c2 = dbCourse(name="Course 2", number="102-NYA", allocation=False)
-    c3 = dbCourse(name="Course 3", number="103-NYA", allocation=True)
-    c4 = dbCourse(name="Course 4", number="104-NYA", allocation=False)
+    c1 = dbCourse(name="Course 1", number="101-NYA", semester=1, allocation=True)
+    c2 = dbCourse(name="Course 2", number="102-NYA", semester=2, allocation=False)
+    c3 = dbCourse(name="Course 3", number="103-NYA", semester=3, allocation=True)
+    c4 = dbCourse(name="Course 4", number="104-NYA", semester=4, allocation=False)
     st1 = dbStream(number="3A", descr="Stream #1")
     st2 = dbStream(number="3B", descr="Stream #2")
     st3 = dbStream(number="3C", descr="Stream #3")
@@ -579,7 +580,9 @@ def test_read_db():
     assert len(TimeSlot.list()) == 4
     
     assert len(Course.list()) == 4
-    for c in Course.list(): assert len(c.sections()) == 1
+    for i, c in enumerate(Course.list()):
+        assert len(c.sections()) == 1
+        assert c.semester == i + 1
     assert len(Stream.list()) == 4
     assert len(Teacher.list()) == 3
     for t in Teacher.list(): assert t.release
@@ -598,7 +601,7 @@ def test_read_db():
     
     for c in Conflict.list(): print(c.type)
     assert len(Conflict.list()) == 1
-    assert Conflict.list()[0].type == Conflict.TIME
+    assert Conflict.list()[0].type == ConflictType.TIME
     assert Block.list()[1].conflicted
     assert Block.list()[2].conflicted
 
@@ -665,6 +668,7 @@ def test_write_db(after_write):
         assert c.name == f"Course {i+1}"
         assert c.number == f"10{i+1}-NYA"
         assert c.needs_allocation == (0 == i%2)
+        assert c.semester == i + 1
 
     # confirm correct number of streams and data was transferred correctly
     assert len(Stream.list()) == 4
