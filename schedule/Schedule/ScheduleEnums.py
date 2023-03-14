@@ -48,9 +48,9 @@ class WeekDayNumber(ExtendedEnum):
 
 
 class ViewType(ExtendedEnum):
-    from Lab import Lab
-    from Teacher import Teacher
-    from Stream import Stream
+    import Teacher
+    import Lab
+    import Stream
     lab = Lab
     teacher = Teacher
     stream = Stream

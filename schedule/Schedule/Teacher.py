@@ -194,15 +194,20 @@ class Teacher:
     # =================================================================
     # remove teacher
     # =================================================================
-    def delete(self):
-        """Removes this Teacher from the Teachers object."""
+    def remove(self):
+        """Removes this Teacher from the Teachers object. Its corresponding database record
+        is untouched."""
         if self.id in Teacher.__instances.keys():
             del Teacher.__instances[self.id]
 
-            # TODO: BIG QUESTION:  DELETING A TEACHER ... IS THIS DELETING A TEACHER
-            #       FROM THE CURRENT SCHEDULE, OR ARE WE DELETING A TEACHER FROM THE DATABASE?
-            #       SHOULD THERE BE A DIFFERENCE?
-            self.__delete_entity_teacher()
+    def delete(self):
+        """Removes this Teacher from the Teachers object, along with its corresponding database
+        record."""
+        # First, remove the Teacher object from the application.
+        self.remove()
+
+        # Then delete its corresponding record from the database.
+        self.__delete_entity_teacher()
 
     @db_session
     def __delete_entity_teacher(self):

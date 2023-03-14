@@ -1,5 +1,5 @@
 from __future__ import annotations
-from Time_slot import TimeSlot
+import Time_slot
 from ScheduleEnums import WeekDay
 
 from database.PonyDatabaseConnection import Lab as dbLab, TimeSlot as dbTimeSlot
@@ -36,7 +36,7 @@ class Lab:
         """Creates and returns a new Lab object."""
         self.number = number
         self.descr = descr
-        self._unavailable: dict[int, TimeSlot] = {}
+        self._unavailable: dict[int, Time_slot.TimeSlot] = {}
 
         self.__id = id if id else Lab.__create_entity(self)
         Lab.__instances[self.__id] = self
@@ -99,16 +99,16 @@ class Lab:
 
         # Create a TimeSlot.
         day = WeekDay.validate(day)
-        return self.add_unavailable_slot(TimeSlot(day, start, duration))
+        return self.add_unavailable_slot(Time_slot.TimeSlot(day, start, duration))
 
-    def add_unavailable_slot(self, slot: TimeSlot) -> Lab:
+    def add_unavailable_slot(self, slot: Time_slot.TimeSlot) -> Lab:
         """Adds an existing time slot to this lab's unavailable times."""
         self._unavailable[slot.id] = slot
         self.__add_entity_unavailable(slot)
         return self
 
     @db_session
-    def __add_entity_unavailable(self, instance: TimeSlot):
+    def __add_entity_unavailable(self, instance: Time_slot.TimeSlot):
         """Links the passed TimeSlot's entity to this Lab's corresponding entity in the database."""
         entity_lab = dbLab.get(id=self.id)
         entity_slot = dbTimeSlot.get(id=instance.id)
@@ -157,7 +157,7 @@ class Lab:
     # unavailable
     # =================================================================
 
-    def unavailable(self) -> tuple[TimeSlot]:
+    def unavailable(self) -> tuple[Time_slot.TimeSlot]:
         """Returns all unavailable time slot objects for this lab."""
         return tuple(self._unavailable.values())
 
@@ -193,7 +193,6 @@ class Lab:
 
         found = [lab for lab in Lab.list() if lab.number == number]
         return found[0] if found else None
-
 
     # =================================================================
     # get
@@ -243,7 +242,8 @@ class Lab:
         if self in Lab.__instances.values():
             # Remove any TimeSlots associated with this Lab.
             for slot in self.unavailable():
-                if slot.id in TimeSlot._TimeSlot__instances: del TimeSlot._TimeSlot__instances[slot.id]
+                if slot.id in Time_slot.TimeSlot._TimeSlot__instances: del Time_slot.TimeSlot._TimeSlot__instances[
+                    slot.id]
                 del self._unavailable[slot.id]
 
             # Then remove the Lab entity and its TimeSlot entities from the database.
@@ -273,10 +273,11 @@ class Lab:
         d_lab.number = self.number
         d_lab.description = self.descr
         # should already be saved (in unavailable_add), but just to be safe
-            # avoids a (likely testing-exlusive) issue where TimeSlots aren't saved; in test case, this is due to switching databases, which shouldn't happen in practice
+        # avoids a (likely testing-exlusive) issue where TimeSlots aren't saved; in test case,
+        # this is due to switching databases, which shouldn't happen in practice
         for s in self.unavailable(): d_lab.unavailable_slots.add(s.save())
         return d_lab
-    
+
     # =================================================================
     # reset
     # =================================================================
