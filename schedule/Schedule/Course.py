@@ -1,16 +1,11 @@
 from __future__ import annotations
 import re
 from warnings import warn
-# from Section import Section
-from Stream import Stream
+# directly importing modules to avoid circular dependencies
+import Stream
 import Teacher
-from Lab import Lab
+import Lab
 import Section
-
-# TODO: Watch this video, it will explain how to get rid of circular dependencies
-# https://www.youtube.com/watch?v=UnKa_t-M_kM
-# TLDR: just import Stream, import Teacher, and don't use 'from'
-# TODO: Fix the validation of Section is a section type
 
 from database.PonyDatabaseConnection import Course as dbCourse, Section as dbSection
 from pony.orm import *
@@ -132,7 +127,6 @@ class Course:
         # and add them all to the Course, one at a time. However, it is never actually used that
         # way. I am preserving the original structure just in case.
         for section in sections:
-            # TODO: Fix
             # Verify that this is actually a Section object.
             if not isinstance(section, Section.Section):
                 raise TypeError(f"<{section}>: invalid section - must be a Section object.")
@@ -203,9 +197,7 @@ class Course:
         """Removes the passed Section from this Course, if it exists.
 
         Returns the modified Course object."""
-        # Verify that the section is indeed a Section object. NOTE: the Section import has been
-        # taken out to avoid a circular dependency.
-        # TODO: Fix
+        # Verify that the section is indeed a Section object.
         if not isinstance(section, Section.Section):
             raise TypeError(f"<{section}>: invalid section - must be a Section object")
 
@@ -246,7 +238,7 @@ class Course:
     # =================================================================
     # sections
     # =================================================================
-    def sections(self):
+    def sections(self) -> list[Section.Section]:
         # TODO: fix, once you have got rid of the circular dependencies
         """Returns a list of all the Sections assigned to this Course."""
         return list(getattr(self, '_sections', {}).values())
@@ -395,7 +387,7 @@ class Course:
     # =================================================================
     # assign_lab
     # =================================================================
-    def assign_lab(self, lab: Lab):
+    def assign_lab(self, lab: Lab.Lab):
         """Assigns a Lab to all Sections of this Course.
 
         Returns the modified Course object."""
@@ -408,7 +400,7 @@ class Course:
     # =================================================================
     # assign_stream
     # =================================================================
-    def assign_stream(self, stream: Stream):
+    def assign_stream(self, stream: Stream.Stream):
         """Assigns a Stream to all Sections of this Course.
 
         Returns the modified Course object."""
@@ -445,7 +437,7 @@ class Course:
     # =================================================================
     # remove_stream
     # =================================================================
-    def remove_stream(self, stream):
+    def remove_stream(self, stream: Stream.Stream):
         """Removes the specified Stream from this Course.
 
         Returns the modified Course object."""
