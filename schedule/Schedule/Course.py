@@ -218,15 +218,22 @@ class Course:
     # =================================================================
     # delete
     # =================================================================
-    def delete(self):
-        """Delete this object (and all its dependants).
-
-        Returns None."""
+    def remove(self):
+        """Removes this object from the application, without deleting its corresponding
+        database record."""
+        # Remove each of its associated sections.
         for section in self.sections():
             self.remove_section(section)
         if Course.__instances[self.id]:
             del Course.__instances[self.id]
-            self.__delete_entity()
+
+
+    def delete(self):
+        """Delete this object (and all its dependants), including its corresponding database record.
+
+        Returns None."""
+        self.remove()
+        self.__delete_entity()
 
     @db_session
     def __delete_entity(self):
