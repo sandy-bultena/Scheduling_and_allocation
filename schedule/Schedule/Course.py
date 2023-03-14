@@ -49,7 +49,7 @@ class Course:
         self.name : str = str(name)
         self.needs_allocation : bool = needs_allocation
         self._sections : dict[int, Section.Section] = {}
-        self.semester : SemesterType = SemesterType.validate(semester)
+        self.semester : int = SemesterType.validate(semester)
 
         self.__id = id if id else Course.__create_entity(self)
         Course.__instances[self.__id] = self
@@ -501,7 +501,7 @@ class Course:
     @db_session
     def save(self):
         cc = dbCourse.get(id=self.id)
-        if not cc: cc = dbCourse(name=self.name)
+        if not cc: cc = dbCourse(name=self.name, semester=self.semester)
         cc.name = self.name
         cc.number = self.number
         cc.allocation = self.needs_allocation

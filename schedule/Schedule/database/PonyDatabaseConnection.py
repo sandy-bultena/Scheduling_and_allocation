@@ -60,7 +60,7 @@ class Course(db.Entity):
     name = Required(str, max_len=50)
     number = Optional(str, max_len=15)
     allocation = Optional(bool, default=True, sql_default='1')
-    semester = Required(int)
+    semester = Required(int, sql_default='4')
     sections = Set('Section')
 
 
