@@ -14,7 +14,7 @@ sys.path.append(path.dirname(path.dirname(__file__)))
     from Schedule.Conflict import Conflict
 
     blocks = [block1, block2, ...]
-    new_conflict = Conflict(type = Conflict.MINIMUM_DAYS, blocks = blocks)
+    new_conflict = Conflict(type = ConflictType.MINIMUM_DAYS, blocks = blocks)
 """
 
 class Conflict:
@@ -43,7 +43,7 @@ class Conflict:
         - Parameter type -> defines the type of conflict.
         - Parameter blocks -> defines the list of blocks involved in the conflict.
         """
-        if type is None or not blocks: raise TypeError("Bad inputs")
+        if not isinstance(type, ConflictType) or not blocks: raise TypeError("Bad inputs")
 
         self.type = type
         self.blocks = blocks.copy()  # if list is changed, the Conflict won't be
@@ -134,18 +134,15 @@ class Conflict:
     def most_severe(conflict_number: int, view_type: ViewType) -> ConflictType:
         """
         Identify the most severe conflict type in a conflict
-        - Parameter conflict_number -> defines the types of conflicts. integer
+        - Parameter conflict_number -> defines the types of conflicts. int
         - Parameter view_type -> defines the user's current view. ViewType (enum)
         """
         severest = None
         sorted_conflicts = Conflict._sorted_conflicts.copy()
-        match view_type:
-            case ViewType.lab:
-                sorted_conflicts.insert(0, ConflictType.TIME_LAB)
-            case ViewType.stream:
-                sorted_conflicts.insert(0, ConflictType.TIME_STREAM)
-            case ViewType.teacher:
-                sorted_conflicts.insert(0, ConflictType.TIME_TEACHER)
+
+        if view_type:
+            conflict_key = f"time_{view_type._name_}".upper()
+            if conflict_key in ConflictType.__members__: sorted_conflicts.insert(0, ConflictType[conflict_key])
 
         for conflict in sorted_conflicts:
             if conflict_number & conflict.value:
@@ -158,7 +155,7 @@ class Conflict:
     # get_description
     # --------------------------------------------------------
     @staticmethod
-    def get_description(type):
+    def get_description(type : ConflictType) -> str:
         """ Returns the description of the provided conflict type """
         return Conflict._hash_descriptions()[type]
 

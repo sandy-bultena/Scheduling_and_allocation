@@ -1,9 +1,6 @@
 from enum import Enum
 import sys
 from os import path
-import Teacher
-import Lab
-import Stream
 
 sys.path.append(path.dirname(path.dirname(__file__)))
 import PerlLib.Colour as Colour
@@ -51,9 +48,13 @@ class WeekDayNumber(ExtendedEnum):
 
 
 class ViewType(ExtendedEnum):
+    from Lab import Lab
+    from Teacher import Teacher
+    from Stream import Stream
     lab = Lab
     teacher = Teacher
     stream = Stream
+    none = None
 
 
 class SemesterType(ExtendedEnum):
@@ -88,11 +89,11 @@ class ConflictType(ExtendedEnum):
     @classmethod
     def descriptions(cls):
         return {
-            cls.TIME.name: "indirect time overlap",
-            cls.LUNCH.name: "no lunch time",
-            cls.MINIMUM_DAYS.name: "too few days",
-            cls.TIME_TEACHER.name: "time overlap",
-            cls.TIME_LAB.name: "time overlap",
-            cls.TIME_STREAM.name: "time overlap",
-            cls.AVAILABILITY.name: "not available"
+            cls.TIME: "indirect time overlap",
+            cls.LUNCH: "no lunch time",
+            cls.MINIMUM_DAYS: "too few days",
+            cls.TIME_TEACHER: "time overlap",
+            cls.TIME_LAB: "time overlap",
+            cls.TIME_STREAM: "time overlap",
+            cls.AVAILABILITY: "not available"
         }
