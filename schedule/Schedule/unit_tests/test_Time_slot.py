@@ -50,7 +50,7 @@ def test_day_getter_default():
 @db_session
 def test_day_setter():
     slot = TimeSlot()
-    new_day = 'Sunday'
+    new_day = 7
     slot.day = new_day
 
     real_val = 'sun'
