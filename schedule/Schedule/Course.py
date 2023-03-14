@@ -6,6 +6,7 @@ import Stream
 import Teacher
 import Lab
 import Section
+import Block
 
 from database.PonyDatabaseConnection import Course as dbCourse, Section as dbSection
 from pony.orm import *
@@ -33,13 +34,13 @@ from ScheduleEnums import SemesterType
 
 class Course:
     """Describes a distinct course."""
-    __instances = {}
+    __instances : dict[int, Course] = {}
 
     # -------------------------------------------------------------------
     # new
     # --------------------------------------------------------------------
     def __init__(self, number: str = "", name: str = "New Course",
-                 semester: SemesterType = SemesterType.any, needs_allocation: bool = True,
+                 semester: (SemesterType | int) = SemesterType.any, needs_allocation: bool = True,
                  *, id: int = None):
         """Creates and returns a course object.
 
@@ -47,18 +48,18 @@ class Course:
 
         Parameter **name**: str -> the name of the course."""
 
-        self.number: str = str(number)
-        self.name: str = str(name)
-        self.needs_allocation: bool = needs_allocation
-        self._sections: dict[int, Section.Section] = {}
-        self.semester: int = SemesterType.validate(semester)
+        self.number : str = str(number)
+        self.name : str = str(name)
+        self.needs_allocation : bool = needs_allocation
+        self._sections : dict[str, Section.Section] = {}
+        self.semester : int = SemesterType.validate(semester)
 
         self.__id = id if id else Course.__create_entity(self)
         Course.__instances[self.__id] = self
 
     @db_session
     @staticmethod
-    def __create_entity(instance: Course):
+    def __create_entity(instance: Course) -> int:
         entity_course = dbCourse(name=instance.name, number=instance.number,
                                  allocation=instance.needs_allocation, semester=instance.semester)
         commit()
@@ -68,7 +69,7 @@ class Course:
     # id
     # =================================================================
     @property
-    def id(self):
+    def id(self) -> int:
         """Returns the unique ID for this Course object."""
         return self.__id
 
@@ -76,7 +77,7 @@ class Course:
     # name
     # =================================================================
     @property
-    def name(self):
+    def name(self) -> str:
         """Gets or sets the Course name."""
         return self.__name
 
@@ -88,7 +89,7 @@ class Course:
     # description - replaces print_description_2
     # =================================================================
     @property
-    def description(self):
+    def description(self) -> str:
         """Returns text string that describes this Block."""
         return f"{self.number}: {self.name}"
 
@@ -96,7 +97,7 @@ class Course:
     # number
     # =================================================================
     @property
-    def number(self):
+    def number(self) -> str:
         """Gets and sets the Course number."""
         return self.__number
 
@@ -107,7 +108,7 @@ class Course:
     # =================================================================
     # add_ section
     # =================================================================
-    def add_section(self, *sections):
+    def add_section(self, *sections : Section.Section) -> Course:
         """Assign one or more Sections to this Course.
 
         Returns the modified Course object."""
@@ -145,7 +146,7 @@ class Course:
     # =================================================================
     # get_section
     # =================================================================
-    def get_section(self, number):
+    def get_section(self, number : str) -> Section.Section | None:
         """Gets the Section from this Course that has the passed section number, if it exists.
         Otherwise, returns None. """
         if number in self._sections.keys():
@@ -155,7 +156,7 @@ class Course:
     # =================================================================
     # get_section_by_id
     # =================================================================
-    def get_section_by_id(self, sect_id):
+    def get_section_by_id(self, sect_id : int) -> Section.Section | None:
         """Gets the Section from this Course that matches the passed section ID, if it exists.
 
         Returns the Section if found, or None otherwise."""
@@ -165,7 +166,7 @@ class Course:
     # =================================================================
     # get_section_by_name
     # =================================================================
-    def get_section_by_name(self, name: str) -> list:
+    def get_section_by_name(self, name: str) -> tuple[Section.Section]:
         """Gets the Section from this Course that has the passed section name, if it exists.
 
         Returns a list containing the Section if found, or an empty list otherwise."""
@@ -175,13 +176,13 @@ class Course:
         # need revision.
         if name:
             sections = [s for s in self.sections() if s.name == name]
-            return sections
-        return []
+            return tuple(sections)
+        return tuple()
 
     # =================================================================
     # remove_section
     # =================================================================
-    def remove_section(self, section):
+    def remove_section(self, section : Section.Section) -> Course:
         """Removes the passed Section from this Course, if it exists.
 
         Returns the modified Course object."""
@@ -198,7 +199,7 @@ class Course:
 
     @db_session
     def __remove_entity_section(self, section_id: int):
-        d_sect = dbSection.get(id=section_id)
+        d_sect : dbSection = dbSection.get(id=section_id)
         if d_sect is not None:
             d_course = dbCourse[self.id]
             d_course.sections.remove(d_sect)
@@ -239,7 +240,7 @@ class Course:
     # =================================================================
     # number of sections
     # =================================================================
-    def number_of_sections(self):
+    def number_of_sections(self) -> int:
         """Returns the number of Sections assigned to this Course."""
         sections = self.sections()
         return len(sections)
@@ -247,7 +248,7 @@ class Course:
     # =================================================================
     # sections for teacher
     # =================================================================
-    def sections_for_teacher(self, teacher: Teacher.Teacher):
+    def sections_for_teacher(self, teacher: Teacher.Teacher) -> tuple[Section.Section]:
         """Returns a list of the Sections assigned to this course, with this Teacher."""
         sections = []
 
@@ -256,12 +257,12 @@ class Course:
                 if teacher.id == teacher_id.id:
                     sections.append(section)
 
-        return sections
+        return tuple(sections)
 
     # =================================================================
     # max_section_number
     # =================================================================
-    def max_section_number(self):
+    def max_section_number(self) -> int:
         """Returns the maximum Section number from the Sections assigned to this Course."""
         sections = sorted(self.sections(), key=lambda s: s.number)
         return sections[-1].number if len(sections) > 0 else 0
@@ -269,19 +270,19 @@ class Course:
     # =================================================================
     # blocks
     # =================================================================
-    def blocks(self):
+    def blocks(self) -> tuple[Block.Block]:
         """Returns a list of the Blocks assigned to this Course."""
         blocks = []
 
         for section in self.sections():
             blocks.append(section.blocks)
 
-        return blocks
+        return tuple(blocks)
 
     # =================================================================
     # section
     # =================================================================
-    def section(self, section_number) -> Section.Section:
+    def section(self, section_number : str) -> Section.Section:
         """Returns the Section associated with this Section number."""
         if section_number in self._sections.keys():
             return self._sections[section_number]
@@ -289,7 +290,7 @@ class Course:
     # =================================================================
     # string representation of the object
     # =================================================================
-    def __str__(self):
+    def __str__(self) -> str:
         """Returns a text string that describes the Course, its Sections, its Blocks,
         its Teachers, and its Labs. """
         text = ''
@@ -322,7 +323,7 @@ class Course:
     # =================================================================
     # teachers
     # =================================================================
-    def teachers(self):
+    def teachers(self) -> tuple[Teacher.Teacher]:
         """Returns a list of the Teachers assigned to all Sections of this Course."""
         teachers = {}
 
@@ -330,12 +331,12 @@ class Course:
             for teacher in section.teachers:
                 teachers[teacher] = teacher
 
-        return list(teachers.values())
+        return tuple(teachers.values())
 
     # =================================================================
     # has teacher
     # =================================================================
-    def has_teacher(self, teacher: Teacher.Teacher):
+    def has_teacher(self, teacher: Teacher.Teacher) -> bool:
         """Returns true if the passed Teacher is assigned to this Course."""
         if not teacher or not isinstance(teacher, Teacher.Teacher):
             return False
@@ -344,7 +345,7 @@ class Course:
     # =================================================================
     # streams
     # =================================================================
-    def streams(self):
+    def streams(self) -> tuple[Stream.Stream]:
         """Returns a list of Streams assigned to all Sections of this Course."""
         streams = {}
 
@@ -352,12 +353,12 @@ class Course:
             for stream in section.streams:
                 streams[stream] = stream
 
-        return list(streams.values())
+        return tuple(streams.values())
 
     # =================================================================
     # has_stream
     # =================================================================
-    def has_stream(self, stream):
+    def has_stream(self, stream : Stream.Stream) -> bool:
         """Returns true if this Course has the specified Stream."""
         if not stream:
             return False
@@ -367,7 +368,7 @@ class Course:
     # =================================================================
     # assign_teacher
     # =================================================================
-    def assign_teacher(self, teacher: Teacher.Teacher):
+    def assign_teacher(self, teacher: Teacher.Teacher) -> Course:
         """Assigns a Teacher to all Sections of this Course.
 
         Returns the modified Course object."""
@@ -380,7 +381,7 @@ class Course:
     # =================================================================
     # assign_lab
     # =================================================================
-    def assign_lab(self, lab: Lab.Lab):
+    def assign_lab(self, lab: Lab.Lab) -> Course:
         """Assigns a Lab to all Sections of this Course.
 
         Returns the modified Course object."""
@@ -393,7 +394,7 @@ class Course:
     # =================================================================
     # assign_stream
     # =================================================================
-    def assign_stream(self, stream: Stream.Stream):
+    def assign_stream(self, stream: Stream.Stream) -> Course:
         """Assigns a Stream to all Sections of this Course.
 
         Returns the modified Course object."""
@@ -406,7 +407,7 @@ class Course:
     # =================================================================
     # remove_teacher
     # =================================================================
-    def remove_teacher(self, teacher: Teacher.Teacher):
+    def remove_teacher(self, teacher: Teacher.Teacher) -> Course:
         """Removes the passed Teacher from all Blocks in this Course.
 
         Returns the modified Course object."""
@@ -418,7 +419,7 @@ class Course:
     # =================================================================
     # remove_all_teachers
     # =================================================================
-    def remove_all_teachers(self):
+    def remove_all_teachers(self) -> Course:
         """Removes all Teachers from all Blocks in this Course.
 
         Returns the modified Course object."""
@@ -430,7 +431,7 @@ class Course:
     # =================================================================
     # remove_stream
     # =================================================================
-    def remove_stream(self, stream: Stream.Stream):
+    def remove_stream(self, stream: Stream.Stream) -> Course:
         """Removes the specified Stream from this Course.
 
         Returns the modified Course object."""
@@ -442,7 +443,7 @@ class Course:
     # =================================================================
     # remove_all_streams
     # =================================================================
-    def remove_all_streams(self):
+    def remove_all_streams(self) -> Course:
         """Removes all Streams from all Sections of this Course.
 
         Returns the modified Course object."""
@@ -475,13 +476,13 @@ class Course:
     @staticmethod
     def get(c_id: int) -> Course | None:
         """Returns the Course object with the matching ID."""
-        return Course.__instances.get(c_id)
+        return Course.__instances.get(c_id, default = None)
 
     # =================================================================
     # get_by_number
     # =================================================================
     @staticmethod
-    def get_by_number(number) -> Course | None:
+    def get_by_number(number : str) -> Course | None:
         """Return the Course which matches this Course number, if it exists."""
         if not number: return
 
@@ -494,15 +495,15 @@ class Course:
     # courses list for allocation
     # =================================================================
     @staticmethod
-    def allocation_list() -> list[Course]:
+    def allocation_list() -> tuple[Course]:
         """Returns a sorted list of the Courses that need allocation."""
         courses = list(filter(lambda x: x.needs_allocation, Course.list()))
         courses = sorted(courses, key=lambda c: c.number)
-        return courses
+        return tuple(courses)
 
     @db_session
-    def save(self):
-        cc = dbCourse.get(id=self.id)
+    def save(self) -> dbCourse:
+        cc : dbCourse = dbCourse.get(id=self.id)
         if not cc: cc = dbCourse(name=self.name, semester=self.semester)
         cc.name = self.name
         cc.number = self.number

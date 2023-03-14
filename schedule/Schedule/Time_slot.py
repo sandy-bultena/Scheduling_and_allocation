@@ -28,7 +28,7 @@ class TimeSlot:
     # =================================================================
     # Class/Global Variables
     # =================================================================
-    __instances = {}
+    __instances : dict[int, TimeSlot] = {}
     MAX_HOUR_DIV = 2
     DEFAULT_DAY = WeekDay.Monday.value
     DEFAULT_START = "8:00"
@@ -38,10 +38,10 @@ class TimeSlot:
     # Constructor
     # =================================================================
 
-    def __init__(self, day: str = DEFAULT_DAY,
+    def __init__(self, day: (WeekDay | str) = DEFAULT_DAY,
                  start: str = DEFAULT_START,
                  duration: float = DEFAULT_DURATION,
-                 movable=True, *, id: int = None):
+                 movable : bool = True, *, id: int = None):
         """
         Creates a new TimeSlot object.
 
@@ -67,7 +67,7 @@ class TimeSlot:
         # day = TimeSlot.DEFAULT_DAY
         self.__day_number = 0
         self.start_number = 0
-        self.day = day
+        self.day = WeekDay.validate(day)
         self.start = start
         self.duration = duration
         self.movable = movable
@@ -77,7 +77,7 @@ class TimeSlot:
 
     @db_session
     @staticmethod
-    def __create_entity(instance: TimeSlot):
+    def __create_entity(instance: TimeSlot) -> int:
         entity_block = dbTimeSlot(day=instance.day, duration=instance.duration,
                                   start=instance.start, movable=instance.movable)
         commit()
@@ -87,7 +87,7 @@ class TimeSlot:
     # id
     # ====================================
     @property
-    def id(self):
+    def id(self) -> int:
         """Returns the unique ID for this TimeSlot object."""
         return self.__id
 
@@ -95,13 +95,12 @@ class TimeSlot:
     # day
     # ====================================
     @property
-    def day(self):
+    def day(self) -> str:
         """Get/set the day of the week for this TimeSlot."""
         return self.__day
 
     @day.setter
     def day(self, new_day: str):
-
         try:
             self.__day = WeekDay.validate(new_day)
             self.__day_number = WeekDayNumber[self.__day].value
@@ -117,7 +116,7 @@ class TimeSlot:
     # start
     # ====================================
     @property
-    def start(self):
+    def start(self) -> str:
         """Get/set the start time of the TimeSlot, in 24hr clock."""
         return self.__start
 
@@ -135,7 +134,7 @@ class TimeSlot:
     # end
     # ====================================
 
-    def end(self):
+    def end(self) -> str:
         """Gets the TimeSlot's end time in 24-hour clock format."""
         current_start = self.start_number
         end = current_start + self.duration
@@ -147,12 +146,12 @@ class TimeSlot:
     # duration
     # ====================================
     @property
-    def duration(self):
+    def duration(self) -> float:
         """Gets and sets the length of the TimeSlot, in hours."""
         return self.__duration
 
     @duration.setter
-    def duration(self, new_dur):
+    def duration(self, new_dur : float):
         if .25 > new_dur > 0:
             new_dur = .5
         else:
@@ -164,7 +163,7 @@ class TimeSlot:
             new_dur = 8
         # TimeSlots can't have a negative duration.
         if new_dur <= 0:
-            print(f"<{new_dur}>: invalid duration\nchanged to {TimeSlot.DEFAULT_DURATION}")
+            warn(f"<{new_dur}>: invalid duration\nchanged to {TimeSlot.DEFAULT_DURATION}")
             new_dur = TimeSlot.DEFAULT_DURATION
         self.__duration = new_dur
 
@@ -179,7 +178,7 @@ class TimeSlot:
     # movable
     # ====================================
     @property
-    def movable(self):
+    def movable(self) -> bool:
         """Gets and sets the course section object which contains this time_slot."""
         return self.__movable
 
@@ -191,7 +190,7 @@ class TimeSlot:
     # start_number
     # ====================================
     @property
-    def start_number(self):
+    def start_number(self) -> float:
         """
         Sets or returns the start time in hours (i.e., 1:30 pm = 13.5 hours)
         
@@ -210,7 +209,7 @@ class TimeSlot:
     # day_number
     # ====================================
     @property
-    def day_number(self):
+    def day_number(self) -> int:
         """Returns a real number that defines the day of the week, starting from Monday. E.g.,
         tuesday = 2.0.
         
@@ -224,7 +223,7 @@ class TimeSlot:
     # ====================================
     # snap_to_time
     # ====================================
-    def snap_to_time(self, *args: int):
+    def snap_to_time(self, *args: int) -> bool:
         """
         Takes the start number, and converts it to the nearest fraction of an hour (if
         max_hour_div = 2, then snaps to every 1/2 hour).
@@ -277,7 +276,7 @@ class TimeSlot:
     # =================================================================
     # snap_to_day
     # =================================================================
-    def snap_to_day(self, *args: int):
+    def snap_to_day(self, *args: int) -> int:
         """
         Takes the start_day and converts it to the nearest day.
 
@@ -301,7 +300,7 @@ class TimeSlot:
     # =================================================================
     # conflicts
     # =================================================================
-    def conflicts_time(self, rhs):
+    def conflicts_time(self, rhs) -> bool:
         """
         Tests that the current Time_Slot conflicts with another TimeSlot.
         """

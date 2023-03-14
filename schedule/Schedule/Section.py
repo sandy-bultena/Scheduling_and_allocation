@@ -3,6 +3,7 @@ import Course
 from Stream import Stream
 from Teacher import Teacher
 import Block
+import Lab
 import re
 
 from database.PonyDatabaseConnection import Section as dbSection, Course as dbCourse, \
@@ -43,12 +44,12 @@ class Section():
     """
     Describes a section (part of a course)
     """
-    __instances = dict()
+    __instances : dict[int, Section] = {}
 
     # ========================================================
     # CONSTRUCTOR
     # ========================================================
-    def __init__(self, number: str = "", hours=1.5, name: str = "", course: Course = None, *, id: int = None,
+    def __init__(self, number: str = "", hours : float = 1.5, name: str = "", course: Course.Course = None, *, id: int = None,
                  schedule_id: int = None):
         """
         Creates an instance of the Section class.
@@ -61,24 +62,24 @@ class Section():
         # LEAVE IN:
         # Allows for teacher allocations to be tracked & calculated correctly in AllocationManager,
         # since Blocks are ignored there
-        self._teachers = {}
-        self._allocation = {}
+        self._teachers : dict[int, Teacher] = {}
+        self._allocation : dict[int, float] = {}
 
-        self._streams = {}
-        self._blocks = {}
+        self._streams : dict[int, Stream] = {}
+        self._blocks : dict[int, Block.Block] = {}
 
         self.name = name
         self.number = number
         self.hours = hours
-        self._num_students = 0
-        self._course = course
+        self.num_students : int = 0
+        self.course = course
 
         self.__id = id if id else Section.__create_entity(self, schedule_id)
         Section.__instances[self.__id] = self
 
     @db_session
     @staticmethod
-    def __create_entity(instance: Section, schedule_id: int):
+    def __create_entity(instance: Section, schedule_id: int) -> int:
         entity_section = dbSection(name=instance.name, number=instance.number, hours=instance.hours,
                                    num_students=instance.num_students,
                                    course_id=instance._course.id,
@@ -87,7 +88,7 @@ class Section():
         return entity_section.get_pk()
 
     @staticmethod
-    def __validate_hours(hours):
+    def __validate_hours(hours : float | int) -> float:
         try:
             hours = float(hours)
         except ValueError or TypeError:
@@ -110,7 +111,7 @@ class Section():
     # get
     # --------------------------------------------------------
     @staticmethod
-    def get(id: int) -> Section:
+    def get(id: int) -> Section | None:
         """ Gets a Section with a given ID. If ID doesn't exist, returns None."""
         return Section.__instances[id] if id in Section.__instances else None
 
@@ -158,9 +159,9 @@ class Section():
     # blocks
     # --------------------------------------------------------
     @property
-    def blocks(self) -> list:
+    def blocks(self) -> tuple[Block.Block]:
         """ Gets list of section's blocks """
-        return list(self._blocks.values())
+        return tuple(self._blocks.values())
 
     # --------------------------------------------------------
     # title
@@ -200,34 +201,33 @@ class Section():
     # labs
     # --------------------------------------------------------
     @property
-    def labs(self) -> set:
+    def labs(self) -> tuple[Lab.Lab]:
         """ Gets all labs assigned to all blocks in this section """
         labs = set()
         for b in self.blocks:
             for l in b.labs():
                 labs.add(l)
-        print(labs)
-        return labs
+        return tuple(labs)
 
     # --------------------------------------------------------
     # teachers
     # --------------------------------------------------------
     @property
-    def teachers(self) -> set:
+    def teachers(self) -> tuple[Teacher]:
         """ Gets all teachers assigned to all blocks in this section """
         teachers = set()
         for b in self.blocks:
             for t in b.teachers(): teachers.add(t)
         for t in self._teachers.values(): teachers.add(t)
-        return teachers
+        return tuple(teachers)
 
     # --------------------------------------------------------
     # streams
     # --------------------------------------------------------
     @property
-    def streams(self) -> set[Stream]:
+    def streams(self) -> tuple[Stream]:
         """ Gets all streams in this section """
-        return set(self._streams.values())
+        return tuple(self._streams.values())
 
     # --------------------------------------------------------
     # allocated_hours
@@ -246,7 +246,7 @@ class Section():
     # --------------------------------------------------------
     # add_hours
     # --------------------------------------------------------
-    def add_hours(self, val):
+    def add_hours(self, val : float | int):
         """ Adds hours to section's weekly total """
         val = Section.__validate_hours(val)
         self.hours += val
@@ -255,7 +255,7 @@ class Section():
     # --------------------------------------------------------
     # get_block_by_id
     # --------------------------------------------------------
-    def get_block_by_id(self, id: int):
+    def get_block_by_id(self, id: int) -> Block.Block | None:
         """
         Gets block with given ID from this section
         - Parameter id -> The ID of the block to find
@@ -266,7 +266,7 @@ class Section():
     # --------------------------------------------------------
     # get_block
     # --------------------------------------------------------
-    def get_block(self, number: int):
+    def get_block(self, number: int) -> Block.Block | None:
         """
         Gets block with given block number from this section
         - Parameter number -> The number of the block to find
@@ -279,7 +279,7 @@ class Section():
     # --------------------------------------------------------
     # assign_lab
     # --------------------------------------------------------
-    def assign_lab(self, lab):
+    def assign_lab(self, lab : Lab.Lab) -> Section:
         """
         Assign a lab to every block in the section
         - Parameter lab -> The lab to assign
@@ -291,7 +291,7 @@ class Section():
     # --------------------------------------------------------
     # remove_lab
     # --------------------------------------------------------
-    def remove_lab(self, lab):
+    def remove_lab(self, lab : Lab.Lab) -> Section:
         """
         Remove a lab from every block in the section
         - Parameter lab -> The lab to remove
@@ -302,7 +302,7 @@ class Section():
     # --------------------------------------------------------
     # assign_teacher
     # --------------------------------------------------------
-    def assign_teacher(self, teacher):
+    def assign_teacher(self, teacher : Teacher) -> Section:
         """
         Assign a teacher to the section
         - Parameter teacher -> The teacher to be assigned
@@ -319,7 +319,7 @@ class Section():
     # --------------------------------------------------------
     # set_teacher_allocation
     # --------------------------------------------------------
-    def set_teacher_allocation(self, teacher, hours):
+    def set_teacher_allocation(self, teacher : Teacher, hours : float | int) -> Section:
         """
         Assign number of hours to teacher for this section. Set hours to 0 to remove teacher from this section
         - Parameter teacher -> The teacher to allocate hours to
@@ -337,7 +337,7 @@ class Section():
     # --------------------------------------------------------
     # get_teacher_allocation
     # --------------------------------------------------------
-    def get_teacher_allocation(self, teacher) -> float:
+    def get_teacher_allocation(self, teacher : Teacher) -> float:
         """
         Get the number of hours assigned to this teacher for this section
         - Parameter teacher -> The teacher to find allocation hours for
@@ -354,7 +354,7 @@ class Section():
     # --------------------------------------------------------
     # remove_teacher
     # --------------------------------------------------------
-    def remove_teacher(self, teacher):
+    def remove_teacher(self, teacher : Teacher) -> Section:
         """
         Removes teacher from all blocks in this section
         - Parameter teacher -> The teacher to be removed
@@ -370,7 +370,7 @@ class Section():
     # --------------------------------------------------------
     # remove_all_teachers
     # --------------------------------------------------------
-    def remove_all_teachers(self):
+    def remove_all_teachers(self) -> Section:
         """ Removes all teachers from all blocks in this section """
         for t in self.teachers: self.remove_teacher(t)
         return self
@@ -378,7 +378,7 @@ class Section():
     # --------------------------------------------------------
     # has_teacher
     # --------------------------------------------------------
-    def has_teacher(self, teacher) -> bool:
+    def has_teacher(self, teacher : Teacher) -> bool:
         """
         Checks if section has teacher
         - Parameter teacher -> The teacher to check
@@ -391,7 +391,7 @@ class Section():
     # --------------------------------------------------------
     # assign_stream
     # --------------------------------------------------------
-    def assign_stream(self, *streams: Stream):
+    def assign_stream(self, *streams: Stream) -> Section:
         """
         Assign streams to this section.
         - Parameter streams -> The stream(s) to be added. Streams can be added all at once
@@ -405,7 +405,7 @@ class Section():
     # --------------------------------------------------------
     # remove_stream
     # --------------------------------------------------------
-    def remove_stream(self, stream: Stream):
+    def remove_stream(self, stream: Stream) -> Section:
         """
         Remove stream from this section.
         - Parameter stream -> The stream to remove.
@@ -431,7 +431,7 @@ class Section():
     # --------------------------------------------------------
     # remove_all_streams
     # --------------------------------------------------------
-    def remove_all_streams(self):
+    def remove_all_streams(self) -> Section:
         """ Removes all streams from this section """
         for s in self.streams: self.remove_stream(s)
         return self
@@ -439,7 +439,7 @@ class Section():
     # --------------------------------------------------------
     # add_block
     # --------------------------------------------------------
-    def add_block(self, *blocks):
+    def add_block(self, *blocks : Block.Block) -> Section:
         """
         Assign blocks to this section
         - Parameter blocks -> The block(s) to assign. Block(s) can be added all at once
@@ -453,7 +453,7 @@ class Section():
     # --------------------------------------------------------
     # remove_block
     # --------------------------------------------------------
-    def remove_block(self, block):
+    def remove_block(self, block : Block.Block) -> Section:
         """
         Remove a block from this section
         - Parameter block -> The block to remove
@@ -468,7 +468,7 @@ class Section():
     # delete
     # --------------------------------------------------------
     @db_session
-    def delete(self) -> None:
+    def delete(self):
         """ Delete this object and all its dependants """
         for b in self.blocks:
             self.remove_block(b)
@@ -510,11 +510,11 @@ class Section():
         return number
 
     @db_session
-    def save(self, sched: dbSchedule):
+    def save(self, sched: dbSchedule) -> dbSection:
         """Saves this Section to the database as part of a passed Schedule entity."""
         c = self.course.save()
 
-        sse = dbSection.get(id=self.id)
+        sse : dbSection = dbSection.get(id=self.id)
         if not sse: sse = dbSection(course_id=c, schedule_id=sched)
 
         sse.name = self.name

@@ -3,6 +3,7 @@ import sys
 from os import path
 from ScheduleEnums import ViewType, ConflictType
 sys.path.append(path.dirname(path.dirname(__file__)))
+import Block
 # NOTE: using an enum will impact ViewBase.py when it is coded
 
 # TODO:  Evaluate if we even need to keep a list of conflict objects, since the conflict numbers
@@ -37,7 +38,7 @@ class Conflict:
     # ========================================================
     # CONSTRUCTOR
     # ========================================================
-    def __init__(self, type: ConflictType, blocks: list):
+    def __init__(self, type: ConflictType, blocks: list[Block.Block]):
         """
         Creates an instance of the Conflict class.
         - Parameter type -> defines the type of conflict.
@@ -95,13 +96,13 @@ class Conflict:
     # does the confict number contain the appropriate the specified type
     # --------------------------------------------------------
     @staticmethod
-    def is_time(conflict_number:int):
+    def is_time(conflict_number:int) -> int:
         """does the conflict number include a time conflict?"""
         return conflict_number & ConflictType.TIME.value
 
 
     @staticmethod
-    def is_time_lab(conflict_number: int):
+    def is_time_lab(conflict_number: int) -> int:
         """does the conflict number include a time - lab conflict?"""
         return conflict_number & ConflictType.TIME_LAB.value
 
@@ -112,17 +113,17 @@ class Conflict:
 
 
     @staticmethod
-    def is_time_lunch(conflict_number: int):
+    def is_time_lunch(conflict_number: int) -> int:
         """does the conflict number include a lunch conflict?"""
         return conflict_number & ConflictType.LUNCH.value
 
     @staticmethod
-    def is_minimum_days(conflict_number: int):
+    def is_minimum_days(conflict_number: int) -> int:
         """does the conflict number include a minimum days conflict?"""
         return conflict_number & ConflictType.MINIMUM_DAYS.value
 
     @staticmethod
-    def is_availability(conflict_number: int):
+    def is_availability(conflict_number: int) -> int:
         """does the conflict number include a minimum days conflict?"""
         return conflict_number & ConflictType.AVAILABILITY.value
 
@@ -166,7 +167,7 @@ class Conflict:
     # --------------------------------------------------------
     # add_block
     # --------------------------------------------------------
-    def add_block(self, new_block):
+    def add_block(self, new_block : Block.Block):
         """
         Adds a new affected block to the conflict.
         - Parameter new_block -> the new block to be added.

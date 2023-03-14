@@ -25,6 +25,8 @@ class ExtendedEnum(Enum):
         # the correct type)
         if isinstance(user_input, cls):
             return user_input.value
+        elif user_input in cls.names():
+            return cls[user_input]
         elif user_input not in cls.values():
             raise ValueError(f"Error: input <{user_input}> is invalid")
         return user_input

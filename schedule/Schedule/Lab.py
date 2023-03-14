@@ -1,6 +1,7 @@
 from __future__ import annotations
 import Time_slot
 from ScheduleEnums import WeekDay
+import Block
 
 from database.PonyDatabaseConnection import Lab as dbLab, TimeSlot as dbTimeSlot
 from pony.orm import *
@@ -26,7 +27,7 @@ class Lab:
     desc: str
         The description of the Lab.
     """
-    __instances = {}
+    __instances : dict[int, Lab] = {}
 
     # -------------------------------------------------------------------
     # new
@@ -43,7 +44,7 @@ class Lab:
 
     @db_session
     @staticmethod
-    def __create_entity(instance: Lab):
+    def __create_entity(instance: Lab) -> int:
         entity_lab = dbLab(number=instance.number,
                            description=instance.descr)
         commit()
@@ -54,7 +55,7 @@ class Lab:
     # =================================================================
 
     @property
-    def id(self):
+    def id(self) -> int:
         """Returns the unique ID for this Lab object."""
         return self.__id
 
@@ -63,7 +64,7 @@ class Lab:
     # =================================================================
 
     @property
-    def number(self):
+    def number(self) -> str:
         """Sets/returns the room number for this Lab object."""
         return self.__number
 
@@ -76,7 +77,7 @@ class Lab:
     # =================================================================
 
     @property
-    def descr(self):
+    def descr(self) -> str:
         """Sets/returns the description for this Lab object."""
         return self.__descr
 
@@ -87,7 +88,7 @@ class Lab:
     # =================================================
     # add_unavailable
     # =================================================
-    def add_unavailable(self, day: WeekDay, start: str, duration: float):
+    def add_unavailable(self, day: WeekDay | str, start: str, duration: float) -> Lab:
         """Creates a time slot where this lab is not available.
         
         - Parameter day => 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'
@@ -96,9 +97,7 @@ class Lab:
 
         - Parameter duration => how long does this class last, in hours
         """
-
-        # Create a TimeSlot.
-        day = WeekDay.validate(day)
+        # Create a TimeSlot. (no need to verify day because it's verified in TimeSlot constructor)
         return self.add_unavailable_slot(Time_slot.TimeSlot(day, start, duration))
 
     def add_unavailable_slot(self, slot: Time_slot.TimeSlot) -> Lab:
@@ -118,7 +117,7 @@ class Lab:
     # =================================================
     # remove_unavailable
     # =================================================
-    def remove_unavailable(self, target_id: int):
+    def remove_unavailable(self, target_id: int) -> Lab:
         """Remove the unavailable time slot from this lab.
         
         - Parameter target_id -> The ID of the time slot to be removed.
@@ -142,7 +141,7 @@ class Lab:
     # get_unavailable
     # =================================================================
 
-    def get_unavailable(self, target_id: int):
+    def get_unavailable(self, target_id: int) -> Time_slot.TimeSlot | None:
         """Return the unavailable time slot object for this Lab.
         
         - Parameter target_id: int -> The ID of the TimeSlot to be returned.
@@ -171,7 +170,7 @@ class Lab:
             return f"{self.__number}"
         return f"{self.__number}: {self.__descr}"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self)
 
     # ===================================
@@ -211,7 +210,7 @@ class Lab:
     # share_blocks
     # =================================================================
     @staticmethod
-    def share_blocks(block1, block2):
+    def share_blocks(block1 : Block.Block, block2 : Block.Block) -> bool:
         """Checks whether there are Labs which share the two specified Blocks."""
 
         # Count occurrences in both sets and ensure that all values are < 2
@@ -266,9 +265,9 @@ class Lab:
             entity_lab.delete()
 
     @db_session
-    def save(self):
+    def save(self) -> dbLab:
         """Saves this Lab in the database, updating its corresponding Lab entity."""
-        d_lab = dbLab.get(id=self.id)
+        d_lab : dbLab = dbLab.get(id=self.id)
         if not d_lab: d_lab = dbLab(number=self.number)
         d_lab.number = self.number
         d_lab.description = self.descr

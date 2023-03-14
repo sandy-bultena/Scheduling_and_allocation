@@ -47,7 +47,7 @@ class Block(TimeSlot):
     # =================================================================
 
     _DEFAULT_DAY = 'mon'
-    __instances = {}
+    __instances : dict[int, Block] = {}
 
     # =================================================================
     # Constructor
@@ -392,7 +392,7 @@ class Block(TimeSlot):
     # =================================================================
     # sync_block
     # =================================================================
-    def sync_block(self, block):
+    def sync_block(self, block : Block) -> Block:
         """The new Block object will be synced with this one 
         (i.e., changing the start time of this Block will change the start time of the
         synched block).
@@ -407,7 +407,7 @@ class Block(TimeSlot):
     # =================================================================
     # unsync_block
     # =================================================================
-    def unsync_block(self, block):
+    def unsync_block(self, block : Block) -> Block:
         """Removes syncing of Block from this Block.
         
         Returns this Block object."""
@@ -436,7 +436,7 @@ class Block(TimeSlot):
     # conflicted
     # =================================================================
     @property
-    def conflicted(self):
+    def conflicted(self) -> int:
         """Gets and sets conflicted field."""
         return self._conflicted
 
@@ -447,7 +447,7 @@ class Block(TimeSlot):
     # =================================================================
     # is_conflicted  # existential crisis :)
     # =================================================================
-    def is_conflicted(self):
+    def is_conflicted(self) -> bool:
         """Returns true if there is a conflict with this Block, false otherwise.
 
         Returns a number representing the type of conflict with this Block, or 0 if there are no
@@ -475,7 +475,7 @@ class Block(TimeSlot):
 
         return text
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.description
 
     # ===================================
@@ -509,7 +509,7 @@ class Block(TimeSlot):
     # get_day_blocks ($day, $blocks)
     # =================================================================
     @staticmethod
-    def get_day_blocks(day: WeekDay, blocks: list[Block]):
+    def get_day_blocks(day: WeekDay, blocks: list[Block]) -> tuple[Block]:
         """Returns an array of all blocks within a specific day.
 
         Parameter day: WeekDay -> a weekday object
@@ -518,16 +518,16 @@ class Block(TimeSlot):
         # work here because TimeSlot.day returns a WeekDay object.
         if not blocks or type(blocks[0]) is not Block:
             return []
-        return [block for block in blocks if block.day == day.value]
+        return tuple(block for block in blocks if block.day == day.value)
 
     # =================================================================
     # save()
     # =================================================================
     @db_session
-    def save(self):
+    def save(self) -> dbBlock:
         d_slot = super().save()
         flush()
-        d_block = dbBlock.get(id=self.id)
+        d_block : dbBlock = dbBlock.get(id=self.id)
         if not d_block: d_block = dbBlock(number=self.number, time_slot_id=d_slot)
         d_block.time_slot_id = d_slot
 

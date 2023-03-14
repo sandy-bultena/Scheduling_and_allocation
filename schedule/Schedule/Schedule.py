@@ -1,3 +1,4 @@
+from __future__ import annotations
 from Teacher import Teacher
 from Course import Course
 from Conflict import Conflict
@@ -86,12 +87,12 @@ class Schedule:
     # --------------------------------------------------------
     @staticmethod
     @db_session
-    def read_DB(id):
+    def read_DB(id) -> Schedule:
         # wipe all existing model data
         Schedule.reset_local()
 
-        sched = db.Schedule.get(id=id)
-        scenario = db.Scenario.get(id=sched.scenario_id.id)
+        sched : db.Schedule = db.Schedule.get(id=id)
+        scenario : db.Scenario = db.Scenario.get(id=sched.scenario_id.id)
         # placeholder dict
         scen = {
             "name": scenario.name,
@@ -102,10 +103,12 @@ class Schedule:
         schedule = Schedule(id, sched.semester, sched.official, scen, sched.description)
 
         # create all courses
+        course : db.Course
         for course in select(c for c in db.Course):
             Course(course.number, course.name, course.semester, course.allocation, id=course.id)
         
         # create all labs
+        lab : db.Lab
         for lab in select(l for l in db.Lab):
             l1 = Lab(lab.number, lab.description, id=lab.id)
             # set up unavailable times
@@ -114,21 +117,26 @@ class Schedule:
                 l1.add_unavailable_slot(ts)
 
         # create all teachers
+        teacher : db.Teacher
         for teacher in select(t for t in db.Teacher): Schedule.__create_teacher(teacher.id)
         
         # add release for this schedule to any teachers
+        schedule_teacher : db.Schedule_Teacher
         for schedule_teacher in select(t for t in db.Schedule_Teacher if t.schedule_id.id == id):
             Schedule.__create_teacher(schedule_teacher.teacher_id.id).release = schedule_teacher.work_release
         
         # create all streams
+        stream : db.Stream
         for stream in select(s for s in db.Stream): Schedule.__create_stream(stream.id)
             
         # create all sections in this schedule
+        section : db.Section
         for section in select(s for s in db.Section if s.schedule_id.id == id):
             s = Section(section.number, section.hours, section.name, Course.get(section.course_id.id), id = section.id)
             s.num_students = section.num_students
             Course.get(section.course_id.id).add_section(s)
             # identify teachers and set allocation
+            section_teacher : db.Section_Teacher
             for section_teacher in select(t for t in db.Section_Teacher if t.section_id.id == section.id):
                 t = Schedule.__create_teacher(section_teacher.teacher_id.id)
                 s.assign_teacher(t)
@@ -138,7 +146,9 @@ class Schedule:
                 st = Schedule.__create_stream(section_stream.id)
                 s.assign_stream(st)
             # identify, create, and assign blocks
+            block : db.Block
             for block in select(b for b in db.Block if b.section_id.id == s.id):
+                slot : db.TimeSlot
                 slot = db.TimeSlot.get(id = block.time_slot_id.id)
                 b = Block(slot.day, slot.start, slot.duration, block.number, movable = slot.movable, id = block.id, time_slot_id = slot.id)
                 s.add_block(b)
@@ -151,8 +161,8 @@ class Schedule:
     @db_session
     def write_DB(self):
         # update any schedule changes
-        sched = db.Schedule.get(id=self.id)
-        scen = db.Scenario.get(id=self.scenario.get("id", 1))   # assumes Scenario 1 if id isn't stored
+        sched : db.Schedule = db.Schedule.get(id=self.id)
+        scen : db.Scenario = db.Scenario.get(id=self.scenario.get("id", 1))   # assumes Scenario 1 if id isn't stored
         if not scen: scen = db.Scenario()
 
         if not sched: sched = db.Schedule(semester=self.semester, official=self.official, scenario_id=scen)
@@ -194,7 +204,7 @@ class Schedule:
     def __create_teacher(id : int) -> Teacher:
         """ Takes a given ID and returns the Teacher model object with given ID. If it doesn't exist, creates it from the database. """
         if Teacher.get(id): return Teacher.get(id)
-        teacher = db.Teacher.get(id = id)
+        teacher : db.Teacher = db.Teacher.get(id = id)
         return Teacher(teacher.first_name, teacher.last_name, teacher.dept, id = id)
             
     @staticmethod
@@ -202,7 +212,7 @@ class Schedule:
         """ Takes a given ID and returns the Stream model object with given ID.
         If it doesn't exist locally, creates it from the database, and adds to database if not already present. """
         if Stream.get(id): return Stream.get(id)
-        stream = db.Stream.get(id = id)
+        stream : db.Stream = db.Stream.get(id = id)
         return Stream(stream.number, stream.descr, id = id)
 
     # --------------------------------------------------------
@@ -397,7 +407,7 @@ class Schedule:
     @staticmethod
     def calculate_conflicts():
         """Reviews the schedule, and creates a list of Conflict objects as necessary"""
-        def __new_conflict(type:ConflictType, blocks):
+        def __new_conflict(type : ConflictType, blocks : list[Block]):
             Conflict(type, blocks)
             for b in blocks: b.conflicted = type.value
 
@@ -436,13 +446,13 @@ class Schedule:
         # check for lunch break conflicts by teacher
         start_lunch = 11
         end_lunch = 14
-        lunch_periods = list(i/2 for i in range(start_lunch*2, end_lunch*2))
+        lunch_periods = list(i/2 for i in range(start_lunch * 2, end_lunch * 2))
         for t in Teacher.list():
             # filter to only relevant blocks (that can possibly conflict)
             relevant_blocks = list(
                 filter(lambda b : b.start_number < end_lunch and b.start_number + b.duration > start_lunch, Schedule.blocks_for_teacher(t)))
             # collect blocks by day
-            blocks_by_day = { }
+            blocks_by_day : dict[int, list[Block]] = { }
             for b in relevant_blocks:
                 if not b.day_number in blocks_by_day: blocks_by_day[b.day_number] = []
                 blocks_by_day[b.day_number].append(b)
@@ -467,7 +477,7 @@ class Schedule:
             if t.release: continue
 
             # collect blocks by day
-            blocks_by_day = { }
+            blocks_by_day : dict[int, list[Block]] = { }
             blocks = Schedule.blocks_for_teacher(t)
             for b in blocks:
                 if not b.day_number in blocks_by_day: blocks_by_day[b.day_number] = []
@@ -555,7 +565,7 @@ class Schedule:
             num_sections = 0
             for s in sections:
                 if s.course is c: num_sections += 1
-            message += f"-> {c.print_description2()} ({num_sections} Section(s))\n"
+            message += f"-> {c.description} ({num_sections} Section(s))\n"
         
         return message
 
@@ -569,7 +579,7 @@ class Schedule:
         Parameter teacher -> The teacher who's schedule to print
         """
         from functools import cmp_to_key
-        def __sort_blocks(a, b):
+        def __sort_blocks(a : Block, b : Block) -> int:
             if a.number < b.number: return 1
             elif a.number > b.number: return -1
             elif a.start_number < b.start_number: return 1
@@ -579,7 +589,7 @@ class Schedule:
         if not isinstance(teacher, Teacher): raise TypeError(f"{teacher} must be an object of type Teacher")
         head = "="*50
         text = f"\n\n{head}\n{teacher}\n{head}\n"
-        for c in sorted(Schedule.courses_for_teacher(teacher), key=lambda a : a.number.lower()):
+        for c in sorted(Schedule.courses_for_teacher(teacher), key = lambda a : a.number.lower()):
             text += f"\n{c.number} {c.name}\n"
             text += "-"*80
 
@@ -641,20 +651,20 @@ class Schedule:
         block.remove_all_labs()
 
     # --------------------------------------------------------
-    # get block infor for specified ViewType object
+    # get block info for specified ViewType object
     # --------------------------------------------------------
-    def get_blocks_for_obj(self, obj) -> tuple[Block]:
+    def get_blocks_for_obj(self, obj : Teacher | Lab | Stream) -> tuple[Block]:
         """ Returns a tuple of blocks associated with the specified ViewType object"""
-        if isinstance(obj,Teacher): return self.blocks_for_teacher(obj)
-        if isinstance(obj,Lab): return self.blocks_for_lab(obj)
-        if isinstance(obj,Stream): return self.blocks_for_stream(obj)
+        if isinstance(obj, Teacher): return self.blocks_for_teacher(obj)
+        if isinstance(obj, Lab): return self.blocks_in_lab(obj)
+        if isinstance(obj, Stream): return self.blocks_for_stream(obj)
         return tuple()
 
     @staticmethod
-    def get_view_type_of_object(obj)->ViewType:
+    def get_view_type_of_object(obj) -> ViewType | None:
         # was originally named: get_scheduable_object_type
         """Returns the type of the ViewType object"""
         for vtype in ViewType:
-            if isinstance(obj,vtype.value): return vtype
+            if isinstance(obj, vtype.value): return vtype
         return None
 
