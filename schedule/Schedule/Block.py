@@ -1,6 +1,6 @@
 from __future__ import annotations
 from Lab import Lab
-from Section import Section
+import Section
 from Teacher import Teacher
 from Time_slot import TimeSlot
 from ScheduleEnums import WeekDay
@@ -203,8 +203,8 @@ class Block(TimeSlot):
         return self.__section
 
     @section.setter
-    def section(self, section: Section):
-        if isinstance(section, Section):
+    def section(self, section: Section.Section):
+        if isinstance(section, Section.Section):
             self.__section = section
             self.__set_entity_section(section.id)
         else:
