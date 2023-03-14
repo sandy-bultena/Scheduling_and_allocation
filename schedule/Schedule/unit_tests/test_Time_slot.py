@@ -160,15 +160,15 @@ def test_day_number_getter_default():
     assert slot.day_number == expected_day_num
 
 
-@db_session
-def test_day_number_setter():
-    """Verifies that the TimeSlot's day_number setter works as intended: that it changes
-    day_number ONLY, without affecting day. """
-    slot = TimeSlot()
-    new_day_num = 7
-    slot.day_number = new_day_num
-    bad_day = "fri"
-    assert slot.day_number == new_day_num and slot.day != bad_day
+# @db_session
+# def test_day_number_setter():
+#     """Verifies that the TimeSlot's day_number setter works as intended: that it changes
+#     day_number ONLY, without affecting day. """
+#     slot = TimeSlot()
+#     new_day_num = 7
+#     slot.day_number = new_day_num
+#     bad_day = "fri"
+#     assert slot.day_number == new_day_num and slot.day != bad_day
 
 
 @db_session

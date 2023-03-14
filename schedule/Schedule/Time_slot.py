@@ -65,7 +65,7 @@ class TimeSlot:
         # NOTE: Doing this so that day_number will also be set
         #       The order that these are implemented is important
         # day = TimeSlot.DEFAULT_DAY
-        self.day_number = 0
+        self.__day_number = 0
         self.start_number = 0
         self.day = day
         self.start = start
@@ -104,14 +104,14 @@ class TimeSlot:
 
         try:
             self.__day = WeekDay.validate(new_day)
-            self.day_number = WeekDayNumber[self.__day].value
+            self.__day_number = WeekDayNumber[self.__day].value
 
         # bad inputs, default to default_day
         except ValueError:
             warn(f"<{new_day}>: invalid day specified... setting to {TimeSlot.DEFAULT_DAY}",
                  UserWarning, stacklevel=2)
             self.__day = TimeSlot.DEFAULT_DAY
-            self.day_number = WeekDayNumber[TimeSlot.DEFAULT_DAY].value
+            self.__day_number = WeekDayNumber[TimeSlot.DEFAULT_DAY].value
 
     # ====================================
     # start
@@ -219,15 +219,6 @@ class TimeSlot:
         
         To set the day according to the data in this property, use the method snap_to_day()."""
         return self.__day_number
-
-    # TODO: we should not allow someone to change the day_number without also changing
-    #       the day string.
-    #       question: do we want day_number to be only a getter, and let user's only set the day,
-    #       or do we want to let the user specify day_number, and we update the day string
-    #       appropriately?
-    @day_number.setter
-    def day_number(self, new_val: int):
-        self.__day_number = new_val
 
     # endregion
     # ====================================
