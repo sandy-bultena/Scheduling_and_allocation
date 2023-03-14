@@ -156,7 +156,7 @@ def test_start_setter_synced_4_blocks():
     block1 = Block(day, start, dur, num)
     block2 = Block("wed", start, dur, 2)
     block3 = Block("thu", start, dur, 3)
-    block4 = Block("sat", start, dur, 4)
+    block4 = Block("fri", start, dur, 4)
     block1.sync_block(block2)
     block1.sync_block(block3)
     block1.sync_block(block4)
