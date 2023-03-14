@@ -1,5 +1,5 @@
 from __future__ import annotations
-from Course import Course
+import Course
 from Stream import Stream
 from Teacher import Teacher
 import Block
@@ -180,7 +180,7 @@ class Section():
 
     @course.setter
     def course(self, val: Course):
-        if not isinstance(val, Course): raise TypeError(
+        if not isinstance(val, Course.Course): raise TypeError(
             f"{type(val)}: invalid course - must be a Course object")
         self._course = val
 

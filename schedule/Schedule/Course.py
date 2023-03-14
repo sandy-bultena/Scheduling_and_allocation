@@ -3,8 +3,9 @@ import re
 from warnings import warn
 # from Section import Section
 from Stream import Stream
-from Teacher import Teacher
+import Teacher
 from Lab import Lab
+import Section
 
 # TODO: Watch this video, it will explain how to get rid of circular dependencies
 # https://www.youtube.com/watch?v=UnKa_t-M_kM
@@ -124,7 +125,7 @@ class Course:
     # add_ section
     # =================================================================
     def add_section(self, *sections):
-        """Assign a Section to this Course.
+        """Assign one or more Sections to this Course.
 
         Returns the modified Course object."""
         # In Perl, this function is structured in a way that allows it to take multiple sections
@@ -132,9 +133,8 @@ class Course:
         # way. I am preserving the original structure just in case.
         for section in sections:
             # TODO: Fix
-            # Verify that this is actually a Section object. NOTE: the Section import has been
-            # taken out to avoid a circular dependency.
-            if not hasattr(section, "number") or f"Section {section.number}" not in str(section):
+            # Verify that this is actually a Section object.
+            if not isinstance(section, Section.Section):
                 raise TypeError(f"<{section}>: invalid section - must be a Section object.")
 
             # -------------------------------------------------------
@@ -206,7 +206,7 @@ class Course:
         # Verify that the section is indeed a Section object. NOTE: the Section import has been
         # taken out to avoid a circular dependency.
         # TODO: Fix
-        if not hasattr(section, "number") or f"Section {section.number}" not in str(section):
+        if not isinstance(section, Section.Section):
             raise TypeError(f"<{section}>: invalid section - must be a Section object")
 
         if section.number in getattr(self, '_sections', {}):
@@ -262,7 +262,7 @@ class Course:
     # =================================================================
     # sections for teacher
     # =================================================================
-    def sections_for_teacher(self, teacher):
+    def sections_for_teacher(self, teacher: Teacher.Teacher):
         """Returns a list of the Sections assigned to this course, with this Teacher."""
         sections = []
 
@@ -296,7 +296,7 @@ class Course:
     # =================================================================
     # section
     # =================================================================
-    def section(self, section_number):
+    def section(self, section_number) -> Section.Section:
         """Returns the Section associated with this Section number."""
         if section_number in self._sections.keys():
             return self._sections[section_number]
@@ -330,10 +330,9 @@ class Course:
                 text += "\n"
 
         return text
+
     def __repr__(self) -> str:
         return self.description
-
-
 
     # =================================================================
     # teachers
@@ -351,11 +350,11 @@ class Course:
     # =================================================================
     # has teacher
     # =================================================================
-    def has_teacher(self, teacher: Teacher):
+    def has_teacher(self, teacher: Teacher.Teacher):
         """Returns true if the passed Teacher is assigned to this Course."""
-        if not teacher or not isinstance(teacher, Teacher):
+        if not teacher or not isinstance(teacher, Teacher.Teacher):
             return False
-        return teacher.id in (adult.id for adult in self.teachers)
+        return teacher.id in (adult.id for adult in self.teachers())
 
     # =================================================================
     # streams
@@ -383,7 +382,7 @@ class Course:
     # =================================================================
     # assign_teacher
     # =================================================================
-    def assign_teacher(self, teacher: Teacher):
+    def assign_teacher(self, teacher: Teacher.Teacher):
         """Assigns a Teacher to all Sections of this Course.
 
         Returns the modified Course object."""
@@ -422,7 +421,7 @@ class Course:
     # =================================================================
     # remove_teacher
     # =================================================================
-    def remove_teacher(self, teacher: Teacher):
+    def remove_teacher(self, teacher: Teacher.Teacher):
         """Removes the passed Teacher from all Blocks in this Course.
 
         Returns the modified Course object."""
@@ -470,7 +469,7 @@ class Course:
     # =======================================
     # Get unused section number (Alex Code)
     # =======================================
-    def get_new_number(self, number: int):
+    def get_new_number(self, number: int) -> int:
         """Returns the first unused Section Number."""
         while self.get_section(str(number)):
             number += 1
