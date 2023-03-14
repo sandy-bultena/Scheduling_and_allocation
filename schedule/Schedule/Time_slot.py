@@ -1,5 +1,7 @@
 from __future__ import annotations
 import re
+from warnings import warn
+
 from ScheduleEnums import WeekDay, WeekDayNumber
 
 from database.PonyDatabaseConnection import TimeSlot as dbTimeSlot
@@ -115,7 +117,7 @@ class TimeSlot:
 
         # bad inputs, default to default_day
         except ValueError:
-            print(f"<{new_day}>: invalid day specified... setting to {TimeSlot.DEFAULT_DAY}")
+            warn(f"<{new_day}>: invalid day specified... setting to {TimeSlot.DEFAULT_DAY}", UserWarning, stacklevel=2)
             self.__day = TimeSlot.DEFAULT_DAY
             self.day_number = WeekDayNumber[TimeSlot.DEFAULT_DAY].value
 

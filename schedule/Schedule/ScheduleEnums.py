@@ -1,9 +1,6 @@
 from enum import Enum
 import sys
 from os import path
-import Teacher
-import Lab
-import Stream
 
 sys.path.append(path.dirname(path.dirname(__file__)))
 import PerlLib.Colour as Colour
@@ -51,6 +48,10 @@ class WeekDayNumber(ExtendedEnum):
 
 
 class ViewType(ExtendedEnum):
+    import Teacher
+    import Lab
+    import Stream
+
     lab = Lab
     teacher = Teacher
     stream = Stream

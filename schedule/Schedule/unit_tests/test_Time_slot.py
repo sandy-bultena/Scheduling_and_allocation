@@ -58,6 +58,15 @@ def test_day_setter():
 
 
 @db_session
+def test_day_setter_warning():
+    """Verifies that the day setter raises an error when an invalid value is passed."""
+    slot = TimeSlot()
+    bad_day = 14
+    with pytest.warns(UserWarning, match="invalid day specified"):
+        slot.day = bad_day
+
+
+@db_session
 def test_start_getter_default():
     """Verifies that a TimeSlot is created with a default start value of '8:00'."""
     slot = TimeSlot()
