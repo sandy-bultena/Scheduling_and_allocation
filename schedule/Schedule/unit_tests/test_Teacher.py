@@ -231,6 +231,19 @@ def test_delete_updates_database():
     assert len(d_teachers) == 0
 
 
+@db_session
+def test_remove_ignores_database():
+    """Verifies that remove() doesn't affect the Teacher's corresponding database record."""
+    teach = Teacher("John", "Smith")
+    teach.remove()
+    commit()
+    d_teachers = select(t for t in dbTeacher)
+    teachers = list(d_teachers)
+    a_teachers = Teacher.list()
+    assert len(teachers) == 1 and teachers[0].first_name == teach.firstname \
+           and teachers[0].last_name == teach.lastname and len(a_teachers) == 0
+
+
 def test_disjoint_true():
     """Verifies that the static disjoint() method returns True if both sets of Teachers nave no
     Teachers in common. """

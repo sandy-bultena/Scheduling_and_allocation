@@ -460,7 +460,7 @@ class Block(TimeSlot):
     # TODO: Remove this once tests are updated not to use it
     def __str__(self) -> str:
         """Returns a text string that describes the Block.
-        
+
         Includes information on any Section and Labs related to this Block."""
         text = ""
 
