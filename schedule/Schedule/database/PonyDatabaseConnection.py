@@ -72,6 +72,7 @@ class TimeSlot(db.Entity):
     movable = Optional(bool, default=True, sql_default='1')
     block_id = Optional('Block', cascade_delete=True)
     unavailable_lab_id = Optional(Lab)
+    # schedule_id = Optional('Schedule')
 
 
 class Scenario(db.Entity):
@@ -91,6 +92,7 @@ class Schedule(db.Entity):
     sections = Set('Section')
     # teachers = Set(Teacher)
     teachers = Set('Schedule_Teacher')
+    # time_slots = Set(TimeSlot)
 
 
 class Section(db.Entity):

@@ -117,7 +117,8 @@ class TimeSlot:
 
         # bad inputs, default to default_day
         except ValueError:
-            warn(f"<{new_day}>: invalid day specified... setting to {TimeSlot.DEFAULT_DAY}", UserWarning, stacklevel=2)
+            warn(f"<{new_day}>: invalid day specified... setting to {TimeSlot.DEFAULT_DAY}",
+                 UserWarning, stacklevel=2)
             self.__day = TimeSlot.DEFAULT_DAY
             self.day_number = WeekDayNumber[TimeSlot.DEFAULT_DAY].value
 
