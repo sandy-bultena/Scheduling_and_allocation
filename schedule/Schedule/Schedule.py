@@ -13,15 +13,14 @@ import re
 import database.PonyDatabaseConnection as db
 from pony.orm import *
 
-# TODO: Update the synopsis
 """ SYNOPSIS/EXAMPLE:
     from Schedule.Schedule import Schedule
 
-    Schedule.read_YAML('my_schedule_file.txt')
+    sched = Schedule.read_DB(my_schedule_id)
 
     # code here; model classes have been populated
 
-    Schedule.write_YAML('my_new_schedule_file.txt')
+    sched.write_YAML()
 """
 
 class Schedule:
@@ -235,27 +234,23 @@ class Schedule:
     # labs
     # --------------------------------------------------------
     @staticmethod
-    def labs() -> list[Lab]:
+    def labs() -> tuple[Lab]:
         """Returns a tuple of all the Lab objects"""
-        return Lab.list()
+        return tuple(Lab.list())
 
     # --------------------------------------------------------
     # conflicts
     # --------------------------------------------------------
     @staticmethod
-    def conflicts() -> list[Conflict]:
+    def conflicts() -> tuple[Conflict]:
         """Returns the a tuple of all the Conflict objects"""
-        return Conflict.list()
+        return tuple(Conflict.list())
 
     # --------------------------------------------------------
     # sections_for_teacher
     # --------------------------------------------------------
     @staticmethod
-    def sections_for_teacher(teacher : Teacher) -> list [Section]:
-        # TODO is there any reason why we are returning a list, and not just a set?
-        #      -- it seems like a waste of time to convert a set to a list
-        #      -- or, we can return a tuple, which is immutable.
-
+    def sections_for_teacher(teacher : Teacher) -> tuple[Section]:
         """
         Returns a tuple of Sections that the given Teacher teaches
         - Parameter teacher -> The Teacher who's Sections should be found
@@ -276,15 +271,13 @@ class Schedule:
         #           the lists of teachers, blocks, labs, etc are updated?
         for s in Section.list():
             if teacher in s.teachers: outp.add(s)
-        return list(outp)
+        return tuple(outp)
 
     # --------------------------------------------------------
     # courses_for_teacher
     # --------------------------------------------------------
     @staticmethod
-    def courses_for_teacher(teacher : Teacher) -> list[Course]:
-        # TODO is there any reason why we are returning a list, and not just a set?
-        #      --- sets don't allow duplicates, which is good, but do we need to return a list?
+    def courses_for_teacher(teacher : Teacher) -> tuple[Course]:
         """
         Returns a list of Courses that the given Teacher teaches
         - Parameter teacher -> The Teacher who's Courses should be found
@@ -293,29 +286,25 @@ class Schedule:
         outp = set()
         for c in Course.list():
             if c.has_teacher(teacher): outp.add(c)
-        return list(outp)
+        return tuple(outp)
 
     # --------------------------------------------------------
     # allocated_courses_for_teacher
     # --------------------------------------------------------
     @staticmethod
-    def allocated_courses_for_teacher(teacher : Teacher) -> list[Course]:
-        # TODO: if we decide to return a 'set' for the other collections, then this should
-        #       be a set as well, just for consistency
+    def allocated_courses_for_teacher(teacher : Teacher) -> tuple[Course]:
         """
         Returns a list of courses that this teacher teaches, which is an allocated type course
         - Parameter teacher -> The Teacher to check
         """
         if not isinstance(teacher, Teacher): raise TypeError(f"{teacher} must be an object of type Teacher")
-        return list(filter(lambda c : c.needs_allocation, Schedule.courses_for_teacher(teacher)))
+        return tuple(filter(lambda c : c.needs_allocation, Schedule.courses_for_teacher(teacher)))
 
     # --------------------------------------------------------
     # blocks_for_teacher
     # --------------------------------------------------------
     @staticmethod
-    def blocks_for_teacher(teacher : Teacher) -> list[Block]:
-        # TODO is there any reason why we are returning a list, and not just a set?
-        #      --- sets don't allow duplicates, which is good, but do we need to return a list?
+    def blocks_for_teacher(teacher : Teacher) -> tuple[Block]:
         """
         Returns a list of Blocks that the given Teacher teaches
         - Parameter teacher -> The Teacher who's Blocks should be found
@@ -326,15 +315,13 @@ class Schedule:
         outp = set()
         for b in Block.list():
             if b.has_teacher(teacher): outp.add(b)
-        return list(outp)
+        return tuple(outp)
 
     # --------------------------------------------------------
     # blocks_in_lab
     # --------------------------------------------------------
     @staticmethod
-    def blocks_in_lab(lab : Lab) -> list[Lab]:
-        # TODO is there any reason why we are returning a list, and not just a set?
-        #      --- sets don't allow duplicates, which is good, but do we need to return a list?
+    def blocks_in_lab(lab : Lab) -> tuple[Lab]:
         """
         Returns a list of Blocks using the given Lab
         - Parameter lab -> The Lab that should be found
@@ -344,15 +331,13 @@ class Schedule:
         outp = set()
         for b in Block.list():
             if b.has_lab(lab): outp.add(b)
-        return list(outp)
+        return tuple(outp)
 
     # --------------------------------------------------------
     # sections_for_stream
     # --------------------------------------------------------
     @staticmethod
-    def sections_for_stream(stream : Stream) -> list[Section]:
-        # TODO is there any reason why we are returning a list, and not just a set?
-        #      --- sets don't allow duplicates, which is good, but do we need to return a list?
+    def sections_for_stream(stream : Stream) -> tuple[Section]:
         """
         Returns a list of Sections assigned to the given Stream
         - Parameter stream -> The Stream that should be found
@@ -362,15 +347,13 @@ class Schedule:
         outp = set()
         for s in Section.list():
             if s.has_stream(stream): outp.add(s)
-        return list(outp)
+        return tuple(outp)
 
     # --------------------------------------------------------
     # blocks_for_stream
     # --------------------------------------------------------
     @staticmethod
-    def blocks_for_stream(stream : Stream) -> list[Block]:
-        # TODO is there any reason why we are returning a list, and not just a set?
-        #      --- sets don't allow duplicates, which is good, but do we need to return a list?
+    def blocks_for_stream(stream : Stream) -> tuple[Block]:
         """
         Returns a list of Blocks in the given Stream
         - Parameter stream -> The Stream who's Blocks should be found
@@ -378,7 +361,7 @@ class Schedule:
         if not isinstance(stream, Stream): raise TypeError(f"{stream} must be an object of type Stream")
         outp = set()
         for s in Schedule.sections_for_stream(stream): outp.update(s.blocks)
-        return list(outp)
+        return tuple(outp)
 
     # NOTE: all_x() methods have been removed, since they're now equivalent to x() methods
 
@@ -549,36 +532,36 @@ class Schedule:
         sections = Schedule.sections_for_teacher(teacher)
 
         week = dict(
-            Monday = False,
-            Tuesday = False,
-            Wednesday = False,
-            Thursday = False,
-            Friday = False,
-            Saturday = False,
-            Sunday = False
+            mon = False,
+            tue = False,
+            wed = False,
+            thu = False,
+            fri = False,
+            sat = False,
+            sun = False,
         )
+
+        week_str = dict(
+            mon = "Monday",
+            tue = "Tuesday",
+            wed = "Wednesday",
+            thu = "Thursday",
+            fri = "Friday",
+            sat = "Saturday",
+            sun = "Sunday"
+        )
+
         hours_of_work = 0
 
-        # TODO: match is not in versions of python prior to 3.10
-        #       AND is not to a switch statement (generally speaking)
-        #       see https://www.youtube.com/watch?v=ASRqxDGutpA
-        #       ... I don't care if you use it, but you should be aware
-        #           that there is no performance boost for using it.
         for b in blocks:
             hours_of_work += b.duration
-            match b.day.lower():
-                case 'mon': week['Monday'] = True
-                case 'tue': week['Tuesday'] = True
-                case 'wed': week['Wednesday'] = True
-                case 'thu': week['Thursday'] = True
-                case 'fri': week['Friday'] = True
-                case 'sat': week['Saturday'] = True
-                case 'sun': week['Sunday'] = True
+
+            week[b.day] = True
         
         message = f"""{teacher.firstname} {teacher.lastname}'s Stats.
         
         Days of the week working:
-        {"Monday " if week['Monday'] else ''}{"Tuesday " if week['Tuesday'] else ''}{"Wednesday " if week['Wednesday'] else ''}{"Thursday " if week['Thursday'] else ''}{"Friday " if week['Friday'] else ''}{"Saturday " if week['Saturday'] else ''}{"Sunday " if week['Sunday'] else ''}
+        {" ".join((week_str[k] if v else "") for k, v in week.items())}
         
         Hours of Work: {hours_of_work}
         Courses being taught:

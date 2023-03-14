@@ -211,14 +211,11 @@ def test_string_representation_full():
 
 
 def test_string_representation_short():
-    """Verifies that string representation returns a string containing only the Lab's number if it
-    lacks a description attribute. """
-    # TODO: This is not a valid test, because it could include a lot of stuff besides 'num' and it would
-    #       still return true.
+    """Verifies that string representation returns a string containing only the Lab's number if it lacks a description attribute. """
     num = "R-101"
     lab = Lab(num)
     desc = str(lab)
-    assert num in desc
+    assert num == desc
 
 
 def test_list():

@@ -478,18 +478,6 @@ class Block(TimeSlot):
     def __repr__(self):
         return self.description
 
-
-    # =================================================================
-    # conflicts
-    # =================================================================
-    # def conflicts(self):
-    #     """Returns a list of the conflicts related to this Block."""
-    #     # No longer needed, because the old program used to keep a list
-    #       of conflicts, whereas the newer version just kept a number
-    #       with each bit representing a type of conflict.
-    #       No more list required.
-    #       TODO: Delete this comment once you have read it.
-
     # ===================================
     # Refresh Number
     # ===================================

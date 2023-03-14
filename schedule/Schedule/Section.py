@@ -2,6 +2,7 @@ from __future__ import annotations
 from Course import Course
 from Stream import Stream
 from Teacher import Teacher
+import Block
 import re
 
 from database.PonyDatabaseConnection import Section as dbSection, Course as dbCourse, \
@@ -444,13 +445,7 @@ class Section():
         - Parameter blocks -> The block(s) to assign. Block(s) can be added all at once
         """
         for b in blocks:
-            # removed check to avoid circular dependency
-            # TODO: Watch this video, it will explain how to get rid of circular dependencies
-            #       https://www.youtube.com/watch?v=UnKa_t-M_kM
-            #       TLDR: just import, don't use 'from'
-            #       Too many objects have 'id' as a attribute
-            # if not isinstance(b, Block): raise f"{b}: invalid block - must be a Block object"
-            if not hasattr(b, 'id'): raise TypeError(f"{b}: invalid block - no id found")
+            if not isinstance(b, Block.Block): raise TypeError(f"{b}: invalid block - must be a Block object")
             self._blocks[b.id] = b
             b.section = self
         return self
