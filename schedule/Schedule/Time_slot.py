@@ -379,7 +379,7 @@ class TimeSlot:
 
 Sandy Bultena, Ian Clement, Jack Burns
 
-converted to python by Jacob Levy and Even Laverdiere
+converted to python by Jacob Levy and Evan Laverdiere
 
 =head1 COPYRIGHT
 
