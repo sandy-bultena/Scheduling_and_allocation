@@ -100,20 +100,11 @@ class TimeSlot:
         return self.__day
 
     @day.setter
-    # TODO:  Do we really want this to be so flexible that users can specify an
-    #        integer instead of a string or Weekday object?
     def day(self, new_day: str):
 
         try:
-            # if representing day as an integer
-            if isinstance(new_day, int):
-                self.__day = WeekDayNumber(new_day).name
-                self.day_number = new_day
-
-            # if representing day as a string
-            else:
-                self.__day = WeekDay.validate(new_day)
-                self.day_number = WeekDayNumber[self.__day].value
+            self.__day = WeekDay.validate(new_day)
+            self.day_number = WeekDayNumber[self.__day].value
 
         # bad inputs, default to default_day
         except ValueError:
