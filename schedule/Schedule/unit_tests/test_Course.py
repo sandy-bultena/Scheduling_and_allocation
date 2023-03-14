@@ -45,6 +45,7 @@ def test_id():
         courses.append(Course(i))
     assert courses[-1].id == len(courses)
 
+
 def test_full_constructor():
     """Verifies that constructor parameters are applied correctly"""
     num = "102-NYA-043"
@@ -56,6 +57,7 @@ def test_full_constructor():
     assert c.number == num
     assert c.semester == SemesterType.validate(sem)
     assert c.needs_allocation == allo
+
 
 def test_name_getter():
     """Verifies that name getter works as intended."""
@@ -69,6 +71,7 @@ def test_name_setter():
     name = "Intro to Programming"
     course.name = name
     assert name == course.name
+
 
 def test_number_getter():
     """Verifies that the number getter works as intended."""
@@ -265,6 +268,19 @@ def test_delete_updates_database():
     commit()
     d_courses = select(c for c in dbCourse)
     assert len(d_courses) == 0
+
+
+@db_session
+def test_remove_ignores_database():
+    """Verifies that remove() doesn't affect the Course's corresponding database record."""
+    course = Course(1)
+    course.remove()
+    commit()
+    d_courses = select(c for c in dbCourse)
+    courses = list(d_courses)
+    a_courses = Course.list()
+    assert len(a_courses) == 0 and len(courses) == 1 \
+           and courses[0].name == course.name
 
 
 def test_sections():

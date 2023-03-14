@@ -38,18 +38,20 @@ class Course:
     # -------------------------------------------------------------------
     # new
     # --------------------------------------------------------------------
-    def __init__(self, number: str = "", name: str = "New Course", semester : SemesterType = SemesterType.any, needs_allocation : bool = True, *, id: int = None):
+    def __init__(self, number: str = "", name: str = "New Course",
+                 semester: SemesterType = SemesterType.any, needs_allocation: bool = True,
+                 *, id: int = None):
         """Creates and returns a course object.
 
         Parameter **number**: str -> The alphanumeric course number.
 
         Parameter **name**: str -> the name of the course."""
 
-        self.number : str = str(number)
-        self.name : str = str(name)
-        self.needs_allocation : bool = needs_allocation
-        self._sections : dict[int, Section.Section] = {}
-        self.semester : int = SemesterType.validate(semester)
+        self.number: str = str(number)
+        self.name: str = str(name)
+        self.needs_allocation: bool = needs_allocation
+        self._sections: dict[int, Section.Section] = {}
+        self.semester: int = SemesterType.validate(semester)
 
         self.__id = id if id else Course.__create_entity(self)
         Course.__instances[self.__id] = self
@@ -57,7 +59,8 @@ class Course:
     @db_session
     @staticmethod
     def __create_entity(instance: Course):
-        entity_course = dbCourse(name=instance.name, number=instance.number, allocation=instance.needs_allocation, semester=instance.semester)
+        entity_course = dbCourse(name=instance.name, number=instance.number,
+                                 allocation=instance.needs_allocation, semester=instance.semester)
         commit()
         return entity_course.get_pk()
 
@@ -211,7 +214,6 @@ class Course:
             self.remove_section(section)
         if Course.__instances[self.id]:
             del Course.__instances[self.id]
-
 
     def delete(self):
         """Delete this object (and all its dependants), including its corresponding database record.
