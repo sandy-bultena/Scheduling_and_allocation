@@ -14,6 +14,7 @@ from database.PonyDatabaseConnection import define_database, Block as dbBlock, \
     TimeSlot as dbTimeSlot, Lab as dbLab, Teacher as dbTeacher, Scenario as dbScenario, \
     Schedule as dbSchedule, Course as dbCourse, Section as dbSection
 from unit_tests.db_constants import *
+from ScheduleEnums import WeekDay
 
 db: Database
 
@@ -903,7 +904,7 @@ def test_list_empty():
 def test_get_day_blocks():
     """Verifies that get_day_blocks() returns a list of all Blocks occurring on a specific
     day of the week. """
-    day = "mon"
+    day = WeekDay.Monday
     block_1 = Block("mon", "8:00", 1.5, 1)
     block_2 = Block("mon", "8:00", 1.5, 2)
     block_3 = Block("tue", "8:00", 1.5, 2)
@@ -916,7 +917,7 @@ def test_get_day_blocks():
 def test_get_day_blocks_bad_input():
     """Verifies that get_day_blocks() won't crash the program if passed a list containing
     non-Block objects. """
-    day = "mon"
+    day = WeekDay.Monday
     block_1 = Block("mon", "8:00", 1.5, 1)
     block_2 = Block("mon", "8:00", 1.5, 2)
     block_3 = Block("tue", "8:00", 1.5, 2)
@@ -934,7 +935,7 @@ def test_get_day_blocks_empty_list():
     block_3 = Block("tue", "8:00", 1.5, 2)
     block_4 = Block("wed", "8:00", 1.5, 2)
     unfiltered_blocks = [block_1, block_2, block_3, block_4]
-    bad_day = "fri"
+    bad_day = WeekDay.Friday
     friday_blocks = Block.get_day_blocks(bad_day, unfiltered_blocks)
     assert len(friday_blocks) == 0
 

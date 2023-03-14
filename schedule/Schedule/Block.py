@@ -62,7 +62,7 @@ class Block(TimeSlot):
         - Parameter duration: float -> how long does this class last, in hours
         - Parameter number: int -> A number representing this specific Block.
         """
-        self._sync = list()
+        self._sync : list[Block] = list()
         if (id and not time_slot_id) or (time_slot_id and not id):
             raise ValueError("Error: id and time_slot_id must be both defined or neither defined")
 
@@ -164,8 +164,8 @@ class Block(TimeSlot):
     # day
     # =================================================================
     @property
-    def day(self) -> int:
-        """Get/set the day of the block, in numeric format (1 for Monday, 7 for Sunday)."""
+    def day(self) -> str:
+        """Get/set the day of the block."""
         return super().day
 
     @day.setter
@@ -421,9 +421,9 @@ class Block(TimeSlot):
     # =================================================================
     # synced
     # =================================================================
-    def synced(self):
+    def synced(self) -> tuple[Block]:
         """Returns an array ref of the Blocks which are synced to this Block."""
-        return self._sync
+        return tuple(self._sync)
 
     # =================================================================
     # reset_conflicted
@@ -509,7 +509,7 @@ class Block(TimeSlot):
     # get_day_blocks ($day, $blocks)
     # =================================================================
     @staticmethod
-    def get_day_blocks(day: WeekDay, blocks: list):
+    def get_day_blocks(day: WeekDay, blocks: list[Block]):
         """Returns an array of all blocks within a specific day.
 
         Parameter day: WeekDay -> a weekday object
@@ -518,7 +518,7 @@ class Block(TimeSlot):
         # work here because TimeSlot.day returns a WeekDay object.
         if not blocks or type(blocks[0]) is not Block:
             return []
-        return [block for block in blocks if block.day == day.name]
+        return [block for block in blocks if block.day == day.value]
 
     # =================================================================
     # save()
