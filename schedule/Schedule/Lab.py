@@ -59,32 +59,6 @@ class Lab:
         """Returns the unique ID for this Lab object."""
         return self.__id
 
-    # =================================================================
-    # number
-    # =================================================================
-
-    @property
-    def number(self) -> str:
-        """Sets/returns the room number for this Lab object."""
-        return self.__number
-
-    @number.setter
-    def number(self, new_value: str):
-        self.__number = new_value
-
-    # =================================================================
-    # descr
-    # =================================================================
-
-    @property
-    def descr(self) -> str:
-        """Sets/returns the description for this Lab object."""
-        return self.__descr
-
-    @descr.setter
-    def descr(self, new_value: str):
-        self.__descr = new_value
-
     # =================================================
     # add_unavailable
     # =================================================

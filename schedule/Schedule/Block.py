@@ -170,7 +170,6 @@ class Block(TimeSlot):
 
     @day.setter
     def day(self, new_day: str):
-        day = WeekDay.validate(new_day)
         super(Block, self.__class__).day.fset(self, new_day)
 
         # If there are synchronized blocks, change them too.

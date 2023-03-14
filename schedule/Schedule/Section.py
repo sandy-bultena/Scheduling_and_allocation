@@ -186,18 +186,6 @@ class Section():
         self._course = val
 
     # --------------------------------------------------------
-    # num_students
-    # --------------------------------------------------------
-    @property
-    def num_students(self) -> int:
-        """ Gets and sets the number of students in this section """
-        return self._num_students
-
-    @num_students.setter
-    def num_students(self, val: int):
-        self._num_students = val
-
-    # --------------------------------------------------------
     # labs
     # --------------------------------------------------------
     @property

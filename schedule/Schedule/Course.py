@@ -74,36 +74,12 @@ class Course:
         return self.__id
 
     # =================================================================
-    # name
-    # =================================================================
-    @property
-    def name(self) -> str:
-        """Gets or sets the Course name."""
-        return self.__name
-
-    @name.setter
-    def name(self, new_name: str):
-        self.__name = new_name
-
-    # =================================================================
     # description - replaces print_description_2
     # =================================================================
     @property
     def description(self) -> str:
         """Returns text string that describes this Block."""
         return f"{self.number}: {self.name}"
-
-    # =================================================================
-    # number
-    # =================================================================
-    @property
-    def number(self) -> str:
-        """Gets and sets the Course number."""
-        return self.__number
-
-    @number.setter
-    def number(self, new_num: str):
-        self.__number = new_num
 
     # =================================================================
     # add_ section

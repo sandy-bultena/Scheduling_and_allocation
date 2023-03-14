@@ -65,8 +65,8 @@ class TimeSlot:
         # NOTE: Doing this so that day_number will also be set
         #       The order that these are implemented is important
         # day = TimeSlot.DEFAULT_DAY
-        self.__day_number = 0
-        self.start_number = 0
+        self.__day_number : int = 0
+        self.start_number : float = 0
         self.day = WeekDay.validate(day)
         self.start = start
         self.duration = duration
@@ -173,37 +173,6 @@ class TimeSlot:
     # that don't require any special circumstances, such as having only a getter with no setter
     # or requiring detailed input validation in the setter. Will ask Sandy about this to see what
     # she thinks.
-
-    # ====================================
-    # movable
-    # ====================================
-    @property
-    def movable(self) -> bool:
-        """Gets and sets the course section object which contains this time_slot."""
-        return self.__movable
-
-    @movable.setter
-    def movable(self, movable: bool):
-        self.__movable = bool(movable)
-
-    # ====================================
-    # start_number
-    # ====================================
-    @property
-    def start_number(self) -> float:
-        """
-        Sets or returns the start time in hours (i.e., 1:30 pm = 13.5 hours)
-        
-        This time info is set every time the start method is invoked on the object. Modifying it
-        directly does NOT modify the values stored in 'day'.
-
-        To set the day according to the data in this hash, use the method "snap_to_time".
-        """
-        return self.__start_number
-
-    @start_number.setter
-    def start_number(self, new_val: float):
-        self.__start_number = new_val
 
     # ====================================
     # day_number
