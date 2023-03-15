@@ -87,13 +87,15 @@ def test_number_setter():
 
 
 def test_add_section_good():
-    """Verifies that add_section can add a valid Section to this Course, and that the Course is added to the Section
-    itself. """
-    course = Course(1)
-    section = Section(id=1)
-    course.add_section(section)
-    sections = list(getattr(course, '_sections').values())
-    assert len(sections) == 1 and section in sections and section.course == course
+    """Verifies that add_section can add a valid Section to this Course, and that the Course is
+    added to the Section itself. """
+    course_1 = Course(1)
+    course_2 = Course(2)
+    section = Section(id=1, course=course_1)
+    course_2.add_section(section)
+    commit()
+    sections = list(getattr(course_2, '_sections').values())
+    assert len(sections) == 1 and section in sections and section.course == course_2
 
 
 def test_add_section_invalid_input():
@@ -109,14 +111,15 @@ def test_add_section_invalid_input():
 
 
 def test_add_section_duplicate():
-    """Verifies that add_section() raises an Exception when trying to add a duplicate of an existing Section to the
-    Course. """
-    course = Course(1)
-    section_1 = Section(id=1)
+    """Verifies that add_section() raises an Exception when trying to add a duplicate of an
+    existing Section to the Course. """
+    course_1 = Course(1)
+    section_1 = Section(id=1, course=course_1)
     section_2 = section_1
-    course.add_section(section_1)
+    course_2 = Course(2)
+    course_2.add_section(section_1)
     with pytest.raises(Exception) as e:
-        course.add_section(section_2)
+        course_2.add_section(section_2)
     assert "section number is not unique" in str(e.value).lower()
 
 
@@ -142,7 +145,7 @@ def test_get_section_good():
     """Verifies that get_section() returns an existing section from this Course."""
     course = Course(1)
     num = "420.AO"
-    sect = Section(num, id=1)
+    sect = Section(num, id=1, course=course)
     course.add_section(sect)
     assert course.get_section(num) == sect
 
@@ -158,17 +161,17 @@ def test_get_section_bad():
 def test_get_section_by_id_good():
     """Verifies that get_section_by_id() works when receiving a valid Section ID as input."""
     course = Course(1)
-    section = Section(id=1)
+    section = Section(id=1, course=course)
     sect_id = 1
     course.add_section(section)
     assert course.get_section_by_id(sect_id) == section
 
 
 def test_get_section_by_id_bad():
-    """Verifies that get_section_by_id() won't crash the program when given a bad ID as input, returning None
-    instead. """
+    """Verifies that get_section_by_id() won't crash the program when given a bad ID as input,
+    returning None instead. """
     course = Course(1)
-    section = Section(id=1)
+    section = Section(id=1, course=course)
     bad_id = 999
     course.add_section(section)
     assert course.get_section_by_id(bad_id) is None
@@ -179,7 +182,7 @@ def test_get_section_by_name_good():
     a valid name as input. """
     course = Course(1)
     name = "test"
-    section = Section("", 1.5, name, id=1)
+    section = Section("", 1.5, name, id=1, course=course)
     course.add_section(section)
     sections = course.get_section_by_name(name)
     assert len(sections) == 1 and sections[0] == section
@@ -189,7 +192,7 @@ def test_get_section_by_name_bad():
     """Verifies that get_section_by_name() returns an empty list when given an invalid
     section name. """
     course = Course(1)
-    section = Section("", 1.5, "test", id=1)
+    section = Section("", 1.5, "test", id=1, course=course)
     bad_name = "foo"
     course.add_section(section)
     sections = course.get_section_by_name(bad_name)
@@ -200,7 +203,7 @@ def test_remove_section_good():
     """Verifies that remove_section() works as intended when asked to remove a legitimate
     Section. """
     course = Course(1)
-    section = Section(id=1)
+    section = Section(id=1, course=course)
     course.add_section(section)
     course.remove_section(section)
     assert len(course.sections()) == 0
@@ -210,7 +213,7 @@ def test_remove_section_bad():
     """Verifies that remove_section() raises an Exception when asked to remove a non-Section
     object. """
     course = Course(1)
-    section = Section(id=1)
+    section = Section(id=1, course=course)
     course.add_section(section)
     bad_section = "foo"
     with pytest.raises(TypeError) as e:
@@ -222,9 +225,9 @@ def test_remove_section_no_crash():
     """Verifies that remove_section() will not crash the program if asked to remove a Section
     that doesn't exist. """
     course = Course(1)
-    section_1 = Section("420", id=1)
+    section_1 = Section("420", id=1, course=course)
     course.add_section(section_1)
-    bad_section = Section("421", id=666)
+    bad_section = Section("421", id=666, course=course)
     course.remove_section(bad_section)
     assert len(course.sections()) == 1 and section_1 in course.sections()
 
