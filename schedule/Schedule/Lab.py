@@ -139,9 +139,9 @@ class Lab:
 
     def __str__(self) -> str:
         """Returns a text string that describes the Lab."""
-        if not self.__descr:
-            return f"{self.__number}"
-        return f"{self.__number}: {self.__descr}"
+        if not self.descr:
+            return f"{self.number}"
+        return f"{self.number}: {self.descr}"
 
     def __repr__(self) -> str:
         return str(self)

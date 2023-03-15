@@ -9,6 +9,7 @@ from Section import Section
 from Lab import Lab
 from Teacher import Teacher
 from Time_slot import TimeSlot
+from Course import Course
 from pony.orm import *
 from database.PonyDatabaseConnection import define_database, Block as dbBlock, \
     TimeSlot as dbTimeSlot, Lab as dbLab, Teacher as dbTeacher, Scenario as dbScenario, \
@@ -133,8 +134,8 @@ def test_start_getter():
 
 
 def test_start_setter_synced_2_blocks():
-    """Verifies that the start setter works as intended, and that it changes the start value of any Blocks synced to
-    the Block on which it was called. """
+    """Verifies that the start setter works as intended, and that it changes the start value of
+    any Blocks synced to the Block on which it was called. """
     day = "mon"
     start = "8:30"
     dur = 2
@@ -187,8 +188,8 @@ def test_day_getter():
 
 
 def test_day():
-    """Verifies that the day setter works as intended, changing the day property of any Block synced to the current
-    Block. """
+    """Verifies that the day setter works as intended, changing the day property of any Block
+    synced to the current Block. """
     day = "mon"
     start1 = "8:00"
     start2 = "12:00"
@@ -232,7 +233,8 @@ def test_section_setter_good():
     dur = 2
     num = 1
     block = Block(day, start, dur, num)
-    sect = Section(id=1)
+    course = Course()
+    sect = Section(id=1, course=course)
     block.section = sect
     assert block.section == sect
 
@@ -268,7 +270,7 @@ def test_section_setter_updates_database():
     flush()
     d_schedule = dbSchedule(semester="fall", official=False, scenario_id=d_scenario.id)
     flush()
-    d_course = dbCourse(name="Test")
+    d_course = Course(name="Test")
     flush()
     sect = Section(course=d_course, schedule_id=d_schedule.id)
     commit()
@@ -820,7 +822,8 @@ def test_string_representation():
     dur = 2
     num = 1
     block = Block(day, start, dur, num)
-    sect = Section("42", 2, "Section 42", id=1)
+    course = Course()
+    sect = Section("42", 2, "Section 42", id=1, course=course)
     lab1 = Lab("R-101", "Worst place in the world")
     lab2 = Lab("R-102", "Second-worst place in the world")
     block.section = sect
@@ -879,7 +882,8 @@ def test_refresh_number():
     dur = 2
     num = 0
     block = Block(day, start, dur, num)
-    sect = Section("42", id=1)
+    course = Course()
+    sect = Section("42", id=1, course=course)
     sect.add_block(block)
     block.refresh_number()
     assert block.number == 1

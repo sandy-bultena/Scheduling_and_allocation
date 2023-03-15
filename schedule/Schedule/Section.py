@@ -40,16 +40,17 @@ from pony.orm import *
 """
 
 
-class Section():
+class Section:
     """
     Describes a section (part of a course)
     """
-    __instances : dict[int, Section] = {}
+    __instances: dict[int, Section] = {}
 
     # ========================================================
     # CONSTRUCTOR
     # ========================================================
-    def __init__(self, number: str = "", hours : float = 1.5, name: str = "", course: Course.Course = None, *, id: int = None,
+    def __init__(self, number: str = "", hours: float = 1.5, name: str = "",
+                 course: Course.Course = None, *, id: int = None,
                  schedule_id: int = None):
         """
         Creates an instance of the Section class.
@@ -62,16 +63,16 @@ class Section():
         # LEAVE IN:
         # Allows for teacher allocations to be tracked & calculated correctly in AllocationManager,
         # since Blocks are ignored there
-        self._teachers : dict[int, Teacher.Teacher] = {}
-        self._allocation : dict[int, float] = {}
+        self._teachers: dict[int, Teacher.Teacher] = {}
+        self._allocation: dict[int, float] = {}
 
-        self._streams : dict[int, Stream] = {}
-        self._blocks : dict[int, Block.Block] = {}
+        self._streams: dict[int, Stream] = {}
+        self._blocks: dict[int, Block.Block] = {}
 
         self.name = name
         self.number = number
         self.hours = hours
-        self.num_students : int = 0
+        self.num_students: int = 0
         self.course = course
 
         self.__id = id if id else Section.__create_entity(self, schedule_id)
@@ -88,7 +89,7 @@ class Section():
         return entity_section.get_pk()
 
     @staticmethod
-    def __validate_hours(hours : float | int) -> float:
+    def __validate_hours(hours: float | int) -> float:
         try:
             hours = float(hours)
         except ValueError or TypeError:
@@ -234,7 +235,7 @@ class Section():
     # --------------------------------------------------------
     # add_hours
     # --------------------------------------------------------
-    def add_hours(self, val : float | int):
+    def add_hours(self, val: float | int):
         """ Adds hours to section's weekly total """
         val = Section.__validate_hours(val)
         self.hours += val
@@ -267,7 +268,7 @@ class Section():
     # --------------------------------------------------------
     # assign_lab
     # --------------------------------------------------------
-    def assign_lab(self, lab : Lab.Lab) -> Section:
+    def assign_lab(self, lab: Lab.Lab) -> Section:
         """
         Assign a lab to every block in the section
         - Parameter lab -> The lab to assign
@@ -279,7 +280,7 @@ class Section():
     # --------------------------------------------------------
     # remove_lab
     # --------------------------------------------------------
-    def remove_lab(self, lab : Lab.Lab) -> Section:
+    def remove_lab(self, lab: Lab.Lab) -> Section:
         """
         Remove a lab from every block in the section
         - Parameter lab -> The lab to remove
@@ -290,7 +291,7 @@ class Section():
     # --------------------------------------------------------
     # assign_teacher
     # --------------------------------------------------------
-    def assign_teacher(self, teacher : Teacher.Teacher) -> Section:
+    def assign_teacher(self, teacher: Teacher.Teacher) -> Section:
         """
         Assign a teacher to the section
         - Parameter teacher -> The teacher to be assigned
@@ -307,7 +308,7 @@ class Section():
     # --------------------------------------------------------
     # set_teacher_allocation
     # --------------------------------------------------------
-    def set_teacher_allocation(self, teacher : Teacher.Teacher, hours : float | int) -> Section:
+    def set_teacher_allocation(self, teacher: Teacher.Teacher, hours: float | int) -> Section:
         """
         Assign number of hours to teacher for this section. Set hours to 0 to remove teacher from this section
         - Parameter teacher -> The teacher to allocate hours to
@@ -325,7 +326,7 @@ class Section():
     # --------------------------------------------------------
     # get_teacher_allocation
     # --------------------------------------------------------
-    def get_teacher_allocation(self, teacher : Teacher.Teacher) -> float:
+    def get_teacher_allocation(self, teacher: Teacher.Teacher) -> float:
         """
         Get the number of hours assigned to this teacher for this section
         - Parameter teacher -> The teacher to find allocation hours for
@@ -342,7 +343,7 @@ class Section():
     # --------------------------------------------------------
     # remove_teacher
     # --------------------------------------------------------
-    def remove_teacher(self, teacher : Teacher.Teacher) -> Section:
+    def remove_teacher(self, teacher: Teacher.Teacher) -> Section:
         """
         Removes teacher from all blocks in this section
         - Parameter teacher -> The teacher to be removed
@@ -366,7 +367,7 @@ class Section():
     # --------------------------------------------------------
     # has_teacher
     # --------------------------------------------------------
-    def has_teacher(self, teacher : Teacher.Teacher) -> bool:
+    def has_teacher(self, teacher: Teacher.Teacher) -> bool:
         """
         Checks if section has teacher
         - Parameter teacher -> The teacher to check
@@ -427,13 +428,14 @@ class Section():
     # --------------------------------------------------------
     # add_block
     # --------------------------------------------------------
-    def add_block(self, *blocks : Block.Block) -> Section:
+    def add_block(self, *blocks: Block.Block) -> Section:
         """
         Assign blocks to this section
         - Parameter blocks -> The block(s) to assign. Block(s) can be added all at once
         """
         for b in blocks:
-            if not isinstance(b, Block.Block): raise TypeError(f"{b}: invalid block - must be a Block object")
+            if not isinstance(b, Block.Block): raise TypeError(
+                f"{b}: invalid block - must be a Block object")
             self._blocks[b.id] = b
             b.section = self
         return self
@@ -441,7 +443,7 @@ class Section():
     # --------------------------------------------------------
     # remove_block
     # --------------------------------------------------------
-    def remove_block(self, block : Block.Block) -> Section:
+    def remove_block(self, block: Block.Block) -> Section:
         """
         Remove a block from this section
         - Parameter block -> The block to remove
@@ -502,7 +504,7 @@ class Section():
         """Saves this Section to the database as part of a passed Schedule entity."""
         c = self.course.save()
 
-        sse : dbSection = dbSection.get(id=self.id)
+        sse: dbSection = dbSection.get(id=self.id)
         if not sse: sse = dbSection(course_id=c, schedule_id=sched)
 
         sse.name = self.name

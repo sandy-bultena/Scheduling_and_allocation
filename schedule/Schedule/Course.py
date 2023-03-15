@@ -32,7 +32,7 @@ from ScheduleEnums import SemesterType
 
 class Course:
     """Describes a distinct course."""
-    __instances : dict[int, Course] = {}
+    __instances: dict[int, Course] = {}
 
     # -------------------------------------------------------------------
     # new
@@ -46,11 +46,11 @@ class Course:
 
         Parameter **name**: str -> the name of the course."""
 
-        self.number : str = str(number)
-        self.name : str = str(name)
-        self.needs_allocation : bool = needs_allocation
-        self._sections : dict[str, Section.Section] = {}
-        self.semester : int = SemesterType.validate(semester)
+        self.number: str = str(number)
+        self.name: str = str(name)
+        self.needs_allocation: bool = needs_allocation
+        self._sections: dict[str, Section.Section] = {}
+        self.semester: int = SemesterType.validate(semester)
 
         self.__id = id if id else Course.__create_entity(self)
         Course.__instances[self.__id] = self
@@ -82,7 +82,7 @@ class Course:
     # =================================================================
     # add_ section
     # =================================================================
-    def add_section(self, *sections : Section.Section) -> Course:
+    def add_section(self, *sections: Section.Section) -> Course:
         """Assign one or more Sections to this Course.
 
         Returns the modified Course object."""
@@ -120,7 +120,7 @@ class Course:
     # =================================================================
     # get_section
     # =================================================================
-    def get_section(self, number : str) -> Section.Section | None:
+    def get_section(self, number: str) -> Section.Section | None:
         """Gets the Section from this Course that has the passed section number, if it exists.
         Otherwise, returns None. """
         if number in self._sections.keys():
@@ -130,7 +130,7 @@ class Course:
     # =================================================================
     # get_section_by_id
     # =================================================================
-    def get_section_by_id(self, sect_id : int) -> Section.Section | None:
+    def get_section_by_id(self, sect_id: int) -> Section.Section | None:
         """Gets the Section from this Course that matches the passed section ID, if it exists.
 
         Returns the Section if found, or None otherwise."""
@@ -156,7 +156,7 @@ class Course:
     # =================================================================
     # remove_section
     # =================================================================
-    def remove_section(self, section : Section.Section) -> Course:
+    def remove_section(self, section: Section.Section) -> Course:
         """Removes the passed Section from this Course, if it exists.
 
         Returns the modified Course object."""
@@ -173,7 +173,7 @@ class Course:
 
     @db_session
     def __remove_entity_section(self, section_id: int):
-        d_sect : dbSection = dbSection.get(id=section_id)
+        d_sect: dbSection = dbSection.get(id=section_id)
         if d_sect is not None:
             d_course = dbCourse[self.id]
             d_course.sections.remove(d_sect)
@@ -256,7 +256,7 @@ class Course:
     # =================================================================
     # section
     # =================================================================
-    def section(self, section_number : str) -> Section.Section:
+    def section(self, section_number: str) -> Section.Section:
         """Returns the Section associated with this Section number."""
         if section_number in self._sections.keys():
             return self._sections[section_number]
@@ -332,7 +332,7 @@ class Course:
     # =================================================================
     # has_stream
     # =================================================================
-    def has_stream(self, stream : Stream.Stream) -> bool:
+    def has_stream(self, stream: Stream.Stream) -> bool:
         """Returns true if this Course has the specified Stream."""
         if not stream:
             return False
@@ -450,13 +450,13 @@ class Course:
     @staticmethod
     def get(c_id: int) -> Course | None:
         """Returns the Course object with the matching ID."""
-        return Course.__instances.get(c_id, default = None)
+        return Course.__instances.get(c_id, default=None)
 
     # =================================================================
     # get_by_number
     # =================================================================
     @staticmethod
-    def get_by_number(number : str) -> Course | None:
+    def get_by_number(number: str) -> Course | None:
         """Return the Course which matches this Course number, if it exists."""
         if not number: return
 
@@ -477,7 +477,7 @@ class Course:
 
     @db_session
     def save(self) -> dbCourse:
-        cc : dbCourse = dbCourse.get(id=self.id)
+        cc: dbCourse = dbCourse.get(id=self.id)
         if not cc: cc = dbCourse(name=self.name, semester=self.semester)
         cc.name = self.name
         cc.number = self.number
