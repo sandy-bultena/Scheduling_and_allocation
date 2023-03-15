@@ -1,8 +1,10 @@
 from __future__ import annotations
+from typing import TYPE_CHECKING
 
 from database.PonyDatabaseConnection import Stream as dbStream
 from pony.orm import *
-import Block
+if TYPE_CHECKING:
+    import Block
 
 """ SYNOPSIS/EXAMPLE:
     from Schedule.Stream import Stream
