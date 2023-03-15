@@ -93,7 +93,6 @@ class Schedule:
 
         sched : db.Schedule = db.Schedule.get(id=id)
         scenario : db.Scenario = db.Scenario.get(id=sched.scenario_id.id)
-        # placeholder dict
         scen = {
             "name": scenario.name,
             "description": scenario.description,
