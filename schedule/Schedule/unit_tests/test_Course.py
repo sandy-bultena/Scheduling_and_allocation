@@ -427,7 +427,7 @@ def test_teachers_good():
     """Verifies that teachers() returns a list of the Teachers assigned to this course."""
     course = Course(1, "Course 1")
     block = Block("mon", "8:30", 1.5, 1)
-    section = Section("420", 1.5, "Section 1", id=1)
+    section = Section("420", 1.5, "Section 1", id=1, course=course)
     lab = Lab("R-101", "Worst place in the world")
     teacher_1 = Teacher("John", "Smith")
     teacher_2 = Teacher("Jane", "Doe")
@@ -452,7 +452,7 @@ def test_has_teacher():
     this course. """
     course = Course(1, "Course 1")
     block = Block("mon", "8:30", 1.5, 1)
-    section = Section("420", 1.5, "Section 1", id=1)
+    section = Section("420", 1.5, "Section 1", id=1, course=course)
     lab = Lab("R-101", "Worst place in the world")
     teacher = Teacher("John", "Smith")
     block.assign_lab(lab)
@@ -467,7 +467,7 @@ def test_has_teacher_bad_input():
     Teacher. """
     course = Course(1, "Course 1")
     block = Block("mon", "8:30", 1.5, 1)
-    section = Section("420", 1.5, "Section 1", id=1)
+    section = Section("420", 1.5, "Section 1", id=1, course=course)
     lab = Lab("R-101", "Worst place in the world")
     teacher = Teacher("John", "Smith")
     block.assign_lab(lab)
@@ -483,7 +483,7 @@ def test_streams():
     this Course. """
     course = Course(1, "Course 1")
     block = Block("mon", "8:30", 1.5, 1)
-    section = Section("420", 1.5, "Section 1", id=1)
+    section = Section("420", 1.5, "Section 1", id=1, course=course)
     stream = Stream()
     section.add_block(block)
     section.assign_stream(stream)
@@ -504,7 +504,7 @@ def test_has_stream():
     """Verifies that has_stream() returns true if the passed Stream exists within the Course."""
     course = Course(1, "Course 1")
     block = Block("mon", "8:30", 1.5, 1)
-    section = Section("420", 1.5, "Section 1", id=1)
+    section = Section("420", 1.5, "Section 1", id=1, course=course)
     stream = Stream()
     section.add_block(block)
     section.assign_stream(stream)
@@ -517,7 +517,7 @@ def test_has_stream_false():
     Stream. """
     course = Course(1, "Course 1")
     block = Block("mon", "8:30", 1.5, 1)
-    section = Section("420", 1.5, "Section 1", id=1)
+    section = Section("420", 1.5, "Section 1", id=1, course=course)
     stream = Stream()
     section.add_block(block)
     section.assign_stream(stream)
@@ -531,7 +531,7 @@ def test_has_stream_bad_input():
     """Verifies that has_stream() returns false if no input is specified."""
     course = Course(1, "Course 1")
     block = Block("mon", "8:30", 1.5, 1)
-    section = Section("420", 1.5, "Section 1", id=1)
+    section = Section("420", 1.5, "Section 1", id=1, course=course)
     stream = Stream()
     section.add_block(block)
     section.assign_stream(stream)
@@ -544,7 +544,7 @@ def test_assign_teacher_good():
     Course. """
     course = Course(1, "Course 1")
     block = Block("mon", "8:30", 1.5, 1)
-    section = Section("420", 1.5, "Section 1", id=1)
+    section = Section("420", 1.5, "Section 1", id=1, course=course)
     section.add_block(block)
     course.add_section(section)
     teacher = Teacher("John", "Smith")
@@ -558,7 +558,7 @@ def test_assign_teacher_bad():
     object. """
     course = Course(1, "Course 1")
     block = Block("mon", "8:30", 1.5, 1)
-    section = Section("420", 1.5, "Section 1", id=1)
+    section = Section("420", 1.5, "Section 1", id=1, course=course)
     section.add_block(block)
     course.add_section(section)
     bad_teach = "foo"
@@ -571,7 +571,7 @@ def test_assign_lab_good():
     """Verifies that assign_lab() can assign a legitimate Lab to all Sections of the Course."""
     course = Course(1, "Course 1")
     block = Block("mon", "8:30", 1.5, 1)
-    section = Section("420", 1.5, "Section 1", id=1)
+    section = Section("420", 1.5, "Section 1", id=1, course=course)
     section.add_block(block)
     course.add_section(section)
     lab = Lab()
