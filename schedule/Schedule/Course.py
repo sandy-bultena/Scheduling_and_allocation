@@ -450,7 +450,7 @@ class Course:
     @staticmethod
     def get(c_id: int) -> Course | None:
         """Returns the Course object with the matching ID."""
-        return Course.__instances.get(c_id, None)
+        return Course.__instances.get(c_id)
 
     # =================================================================
     # get_by_number

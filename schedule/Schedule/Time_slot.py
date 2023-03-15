@@ -297,7 +297,7 @@ class TimeSlot:
 
     @staticmethod
     def get(id: int) -> TimeSlot:
-        return TimeSlot.__instances.get(id, None)
+        return TimeSlot.__instances.get(id)
 
     # =================================================================
     # save

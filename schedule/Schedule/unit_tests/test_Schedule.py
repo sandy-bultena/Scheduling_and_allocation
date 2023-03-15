@@ -79,8 +79,8 @@ def test_labs_get():
 
 def test_conflicts_get():
     """Checks that conflicts method returns correct list"""
-    c1 = Conflict(1, [1])
-    c2 = Conflict(1, [1])
+    c1 = Conflict(ConflictType.AVAILABILITY, [1])
+    c2 = Conflict(ConflictType.AVAILABILITY, [1])
     assert c1 in Schedule.conflicts()
     assert c2 in Schedule.conflicts()
 
