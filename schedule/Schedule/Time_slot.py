@@ -3,7 +3,8 @@
 from __future__ import annotations
 import re
 from warnings import warn
-from ScheduleEnums import WeekDay, WeekDayNumber
+# from ScheduleEnums import WeekDay, WeekDayNumber
+import ScheduleEnums
 
 from database.PonyDatabaseConnection import TimeSlot as dbTimeSlot
 from pony.orm import *
@@ -31,7 +32,7 @@ class TimeSlot:
     # =================================================================
     # __instances: dict[int, TimeSlot] = {}
     MAX_HOUR_DIV = 2
-    DEFAULT_DAY = WeekDay.Monday.value
+    DEFAULT_DAY = ScheduleEnums.WeekDay.Monday.value
     DEFAULT_START = "8:00"
     DEFAULT_DURATION = 1.5
 
@@ -39,7 +40,7 @@ class TimeSlot:
     # Constructor
     # =================================================================
 
-    def __init__(self, day: (WeekDay | str) = DEFAULT_DAY,
+    def __init__(self, day: (ScheduleEnums.WeekDay | str) = DEFAULT_DAY,
                  start: str = DEFAULT_START,
                  duration: float = DEFAULT_DURATION,
                  movable: bool = True, *, id: int = None):
@@ -68,7 +69,7 @@ class TimeSlot:
         # day = TimeSlot.DEFAULT_DAY
         self.__day_number: int = 0
         self.start_number: float = 0
-        self.day = WeekDay.validate(day)
+        self.day = ScheduleEnums.WeekDay.validate(day)
         self.start = start
         self.duration = duration
         self.movable = movable
@@ -105,15 +106,15 @@ class TimeSlot:
     @day.setter
     def day(self, new_day: str):
         try:
-            self.__day = WeekDay.validate(new_day)
-            self.__day_number = WeekDayNumber[self.__day].value
+            self.__day = ScheduleEnums.WeekDay.validate(new_day)
+            self.__day_number = ScheduleEnums.WeekDayNumber[self.__day].value
 
         # bad inputs, default to default_day
         except ValueError:
             warn(f"<{new_day}>: invalid day specified... setting to {TimeSlot.DEFAULT_DAY}",
                  UserWarning, stacklevel=2)
             self.__day = TimeSlot.DEFAULT_DAY
-            self.__day_number = WeekDayNumber[TimeSlot.DEFAULT_DAY].value
+            self.__day_number = ScheduleEnums.WeekDayNumber[TimeSlot.DEFAULT_DAY].value
 
     # ====================================
     # start
@@ -126,7 +127,9 @@ class TimeSlot:
     @start.setter
     def start(self, new_value: str):
         if not re.match("^[12]?[0-9]:(00|15|30|45)$", str(new_value)):
-            print(f"<{new_value}>: invalid start time\nchanged to {TimeSlot.DEFAULT_START}")
+            warn(f"<{new_value}>: invalid start time\nchanged to {TimeSlot.DEFAULT_START}",
+                 UserWarning,
+                 stacklevel=2)
             new_value = TimeSlot.DEFAULT_START
 
         self.__start = new_value

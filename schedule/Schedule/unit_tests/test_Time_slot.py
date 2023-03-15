@@ -84,6 +84,14 @@ def test_start_setter():
     assert slot.start == new_start
 
 
+def test_start_setter_warning():
+    """Verifies that start setter raises a warning when presented with an invalid input."""
+    slot = TimeSlot()
+    bad_start = "foo"
+    with pytest.warns(UserWarning, match="invalid start time"):
+        slot.start = bad_start
+
+
 @db_session
 def test_end_default():
     """Verifies that a TimeSlot with default values with have an end of '9:30'."""

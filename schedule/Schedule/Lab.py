@@ -1,8 +1,12 @@
 from __future__ import annotations
 import Block
-import LabUnavailableTime
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    import LabUnavailableTime
+    import Schedule
 import Time_slot
-import Schedule
+# import Schedule
 from ScheduleEnums import WeekDay
 
 from database.PonyDatabaseConnection import Lab as dbLab, TimeSlot as dbTimeSlot
@@ -85,7 +89,7 @@ class Lab:
         return self
 
     @db_session
-    def __add_entity_unavailable(self, instance: Time_slot.TimeSlot):
+    def __add_entity_unavailable(self, instance: LabUnavailableTime.LabUnavailableTime):
         """Links the passed TimeSlot's entity to this Lab's corresponding entity in the database."""
         # TODO: Refactor me once db LabUnavailableTime has been implemented.
         entity_lab = dbLab.get(id=self.id)

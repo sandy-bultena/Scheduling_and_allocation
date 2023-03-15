@@ -1,8 +1,10 @@
 from __future__ import annotations
 import Time_slot
-import Schedule
 from ScheduleEnums import WeekDay
 from pony.orm import *
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    import Schedule
 
 
 class LabUnavailableTime(Time_slot.TimeSlot):
