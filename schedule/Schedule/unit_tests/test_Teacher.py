@@ -240,8 +240,7 @@ def test_remove_ignores_database():
     d_teachers = select(t for t in dbTeacher)
     teachers = list(d_teachers)
     a_teachers = Teacher.list()
-    assert len(teachers) == 1 and teachers[0].first_name == teach.firstname \
-           and teachers[0].last_name == teach.lastname and len(a_teachers) == 0
+    assert len(teachers) == 1 and teachers[0].first_name == teach.firstname and teachers[0].last_name == teach.lastname and len(a_teachers) == 0
 
 
 def test_disjoint_true():

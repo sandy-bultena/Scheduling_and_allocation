@@ -53,7 +53,7 @@ class Block(TimeSlot):
     # Constructor
     # =================================================================
 
-    def __init__(self, day: str, start: str, duration: float, number: int, movable: bool = True, *, id: int = None,
+    def __init__(self, day: str | WeekDay, start: str, duration: float, number: int, movable: bool = True, *, id: int = None,
                  time_slot_id: int = None) -> None:
         """Creates a new Block object.
         
@@ -66,6 +66,7 @@ class Block(TimeSlot):
         if (id and not time_slot_id) or (time_slot_id and not id):
             raise ValueError("Error: id and time_slot_id must be both defined or neither defined")
 
+        if isinstance(day, str) and len(day) == 3: day = day.lower()
         day = WeekDay.validate(day)
         super().__init__(day, start, duration, movable, id=time_slot_id)
         self.number = number  # NOTE: Based on the code found in CSV.pm and Section.pm

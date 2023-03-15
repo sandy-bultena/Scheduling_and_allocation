@@ -219,7 +219,7 @@ def test_snap_to_day_with_args():
 def test_conflicts_time():
     """Verifies that conflicts_time works as intended."""
     slot1 = TimeSlot()
-    slot2 = TimeSlot("monday", "9:00")
+    slot2 = TimeSlot("mon", "9:00")
     assert slot1.conflicts_time(slot2) is True
 
 
