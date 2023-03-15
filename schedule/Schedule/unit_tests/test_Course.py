@@ -255,8 +255,8 @@ def test_delete():
     """Verifies that delete() will remove all Sections from the Course, and remove the Course
     from the backend list of Courses. """
     course = Course(1)
-    section_1 = Section("420", id=1)
-    section_2 = Section("555", id=2)
+    section_1 = Section("420", id=1, course=course)
+    section_2 = Section("555", id=2, course=course)
     course.add_section(section_1)
     course.add_section(section_2)
     course.delete()
@@ -289,8 +289,8 @@ def test_remove_ignores_database():
 def test_sections():
     """Verifies that sections() returns a list of all the Sections assigned to this Course."""
     course = Course(1)
-    section_1 = Section("420", id=1)
-    section_2 = Section("555", id=2)
+    section_1 = Section("420", id=1, course=course)
+    section_2 = Section("555", id=2, course=course)
     course.add_section(section_1)
     course.add_section(section_2)
     sections = course.sections()
@@ -301,8 +301,8 @@ def test_number_of_sections():
     """Verifies that number_of_sections() correctly returns the number of Sections assigned
     to this Course. """
     course = Course(1)
-    section_1 = Section("420", id=1)
-    section_2 = Section("555", id=2)
+    section_1 = Section("420", id=1, course=course)
+    section_2 = Section("555", id=2, course=course)
     course.add_section(section_1)
     course.add_section(section_2)
     assert course.number_of_sections() == len(course.sections())
@@ -312,7 +312,7 @@ def test_sections_for_teacher():
     """Verifies that sections_for_teacher() returns a list of all sections featuring this
     teacher in this course. """
     course = Course(1)
-    section_1 = Section("420", id=1)
+    section_1 = Section("420", id=1, course=course)
     teach = Teacher("John", "Smith")
     section_1.assign_teacher(teach)
     course.add_section(section_1)
@@ -324,7 +324,7 @@ def test_sections_for_teacher_empty():
     """Verifies that sections_for_teacher() returns an empty list if no Teacher has been
     assigned to the Course. """
     course = Course(1)
-    section_1 = Section("420", id=1)
+    section_1 = Section("420", id=1, course=course)
     teach = Teacher("John", "Smith")
     course.add_section(section_1)
     teach_sections = course.sections_for_teacher(teach)
@@ -335,9 +335,9 @@ def test_max_section_number():
     """Verifies that max_section_number() returns the highest number of all the Sections
     assigned to this Course. """
     course = Course(1)
-    section_1 = Section("420", id=1)
-    section_2 = Section("500", id=2)
-    section_3 = Section("120", id=3)
+    section_1 = Section("420", id=1, course=course)
+    section_2 = Section("500", id=2, course=course)
+    section_3 = Section("120", id=3, course=course)
     course.add_section(section_1)
     course.add_section(section_2)
     course.add_section(section_3)
@@ -356,7 +356,7 @@ def test_blocks_good():
     """Verifies that blocks() returns a list of all Blocks that have been assigned to this
     Course. """
     course = Course(1)
-    section = Section("420", id=1)
+    section = Section("420", id=1, course=course)
     block_1 = Block("mon", "9:30", 1.5, 1)
     block_2 = Block("wed", "9:30", 1.5, 2)
     section.add_block(block_1, block_2)
@@ -369,7 +369,7 @@ def test_blocks_bad():
     """Verifies that blocks() returns an empty list when the Sections of this Course contain
     no Blocks. """
     course = Course(1)
-    section = Section("420", id=1)
+    section = Section("420", id=1, course=course)
     course.add_section(section)
     blocks = course.blocks()
     assert len(blocks[0]) == 0
@@ -379,7 +379,7 @@ def test_section():
     """Verifies that section() returns the correct Section when receiving a valid number."""
     course = Course(1)
     course_num = "420"
-    section = Section(course_num, id=1)
+    section = Section(course_num, id=1, course=course)
     course.add_section(section)
     assert course.section(course_num) == section
 
@@ -387,18 +387,18 @@ def test_section():
 def test_section_bad():
     """Verifies that section() returns nothing when receiving an invalid section number."""
     course = Course(1)
-    section = Section("420", id=1)
+    section = Section("420", id=1, course=course)
     course.add_section(section)
     bad_num = "555"
     assert course.section(bad_num) is None
 
 
 def test_str_representation_full():
-    """Verifies that the string representation returns a detailed string containing information on the Course,
-    its Sections, its Blocks, its Teachers, and its Labs."""
+    """Verifies that the string representation returns a detailed string containing information
+    on the Course, its Sections, its Blocks, its Teachers, and its Labs. """
     course = Course(1, "Course 1")
     block = Block("mon", "8:30", 1.5, 1)
-    section = Section("420", 1.5, "Section 1", id=1)
+    section = Section("420", 1.5, "Section 1", id=1, course=course)
     lab = Lab("R-101", "Worst place in the world")
     teacher = Teacher("John", "Smith")
     block.assign_lab(lab)
