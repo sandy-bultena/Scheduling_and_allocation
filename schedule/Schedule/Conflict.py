@@ -1,9 +1,10 @@
 from __future__ import annotations
+from typing import TYPE_CHECKING
 import sys
 from os import path
 from ScheduleEnums import ViewType, ConflictType
 sys.path.append(path.dirname(path.dirname(__file__)))
-import Block
+if TYPE_CHECKING: import Block
 # NOTE: using an enum will impact ViewBase.py when it is coded
 
 # TODO:  Evaluate if we even need to keep a list of conflict objects, since the conflict numbers
@@ -38,13 +39,15 @@ class Conflict:
     # ========================================================
     # CONSTRUCTOR
     # ========================================================
-    def __init__(self, type: ConflictType, blocks: list):
+    def __init__(self, type: ConflictType, blocks: list[Block.Block]):
         """
         Creates an instance of the Conflict class.
         - Parameter type -> defines the type of conflict.
         - Parameter blocks -> defines the list of blocks involved in the conflict.
         """
         if not isinstance(type, ConflictType) or not blocks: raise TypeError("Bad inputs")
+
+        if isinstance(blocks, tuple) or isinstance(blocks, set): blocks = list(blocks)
 
         self.type = type
         self.blocks = blocks.copy()  # if list is changed, the Conflict won't be
