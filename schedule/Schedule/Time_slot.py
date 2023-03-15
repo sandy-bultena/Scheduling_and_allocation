@@ -1,5 +1,5 @@
 # IF IMPORTING TIMESLOT AND BLOCK, ALWAYS IMPORT BLOCK FIRST
-    # If importing other packages that import Block, import them first or import Block explicitly
+# If importing other packages that import Block, import them first or import Block explicitly
 from __future__ import annotations
 import re
 from warnings import warn
@@ -29,7 +29,7 @@ class TimeSlot:
     # =================================================================
     # Class/Global Variables
     # =================================================================
-    __instances : dict[int, TimeSlot] = {}
+    # __instances: dict[int, TimeSlot] = {}
     MAX_HOUR_DIV = 2
     DEFAULT_DAY = WeekDay.Monday.value
     DEFAULT_START = "8:00"
@@ -42,7 +42,7 @@ class TimeSlot:
     def __init__(self, day: (WeekDay | str) = DEFAULT_DAY,
                  start: str = DEFAULT_START,
                  duration: float = DEFAULT_DURATION,
-                 movable : bool = True, *, id: int = None):
+                 movable: bool = True, *, id: int = None):
         """
         Creates a new TimeSlot object.
 
@@ -66,8 +66,8 @@ class TimeSlot:
         # NOTE: Doing this so that day_number will also be set
         #       The order that these are implemented is important
         # day = TimeSlot.DEFAULT_DAY
-        self.__day_number : int = 0
-        self.start_number : float = 0
+        self.__day_number: int = 0
+        self.start_number: float = 0
         self.day = WeekDay.validate(day)
         self.start = start
         self.duration = duration
@@ -75,8 +75,8 @@ class TimeSlot:
 
         # TODO: Remove this. We are giving each of TimeSlot's children the individual responsibility
         # to assign their own IDs, and we aren't tracking TimeSlot ID anymore.
-        self.__id = id if id else TimeSlot.__create_entity(self)
-        TimeSlot.__instances[self.__id] = self
+        # self.__id = id if id else TimeSlot.__create_entity(self)
+        # TimeSlot.__instances[self.__id] = self
 
     @db_session
     @staticmethod
@@ -89,10 +89,10 @@ class TimeSlot:
     # ====================================
     # id
     # ====================================
-    @property
-    def id(self) -> int:
-        """Returns the unique ID for this TimeSlot object."""
-        return self.__id
+    # @property
+    # def id(self) -> int:
+    #     """Returns the unique ID for this TimeSlot object."""
+    #     return self.__id
 
     # ====================================
     # day
@@ -154,7 +154,7 @@ class TimeSlot:
         return self.__duration
 
     @duration.setter
-    def duration(self, new_dur : float):
+    def duration(self, new_dur: float):
         if .25 > new_dur > 0:
             new_dur = .5
         else:
@@ -295,11 +295,13 @@ class TimeSlot:
 
     @staticmethod
     def list() -> tuple[TimeSlot]:
-        return tuple(TimeSlot.__instances.values())
+        # return tuple(TimeSlot.__instances.values())
+        pass
 
     @staticmethod
     def get(id: int) -> TimeSlot:
-        return TimeSlot.__instances.get(id)
+        # return TimeSlot.__instances.get(id)
+        pass
 
     # =================================================================
     # save
@@ -309,14 +311,17 @@ class TimeSlot:
         """Saves this TimeSlot to the database, updating its corresponding record.
 
         Returns the corresponding TimeSlot database entity."""
-        d_slot = dbTimeSlot.get(
-            id=self.__id)  # use the __id so it refers to the time slot's ID correctly, not block ID (when relevant)
-        if not d_slot: d_slot = dbTimeSlot(day=self.day, duration=self.duration, start=self.start)
-        d_slot.day = self.day
-        d_slot.duration = self.duration
-        d_slot.start = self.start
-        d_slot.movable = self.movable
-        return d_slot
+        # TODO: Make this an abstract method, or just replace with "pass". Let the child classes
+        #  implement this.
+        # d_slot = dbTimeSlot.get(
+        #     id=self.__id)  # use the __id so it refers to the time slot's ID correctly, not block ID (when relevant)
+        # if not d_slot: d_slot = dbTimeSlot(day=self.day, duration=self.duration, start=self.start)
+        # d_slot.day = self.day
+        # d_slot.duration = self.duration
+        # d_slot.start = self.start
+        # d_slot.movable = self.movable
+        # return d_slot
+        pass
 
     # =================================================================
     # reset

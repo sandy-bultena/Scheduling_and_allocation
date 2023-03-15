@@ -41,3 +41,43 @@ class LabUnavailableTime(Time_slot.TimeSlot):
     def id(self):
         """Returns the unique ID for this LabUnavailableTime object."""
         return self.__id
+
+    # ====================================
+    # delete
+    # ====================================
+    def delete(self):
+        """Removes this LabUnavailableTime object from the application and deletes its
+        corresponding database record. """
+        if self in LabUnavailableTime.__instances.values():
+            LabUnavailableTime.__delete_entity(self)
+            del LabUnavailableTime.__instances[self.id]
+
+    @db_session
+    @staticmethod
+    def __delete_entity(instance: LabUnavailableTime):
+        """Removes the corresponding record of a passed LabUnavailableTime from the database."""
+        # TODO: Implement me once the database LabUnavailableTime has been created.
+        pass
+
+    # ====================================
+    # save
+    # ====================================
+    @db_session
+    def save(self):
+        """Saves this LabUnavailableTime object to the database."""
+        # TODO: Implement me once the database LUT class is implemented.
+        pass
+
+    # ====================================
+    # list
+    # ====================================
+    @staticmethod
+    def list() -> tuple[LabUnavailableTime]:
+        return tuple(LabUnavailableTime.__instances.values())
+
+    # ====================================
+    # get
+    # ====================================
+    @staticmethod
+    def get(id: int) -> LabUnavailableTime:
+        return LabUnavailableTime.__instances.get(id)
