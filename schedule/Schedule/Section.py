@@ -1,6 +1,6 @@
 from __future__ import annotations
 import Course
-from Stream import Stream
+import Stream
 import Teacher
 import Block
 import Lab
@@ -66,7 +66,7 @@ class Section:
         self._teachers: dict[int, Teacher.Teacher] = {}
         self._allocation: dict[int, float] = {}
 
-        self._streams: dict[int, Stream] = {}
+        self._streams: dict[int, Stream.Stream] = {}
         self._blocks: dict[int, Block.Block] = {}
 
         self.name = name
@@ -214,7 +214,7 @@ class Section:
     # streams
     # --------------------------------------------------------
     @property
-    def streams(self) -> tuple[Stream]:
+    def streams(self) -> tuple[Stream.Stream]:
         """ Gets all streams in this section """
         return tuple(self._streams.values())
 
@@ -380,13 +380,13 @@ class Section:
     # --------------------------------------------------------
     # assign_stream
     # --------------------------------------------------------
-    def assign_stream(self, *streams: Stream) -> Section:
+    def assign_stream(self, *streams: Stream.Stream) -> Section:
         """
         Assign streams to this section.
         - Parameter streams -> The stream(s) to be added. Streams can be added all at once
         """
         for s in streams:
-            if not isinstance(s, Stream): raise TypeError(
+            if not isinstance(s, Stream.Stream): raise TypeError(
                 f"{s}: invalid stream - must be a Stream object")
             self._streams[s.id] = (s)
         return self
@@ -394,12 +394,12 @@ class Section:
     # --------------------------------------------------------
     # remove_stream
     # --------------------------------------------------------
-    def remove_stream(self, stream: Stream) -> Section:
+    def remove_stream(self, stream: Stream.Stream) -> Section:
         """
         Remove stream from this section.
         - Parameter stream -> The stream to remove.
         """
-        if not isinstance(stream, Stream): raise TypeError(
+        if not isinstance(stream, Stream.Stream): raise TypeError(
             f"{stream}: invalid stream - must be a Stream object")
         if stream.id in self._streams: del self._streams[stream.id]
         return self
@@ -407,12 +407,12 @@ class Section:
     # --------------------------------------------------------
     # has_stream
     # --------------------------------------------------------
-    def has_stream(self, stream: Stream) -> bool:
+    def has_stream(self, stream: Stream.Stream) -> bool:
         """
         Check if a section has a stream
         - Parameter stream -> The stream to check
         """
-        if not isinstance(stream, Stream): raise TypeError(
+        if not isinstance(stream, Stream.Stream): raise TypeError(
             f"{stream}: invalid stream - must be a Stream object")
         if not stream: return False
         return len(list(filter(lambda a: a.id == stream.id, self.streams))) > 0
