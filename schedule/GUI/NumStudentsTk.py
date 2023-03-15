@@ -5,11 +5,19 @@ from os import path
 
 sys.path.append(path.dirname(path.dirname(__file__)))
 from Tk.scrolled import Scrolled
-
 from tkinter import *
-import PerlLib.Colour as Colour
 
 
+"""
+Display and update student numbers for a set of semesters/courses/sectons
+
+Inputs: 
+    frame  -> the frame where you want this form to be inserted
+    data: NumStudentsData -> the data to be displayed (see example for how to construct the data)
+
+Notes:
+    will insert scrollbars
+     
 def example():
     # setting up the data
     data = NumStudentsData()
@@ -21,52 +29,54 @@ def example():
             semester.courses.append(course)
             for section_name in ("1", "2"):
                 section = NumStudentsDataSection(name=section_name, num_students=10)
-
-                # function to validate and save the data when changed in the gui
-                def validate(entry_input: str):
-                    if entry_input.isdigit():
-                        section.num_students = int(entry_input)
-                        print(data)
-                        return True
-                    elif entry_input == "":
-                        section.num_students = 0
-                        print(data)
-                        return True
-                    else:
-                        return False
-
-                section.data_validate = validate
+                section.data_validate = validate_factory(data, section)
                 course.sections.append(section)
 
-    print_data(data)
-
     mw = Tk()
-    frame = Frame(mw)
-    frame.pack()
-    gui=NumStudentsTk(frame, (sem.name for sem in data.semesters))
-    gui.refresh(data)
+    frame = Frame(mw, bg='blue', border=4, relief=RIDGE)
+    frame.pack(expand=1, fill=BOTH)
+    NumStudentsTk(frame, data)
     mw.mainloop()
 
 
-def print_data(data):
-    for semester in data.semesters:
-        print(semester.name)
-        for course in semester.courses:
-            print(semester.name, course.name)
-            for section in course.sections:
-                print(semester.name, course.name,section.name, section.num_students)
+def validate_factory(data, section):
+    def validate(entry_input: str):
+        if entry_input.isdigit():
+            section.num_students = int(entry_input)
+            return True
+        elif entry_input == "":
+            section.num_students = 0
+            return True
+        else:
+            return False
+
+    return validate
+
+"""
 
 
+# #################################################################################################
+# Class to allow users to update student numbers for each section in each course for each semester
+# #################################################################################################
 class NumStudentsTk:
-    """Displays all course/sections/student_numbers for each semester"""
+    """Displays and allows updates for all course/sections/student_numbers for each semester"""
 
-    def __init__(self, frame, semesters: list[str]):
+    # ============================================================================================
+    # constructor
+    # ============================================================================================
+    def __init__(self, frame, data: NumStudentsData = None):
         """creates the Panes for each semester"""
+
         panes = dict()
         self.root = frame
 
+        # ----------------------------------------------------------------------------------------
         # make as many panes as there are semesters
-        for col, semester in enumerate(semesters):
+        # ----------------------------------------------------------------------------------------
+        for col, semester in enumerate(data.semesters):
+            # set up the weight for each column
+            frame.columnconfigure(col, weight=1);
+
             f = Scrolled(
                 self.root,
                 "Frame",
@@ -75,62 +85,101 @@ class NumStudentsTk:
                 relief=FLAT,
             )
             f.grid(column=col, row=0, sticky="nsew")
-            f.columnconfigure(col, weight=1);
-
-            panes[semester] = f.widget
-    #        Label(f,text=semester).pack()
+            panes[semester.name] = f
 
         frame.rowconfigure(0, weight=1);
         self.panes = panes
 
+        # ----------------------------------------------------------------------------------------
+        # put data into widget
+        # ----------------------------------------------------------------------------------------
+        self.refresh(data)
+
+    # ============================================================================================
+    # refresh - update the info (assumes same number of semesters!
+    # ============================================================================================
     def refresh(self, data: NumStudentsData = None):
         """ Refreshes all the information"""
+
         if data is None: return
 
+        # ----------------------------------------------------------------------------------------
         # loop over semesters
+        # ----------------------------------------------------------------------------------------
         for col, semester in enumerate(data.semesters):
-            pane = self.panes[semester.name]
-            if pane is None: continue
+            pane = self.panes[semester.name].widget
+            if pane is None: break
 
+            # layout
+            pane.columnconfigure(1, weight=2);
+            pane.columnconfigure(0, weight=1);
+
+            # ----------------------------------------------------------------------------------------
+            # remove all widgets in the semester pane
+            # ----------------------------------------------------------------------------------------
+            for w in pane.winfo_children():
+                w.destroy()
+
+            # ----------------------------------------------------------------------------------------
+            # add titles to the panes
+            # ----------------------------------------------------------------------------------------
+            Label(pane,
+                  text=semester.name,
+                  anchor='center',
+                  ).grid(column=0, row=0, columnspan=2, sticky='nsew')
+
+            # ----------------------------------------------------------------------------------------
             # loop over courses
-            row = 0
+            # ----------------------------------------------------------------------------------------
+            row = 1
             for course in sorted(semester.courses):
                 Label(pane,
                       text=course.name,
                       anchor=W,
                       width=40
-                      ).grid(column=col,row=row, columnspan=2, sticky='nsew')
+                      ).grid(column=0, row=row, columnspan=2, sticky='nsew')
                 row = row + 1
 
+                # ----------------------------------------------------------------------------------------
                 # for each section in a course
+                # ----------------------------------------------------------------------------------------
                 for section in sorted(course.sections):
                     Label(pane,
                           width=4,
                           text=section.name,
-                          anchor=E
+                          anchor=E,
                           ).grid(column=0, row=row, sticky="nsew")
 
                     reg = self.root.register(section.data_validate)
+                    tv = StringVar(value=section.num_students)
                     entry = Entry(pane,
-                                  text=str(section.num_students),
                                   justify='right',
                                   validate='key',
+                                  textvariable=tv,
                                   validatecommand=(reg, '%P'),
                                   invalidcommand=self.root.register(pane.bell),
                                   width=8
                                   )
                     entry.grid(column=1, row=row, sticky='nw')
-                    # entry.bind("<Return>", entry.focusNext)
-                    # entry.bind("FocisIn>", pane.see(entry))
 
+                    # ----------------------------------------------------------------------------------------
+                    # bind <Return> to go to the next entry widget
+                    # bind <FocusIn> to automatically scroll so you can see the widget
+                    # ----------------------------------------------------------------------------------------
+                    entry.bind("<Return>", lambda e: e.widget.tk_focusNext().focus())
+                    entry.bind("<FocusIn>", lambda e, p=self.panes[semester.name]: p.see_widget(e.widget))
                     row = row + 1
 
+
+# ============================================================================================================
+# Data classes to define the structure of data expected by this form
+# ============================================================================================================
 
 @dataclass
 class NumStudentsDataSection:
     name: str
     num_students: int
-    data_validate: callable = None
+    data_validate: callable # a function that validates the input into an entry widget
 
     def __lt__(self, obj):
         return self.name < obj.name
