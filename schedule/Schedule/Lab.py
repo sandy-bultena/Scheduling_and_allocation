@@ -2,6 +2,7 @@ from __future__ import annotations
 import Block
 
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     import LabUnavailableTime
     import Schedule
@@ -21,6 +22,7 @@ from pony.orm import *
     lab.add_unavailable(day = "Mon", start = "3:22", duration = 5)
 """
 
+
 class Lab:
     """
     Describes a distinct, contiguous course/section/class.
@@ -32,7 +34,7 @@ class Lab:
     desc: str
         The description of the Lab.
     """
-    __instances : dict[int, Lab] = {}
+    __instances: dict[int, Lab] = {}
 
     # -------------------------------------------------------------------
     # new
@@ -194,7 +196,7 @@ class Lab:
     # share_blocks
     # =================================================================
     @staticmethod
-    def share_blocks(block1 : Block.Block, block2 : Block.Block) -> bool:
+    def share_blocks(block1: Block.Block, block2: Block.Block) -> bool:
         """Checks whether there are Labs which share the two specified Blocks."""
 
         # Count occurrences in both sets and ensure that all values are < 2
@@ -252,7 +254,7 @@ class Lab:
     @db_session
     def save(self) -> dbLab:
         """Saves this Lab in the database, updating its corresponding Lab entity."""
-        d_lab : dbLab = dbLab.get(id=self.id)
+        d_lab: dbLab = dbLab.get(id=self.id)
         if not d_lab: d_lab = dbLab(number=self.number)
         d_lab.number = self.number
         d_lab.description = self.descr

@@ -1,11 +1,12 @@
 from __future__ import annotations
 from Time_slot import TimeSlot
-from Lab import Lab
+import Lab
 import Section
 import Teacher
 from ScheduleEnums import WeekDay
 
-from database.PonyDatabaseConnection import Block as dbBlock, TimeSlot as dbTimeSlot, Lab as dbLab, \
+from database.PonyDatabaseConnection import Block as dbBlock, \
+    TimeSlot as dbTimeSlot, Lab as dbLab, \
     Teacher as dbTeacher, Section as dbSection
 from pony.orm import *
 
@@ -53,7 +54,8 @@ class Block(TimeSlot):
     # Constructor
     # =================================================================
 
-    def __init__(self, day: str | WeekDay, start: str, duration: float, number: int, movable: bool = True, *, id: int = None,
+    def __init__(self, day: str | WeekDay, start: str, duration: float, number: int,
+                 movable: bool = True, *, id: int = None,
                  time_slot_id: int = None) -> None:
         """Creates a new Block object.
         
@@ -72,7 +74,7 @@ class Block(TimeSlot):
         self.number = number  # NOTE: Based on the code found in CSV.pm and Section.pm
         self.__section = None
         self._teachers : dict[int, Teacher.Teacher] = dict()
-        self._labs = {}
+        self._labs: dict[int, Lab.Lab] = {}
         self._conflicted = 0
 
         self._block_id = id if id else Block.__create_entity(self)
@@ -220,10 +222,10 @@ class Block(TimeSlot):
     # =================================================================
     # assign_lab
     # =================================================================
-    def assign_lab(self, *args : Lab) -> Block:
+    def assign_lab(self, *args : Lab.Lab) -> Block:
         """Assign a lab, or labs, to this block"""
         for lab in args:
-            if not isinstance(lab, Lab):
+            if not isinstance(lab, Lab.Lab):
                 raise TypeError(f"<{lab}>: invalid lab - must be a Lab object.")
 
             self._labs[lab.id] = lab
@@ -243,12 +245,12 @@ class Block(TimeSlot):
     # =================================================================
     # remove_lab
     # =================================================================
-    def remove_lab(self, lab: Lab) -> Block:
+    def remove_lab(self, lab: Lab.Lab) -> Block:
         """Removes the specified Lab from this Block.
 
         Returns the Block object."""
 
-        if not isinstance(lab, Lab):
+        if not isinstance(lab, Lab.Lab):
             raise TypeError(f"<{lab}>: invalid lab - must be a Lab object.")
 
         # If the labs dict contains an entry for the specified Lab, remove it.
@@ -285,16 +287,16 @@ class Block(TimeSlot):
     # =================================================================
     # labs
     # =================================================================
-    def labs(self) -> tuple[Lab]:
-        """Returns a list of the labs assigned to this block."""
+    def labs(self) -> tuple[Lab.Lab]:
+        """Returns an immutable list of the labs assigned to this block."""
         return tuple(self._labs.values())
 
     # =================================================================
     # has_lab
     # =================================================================
-    def has_lab(self, lab: Lab) -> bool:
+    def has_lab(self, lab: Lab.Lab) -> bool:
         """Returns true if the Block has the specified Lab."""
-        if not lab or not isinstance(lab, Lab):
+        if not lab or not isinstance(lab, Lab.Lab):
             return False
         return lab.id in self._labs
 
@@ -531,9 +533,9 @@ class Block(TimeSlot):
         if not d_block: d_block = dbBlock(number=self.number, time_slot_id=d_slot)
         d_block.time_slot_id = d_slot
 
-        # theoretically this shouldn't need to be done, since the relationship is added in the add methods
-        # however, it can cause inconsistency issues if the lab/teacher stops existing in the DB but still
-        # exists locally
+        # theoretically this shouldn't need to be done, since the relationship is added in the
+        # add methods however, it can cause inconsistency issues if the lab/teacher stops
+        # existing in the DB but still exists locally
         # (which shouldn't happen, but for example does when switching DBs in testing)
         # essentially just safer to define the relationship again
 
