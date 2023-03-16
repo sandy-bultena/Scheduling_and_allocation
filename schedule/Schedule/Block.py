@@ -48,7 +48,7 @@ class Block(Time_slot.TimeSlot):
     # =================================================================
 
     _DEFAULT_DAY = 'mon'
-    __instances : dict[int, Block] = {}
+    __instances: dict[int, Block] = {}
 
     # =================================================================
     # Constructor
@@ -64,14 +64,14 @@ class Block(Time_slot.TimeSlot):
         - Parameter duration: float -> how long does this class last, in hours
         - Parameter number: int -> A number representing this specific Block.
         """
-        self._sync : list[Block] = list()
+        self._sync: list[Block] = list()
 
         if isinstance(day, str) and len(day) == 3: day = day.lower()
         day = WeekDay.validate(day)
         super().__init__(day, start, duration, movable)
         self.number = number  # NOTE: Based on the code found in CSV.pm and Section.pm
         self.__section = None
-        self._teachers : dict[int, Teacher.Teacher] = dict()
+        self._teachers: dict[int, Teacher.Teacher] = dict()
         self._labs: dict[int, Lab.Lab] = {}
         self._conflicted = 0
 
@@ -81,7 +81,8 @@ class Block(Time_slot.TimeSlot):
     @db_session
     @staticmethod
     def __create_entity(instance: Block):
-        entity_block = dbBlock(time_slot_id=instance.time_id, number=instance.number)
+        entity_block = dbBlock(day=instance.day, duration=instance.duration, start=instance.start,
+                               movable=instance.movable, number=instance.number)
         commit()
         return entity_block.get_pk()
 
@@ -133,11 +134,11 @@ class Block(Time_slot.TimeSlot):
         TimeSlot tables of the database. """
         entity_block = dbBlock.get(id=instance.id)
         if entity_block is not None: entity_block.delete()
-            # Contrary to what you might expect, entity_block.time_slot_id is a TimeSlot entity
-            # reference, not an integer.
-            #entity_slot: dbTimeSlot = entity_block.time_slot_id
-            # Deleting the instance's TimeSlot entity will cascade delete its Block entity too.
-            #entity_slot.delete()
+        # Contrary to what you might expect, entity_block.time_slot_id is a TimeSlot entity
+        # reference, not an integer.
+        # entity_slot: dbTimeSlot = entity_block.time_slot_id
+        # Deleting the instance's TimeSlot entity will cascade delete its Block entity too.
+        # entity_slot.delete()
 
     # =================================================================
     # start
@@ -214,7 +215,7 @@ class Block(Time_slot.TimeSlot):
     # =================================================================
     # assign_lab
     # =================================================================
-    def assign_lab(self, *args : Lab.Lab) -> Block:
+    def assign_lab(self, *args: Lab.Lab) -> Block:
         """Assign a lab, or labs, to this block"""
         for lab in args:
             if not isinstance(lab, Lab.Lab):
@@ -295,7 +296,7 @@ class Block(Time_slot.TimeSlot):
     # =================================================================
     # assign_teacher
     # =================================================================
-    def assign_teacher(self, *args : Teacher.Teacher) -> Block:
+    def assign_teacher(self, *args: Teacher.Teacher) -> Block:
         """Assigns a new teacher, or new teachers to this Block.
         
         Returns the Block object."""
@@ -321,7 +322,7 @@ class Block(Time_slot.TimeSlot):
     # =================================================================
     # remove_teacher
     # =================================================================
-    def remove_teacher(self, teacher : Teacher.Teacher) -> Block:
+    def remove_teacher(self, teacher: Teacher.Teacher) -> Block:
         """Removes the specified Teacher from this Block.
         
         Returns the Block object."""
@@ -367,7 +368,7 @@ class Block(Time_slot.TimeSlot):
     # =================================================================
     # has_teacher
     # =================================================================
-    def has_teacher(self, teacher : Teacher.Teacher) -> bool:
+    def has_teacher(self, teacher: Teacher.Teacher) -> bool:
         """Returns True if this Block has the specified Teacher."""
         if not teacher or not isinstance(teacher, Teacher.Teacher):
             return False
@@ -386,7 +387,7 @@ class Block(Time_slot.TimeSlot):
     # =================================================================
     # sync_block
     # =================================================================
-    def sync_block(self, block : Block) -> Block:
+    def sync_block(self, block: Block) -> Block:
         """The new Block object will be synced with this one 
         (i.e., changing the start time of this Block will change the start time of the
         synched block).
@@ -401,7 +402,7 @@ class Block(Time_slot.TimeSlot):
     # =================================================================
     # unsync_block
     # =================================================================
-    def unsync_block(self, block : Block) -> Block:
+    def unsync_block(self, block: Block) -> Block:
         """Removes syncing of Block from this Block.
         
         Returns this Block object."""
@@ -519,11 +520,16 @@ class Block(Time_slot.TimeSlot):
     # =================================================================
     @db_session
     def save(self) -> dbBlock:
-        d_slot = super().save()
+        # d_slot = super().save()
         flush()
-        d_block : dbBlock = dbBlock.get(id=self.id)
-        if not d_block: d_block = dbBlock(number=self.number, time_slot_id=d_slot)
-        d_block.time_slot_id = d_slot
+        d_block: dbBlock = dbBlock.get(id=self.id)
+        if not d_block: d_block = dbBlock(day=self.day, start=self.start, duration=self.duration,
+                                          number=self.number)
+        # d_block.time_slot_id = d_slot
+        d_block.day = self.day
+        d_block.start = self.start
+        d_block.duration = self.duration
+        d_block.movable = self.movable
 
         # theoretically this shouldn't need to be done, since the relationship is added in the
         # add methods however, it can cause inconsistency issues if the lab/teacher stops

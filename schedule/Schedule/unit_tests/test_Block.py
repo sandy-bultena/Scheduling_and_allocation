@@ -12,7 +12,7 @@ from Time_slot import TimeSlot
 from Course import Course
 from pony.orm import *
 from database.PonyDatabaseConnection import define_database, Block as dbBlock, \
-    TimeSlot as dbTimeSlot, Lab as dbLab, Teacher as dbTeacher, Scenario as dbScenario, \
+    Lab as dbLab, Teacher as dbTeacher, Scenario as dbScenario, \
     Schedule as dbSchedule, Course as dbCourse, Section as dbSection
 from unit_tests.db_constants import *
 from ScheduleEnums import WeekDay
@@ -953,8 +953,8 @@ def test_save_simple():
     block.start = "9:30"
     block.duration = 3.0
     d_block = block.save()
-    d_slot = d_block.time_slot_id
-    assert d_block.id == block.id and d_slot.day == block.day \
-        and d_slot.start == block.start \
-        and d_slot.duration == block.duration
+    commit()
+    assert d_block.id == block.id and d_block.day == block.day \
+        and d_block.start == block.start \
+        and d_block.duration == block.duration
 

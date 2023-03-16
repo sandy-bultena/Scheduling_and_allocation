@@ -9,9 +9,8 @@ from Schedule import Schedule
 from Lab import Lab
 from LabUnavailableTime import LabUnavailableTime
 from Block import Block
-from Time_slot import TimeSlot
-from database.PonyDatabaseConnection import define_database, Lab as dbLab, TimeSlot as dbTimeSlot, \
-    Schedule as dbSchedule, Scenario as dbScenario, LabUnavailableTime as dbUnavailableTime
+from database.PonyDatabaseConnection import define_database, Lab as dbLab, Schedule as dbSchedule, \
+    Scenario as dbScenario, LabUnavailableTime as dbUnavailableTime
 from pony.orm import *
 
 db: Database
