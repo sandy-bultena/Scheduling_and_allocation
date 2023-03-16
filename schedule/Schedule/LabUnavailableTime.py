@@ -73,10 +73,21 @@ class LabUnavailableTime(Time_slot.TimeSlot):
     # save
     # ====================================
     @db_session
-    def save(self):
-        """Saves this LabUnavailableTime object to the database."""
-        # TODO: Implement me once the database LUT class is implemented.
-        pass
+    def save(self) -> dbUnavailableTime:
+        """Saves this LabUnavailableTime object to the database.
+
+        Returns the corresponding LabUnavailableTime entity."""
+        # TODO: Consider passing in the Schedule as an argument.
+        d_time = dbUnavailableTime.get(id=self.id)
+        if not d_time:
+            d_sched = dbSchedule.get(id=self.schedule.id)
+            d_time = dbUnavailableTime(day=self.day, duration=self.duration, start=self.start,
+                                       schedule_id=d_sched)
+        d_time.day = self.day
+        d_time.duration = self.duration
+        d_time.start = self.start
+        d_time.movable = self.movable
+        return d_time
 
     # ====================================
     # list

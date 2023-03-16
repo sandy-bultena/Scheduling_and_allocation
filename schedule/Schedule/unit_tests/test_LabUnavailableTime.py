@@ -16,6 +16,7 @@ from ScheduleEnums import WeekDay
 db: Database
 s: dbSchedule
 
+
 @pytest.fixture(scope="module", autouse=True)
 def before_and_after_module():
     global db
@@ -100,3 +101,19 @@ def test_delete_updates_database():
     flush()
     db_times = dbUnavailableTime.select()
     assert len(db_times) == 0
+
+
+@db_session
+def test_save():
+    """Verifies that save() works as intended."""
+    sched = Schedule.read_DB(1)
+    unavailable = LabUnavailableTime("mon", "8:30", 2, schedule=sched)
+    flush()
+    new_start = "10:30"
+    new_duration = 1.5
+    unavailable.start = new_start
+    unavailable.duration = new_duration
+    d_unavailable = unavailable.save()
+    commit()
+    assert d_unavailable.start == new_start and d_unavailable.duration == new_duration
+
