@@ -15,6 +15,7 @@ from database.PonyDatabaseConnection import define_database, Lab as dbLab, TimeS
 from pony.orm import *
 
 db: Database
+s: dbSchedule
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -102,9 +103,9 @@ def test_add_unavailable():
     dur = 2.0
     lab = Lab()
     lab.add_unavailable(day, start, dur, schedule=sched)
-    slot = getattr(lab, '_unavailable')[1]
-    assert type(slot) is LabUnavailableTime and slot.day == day \
-           and slot.start == start and slot.duration == dur
+    time = getattr(lab, '_unavailable')[1]
+    assert type(time) is LabUnavailableTime and time.day == day \
+           and time.start == start and time.duration == dur
 
 
 @db_session
@@ -117,8 +118,8 @@ def test_add_unavailable_adds_to_db():
     lab = Lab()
     lab.add_unavailable(day, start, dur, schedule=sched)
     commit()
-    d_slots = select(s for s in dbUnavailableTime)
-    assert len(d_slots) == 1
+    d_times = select(t for t in dbUnavailableTime)
+    assert len(d_times) == 1
 
 
 def test_remove_unavailable_good():
@@ -155,25 +156,27 @@ def test_remove_unavailable_no_crash():
 def test_remove_unavailable_gets_database():
     """Verifies that remove_unavailable() will remove the TimeSlot's record from the database as
     well. """
+    sched = Schedule.read_DB(1)
     day = "mon"
     start = "8:30"
     dur = 2.0
     lab = Lab()
-    lab.add_unavailable(day, start, dur)
+    lab.add_unavailable(day, start, dur, schedule=sched)
     slot_id = getattr(lab, '_unavailable')[1].id
     lab.remove_unavailable(slot_id)
     commit()
-    d_slots = select(s for s in dbTimeSlot)
-    assert len(d_slots) == 0
+    d_times = select(s for s in dbUnavailableTime)
+    assert len(d_times) == 0
 
 
 def test_get_unavailable_good():
     """Verifies that get_unavailable() can retrieve a specified TimeSlot from the Lab."""
+    sched = Schedule.read_DB(1)
     day = "mon"
     start = "8:30"
     dur = 2.0
     lab = Lab()
-    lab.add_unavailable(day, start, dur)
+    lab.add_unavailable(day, start, dur, schedule=sched)
     slot_id = getattr(lab, '_unavailable')[1].id
     slot = lab.get_unavailable(slot_id)
     assert slot.id == slot_id and slot.start == start and slot.day == day and slot.duration == dur
@@ -182,11 +185,12 @@ def test_get_unavailable_good():
 def test_get_unavailable_bad_input():
     """Verifies that get_unavailable returns None when trying to retrieve a nonexistent TimeSlot
     from the Lab. """
+    sched = Schedule.read_DB(1)
     day = "mon"
     start = "8:30"
     dur = 2.0
     lab = Lab()
-    lab.add_unavailable(day, start, dur)
+    lab.add_unavailable(day, start, dur, schedule=sched)
     bad_id = 999
     no_slot = lab.get_unavailable(bad_id)
     assert no_slot is None
@@ -194,6 +198,7 @@ def test_get_unavailable_bad_input():
 
 def test_unavailable():
     """Verifies that unavailable() returns a list of all unavailable TimeSlots for this Lab."""
+    sched = Schedule.read_DB(1)
     day_1 = "mon"
     start_1 = "8:30"
     dur_1 = 2.0
@@ -201,10 +206,10 @@ def test_unavailable():
     start_2 = "10:00"
     dur_2 = 1.5
     lab = Lab()
-    lab.add_unavailable(day_1, start_1, dur_1)
-    lab.add_unavailable(day_2, start_2, dur_2)
-    slots = lab.unavailable()
-    assert len(slots) == 2 and slots[0].day == day_1 and slots[1].day == day_2
+    lab.add_unavailable(day_1, start_1, dur_1, schedule=sched)
+    lab.add_unavailable(day_2, start_2, dur_2, schedule=sched)
+    times = lab.unavailable()
+    assert len(times) == 2 and times[0].day == day_1 and times[1].day == day_2
 
 
 def test_unavailable_no_slots():

@@ -1,16 +1,16 @@
 from __future__ import annotations
-import Block
 
 from typing import TYPE_CHECKING
+
+import Block
 
 if TYPE_CHECKING:
     import Schedule
     import LabUnavailableTime
-import Time_slot
 # import Schedule
 from ScheduleEnums import WeekDay
 
-from database.PonyDatabaseConnection import Lab as dbLab, TimeSlot as dbTimeSlot
+from database.PonyDatabaseConnection import Lab as dbLab, LabUnavailableTime as dbUnavailableTime
 from pony.orm import *
 
 """ SYNOPSIS/EXAMPLE:
@@ -98,9 +98,9 @@ class Lab:
         """Links the passed TimeSlot's entity to this Lab's corresponding entity in the database."""
         # TODO: Refactor me once db LabUnavailableTime has been implemented.
         entity_lab = dbLab.get(id=self.id)
-        entity_slot = dbTimeSlot.get(id=instance.id)
-        if entity_lab and entity_slot:
-            entity_lab.unavailable_slots.add(entity_slot)
+        entity_time = dbUnavailableTime.get(id=instance.id)
+        if entity_lab and entity_time:
+            entity_lab.unavailable_slots.add(entity_time)
 
     # =================================================
     # remove_unavailable
@@ -122,9 +122,9 @@ class Lab:
     def __delete_unavailable_entity(self, slot_id: int):
         """Removes a LabUnavailableTime entity with the passed ID from the database."""
         # TODO: Refactor me once db LabUnavailableTime has been implemented.
-        entity_slot = dbTimeSlot.get(id=slot_id)
-        if entity_slot is not None:
-            entity_slot.delete()
+        entity_time = dbUnavailableTime.get(id=slot_id)
+        if entity_time is not None:
+            entity_time.delete()
 
     # =================================================================
     # get_unavailable
