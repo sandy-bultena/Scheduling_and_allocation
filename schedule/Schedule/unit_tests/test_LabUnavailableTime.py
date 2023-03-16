@@ -80,8 +80,20 @@ def test_constructor_updates_db():
 
 
 @db_session
+def test_id():
+    """Verifies that the ID assigned to a LabUnavailableTime object increments automatically."""
+    sched = Schedule.read_DB(1)
+    times = []
+    for x in range(5):
+        times.append(LabUnavailableTime(schedule=sched))
+        commit()
+    last_time = times[-1]
+    assert last_time.id == len(times)
+
+@db_session
 def test_delete():
     """Verifies that delete() works as intended."""
+    LabUnavailableTime.reset()
     sched = Schedule.read_DB(1)
     unavailable = LabUnavailableTime("mon", "8:30", 2, schedule=sched)
     flush()
@@ -120,6 +132,7 @@ def test_save():
 
 def test_list():
     """Verifies that list() returns a tuple containing all extant LabUnavailableTime objects."""
+    LabUnavailableTime.reset()
     sched = Schedule.read_DB(1)
     unavailable_1 = LabUnavailableTime("mon", "8:30", 2, schedule=sched)
     unavailable_2 = LabUnavailableTime("tue", "10:00", 1.5, schedule=sched)

@@ -102,3 +102,11 @@ class LabUnavailableTime(Time_slot.TimeSlot):
     @staticmethod
     def get(id: int) -> LabUnavailableTime:
         return LabUnavailableTime.__instances.get(id)
+
+    # ====================================
+    # get
+    # ====================================
+    @staticmethod
+    def reset():
+        """Resets the local list of unavailable times."""
+        LabUnavailableTime.__instances = dict()
