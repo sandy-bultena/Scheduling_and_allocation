@@ -1,3 +1,4 @@
+"""Enums for global use"""
 from __future__ import annotations
 from enum import Enum
 import sys

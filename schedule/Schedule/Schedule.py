@@ -6,10 +6,8 @@ from Lab import Lab
 from Stream import Stream
 from Section import Section
 from Block import Block
-from Time_slot import TimeSlot
+from LabUnavailableTime import LabUnavailableTime
 from ScheduleEnums import ConflictType, ViewType
-import os
-import re
 
 import database.PonyDatabaseConnection as db
 from pony.orm import *
@@ -79,7 +77,7 @@ class Schedule:
         Section.reset()
         Stream.reset()
         Teacher.reset()
-        TimeSlot.reset()
+        LabUnavailableTime.reset()
         Conflict.reset()
 
     # --------------------------------------------------------
@@ -111,8 +109,8 @@ class Schedule:
         for lab in select(l for l in db.Lab):
             l1 = Lab(lab.number, lab.description, id=lab.id)
             # set up unavailable times
-            for slot in select(ts for ts in db.TimeSlot if ts.unavailable_lab_id.id == lab.id):
-                ts = TimeSlot(slot.day, slot.start, slot.duration, slot.movable, id = slot.id)
+            for slot in select(ts for ts in db.LabUnavailableTime if ts.lab_id.id == lab.id):
+                ts = LabUnavailableTime(slot.day, slot.start, slot.duration, slot.movable, id = slot.id, schedule = schedule)
                 l1.add_unavailable_slot(ts)
 
         # create all teachers
@@ -147,9 +145,7 @@ class Schedule:
             # identify, create, and assign blocks
             block : db.Block
             for block in select(b for b in db.Block if b.section_id.id == s.id):
-                slot : db.TimeSlot
-                slot = db.TimeSlot.get(id = block.time_slot_id.id)
-                b = Block(slot.day, slot.start, slot.duration, block.number, movable = slot.movable, id = block.id, time_slot_id = slot.id)
+                b = Block(block.day, block.start, block.duration, block.number, movable = block.movable, id = block.id)
                 s.add_block(b)
                 for l in block.labs: b.assign_lab(Lab.get(l.id))
                 for t in block.teachers: b.assign_teacher(Teacher.get(t.id))
@@ -181,8 +177,8 @@ class Schedule:
         # update all streams
         for st in Stream.list(): st.save()
 
-        # update all time slots
-        for t in TimeSlot.list(): t.save()
+        # update all lab unavailable times 
+        for lut in LabUnavailableTime.list(): lut.save()
 
         # save courses, teachers, streams, and time slots to in-memory db
         flush()

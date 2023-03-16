@@ -6,7 +6,7 @@ from warnings import warn
 # from ScheduleEnums import WeekDay, WeekDayNumber
 import ScheduleEnums
 
-from database.PonyDatabaseConnection import TimeSlot as dbTimeSlot
+#from database.PonyDatabaseConnection import TimeSlot as dbTimeSlot
 from pony.orm import *
 
 # TODO: Print statements are not good in a gui app.  Maybe we should change them log?
@@ -43,7 +43,7 @@ class TimeSlot:
     def __init__(self, day: (ScheduleEnums.WeekDay | str) = DEFAULT_DAY,
                  start: str = DEFAULT_START,
                  duration: float = DEFAULT_DURATION,
-                 movable: bool = True, *, id: int = None):
+                 movable: bool = True):
         """
         Creates a new TimeSlot object.
 
@@ -310,7 +310,7 @@ class TimeSlot:
     # save
     # =================================================================
     @db_session
-    def save(self) -> dbTimeSlot:
+    def save(self):
         """Saves this TimeSlot to the database, updating its corresponding record.
 
         Returns the corresponding TimeSlot database entity."""

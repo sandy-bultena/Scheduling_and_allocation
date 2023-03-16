@@ -25,7 +25,7 @@ class LabUnavailableTime(Time_slot.TimeSlot):
                  duration: float = Time_slot.TimeSlot.DEFAULT_DURATION, movable: bool = True, *,
                  id: int = None,
                  schedule: Schedule.Schedule):
-        super().__init__(day, start, duration, movable, id=id)
+        super().__init__(day, start, duration, movable)
         self.schedule = schedule
         self.__id = id if id else LabUnavailableTime.__create_entity(self, schedule.id)
         LabUnavailableTime.__instances[self.id] = self
@@ -100,7 +100,7 @@ class LabUnavailableTime(Time_slot.TimeSlot):
     # get
     # ====================================
     @staticmethod
-    def get(id: int) -> LabUnavailableTime:
+    def get(id: int) -> LabUnavailableTime | None:
         return LabUnavailableTime.__instances.get(id)
 
     # ====================================

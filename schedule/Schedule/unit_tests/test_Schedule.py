@@ -1,27 +1,30 @@
+import pytest
 import sys
 from os import path
 sys.path.append(path.dirname(path.dirname(__file__)))
-import pytest
-from unit_tests.db_constants import *
-from pony.orm import *
+
+from ScheduleEnums import ConflictType
+from LabUnavailableTime import LabUnavailableTime
+from Block import Block
+from Section import Section
+from Conflict import Conflict
+from Lab import Lab
+from Course import Course
+from Stream import Stream
+from Teacher import Teacher
+from Schedule import Schedule
 from database.PonyDatabaseConnection import\
     define_database, Schedule as dbSchedule, Scenario as dbScenario, Lab as dbLab, Teacher as dbTeacher, Section_Teacher as dbSecTeach,\
-    Course as dbCourse, TimeSlot as dbTimeSlot, Section as dbSection, Stream as dbStream, Block as dbBlock, Schedule_Teacher as dbSchedTeach
+    Course as dbCourse, Section as dbSection, Stream as dbStream, Block as dbBlock, Schedule_Teacher as dbSchedTeach,\
+    LabUnavailableTime as dbLUT
+from pony.orm import *
+from unit_tests.db_constants import *
 
-from Schedule import Schedule
-from Teacher import Teacher
-from Stream import Stream
-from Course import Course
-from Lab import Lab
-from Conflict import Conflict
-from Section import Section
-from Block import Block
-from Time_slot import TimeSlot
-from ScheduleEnums import ConflictType
 
-db : Database
-new_db : Database = None   # only used in write DB test
-s : dbSchedule
+db: Database
+new_db: Database = None   # only used in write DB test
+s: dbSchedule
+
 
 @pytest.fixture(scope="module", autouse=True)
 def before_and_after_module():
@@ -30,9 +33,10 @@ def before_and_after_module():
     db.drop_all_tables(with_all_data=True)
     db.create_tables()
     yield
-    db.drop_all_tables(with_all_data = True)
+    db.drop_all_tables(with_all_data=True)
     db.disconnect()
     db.provider = db.schema = None
+
 
 @db_session
 def init_scenario_and_schedule():
@@ -40,6 +44,7 @@ def init_scenario_and_schedule():
     sc = dbScenario()
     flush()
     s = dbSchedule(semester="Winter 2023", official=False, scenario_id=sc.id, description="W23")
+
 
 @pytest.fixture(autouse=True)
 def before_and_after():
@@ -49,12 +54,14 @@ def before_and_after():
     yield
     db.drop_all_tables(with_all_data=True)
 
+
 def test_teachers_get():
     """Checks that teachers method returns correct list"""
     t1 = Teacher("Jane", "Doe")
     t2 = Teacher("John", "Doe")
     assert t1 in Schedule.teachers()
     assert t2 in Schedule.teachers()
+
 
 def test_streams_get():
     """Checks that streams method returns correct list"""
@@ -63,12 +70,14 @@ def test_streams_get():
     assert s1 in Schedule.streams()
     assert s2 in Schedule.streams()
 
+
 def test_courses_get():
     """Checks that courses method returns correct list"""
     c1 = Course("1")
     c2 = Course("1")
     assert c1 in Schedule.courses()
     assert c2 in Schedule.courses()
+
 
 def test_labs_get():
     """Checks that labs method returns correct list"""
@@ -77,6 +86,7 @@ def test_labs_get():
     assert l1 in Schedule.labs()
     assert l2 in Schedule.labs()
 
+
 def test_conflicts_get():
     """Checks that conflicts method returns correct list"""
     c1 = Conflict(ConflictType.AVAILABILITY, [1])
@@ -84,25 +94,27 @@ def test_conflicts_get():
     assert c1 in Schedule.conflicts()
     assert c2 in Schedule.conflicts()
 
+
 def test_get_sections_for_teacher():
     """Checks that sections_for_teacher method returns correct sections"""
     t1 = Teacher("Jane", "Doe")
     c = Course()
-    
+
     s1 = Section("1", course=c, schedule_id=s.id)
     s1.add_block(Block('mon', '13:00', 2, 1))
     s1.assign_teacher(t1)
-    
+
     s2 = Section("2", course=c, schedule_id=s.id)
     s2.add_block(Block('mon', '13:00', 2, 1))
     s2.assign_teacher(t1)
 
     s3 = Section("3", course=c, schedule_id=s.id)
-    
+
     sections = Schedule.sections_for_teacher(t1)
     assert s1 in sections
     assert s2 in sections
     assert s3 not in sections
+
 
 def test_get_courses_for_teacher():
     """Checks that courses_for_teacher method returns correct courses"""
@@ -122,11 +134,12 @@ def test_get_courses_for_teacher():
     s2.assign_teacher(t1)
 
     c3 = Course(3)
-    
+
     courses = Schedule.courses_for_teacher(t1)
     assert c1 in courses
     assert c2 in courses
     assert c3 not in courses
+
 
 def test_get_allocated_courses_for_teacher():
     """Checks that allocated_courses_for_teacher method returns correct courses"""
@@ -145,44 +158,47 @@ def test_get_allocated_courses_for_teacher():
     c2.add_section(s1)
     c2.needs_allocation = False
     s2.assign_teacher(t1)
-    
+
     courses = Schedule.allocated_courses_for_teacher(t1)
     assert c1 in courses
     assert c2 not in courses
 
+
 def test_get_blocks_for_teacher():
     """Checks that blocks_for_teacher method returns correct sections"""
     t1 = Teacher("Jane", "Doe")
-    
+
     b1 = Block('mon', '13:00', 2, 1)
     b1.assign_teacher(t1)
-    
+
     b2 = Block('mon', '13:00', 2, 1)
     b2.assign_teacher(t1)
 
     b3 = Block('mon', '13:00', 2, 1)
-    
+
     blocks = Schedule.blocks_for_teacher(t1)
     assert b1 in blocks
     assert b2 in blocks
     assert b3 not in blocks
 
+
 def test_get_blocks_in_lab():
     """Checks that blocks_in_lab method returns correct sections"""
     l1 = Lab()
-    
+
     b1 = Block('mon', '13:00', 2, 1)
     b1.assign_lab(l1)
-    
+
     b2 = Block('mon', '13:00', 2, 1)
     b2.assign_lab(l1)
 
     b3 = Block('mon', '13:00', 2, 1)
-    
+
     blocks = Schedule.blocks_in_lab(l1)
     assert b1 in blocks
     assert b2 in blocks
     assert b3 not in blocks
+
 
 def test_get_sections_for_stream():
     """Checks that sections_for_stream method returns correct sections"""
@@ -196,11 +212,12 @@ def test_get_sections_for_stream():
     s2.assign_stream(st)
 
     s3 = Section("3", course=c, schedule_id=s.id)
-    
+
     sections = Schedule.sections_for_stream(st)
     assert s1 in sections
     assert s2 in sections
     assert s3 not in sections
+
 
 def test_get_blocks_for_stream():
     """Checks that blocks_for_stream method returns correct sections"""
@@ -211,7 +228,7 @@ def test_get_blocks_for_stream():
     b1 = Block('mon', '13:00', 2, 1)
     s1.add_block(b1)
     s1.assign_stream(st)
-    
+
     s2 = Section("2", course=c, schedule_id=s.id)
     b2 = Block('mon', '13:00', 2, 1)
     s2.assign_stream(st)
@@ -220,11 +237,12 @@ def test_get_blocks_for_stream():
     b3 = Block('mon', '13:00', 2, 1)
     s3 = Section("3", course=c, schedule_id=s.id)
     s3.add_block(b3)
-    
+
     blocks = Schedule.blocks_for_stream(st)
     assert b1 in blocks
     assert b2 in blocks
     assert b3 not in blocks
+
 
 def test_course_remove():
     """Checks that courses can be removed"""
@@ -232,11 +250,13 @@ def test_course_remove():
     Schedule.remove_course(c1)
     assert c1 not in Course.list()
 
+
 def test_teacher_remove():
     """Checks that teachers can be removed"""
     t1 = Teacher("Jane", "Doe")
     Schedule.remove_teacher(t1)
     assert t1 not in Teacher.list()
+
 
 def test_lab_remove():
     """Checks that labs can be removed"""
@@ -244,11 +264,13 @@ def test_lab_remove():
     Schedule.remove_lab(l1)
     assert l1 not in Lab.list()
 
+
 def test_stream_remove():
     """Checks that streams can be removed"""
     s1 = Stream()
     Schedule.remove_stream(s1)
     assert s1 not in Stream.list()
+
 
 def test_calculate_conflicts():
     t1 = Teacher("Jane", "Doe")
@@ -282,7 +304,7 @@ def test_calculate_conflicts():
     b4 = Block("mon", "14:00", 2, 4)
     b4.assign_lab(l1)
     time_lab_conflicted = set([b3, b4])
-    
+
     # TIME_STREAM conflict
     b5 = Block("mon", "13:00", 2, 5)
     b5.section = s1
@@ -327,12 +349,13 @@ def test_calculate_conflicts():
         conflict_block_sets.append(set(i.blocks))
 
     # check for correct number of instances of each type
-    assert conflict_types[ConflictType.TIME] == 3   # TIME_TEACHER, TIME_LAB, & TIME_STREAM
+    # TIME_TEACHER, TIME_LAB, & TIME_STREAM
+    assert conflict_types[ConflictType.TIME] == 3
     assert conflict_types[ConflictType.LUNCH] == 1
     assert conflict_types[ConflictType.MINIMUM_DAYS] == 1
     assert conflict_types[ConflictType.AVAILABILITY] == 1
     assert len(conflict_block_sets) == 6        # 6 total conflicts
-    
+
     # check that each instance points to the correct blocks for non-TIME conflicts
     assert set(conflict_values[ConflictType.LUNCH].blocks) == lunch_conflicted
     assert set(conflict_values[ConflictType.MINIMUM_DAYS].blocks) == min_days_conflicted
@@ -342,6 +365,7 @@ def test_calculate_conflicts():
     assert time_lab_conflicted in conflict_block_sets
     assert time_stream_conflicted in conflict_block_sets
     assert time_teacher_conflicted in conflict_block_sets
+
 
 def test_teacher_stats():
     """Checks that the teacher_stats method gives all and only relevant and accurate information"""
@@ -367,7 +391,7 @@ def test_teacher_stats():
     c1.assign_teacher(t1)
 
     stats = Schedule.teacher_stat(t1)
-    
+
     assert "Jane Doe's Stats" in stats
 
     assert "Tuesday" in stats
@@ -375,11 +399,12 @@ def test_teacher_stats():
     assert "Thursday" in stats
     assert "Monday" not in stats
     assert "Friday" not in stats
-    
+
     assert "Hours of Work: 3" in stats  # 3.0
     assert "Course #1" in stats
     assert "Course #2" not in stats
     assert "2 Section(s)" in stats
+
 
 def test_teacher_details():
     """Checks that the teacher_details method gives all and only relevant and accurate information"""
@@ -413,7 +438,7 @@ def test_teacher_details():
     c1.assign_teacher(t1)
 
     dets = Schedule.teacher_details(t1)
-    
+
     assert "Jane Doe" in dets
 
     assert "Course #1" in dets
@@ -435,6 +460,7 @@ def test_teacher_details():
     assert str(l2) in dets
     assert str(l3) in dets
     assert f"{l1}, {l2}" in dets
+
 
 def test_clear_Course():
     """Checks that the clear_all_from_course method correctly clears course"""
@@ -477,11 +503,12 @@ def test_clear_Course():
     assert not s1.labs
     assert not s2.labs
 
+
 def test_clear_section():
     """Checks that the clear_all_from_section method correctly clears section"""
     c = Course()
     s1 = Section("S1", course=c, schedule_id=s.id)
-    
+
     tue_block = Block('tue', "15:00", 1, 50)
     tue_block.assign_lab(Lab())
     s1.add_block(tue_block)
@@ -499,8 +526,9 @@ def test_clear_section():
     assert not s1.streams
     assert not s1.labs
 
+
 def test_clear_block():
-    """Checks that the clear_all_from_block method correctly clears block"""    
+    """Checks that the clear_all_from_block method correctly clears block"""
     b1 = Block('tue', "15:00", 1, 50)
     b1.assign_lab(Lab())
     b1.assign_teacher(Teacher("Jane", "Doe"))
@@ -510,8 +538,9 @@ def test_clear_block():
     assert not b1.teachers()
     assert not b1.labs()
 
+
 @db_session
-def populate_db(sid : int = None):
+def populate_db(sid: int = None):
     """Populates the DB with dummy data"""
     if not sid: sid = s.id
     c1 = dbCourse(name="Course 1", number="101-NYA", semester=1, allocation=True)
@@ -530,10 +559,7 @@ def populate_db(sid : int = None):
     l3 = dbLab(number="P322", description="Computer Lab 3")
     flush()
 
-    ts1 = dbTimeSlot(day="mon", duration=1, start="8:00", unavailable_lab_id=l1.id)
-    ts2 = dbTimeSlot(day="tue", duration=2, start="9:00", movable = False)
-    ts3 = dbTimeSlot(day="wed", duration=3, start="10:00")
-    ts4 = dbTimeSlot(day="wed", duration=2, start="11:00")
+    lut1 = dbLUT(day="mon", duration=1, start="8:00", lab_id=l1.id, schedule_id=sid)
     se1 = dbSection(course_id=c1.id, schedule_id=sid, name="Section 1", number="SE1", num_students=10)
     se2 = dbSection(course_id=c2.id, schedule_id=sid, name="Section 2", number="SE2", num_students=20)
     se3 = dbSection(course_id=c3.id, schedule_id=sid, name="Section 3", number="SE3", num_students=30)
@@ -550,9 +576,9 @@ def populate_db(sid : int = None):
     dbSecTeach(teacher_id=t1.id, section_id=se1.id, allocation=3)
     dbSecTeach(teacher_id=t2.id, section_id=se2.id, allocation=4)
     dbSecTeach(teacher_id=t3.id, section_id=se3.id, allocation=5)
-    b1 = dbBlock(section_id=se1.id, time_slot_id=ts2.id, number=1)
-    b2 = dbBlock(section_id=se2.id, time_slot_id=ts3.id, number=2)
-    b3 = dbBlock(section_id=se4.id, time_slot_id=ts4.id, number=3)
+    b1 = dbBlock(section_id=se1.id, day="tue", duration=2, start="9:00", number=1)
+    b2 = dbBlock(section_id=se2.id, day="wed", duration=3, start="10:00", number=2)
+    b3 = dbBlock(section_id=se4.id, day="wed", duration=2, start="11:00", number=3)
     b1.teachers.add(t1)
     b2.teachers.add(t2)
     b3.teachers.add(t2)
@@ -561,15 +587,16 @@ def populate_db(sid : int = None):
     b3.labs.add(l3)
     flush()
 
+    # return IDs of each created object, in case they need to be identified in tests
     return {
         "c1": c1.id, "c2": c2.id, "c3": c3.id, "c4": c4.id,
         "st1": st1.id, "st2": st2.id, "st3": st3.id, "st4": st4.id,
         "t1": t1.id, "t2": t2.id, "t3": t3.id,
-        "l1": l1.id, "l2": l2.id, "l3": l3.id,
-        "ts1": ts1.id, "ts2": ts2.id, "ts3": ts3.id, "ts4": ts4.id,
+        "l1": l1.id, "l2": l2.id, "l3": l3.id, "lut1": lut1.id,
         "se1": se1.id, "se2": se2.id, "se3": se3.id, "se4": se4.id,
         "b1": b1.id, "b2": b2.id, "b3": b3.id,
     }
+
 
 def test_read_db():
     """Checks that the read_DB method correctly reads the database and creates required model objects & conflict"""
@@ -577,15 +604,21 @@ def test_read_db():
 
     schedule = Schedule.read_DB(1)
 
-    assert len(TimeSlot.list()) == 4
-    
     assert len(Course.list()) == 4
     for i, c in enumerate(Course.list()):
         assert len(c.sections()) == 1
         assert c.semester == i + 1
+
     assert len(Stream.list()) == 4
+
     assert len(Teacher.list()) == 3
-    for t in Teacher.list(): assert t.release
+
+    for t in Teacher.list():
+        assert t.release
+
+    assert len(LabUnavailableTime.list()) == 1
+    lut = LabUnavailableTime.get(1)
+    assert lut.day and lut.start and lut.duration
     assert len(Lab.list()) == 3
     assert Lab.get(1).get_unavailable(1)
 
@@ -598,8 +631,10 @@ def test_read_db():
     for b in Block.list():
         assert len(b.teachers()) == 1
         assert len(b.labs()) == 1
-    
-    for c in Conflict.list(): print(c.type)
+        assert b.day and b.start and b.duration
+
+    for c in Conflict.list():
+        print(c.type)
     assert len(Conflict.list()) == 1
     assert Conflict.list()[0].type == ConflictType.TIME
     assert Block.list()[1].conflicted
@@ -608,6 +643,7 @@ def test_read_db():
     assert schedule
     assert schedule.id == s.id
 
+
 @pytest.fixture
 def after_write():
     # reconnects to the original DB. run after test_write_db
@@ -615,15 +651,14 @@ def after_write():
     global db
     yield
     if new_db:  # if the test fails before setting new_db, don't bother running this
-        new_db.drop_all_tables(with_all_data=True)  # drop all tables to be safe
+        # drop all tables to be safe
+        new_db.drop_all_tables(with_all_data=True)
         new_db.disconnect()
         new_db.provider = new_db.schema = None
-        db = define_database(host=HOST, passwd=PASSWD, db=DB_NAME, provider=PROVIDER, user=USERNAME)
+        db = define_database(host=HOST, passwd=PASSWD,
+                             db=DB_NAME, provider=PROVIDER, user=USERNAME)
 
-# CURRENT TEST STATE:
-# FAILS
-# Block-related timeslots seem to be created twice for some reason
-# Lab-related timeslot is created, but loses it's association
+
 def test_write_db(after_write):
     """
     Checks that the write_DB method correctly writes to the database
@@ -641,7 +676,8 @@ def test_write_db(after_write):
 
     # create a new test DB
     db_name = DB_NAME + "_write_test"
-    new_db = define_database(host=HOST, passwd=PASSWD, db=db_name, provider=PROVIDER, user=USERNAME)
+    new_db = define_database(host=HOST, passwd=PASSWD,
+                             db=db_name, provider=PROVIDER, user=USERNAME)
     # ensure that there's no existing data
     new_db.drop_all_tables(with_all_data=True)
     new_db.create_tables()
@@ -667,7 +703,7 @@ def test_write_db(after_write):
         assert len(c.sections()) == 1
         assert c.name == f"Course {i+1}"
         assert c.number == f"10{i+1}-NYA"
-        assert c.needs_allocation == (0 == i%2)
+        assert c.needs_allocation == (0 == i % 2)
         assert c.semester == i + 1
 
     # confirm correct number of streams and data was transferred correctly
@@ -707,12 +743,8 @@ def test_write_db(after_write):
         assert len(b.teachers()) == 1
         assert len(b.labs()) == 1
         assert b.number == i+1
-    
-    # confirm correct number of time slots and data was transferred correctly
-    assert len(TimeSlot.list()) == 4
-    for i, ts in enumerate(TimeSlot.list()):
-        assert ts.start == f"{i+8}:00"
-    
-    assert not TimeSlot.get(2).movable
-    assert TimeSlot.get(1).duration == 1
-    assert TimeSlot.get(3).duration == 3
+        assert b.start == f"{i+9}:00"
+        assert b.duration == (i % 2)+2
+    assert Block.get(1).day == "tue"
+    assert Block.get(2).day == "wed"
+    assert Block.get(2).movable
