@@ -516,6 +516,14 @@ class Block(Time_slot.TimeSlot):
         return tuple(block for block in blocks if block.day == day.value)
 
     # =================================================================
+    # get_day_blocks ($day, $blocks)
+    # =================================================================
+    @staticmethod
+    def get(id : int) -> Block:
+        """Gets the Block with the provided ID."""
+        return Block.__instances.get(id)
+
+    # =================================================================
     # save()
     # =================================================================
     @db_session

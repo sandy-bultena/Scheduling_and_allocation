@@ -74,19 +74,6 @@ class TimeSlot:
         self.duration = duration
         self.movable = movable
 
-        # TODO: Remove this. We are giving each of TimeSlot's children the individual responsibility
-        # to assign their own IDs, and we aren't tracking TimeSlot ID anymore.
-        # self.__id = id if id else TimeSlot.__create_entity(self)
-        # TimeSlot.__instances[self.__id] = self
-
-    @db_session
-    @staticmethod
-    def __create_entity(instance: TimeSlot) -> int:
-        entity_block = dbTimeSlot(day=instance.day, duration=instance.duration,
-                                  start=instance.start, movable=instance.movable)
-        commit()
-        return entity_block.get_pk()
-
     # ====================================
     # id
     # ====================================
