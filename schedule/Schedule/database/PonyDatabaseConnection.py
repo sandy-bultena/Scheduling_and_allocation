@@ -71,7 +71,7 @@ class TimeSlot(db.Entity):
     duration = Required(Decimal, 3, 1)
     start = Required(str, max_len=5)
     movable = Optional(bool, default=True, sql_default='1')
-    block_id = Optional('Block', cascade_delete=True)
+    # block_id = Optional('Block', cascade_delete=True)
     # unavailable_lab_id = Optional(Lab)
     # schedule_id = Optional('Schedule')
 
@@ -124,7 +124,11 @@ class Block(db.Entity):
     # here because you can't give the child class a different primary key from the parent class,
     # and you can't use a non-primary key as a foreign key in other tables. Because of this,
     # we've decided to simply create a link between the two tables without inheriting anything.
-    time_slot_id = Required(TimeSlot)
+    # time_slot_id = Required(TimeSlot)
+    day = Required(str, max_len=3)
+    duration = Required(Decimal, 3, 1)
+    start = Required(str, max_len=5)
+    movable = Optional(bool, default=True, sql_default='1')
 
     # Blocks have a many-to-one relationship with Sections. A Block can belong to one Section,
     # or none.
