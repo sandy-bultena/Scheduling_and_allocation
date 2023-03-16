@@ -1,12 +1,15 @@
 import sys
 from os import path
 
+
 sys.path.append(path.dirname(path.dirname(__file__)))
 import pytest
 from unit_tests.db_constants import *
 
+import Block    # avoids circular import
 from Time_slot import TimeSlot
-from database.PonyDatabaseConnection import define_database, TimeSlot as dbTimeSlot
+from ScheduleEnums import WeekDay
+from database.PonyDatabaseConnection import define_database
 from pony.orm import *
 
 db: Database
@@ -26,45 +29,36 @@ def before_and_after_module():
 def before_and_after():
     db.create_tables()
     yield
-    db.drop_table(table_name='time_slot', if_exists=True, with_all_data=True)
+    #db.drop_table(table_name='time_slot', if_exists=True, with_all_data=True)
 
-
-@db_session
-def test_id():
-    """Verifies that the ID assigned to a TimeSlot increments automatically."""
-    slots = []
-    for x in range(5):
-        slots.append(TimeSlot())
-        flush()
-    last_slot = slots[-1]
-    assert last_slot.id == len(slots)
-
-
-@db_session
-def test_day_getter_default():
-    """Verifies that a TimeSlot is created with a default day value of 'mon'."""
+def test_defaults():
+    """Verifies that default values are set correctly"""
     slot = TimeSlot()
-    assert slot.day == 'mon'
+    assert slot.day == "mon"
+    assert slot.start == "8:00"
+    assert slot.end() == "9:30"
+    assert slot.duration == 1.5
+    assert slot.movable
+    assert slot.start_number == 8
+    assert slot.day_number == 1
 
-
-@db_session
 def test_day_setter():
     slot = TimeSlot()
-    new_day = 'Sunday'
+    new_day = WeekDay.Friday.value
     slot.day = new_day
 
-    real_val = 'sun'
+    real_val = 'fri'
     assert slot.day == real_val
 
 
-@db_session
-def test_start_getter_default():
-    """Verifies that a TimeSlot is created with a default start value of '8:00'."""
+def test_day_setter_warning():
+    """Verifies that the day setter raises an error when an invalid value is passed."""
     slot = TimeSlot()
-    assert slot.start == "8:00"
+    bad_day = 14
+    with pytest.warns(UserWarning, match="invalid day specified"):
+        slot.day = bad_day
 
 
-@db_session
 def test_start_setter():
     slot = TimeSlot()
     new_start = "10:00"
@@ -72,23 +66,14 @@ def test_start_setter():
     assert slot.start == new_start
 
 
-@db_session
-def test_end_default():
-    """Verifies that a TimeSlot with default values with have an end of '9:30'."""
+def test_start_setter_warning():
+    """Verifies that start setter raises a warning when presented with an invalid input."""
     slot = TimeSlot()
-    expected_end = "9:30"
-    assert slot.end() == expected_end
+    bad_start = "foo"
+    with pytest.warns(UserWarning, match="invalid start time"):
+        slot.start = bad_start
 
 
-@db_session
-def test_duration_getter_default():
-    """Verifies that a TimeSlot created with default values has a duration of 1.5."""
-    slot = TimeSlot()
-    expected_dur = 1.5
-    assert slot.duration == expected_dur
-
-
-@db_session
 def test_duration_setter():
     """Verifies that TimeSlot's duration setter works."""
     slot = TimeSlot()
@@ -97,7 +82,6 @@ def test_duration_setter():
     assert slot.duration == new_dur
 
 
-@db_session
 def test_duration_setter_changes_end():
     """Verifies that changing a TimeSlot's duration will change the value of end()."""
     slot = TimeSlot()
@@ -107,14 +91,6 @@ def test_duration_setter_changes_end():
     assert slot.end() == expected_end
 
 
-@db_session
-def test_movable_getter_default():
-    """Verifies that a TimeSlot with default values is movable."""
-    slot = TimeSlot()
-    assert slot.movable is True
-
-
-@db_session
 def test_movable_setter():
     """Verifies that the TimeSlot's movable setter works."""
     slot = TimeSlot()
@@ -122,15 +98,6 @@ def test_movable_setter():
     assert slot.movable is False
 
 
-@db_session
-def test_start_number_getter_default():
-    """Verifies that the start number for a TimeSlot with default values is 8."""
-    slot = TimeSlot()
-    expected_start_num = 8
-    assert slot.start_number == expected_start_num
-
-
-@db_session
 def test_start_number_setter():
     """Verifies that the TimeSlot's start_number setter works as intended: that it changes
     start_number ONLY, without affecting start. """
@@ -141,26 +108,6 @@ def test_start_number_setter():
     assert slot.start_number == new_start_num and slot.start != bad_start
 
 
-@db_session
-def test_day_number_getter_default():
-    """Verifies that a TimeSlot with default values will have a day_number of 1."""
-    slot = TimeSlot()
-    expected_day_num = 1
-    assert slot.day_number == expected_day_num
-
-
-@db_session
-def test_day_number_setter():
-    """Verifies that the TimeSlot's day_number setter works as intended: that it changes
-    day_number ONLY, without affecting day. """
-    slot = TimeSlot()
-    new_day_num = 7
-    slot.day_number = new_day_num
-    bad_day = "fri"
-    assert slot.day_number == new_day_num and slot.day != bad_day
-
-
-@db_session
 def test_snap_to_time():
     """Verifies that snap_to_time adjusts the TimeSlot's start property to the nearest half-hour."""
     slot = TimeSlot()
@@ -170,8 +117,7 @@ def test_snap_to_time():
     assert slot.start == expected_start
 
 
-@db_session
-def test__snap_to_time_bad_value_to_minimum():
+def test_snap_to_time_bad_value_to_minimum():
     """Verifies that snap_to_time adjusts TimeSlot's start property to the minimum value of 8 if
     start is set to something less than 8. """
     slot = TimeSlot()
@@ -181,7 +127,6 @@ def test__snap_to_time_bad_value_to_minimum():
     assert slot.start == expected_start
 
 
-@db_session
 def test_snap_to_time_bad_value_to_maximum():
     """Verifies that snap_to_time adjusts TimeSlot's start property to the maximum value of 18
     minus duration if start is set to something greater than 18. """
@@ -192,72 +137,26 @@ def test_snap_to_time_bad_value_to_maximum():
     assert slot.start == expected_start
 
 
-@db_session
 def test_snap_to_day_with_args():
     """Verifies that TimeSlot's snap_to_day method adjusts its day property to the correct value
     when it is outside a specified date range. """
     slot = TimeSlot()
-    slot.day = "sun"
+    slot.day = WeekDay.Friday
     slot.snap_to_day(3, 4)
     expected_day = "thu"
     assert slot.day == expected_day
 
 
-@db_session
 def test_conflicts_time():
     """Verifies that conflicts_time works as intended."""
     slot1 = TimeSlot()
-    slot2 = TimeSlot("monday", "9:00")
+    slot2 = TimeSlot("mon", "9:00")
     assert slot1.conflicts_time(slot2) is True
 
 
-@db_session
 def test_conflicts_time_different_days():
     """Verifies that conflicts_time registers no conflict when two TimeSlots are on different
     days. """
     slot1 = TimeSlot()
-    slot2 = TimeSlot("Tuesday")
+    slot2 = TimeSlot(WeekDay.Tuesday.value)
     assert slot1.conflicts_time(slot2) is False
-
-
-@db_session
-def test_list():
-    """Verifies that the static list() method returns a tuple containing all extant TimeSlot
-    objects. """
-    TimeSlot.reset()
-    slot1 = TimeSlot()
-    slot2 = TimeSlot("Tuesday")
-    slots = TimeSlot.list()
-    assert len(slots) == 2 and slot1 in slots and slot2 in slots
-
-
-@db_session
-def test_list_no_slots():
-    """Verifies that the static list() method returns an empty tuple if no TimeSlots have been
-    created yet. """
-    TimeSlot.reset()
-    slots = TimeSlot.list()
-    assert len(slots) == 0
-
-
-@db_session
-def test_no_alterations():
-    """Verifies that changing the properties of a model TimeSlot doesn't affect its corresponding
-    entity TimeSlot. """
-    slot = TimeSlot()
-    flush()
-    slot.duration = 2.5
-    d_slot = dbTimeSlot[slot.id]
-    assert slot.duration != d_slot.duration
-
-
-@db_session
-def test_save():
-    """Verifies that the save() method updates the TimeSlot database record."""
-    slot = TimeSlot()
-    flush()
-    slot.duration = 2.5
-    slot.save()
-    commit()
-    d_slot = dbTimeSlot[slot.id]
-    assert d_slot.duration == slot.duration

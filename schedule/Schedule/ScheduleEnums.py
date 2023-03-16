@@ -1,14 +1,14 @@
+"""Enums for global use"""
+from __future__ import annotations
+from enum import Enum
 import sys
 from os import path
-sys.path.append(path.dirname(path.dirname(__file__)))
 
-from enum import Enum
-import Teacher
-import Lab
-import Stream
+sys.path.append(path.dirname(path.dirname(__file__)))
 import PerlLib.Colour as Colour
 
-''' Not all the classes are enums, but this file contains data that is needed throughout the program'''
+''' Not all the classes are enums, but this file contains data that is needed throughout the
+program'''
 
 
 class ExtendedEnum(Enum):
@@ -27,6 +27,8 @@ class ExtendedEnum(Enum):
         # the correct type)
         if isinstance(user_input, cls):
             return user_input.value
+        elif user_input in cls.names():
+            return cls[user_input]
         elif user_input not in cls.values():
             raise ValueError(f"Error: input <{user_input}> is invalid")
         return user_input
@@ -48,12 +50,6 @@ class WeekDayNumber(ExtendedEnum):
     fri = 5
     sat = 6
     sun = 7
-
-
-class ViewType(ExtendedEnum):
-    lab = Lab
-    teacher = Teacher
-    stream = Stream
 
 
 class SemesterType(ExtendedEnum):
@@ -88,11 +84,21 @@ class ConflictType(ExtendedEnum):
     @classmethod
     def descriptions(cls):
         return {
-            cls.TIME.name: "indirect time overlap",
-            cls.LUNCH.name: "no lunch time",
-            cls.MINIMUM_DAYS.name: "too few days",
-            cls.TIME_TEACHER.name: "time overlap",
-            cls.TIME_LAB.name: "time overlap",
-            cls.TIME_STREAM.name: "time overlap",
-            cls.AVAILABILITY.name: "not available"
+            cls.TIME: "indirect time overlap",
+            cls.LUNCH: "no lunch time",
+            cls.MINIMUM_DAYS: "too few days",
+            cls.TIME_TEACHER: "time overlap",
+            cls.TIME_LAB: "time overlap",
+            cls.TIME_STREAM: "time overlap",
+            cls.AVAILABILITY: "not available"
         }
+
+
+class ViewType(ExtendedEnum):
+    import Teacher
+    import Lab
+    import Stream
+    lab = Lab
+    teacher = Teacher
+    stream = Stream
+    none = None

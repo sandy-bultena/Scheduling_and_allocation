@@ -5,13 +5,14 @@ import pytest
 from unit_tests.db_constants import *
 from database.PonyDatabaseConnection import define_database
 from pony.orm import *
+from ScheduleEnums import ConflictType, ViewType
 
 from Conflict import Conflict
 
 conflict_types = Conflict._sorted_conflicts.copy()
-conflict_types.append(Conflict.TIME_LAB)
-conflict_types.append(Conflict.TIME_STREAM)
-conflict_types.append(Conflict.TIME_TEACHER)
+conflict_types.append(ConflictType.TIME_LAB)
+conflict_types.append(ConflictType.TIME_STREAM)
+conflict_types.append(ConflictType.TIME_TEACHER)
 
 db : Database
 
@@ -35,41 +36,41 @@ def test_constructor_fails_with_invalid_arguments():
     assert "bad inputs" in str(e.value).lower()
     
     with pytest.raises(TypeError) as e:
-        Conflict(Conflict.MINIMUM_DAYS, [])
+        Conflict(ConflictType.MINIMUM_DAYS, [])
     assert "bad inputs" in str(e.value).lower()
 
 def test_conflict_is_added_to_collection():
     """Checks that newly created Conflict is correctly added to the collection"""
-    c = Conflict(Conflict.LUNCH, [1])
+    c = Conflict(ConflictType.LUNCH, [1])
     assert c in Conflict.list()
 
 def test_conflict_created_success():
     """Checks that Conflict is created correctly"""
     blocks = [5, 6]
-    c = Conflict(Conflict.AVAILABILITY, blocks)
-    assert c.type is Conflict.AVAILABILITY
+    c = Conflict(ConflictType.AVAILABILITY, blocks)
+    assert c.type is ConflictType.AVAILABILITY
     assert c.blocks == blocks
 
 def test_confirm_conflict_can_be_iterated():
     """Confirm that Conflict can be iterated over"""
-    Conflict(Conflict.TIME_LAB, [1])
-    Conflict(Conflict.TIME_TEACHER, [2])
-    Conflict(Conflict.TIME_STREAM, [3])
-    Conflict(Conflict.TIME_LAB, [1])
-    Conflict(Conflict.TIME_TEACHER, [2])
-    Conflict(Conflict.TIME_STREAM, [3])
+    Conflict(ConflictType.TIME_LAB, [1])
+    Conflict(ConflictType.TIME_TEACHER, [2])
+    Conflict(ConflictType.TIME_STREAM, [3])
+    Conflict(ConflictType.TIME_LAB, [1])
+    Conflict(ConflictType.TIME_TEACHER, [2])
+    Conflict(ConflictType.TIME_STREAM, [3])
     for i in Conflict.list():
         assert i
 
 def test_confirm_hash_descriptions_and_colour_cover_same_types():
     """Confirms that the hash descriptions and colours cover the same types"""
-    assert list(Conflict._hash_descriptions().keys()).sort() is list(Conflict.colours().keys()).sort()
+    assert [c.name for c in Conflict._hash_descriptions().keys()].sort() is [c.name for c in Conflict.colours().keys()].sort()
 
 def test_confirm_conflicts_list_is_full():
     """Confirms that the list of conflicts can be retrieved, and contains currently existing conflicts"""
-    c1 = Conflict(Conflict.TIME_LAB, [1])
-    c2 = Conflict(Conflict.TIME_TEACHER, [2])
-    c3 = Conflict(Conflict.TIME_STREAM, [3])
+    c1 = Conflict(ConflictType.TIME_LAB, [1])
+    c2 = Conflict(ConflictType.TIME_TEACHER, [2])
+    c3 = Conflict(ConflictType.TIME_STREAM, [3])
     l = Conflict.list()
     assert len(l) == 3
     assert c1 in l and c2 in l and c3 in l
@@ -78,27 +79,27 @@ def test_confirm_most_severe_ordered_correctly_no_special():
     """Confirms the most severe conflict is returned correctly, with no special circumstance"""
     type = 0
     for i in Conflict._sorted_conflicts[::-1]:
-        type += i
-        out = Conflict.most_severe(type, "")
+        type += i.value
+        out = Conflict.most_severe(type, ViewType.none)
         assert out == i
 
 def test_confirm_most_severe_ordered_correctly_lab():
     """Confirms the most severe conflict is always TIME_LAB when 'lab' is specified"""
     for i in Conflict._sorted_conflicts:
-        out = Conflict.most_severe(Conflict.TIME_LAB + i, "Lab")
-        assert out == Conflict.TIME_LAB
+        out = Conflict.most_severe(ConflictType.TIME_LAB.value + i.value, ViewType.Lab)
+        assert out == ConflictType.TIME_LAB
 
 def test_confirm_most_severe_ordered_correctly_stream():
     """Confirms the most severe conflict is always TIME_STREAM when 'stream' is specified"""
     for i in Conflict._sorted_conflicts:
-        out = Conflict.most_severe(Conflict.TIME_STREAM + i, "Stream")
-        assert out == Conflict.TIME_STREAM
+        out = Conflict.most_severe(ConflictType.TIME_STREAM.value + i.value, ViewType.Stream)
+        assert out == ConflictType.TIME_STREAM
 
 def test_confirm_most_severe_ordered_correctly_teacher():
     """Confirms the most severe conflict is always TIME_TEACHER when 'teacher' is specified"""
     for i in Conflict._sorted_conflicts:
-        out = Conflict.most_severe(Conflict.TIME_TEACHER + i, "Teacher")
-        assert out == Conflict.TIME_TEACHER
+        out = Conflict.most_severe(ConflictType.TIME_TEACHER.value + i.value, ViewType.Teacher)
+        assert out == ConflictType.TIME_TEACHER
 
 def test_confirm_get_description_returns_correct_description():
     """Confirms the get_description method returns the correct type description"""
@@ -109,27 +110,27 @@ def test_confirm_colours_returns_correct_description():
     """Confirms the colours method returns the correct colours"""
     colours = Conflict.colours()
     for i in conflict_types:
-        assert colours[i] == Conflict._colours[i]
+        assert colours[i] == ConflictType.colours()[i]
     
 def test_confirm_block_is_added():
     """Confirm new blocks are added correctly"""
-    c = Conflict(Conflict.TIME_TEACHER, [1])
+    c = Conflict(ConflictType.TIME_TEACHER, [1])
     new_block = "new block"
     c.add_block(new_block)
     assert new_block in c.blocks
 
 def test_confirm_conflict_is_deleted():
     """Confirm conflicts are deleted correctly"""
-    c = Conflict(99, [1])
+    c = Conflict(ConflictType.TIME, [1])
     assert c in Conflict.list()
     c.delete()
     assert c not in Conflict.list()
 
 def test_reset_works():
     """Confirms Conflict.reset() works correctly"""
-    c1 = Conflict(Conflict.TIME_LAB, [1])
-    c2 = Conflict(Conflict.TIME_TEACHER, [2])
-    c3 = Conflict(Conflict.TIME_STREAM, [3])
+    c1 = Conflict(ConflictType.TIME_LAB, [1])
+    c2 = Conflict(ConflictType.TIME_TEACHER, [2])
+    c3 = Conflict(ConflictType.TIME_STREAM, [3])
     assert len(Conflict.list()) > 0
     Conflict.reset()
     assert len(Conflict.list()) == 0

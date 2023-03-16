@@ -9,11 +9,13 @@ from Section import Section
 from Lab import Lab
 from Teacher import Teacher
 from Time_slot import TimeSlot
+from Course import Course
 from pony.orm import *
 from database.PonyDatabaseConnection import define_database, Block as dbBlock, \
-    TimeSlot as dbTimeSlot, Lab as dbLab, Teacher as dbTeacher, Scenario as dbScenario, \
+    Lab as dbLab, Teacher as dbTeacher, Scenario as dbScenario, \
     Schedule as dbSchedule, Course as dbCourse, Section as dbSection
 from unit_tests.db_constants import *
+from ScheduleEnums import WeekDay
 
 db: Database
 
@@ -94,15 +96,15 @@ def test_delete():
     assert block not in Block.list()
 
 
-def test_delete_gets_underlying_time_slot():
-    """Verifies that the delete() method destroys the Block's underlying TimeSlot as well."""
-    day = "mon"
-    start = "8:30"
-    dur = 2
-    num = 1
-    block = Block(day, start, dur, num)
-    block.delete()
-    assert block not in TimeSlot.list()
+# def test_delete_gets_underlying_time_slot():
+#     """Verifies that the delete() method destroys the Block's underlying TimeSlot as well."""
+#     day = "mon"
+#     start = "8:30"
+#     dur = 2
+#     num = 1
+#     block = Block(day, start, dur, num)
+#     block.delete()
+#     assert block not in TimeSlot.list()
 
 
 @db_session
@@ -117,8 +119,8 @@ def test_delete_removes_block_from_database():
     block.delete()
     commit()  # necessary to ensure that the Block actually gets deleted in this test.
     d_blocks = select(b for b in dbBlock)
-    d_slots = select(t for t in dbTimeSlot)
-    assert len(d_blocks) == 0 and len(d_slots) == 0
+    # d_slots = select(t for t in dbTimeSlot)
+    assert len(d_blocks) == 0 #and len(d_slots) == 0
 
 
 def test_start_getter():
@@ -132,8 +134,8 @@ def test_start_getter():
 
 
 def test_start_setter_synced_2_blocks():
-    """Verifies that the start setter works as intended, and that it changes the start value of any Blocks synced to
-    the Block on which it was called. """
+    """Verifies that the start setter works as intended, and that it changes the start value of
+    any Blocks synced to the Block on which it was called. """
     day = "mon"
     start = "8:30"
     dur = 2
@@ -156,7 +158,7 @@ def test_start_setter_synced_4_blocks():
     block1 = Block(day, start, dur, num)
     block2 = Block("wed", start, dur, 2)
     block3 = Block("thu", start, dur, 3)
-    block4 = Block("sat", start, dur, 4)
+    block4 = Block("fri", start, dur, 4)
     block1.sync_block(block2)
     block1.sync_block(block3)
     block1.sync_block(block4)
@@ -186,8 +188,8 @@ def test_day_getter():
 
 
 def test_day():
-    """Verifies that the day setter works as intended, changing the day property of any Block synced to the current
-    Block. """
+    """Verifies that the day setter works as intended, changing the day property of any Block
+    synced to the current Block. """
     day = "mon"
     start1 = "8:00"
     start2 = "12:00"
@@ -231,7 +233,8 @@ def test_section_setter_good():
     dur = 2
     num = 1
     block = Block(day, start, dur, num)
-    sect = Section(id=1)
+    course = Course()
+    sect = Section(id=1, course=course)
     block.section = sect
     assert block.section == sect
 
@@ -267,7 +270,7 @@ def test_section_setter_updates_database():
     flush()
     d_schedule = dbSchedule(semester="fall", official=False, scenario_id=d_scenario.id)
     flush()
-    d_course = dbCourse(name="Test")
+    d_course = Course(name="Test")
     flush()
     sect = Section(course=d_course, schedule_id=d_schedule.id)
     commit()
@@ -819,7 +822,8 @@ def test_string_representation():
     dur = 2
     num = 1
     block = Block(day, start, dur, num)
-    sect = Section("42", 2, "Section 42", id=1)
+    course = Course()
+    sect = Section("42", 2, "Section 42", id=1, course=course)
     lab1 = Lab("R-101", "Worst place in the world")
     lab2 = Lab("R-102", "Second-worst place in the world")
     block.section = sect
@@ -878,7 +882,8 @@ def test_refresh_number():
     dur = 2
     num = 0
     block = Block(day, start, dur, num)
-    sect = Section("42", id=1)
+    course = Course()
+    sect = Section("42", id=1, course=course)
     sect.add_block(block)
     block.refresh_number()
     assert block.number == 1
@@ -903,7 +908,7 @@ def test_list_empty():
 def test_get_day_blocks():
     """Verifies that get_day_blocks() returns a list of all Blocks occurring on a specific
     day of the week. """
-    day = "mon"
+    day = WeekDay.Monday
     block_1 = Block("mon", "8:00", 1.5, 1)
     block_2 = Block("mon", "8:00", 1.5, 2)
     block_3 = Block("tue", "8:00", 1.5, 2)
@@ -916,7 +921,7 @@ def test_get_day_blocks():
 def test_get_day_blocks_bad_input():
     """Verifies that get_day_blocks() won't crash the program if passed a list containing
     non-Block objects. """
-    day = "mon"
+    day = WeekDay.Monday
     block_1 = Block("mon", "8:00", 1.5, 1)
     block_2 = Block("mon", "8:00", 1.5, 2)
     block_3 = Block("tue", "8:00", 1.5, 2)
@@ -934,7 +939,7 @@ def test_get_day_blocks_empty_list():
     block_3 = Block("tue", "8:00", 1.5, 2)
     block_4 = Block("wed", "8:00", 1.5, 2)
     unfiltered_blocks = [block_1, block_2, block_3, block_4]
-    bad_day = "fri"
+    bad_day = WeekDay.Friday
     friday_blocks = Block.get_day_blocks(bad_day, unfiltered_blocks)
     assert len(friday_blocks) == 0
 
@@ -948,8 +953,8 @@ def test_save_simple():
     block.start = "9:30"
     block.duration = 3.0
     d_block = block.save()
-    d_slot = d_block.time_slot_id
-    assert d_block.id == block.id and d_slot.day == block.day \
-        and d_slot.start == block.start \
-        and d_slot.duration == block.duration
+    commit()
+    assert d_block.id == block.id and d_block.day == block.day \
+        and d_block.start == block.start \
+        and d_block.duration == block.duration
 

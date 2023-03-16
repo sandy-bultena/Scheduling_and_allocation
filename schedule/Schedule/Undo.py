@@ -1,10 +1,7 @@
-
-# TODO: Update Synopsis to read schedule from database
-
 """
     from Schedule.Undo import Undo
     
-    Schedule.read('my_schedule_file.yaml')
+    sched = Schedule.read_DB(my_schedule_id)
     teacher = Teacher.get_by_name("Sandy", "Bultena")
     blocks = Schedule.blocks_for_teacher(teacher)
     undos = []

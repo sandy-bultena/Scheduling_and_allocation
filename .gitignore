@@ -45,3 +45,6 @@ __pycache__/
 
 # Not sure where this came from, but I don't want it
 .idea/
+
+# Private information (in production anyways)
+.env

@@ -16,8 +16,6 @@ from Lab import Lab
 from Teacher import Teacher
 from Stream import Stream
 
-# TODO: Missing tests where creating a section if constructor does was not given a section_id
-
 db: Database
 
 
@@ -58,6 +56,13 @@ def test_constructor_default_values():
     assert isinstance(s.number, str)
     assert s.hours
     assert isinstance(s.name, str)
+
+def test_create_no_schedule_id():
+    """Checks that a section cannot be created without a schedule or section ID"""
+    with pytest.raises(ValueError) as e:
+        s = Section(course=Course())
+    assert "id or schedule_id must be defined" in str(e.value).lower()
+
 
 
 def test_section_created_success():

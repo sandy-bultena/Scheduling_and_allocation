@@ -5,13 +5,16 @@ sys.path.append(path.dirname(path.dirname(__file__)))
 import pytest
 from unit_tests.db_constants import *
 
+from Schedule import Schedule
 from Lab import Lab
-from Time_slot import TimeSlot
+from LabUnavailableTime import LabUnavailableTime
 from Block import Block
-from database.PonyDatabaseConnection import define_database, Lab as dbLab, TimeSlot as dbTimeSlot
+from database.PonyDatabaseConnection import define_database, Lab as dbLab, Schedule as dbSchedule, \
+    Scenario as dbScenario, LabUnavailableTime as dbUnavailableTime
 from pony.orm import *
 
 db: Database
+s: dbSchedule
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -24,13 +27,24 @@ def before_and_after_module():
     db.provider = db.schema = None
 
 
+@db_session
+def init_scenario_and_schedule():
+    global s
+    sc = dbScenario()
+    flush()
+    s = dbSchedule(semester="Winter 2023", official=False, scenario_id=sc.id, description="W23")
+
+
 @pytest.fixture(autouse=True)
 def before_and_after():
     db.create_tables()
+    init_scenario_and_schedule()
     yield
     db.drop_table(table_name='lab', if_exists=True, with_all_data=True)
     db.drop_table(table_name='block', if_exists=True, with_all_data=True)
     db.drop_table(table_name='time_slot', if_exists=True, with_all_data=True)
+    db.drop_table(table_name='lab_unavailable_time', if_exists=True, with_all_data=True)
+    db.drop_table(table_name='schedule', if_exists=True, with_all_data=True)
 
 
 def test_id():
@@ -82,40 +96,40 @@ def test_descr_setter():
 def test_add_unavailable():
     """Verifies that add_unavailable() creates a TimeSlot object with the passed-in values,
     which is stored in the Lab's _unavailable attribute. """
-    # Reset the TimeSlot class's max_id to 0 to avoid KeyErrors when all tests are run
-    # simultaneously.
-    # TimeSlot._max_id = 0
+    sched = Schedule.read_DB(1)
     day = "mon"
     start = "8:30"
     dur = 2.0
     lab = Lab()
-    lab.add_unavailable(day, start, dur)
-    slot = getattr(lab, '_unavailable')[1]
-    assert type(slot) is TimeSlot and slot.day == day \
-           and slot.start == start and slot.duration == dur
+    lab.add_unavailable(day, start, dur, schedule=sched)
+    time = getattr(lab, '_unavailable')[1]
+    assert type(time) is LabUnavailableTime and time.day == day \
+           and time.start == start and time.duration == dur
 
 
 @db_session
 def test_add_unavailable_adds_to_db():
     """Verifies that add_unavailable() adds a TimeSlot record to the database."""
+    sched = Schedule.read_DB(1)
     day = "mon"
     start = "8:30"
     dur = 2.0
     lab = Lab()
-    lab.add_unavailable(day, start, dur)
+    lab.add_unavailable(day, start, dur, schedule=sched)
     commit()
-    d_slots = select(s for s in dbTimeSlot)
-    assert len(d_slots) == 1
+    d_times = select(t for t in dbUnavailableTime)
+    assert len(d_times) == 1
 
 
 def test_remove_unavailable_good():
     """Verifies that remove_unavailable() can remove a TimeSlot from Lab based on the received
     TimeSlot ID. """
+    sched = Schedule.read_DB(1)
     day = "mon"
     start = "8:30"
     dur = 2.0
     lab = Lab()
-    lab.add_unavailable(day, start, dur)
+    lab.add_unavailable(day, start, dur, schedule=sched)
     slot_id = getattr(lab, '_unavailable')[1].id
     lab.remove_unavailable(slot_id)
     assert len(getattr(lab, '_unavailable')) == 0
@@ -124,11 +138,12 @@ def test_remove_unavailable_good():
 def test_remove_unavailable_no_crash():
     """Verifies that remove_unavailable will not crash the program when attempting to remove a
     TimeSlot which doesn't exist. """
+    sched = Schedule.read_DB(1)
     day = "mon"
     start = "8:30"
     dur = 2.0
     lab = Lab()
-    lab.add_unavailable(day, start, dur)
+    lab.add_unavailable(day, start, dur, schedule=sched)
     bad_id = 9999
     slot_key = getattr(lab, '_unavailable')[1].id
     lab.remove_unavailable(bad_id)
@@ -140,25 +155,27 @@ def test_remove_unavailable_no_crash():
 def test_remove_unavailable_gets_database():
     """Verifies that remove_unavailable() will remove the TimeSlot's record from the database as
     well. """
+    sched = Schedule.read_DB(1)
     day = "mon"
     start = "8:30"
     dur = 2.0
     lab = Lab()
-    lab.add_unavailable(day, start, dur)
+    lab.add_unavailable(day, start, dur, schedule=sched)
     slot_id = getattr(lab, '_unavailable')[1].id
     lab.remove_unavailable(slot_id)
     commit()
-    d_slots = select(s for s in dbTimeSlot)
-    assert len(d_slots) == 0
+    d_times = select(s for s in dbUnavailableTime)
+    assert len(d_times) == 0
 
 
 def test_get_unavailable_good():
     """Verifies that get_unavailable() can retrieve a specified TimeSlot from the Lab."""
+    sched = Schedule.read_DB(1)
     day = "mon"
     start = "8:30"
     dur = 2.0
     lab = Lab()
-    lab.add_unavailable(day, start, dur)
+    lab.add_unavailable(day, start, dur, schedule=sched)
     slot_id = getattr(lab, '_unavailable')[1].id
     slot = lab.get_unavailable(slot_id)
     assert slot.id == slot_id and slot.start == start and slot.day == day and slot.duration == dur
@@ -167,11 +184,12 @@ def test_get_unavailable_good():
 def test_get_unavailable_bad_input():
     """Verifies that get_unavailable returns None when trying to retrieve a nonexistent TimeSlot
     from the Lab. """
+    sched = Schedule.read_DB(1)
     day = "mon"
     start = "8:30"
     dur = 2.0
     lab = Lab()
-    lab.add_unavailable(day, start, dur)
+    lab.add_unavailable(day, start, dur, schedule=sched)
     bad_id = 999
     no_slot = lab.get_unavailable(bad_id)
     assert no_slot is None
@@ -179,6 +197,7 @@ def test_get_unavailable_bad_input():
 
 def test_unavailable():
     """Verifies that unavailable() returns a list of all unavailable TimeSlots for this Lab."""
+    sched = Schedule.read_DB(1)
     day_1 = "mon"
     start_1 = "8:30"
     dur_1 = 2.0
@@ -186,10 +205,10 @@ def test_unavailable():
     start_2 = "10:00"
     dur_2 = 1.5
     lab = Lab()
-    lab.add_unavailable(day_1, start_1, dur_1)
-    lab.add_unavailable(day_2, start_2, dur_2)
-    slots = lab.unavailable()
-    assert len(slots) == 2 and slots[0].day == day_1 and slots[1].day == day_2
+    lab.add_unavailable(day_1, start_1, dur_1, schedule=sched)
+    lab.add_unavailable(day_2, start_2, dur_2, schedule=sched)
+    times = lab.unavailable()
+    assert len(times) == 2 and times[0].day == day_1 and times[1].day == day_2
 
 
 def test_unavailable_no_slots():
@@ -211,14 +230,12 @@ def test_string_representation_full():
 
 
 def test_string_representation_short():
-    """Verifies that string representation returns a string containing only the Lab's number if it
-    lacks a description attribute. """
-    # TODO: This is not a valid test, because it could include a lot of stuff besides 'num' and it would
-    #       still return true.
+    """Verifies that string representation returns a string containing only the Lab's number if
+    it lacks a description attribute. """
     num = "R-101"
     lab = Lab(num)
     desc = str(lab)
-    assert num in desc
+    assert num == desc
 
 
 def test_list():
@@ -279,13 +296,14 @@ def test_remove():
 
 def test_remove_gets_slots():
     """Verifies that remove() deletes any TimeSlots in the Block's unavailable attribute."""
+    sched = Schedule.read_DB(1)
     Lab.reset()
-    TimeSlot.reset()
+    LabUnavailableTime.reset()
     lab1 = Lab("R-101", "Worst place in the world")
     lab2 = Lab("R-102", "Second-worst place in the world")
-    lab1.add_unavailable("mon", "8:00", 1.5)
+    lab1.add_unavailable("mon", "8:00", 1.5, schedule=sched)
     lab1.delete()
-    assert lab1 not in Lab.list() and len(TimeSlot.list()) == 0
+    assert lab1 not in Lab.list() and len(LabUnavailableTime.list()) == 0
 
 
 @db_session
@@ -299,16 +317,17 @@ def test_remove_gets_database():
 
 
 @db_session
-def test_remove_gets_database_labs():
+def test_remove_gets_database_times():
     """Verifies that delete() removes the records of the Lab's unavailable time slots from the
     database. """
+    sched = Schedule.read_DB(1)
     lab = Lab("R-101", "Worst place in the world")
-    lab.add_unavailable("mon", "8:00", 1.5)
+    lab.add_unavailable("mon", "8:00", 1.5, schedule=sched)
     commit()
     lab.delete()
     commit()
-    d_slots = select(s for s in dbTimeSlot)
-    assert len(d_slots) == 0
+    d_times = select(s for s in dbUnavailableTime)
+    assert len(d_times) == 0
 
 
 def test_get_good():

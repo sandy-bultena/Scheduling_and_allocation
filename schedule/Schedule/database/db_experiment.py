@@ -6,8 +6,8 @@ from os import path
 sys.path.append(path.dirname(path.dirname(__file__)))
 
 from PonyDatabaseConnection import TimeSlot, Block, Lab
-import Time_slot as ModelTSlot
 from Block import Block as ModelBlock
+import Time_slot as ModelTSlot
 from Lab import Lab as ModelLab
 
 

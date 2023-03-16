@@ -1,8 +1,11 @@
 from __future__ import annotations
-from typing import List
 
 from database.PonyDatabaseConnection import Teacher as dbTeacher, Schedule_Teacher as dbSchedTeach
 from pony.orm import *
+import Block
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    import Schedule
 
 """
 SYNOPSIS
@@ -25,8 +28,7 @@ SYNOPSIS
 
 
 class Teacher:
-    _max_id = 0
-    __instances = {}
+    __instances : dict[int, Teacher] = {}
 
     """Describes a teacher."""
 
@@ -34,7 +36,7 @@ class Teacher:
     # new
     # --------------------------------------------------------------------
 
-    def __init__(self, firstname: str, lastname: str, dept: str = "", id: int = None):
+    def __init__(self, firstname: str, lastname: str, dept: str = "", *, id: int = None):
         """Creates a Teacher object.
         
         Parameter **firstname:** str -> first name of the teacher.
@@ -50,7 +52,7 @@ class Teacher:
 
     @db_session
     @staticmethod
-    def __create_entity(instance: Teacher):
+    def __create_entity(instance: Teacher) -> int:
         entity_teacher = dbTeacher(first_name=instance.firstname, last_name=instance.lastname,
                                    dept=instance.dept)
         commit()
@@ -61,7 +63,7 @@ class Teacher:
     # =================================================================
 
     @property
-    def id(self):
+    def id(self) -> int:
         """Returns the unique ID for this Teacher."""
         return self.__id
 
@@ -69,7 +71,7 @@ class Teacher:
     # firstname
     # =================================================================
     @property
-    def firstname(self):
+    def firstname(self) -> str:
         """Gets and sets the Teacher's name."""
         return self.__firstname
 
@@ -84,7 +86,7 @@ class Teacher:
     # lastname
     # =================================================================
     @property
-    def lastname(self):
+    def lastname(self) -> str:
         """Gets and sets the Teacher's last name."""
         return self.__lastname
 
@@ -94,43 +96,13 @@ class Teacher:
             raise Exception("Last name cannot be an empty string")
         self.__lastname = new_name
 
-    # region dept & release properties
-
-    # =================================================================
-    # dept
-    # =================================================================
-    # NOTE: May or may not remove these due to it being not Pythonic to
-    # have such simple getters/setters.
-    @property
-    def dept(self):
-        """Gets and sets the name of the Teacher's department."""
-        return self.__dept
-
-    @dept.setter
-    def dept(self, new_dept: str):
-        self.__dept = new_dept
-
-    # =================================================================
-    # release
-    # =================================================================
-    @property
-    def release(self):
-        """How much release time does the teacher have (per week) from teaching duties?"""
-        return self._release
-
-    @release.setter
-    def release(self, new_rel: float):
-        self._release = new_rel
-
-    # endregion
-
     # =================================================================
     # default string
     # =================================================================
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.firstname} {self.lastname}"
 
-    def __repl__(self):
+    def __repl__(self) -> str:
         return str(self)
 
     # =================================================================
@@ -145,7 +117,7 @@ class Teacher:
     # share_blocks
     # =================================================================
     @staticmethod
-    def share_blocks(block1, block2):
+    def share_blocks(block1 : Block.Block, block2 : Block.Block) -> bool:
         """Checks if there are teachers who share these two Blocks."""
         # Count occurrences in both sets to ensure that all values are < 2
         occurrences: dict[int, int] = {}
@@ -172,7 +144,7 @@ class Teacher:
     # get
     # =================================================================
     @staticmethod
-    def get(teacher_id: int):
+    def get(teacher_id: int) -> Teacher | None:
         """Returns the Teacher object matching the passed ID, if it exists."""
         if teacher_id in Teacher.__instances.keys():
             return Teacher.__instances[teacher_id]
@@ -182,7 +154,7 @@ class Teacher:
     # get_by_name
     # =================================================================
     @staticmethod
-    def get_by_name(first_name: str, last_name: str):
+    def get_by_name(first_name: str, last_name: str) -> str | None:
         """Returns the first Teacher found matching the first name and last name, if one exists."""
         if not (first_name and last_name):
             return None
@@ -194,15 +166,20 @@ class Teacher:
     # =================================================================
     # remove teacher
     # =================================================================
-    def delete(self):
-        """Removes this Teacher from the Teachers object."""
+    def remove(self):
+        """Removes this Teacher from the Teachers object. Its corresponding database record
+        is untouched."""
         if self.id in Teacher.__instances.keys():
             del Teacher.__instances[self.id]
 
-            # TODO: BIG QUESTION:  DELETING A TEACHER ... IS THIS DELETING A TEACHER
-            #       FROM THE CURRENT SCHEDULE, OR ARE WE DELETING A TEACHER FROM THE DATABASE?
-            #       SHOULD THERE BE A DIFFERENCE?
-            self.__delete_entity_teacher()
+    def delete(self):
+        """Removes this Teacher from the Teachers object, along with its corresponding database
+        record."""
+        # First, remove the Teacher object from the application.
+        self.remove()
+
+        # Then delete its corresponding record from the database.
+        self.__delete_entity_teacher()
 
     @db_session
     def __delete_entity_teacher(self):
@@ -215,7 +192,7 @@ class Teacher:
     # disjoint
     # =================================================================
     @staticmethod
-    def disjoint(set_1: List, rhs: List) -> bool:
+    def disjoint(set_1: list[Teacher], rhs: list[Teacher]) -> bool:
         """Determines if one set of teachers is disjoint with another.
 
         Returns false if even a single Teacher occurs in both sets, or true otherwise."""
@@ -241,9 +218,9 @@ class Teacher:
         return True
 
     @db_session
-    def save(self, schedule=None):
+    def save(self, schedule : Schedule.Schedule | None = None) -> dbTeacher:
         """Saves the Teacher object to the database."""
-        d_teach = dbTeacher.get(id=self.id)
+        d_teach : dbTeacher = dbTeacher.get(id=self.id)
         if not d_teach: d_teach = dbTeacher(first_name=self.firstname, last_name=self.lastname)
         d_teach.first_name = self.firstname
         d_teach.last_name = self.lastname

@@ -1,7 +1,10 @@
 from __future__ import annotations
+from typing import TYPE_CHECKING
 
 from database.PonyDatabaseConnection import Stream as dbStream
 from pony.orm import *
+if TYPE_CHECKING:
+    import Block
 
 """ SYNOPSIS/EXAMPLE:
     from Schedule.Stream import Stream
@@ -14,13 +17,12 @@ from pony.orm import *
 
 class Stream:
     """ Describes a group of students whose classes cannot overlap. """
-    _max_id = 0
-    __instances = dict()
+    __instances : dict[int, Stream] = {}
 
     # ========================================================
     # CONSTRUCTOR
     # ========================================================
-    def __init__(self, number: str = "A", descr: str = "", id: int = None):
+    def __init__(self, number: str = "A", descr: str = "", *, id: int = None):
         """
         Creates an instance of the Stream class.
         - Parameter number -> defines the stream number.
@@ -34,7 +36,7 @@ class Stream:
 
     @db_session
     @staticmethod
-    def __create_entity(instance: Stream):
+    def __create_entity(instance: Stream) -> int:
         entity_stream = dbStream(number=instance.number, descr=instance.descr)
         commit()
         return entity_stream.get_pk()
@@ -54,7 +56,7 @@ class Stream:
     # get
     # --------------------------------------------------------
     @staticmethod
-    def get(id: int) -> Stream:
+    def get(id: int) -> Stream | None:
         """ Gets a Stream with a given ID. If ID doesn't exist, returns None."""
         return Stream.__instances[id] if id in Stream.__instances else None
 
@@ -86,7 +88,7 @@ class Stream:
     # share_blocks (STATIC)
     # --------------------------------------------------------
     @staticmethod
-    def share_blocks(b1, b2):
+    def share_blocks(b1 : Block.Block, b2 : Block.Block) -> bool:
         """Checks if there's a Stream that shares the two blocks provided"""
         occurences = {}
         if not b1.section or not b2.section: return False
@@ -128,11 +130,11 @@ class Stream:
     # save
     # --------------------------------------------------------
     @db_session
-    def save(self):
+    def save(self) -> dbStream:
         """Saves this Stream to the database.
 
         Returns the corresponding Stream entity."""
-        d_stream = dbStream.get(id=self.id)
+        d_stream : dbStream = dbStream.get(id=self.id)
         if not d_stream:
             d_stream = dbStream(number=self.number)
         d_stream.number = self.number

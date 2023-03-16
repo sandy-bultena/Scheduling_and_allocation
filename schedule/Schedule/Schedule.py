@@ -1,3 +1,4 @@
+from __future__ import annotations
 from Teacher import Teacher
 from Course import Course
 from Conflict import Conflict
@@ -5,23 +6,20 @@ from Lab import Lab
 from Stream import Stream
 from Section import Section
 from Block import Block
-from Time_slot import TimeSlot
+from LabUnavailableTime import LabUnavailableTime
 from ScheduleEnums import ConflictType, ViewType
-import os
-import re
 
 import database.PonyDatabaseConnection as db
 from pony.orm import *
 
-# TODO: Update the synopsis
 """ SYNOPSIS/EXAMPLE:
     from Schedule.Schedule import Schedule
 
-    Schedule.read_YAML('my_schedule_file.txt')
+    sched = Schedule.read_DB(my_schedule_id)
 
     # code here; model classes have been populated
 
-    Schedule.write_YAML('my_new_schedule_file.txt')
+    sched.write_YAML()
 """
 
 class Schedule:
@@ -79,7 +77,7 @@ class Schedule:
         Section.reset()
         Stream.reset()
         Teacher.reset()
-        TimeSlot.reset()
+        LabUnavailableTime.reset()
         Conflict.reset()
 
     # --------------------------------------------------------
@@ -87,13 +85,12 @@ class Schedule:
     # --------------------------------------------------------
     @staticmethod
     @db_session
-    def read_DB(id):
+    def read_DB(id) -> Schedule:
         # wipe all existing model data
         Schedule.reset_local()
 
-        sched = db.Schedule.get(id=id)
-        scenario = db.Scenario.get(id=sched.scenario_id.id)
-        # placeholder dict
+        sched : db.Schedule = db.Schedule.get(id=id)
+        scenario : db.Scenario = db.Scenario.get(id=sched.scenario_id.id)
         scen = {
             "name": scenario.name,
             "description": scenario.description,
@@ -103,34 +100,40 @@ class Schedule:
         schedule = Schedule(id, sched.semester, sched.official, scen, sched.description)
 
         # create all courses
+        course : db.Course
         for course in select(c for c in db.Course):
-            c = Course(course.number, course.name, id=course.id)
-            c.needs_allocation = course.allocation
+            Course(course.number, course.name, course.semester, course.allocation, id=course.id)
         
         # create all labs
+        lab : db.Lab
         for lab in select(l for l in db.Lab):
             l1 = Lab(lab.number, lab.description, id=lab.id)
             # set up unavailable times
-            for slot in select(ts for ts in db.TimeSlot if ts.unavailable_lab_id.id == lab.id):
-                ts = TimeSlot(slot.day, slot.start, slot.duration, slot.movable, id = slot.id)
+            for slot in select(ts for ts in db.LabUnavailableTime if ts.lab_id.id == lab.id):
+                ts = LabUnavailableTime(slot.day, slot.start, slot.duration, slot.movable, id = slot.id, schedule = schedule)
                 l1.add_unavailable_slot(ts)
 
         # create all teachers
+        teacher : db.Teacher
         for teacher in select(t for t in db.Teacher): Schedule.__create_teacher(teacher.id)
         
         # add release for this schedule to any teachers
+        schedule_teacher : db.Schedule_Teacher
         for schedule_teacher in select(t for t in db.Schedule_Teacher if t.schedule_id.id == id):
             Schedule.__create_teacher(schedule_teacher.teacher_id.id).release = schedule_teacher.work_release
         
         # create all streams
+        stream : db.Stream
         for stream in select(s for s in db.Stream): Schedule.__create_stream(stream.id)
             
         # create all sections in this schedule
+        section : db.Section
         for section in select(s for s in db.Section if s.schedule_id.id == id):
             s = Section(section.number, section.hours, section.name, Course.get(section.course_id.id), id = section.id)
             s.num_students = section.num_students
             Course.get(section.course_id.id).add_section(s)
             # identify teachers and set allocation
+            section_teacher : db.Section_Teacher
             for section_teacher in select(t for t in db.Section_Teacher if t.section_id.id == section.id):
                 t = Schedule.__create_teacher(section_teacher.teacher_id.id)
                 s.assign_teacher(t)
@@ -140,9 +143,9 @@ class Schedule:
                 st = Schedule.__create_stream(section_stream.id)
                 s.assign_stream(st)
             # identify, create, and assign blocks
+            block : db.Block
             for block in select(b for b in db.Block if b.section_id.id == s.id):
-                slot = db.TimeSlot.get(id = block.time_slot_id.id)
-                b = Block(slot.day, slot.start, slot.duration, block.number, movable = slot.movable, id = block.id, time_slot_id = slot.id)
+                b = Block(block.day, block.start, block.duration, block.number, movable = block.movable, id = block.id)
                 s.add_block(b)
                 for l in block.labs: b.assign_lab(Lab.get(l.id))
                 for t in block.teachers: b.assign_teacher(Teacher.get(t.id))
@@ -153,8 +156,8 @@ class Schedule:
     @db_session
     def write_DB(self):
         # update any schedule changes
-        sched = db.Schedule.get(id=self.id)
-        scen = db.Scenario.get(id=self.scenario.get("id", 1))   # assumes Scenario 1 if id isn't stored
+        sched : db.Schedule = db.Schedule.get(id=self.id)
+        scen : db.Scenario = db.Scenario.get(id=self.scenario.get("id", 1))   # assumes Scenario 1 if id isn't stored
         if not scen: scen = db.Scenario()
 
         if not sched: sched = db.Schedule(semester=self.semester, official=self.official, scenario_id=scen)
@@ -174,8 +177,8 @@ class Schedule:
         # update all streams
         for st in Stream.list(): st.save()
 
-        # update all time slots
-        for t in TimeSlot.list(): t.save()
+        # update all lab unavailable times 
+        for lut in LabUnavailableTime.list(): lut.save()
 
         # save courses, teachers, streams, and time slots to in-memory db
         flush()
@@ -196,7 +199,7 @@ class Schedule:
     def __create_teacher(id : int) -> Teacher:
         """ Takes a given ID and returns the Teacher model object with given ID. If it doesn't exist, creates it from the database. """
         if Teacher.get(id): return Teacher.get(id)
-        teacher = db.Teacher.get(id = id)
+        teacher : db.Teacher = db.Teacher.get(id = id)
         return Teacher(teacher.first_name, teacher.last_name, teacher.dept, id = id)
             
     @staticmethod
@@ -204,7 +207,7 @@ class Schedule:
         """ Takes a given ID and returns the Stream model object with given ID.
         If it doesn't exist locally, creates it from the database, and adds to database if not already present. """
         if Stream.get(id): return Stream.get(id)
-        stream = db.Stream.get(id = id)
+        stream : db.Stream = db.Stream.get(id = id)
         return Stream(stream.number, stream.descr, id = id)
 
     # --------------------------------------------------------
@@ -235,56 +238,38 @@ class Schedule:
     # labs
     # --------------------------------------------------------
     @staticmethod
-    def labs() -> list[Lab]:
+    def labs() -> tuple[Lab]:
         """Returns a tuple of all the Lab objects"""
-        return Lab.list()
+        return tuple(Lab.list())
 
     # --------------------------------------------------------
     # conflicts
     # --------------------------------------------------------
     @staticmethod
-    def conflicts() -> list[Conflict]:
+    def conflicts() -> tuple[Conflict]:
         """Returns the a tuple of all the Conflict objects"""
-        return Conflict.list()
+        return tuple(Conflict.list())
 
     # --------------------------------------------------------
     # sections_for_teacher
     # --------------------------------------------------------
     @staticmethod
-    def sections_for_teacher(teacher : Teacher) -> list [Section]:
-        # TODO is there any reason why we are returning a list, and not just a set?
-        #      -- it seems like a waste of time to convert a set to a list
-        #      -- or, we can return a tuple, which is immutable.
-
+    def sections_for_teacher(teacher : Teacher) -> tuple[Section]:
         """
         Returns a tuple of Sections that the given Teacher teaches
         - Parameter teacher -> The Teacher who's Sections should be found
         """
         if not isinstance(teacher, Teacher): raise TypeError(f"{teacher} must be an object of type Teacher")
         outp = set()
-        # TODO: Comparing to perl code, this only works if courses,
-        #       which may previously exist, but then are removed from the schedule, also remove
-        #       the sections, labs, blocks, etc from their lists,
-        #       ... if that is taken care of, then this code is ok, (it looks like it is, but we have to be sure)
-        #       ... otherwise, you have to verify that the section, lab, block, etc belongs to a course
-        #           that belongs to this schedule.
-        #       ...
-        #       ... Example, we may have a scenario that has complementary xyz in that schedule,
-        #           and it is removed, and replaced with course abc.  Sections lists should be
-        #           updated accordingly
-        #       questions: Do you have a test for dropping a course, and validating that
-        #           the lists of teachers, blocks, labs, etc are updated?
         for s in Section.list():
             if teacher in s.teachers: outp.add(s)
-        return list(outp)
+        return tuple(outp)
 
     # --------------------------------------------------------
     # courses_for_teacher
     # --------------------------------------------------------
     @staticmethod
-    def courses_for_teacher(teacher : Teacher) -> list[Course]:
-        # TODO is there any reason why we are returning a list, and not just a set?
-        #      --- sets don't allow duplicates, which is good, but do we need to return a list?
+    def courses_for_teacher(teacher : Teacher) -> tuple[Course]:
         """
         Returns a list of Courses that the given Teacher teaches
         - Parameter teacher -> The Teacher who's Courses should be found
@@ -293,84 +278,71 @@ class Schedule:
         outp = set()
         for c in Course.list():
             if c.has_teacher(teacher): outp.add(c)
-        return list(outp)
+        return tuple(outp)
 
     # --------------------------------------------------------
     # allocated_courses_for_teacher
     # --------------------------------------------------------
     @staticmethod
-    def allocated_courses_for_teacher(teacher : Teacher) -> list[Course]:
-        # TODO: if we decide to return a 'set' for the other collections, then this should
-        #       be a set as well, just for consistency
+    def allocated_courses_for_teacher(teacher : Teacher) -> tuple[Course]:
         """
         Returns a list of courses that this teacher teaches, which is an allocated type course
         - Parameter teacher -> The Teacher to check
         """
         if not isinstance(teacher, Teacher): raise TypeError(f"{teacher} must be an object of type Teacher")
-        return list(filter(lambda c : c.needs_allocation, Schedule.courses_for_teacher(teacher)))
+        return tuple(filter(lambda c : c.needs_allocation, Schedule.courses_for_teacher(teacher)))
 
     # --------------------------------------------------------
     # blocks_for_teacher
     # --------------------------------------------------------
     @staticmethod
-    def blocks_for_teacher(teacher : Teacher) -> list[Block]:
-        # TODO is there any reason why we are returning a list, and not just a set?
-        #      --- sets don't allow duplicates, which is good, but do we need to return a list?
+    def blocks_for_teacher(teacher : Teacher) -> tuple[Block]:
         """
         Returns a list of Blocks that the given Teacher teaches
         - Parameter teacher -> The Teacher who's Blocks should be found
         """
-        # TODO: see above comments for sections_for_teachers
 
         if not isinstance(teacher, Teacher): raise TypeError(f"{teacher} must be an object of type Teacher")
         outp = set()
         for b in Block.list():
             if b.has_teacher(teacher): outp.add(b)
-        return list(outp)
+        return tuple(outp)
 
     # --------------------------------------------------------
     # blocks_in_lab
     # --------------------------------------------------------
     @staticmethod
-    def blocks_in_lab(lab : Lab) -> list[Lab]:
-        # TODO is there any reason why we are returning a list, and not just a set?
-        #      --- sets don't allow duplicates, which is good, but do we need to return a list?
+    def blocks_in_lab(lab : Lab) -> tuple[Lab]:
         """
         Returns a list of Blocks using the given Lab
         - Parameter lab -> The Lab that should be found
         """
-        # TODO: see above comments for sections_for_teachers
         if not isinstance(lab, Lab): raise TypeError(f"{lab} must be an object of type Lab")
         outp = set()
         for b in Block.list():
             if b.has_lab(lab): outp.add(b)
-        return list(outp)
+        return tuple(outp)
 
     # --------------------------------------------------------
     # sections_for_stream
     # --------------------------------------------------------
     @staticmethod
-    def sections_for_stream(stream : Stream) -> list[Section]:
-        # TODO is there any reason why we are returning a list, and not just a set?
-        #      --- sets don't allow duplicates, which is good, but do we need to return a list?
+    def sections_for_stream(stream : Stream) -> tuple[Section]:
         """
         Returns a list of Sections assigned to the given Stream
         - Parameter stream -> The Stream that should be found
         """
-        # TODO: see above comments for sections_for_teachers
         if not isinstance(stream, Stream): raise TypeError(f"{stream} must be an object of type Stream")
         outp = set()
         for s in Section.list():
             if s.has_stream(stream): outp.add(s)
-        return list(outp)
+        return tuple(outp)
 
     # --------------------------------------------------------
     # blocks_for_stream
     # --------------------------------------------------------
     @staticmethod
-    def blocks_for_stream(stream : Stream) -> list[Block]:
-        # TODO is there any reason why we are returning a list, and not just a set?
-        #      --- sets don't allow duplicates, which is good, but do we need to return a list?
+    def blocks_for_stream(stream : Stream) -> tuple[Block]:
         """
         Returns a list of Blocks in the given Stream
         - Parameter stream -> The Stream who's Blocks should be found
@@ -378,7 +350,7 @@ class Schedule:
         if not isinstance(stream, Stream): raise TypeError(f"{stream} must be an object of type Stream")
         outp = set()
         for s in Schedule.sections_for_stream(stream): outp.update(s.blocks)
-        return list(outp)
+        return tuple(outp)
 
     # NOTE: all_x() methods have been removed, since they're now equivalent to x() methods
 
@@ -430,7 +402,7 @@ class Schedule:
     @staticmethod
     def calculate_conflicts():
         """Reviews the schedule, and creates a list of Conflict objects as necessary"""
-        def __new_conflict(type:ConflictType, blocks):
+        def __new_conflict(type : ConflictType, blocks : list[Block]):
             Conflict(type, blocks)
             for b in blocks: b.conflicted = type.value
 
@@ -469,13 +441,13 @@ class Schedule:
         # check for lunch break conflicts by teacher
         start_lunch = 11
         end_lunch = 14
-        lunch_periods = list(i/2 for i in range(start_lunch*2, end_lunch*2))
+        lunch_periods = list(i/2 for i in range(start_lunch * 2, end_lunch * 2))
         for t in Teacher.list():
             # filter to only relevant blocks (that can possibly conflict)
             relevant_blocks = list(
                 filter(lambda b : b.start_number < end_lunch and b.start_number + b.duration > start_lunch, Schedule.blocks_for_teacher(t)))
             # collect blocks by day
-            blocks_by_day = { }
+            blocks_by_day : dict[int, list[Block]] = { }
             for b in relevant_blocks:
                 if not b.day_number in blocks_by_day: blocks_by_day[b.day_number] = []
                 blocks_by_day[b.day_number].append(b)
@@ -500,7 +472,7 @@ class Schedule:
             if t.release: continue
 
             # collect blocks by day
-            blocks_by_day = { }
+            blocks_by_day : dict[int, list[Block]] = { }
             blocks = Schedule.blocks_for_teacher(t)
             for b in blocks:
                 if not b.day_number in blocks_by_day: blocks_by_day[b.day_number] = []
@@ -549,36 +521,36 @@ class Schedule:
         sections = Schedule.sections_for_teacher(teacher)
 
         week = dict(
-            Monday = False,
-            Tuesday = False,
-            Wednesday = False,
-            Thursday = False,
-            Friday = False,
-            Saturday = False,
-            Sunday = False
+            mon = False,
+            tue = False,
+            wed = False,
+            thu = False,
+            fri = False,
+            sat = False,
+            sun = False,
         )
+
+        week_str = dict(
+            mon = "Monday",
+            tue = "Tuesday",
+            wed = "Wednesday",
+            thu = "Thursday",
+            fri = "Friday",
+            sat = "Saturday",
+            sun = "Sunday"
+        )
+
         hours_of_work = 0
 
-        # TODO: match is not in versions of python prior to 3.10
-        #       AND is not to a switch statement (generally speaking)
-        #       see https://www.youtube.com/watch?v=ASRqxDGutpA
-        #       ... I don't care if you use it, but you should be aware
-        #           that there is no performance boost for using it.
         for b in blocks:
             hours_of_work += b.duration
-            match b.day.lower():
-                case 'mon': week['Monday'] = True
-                case 'tue': week['Tuesday'] = True
-                case 'wed': week['Wednesday'] = True
-                case 'thu': week['Thursday'] = True
-                case 'fri': week['Friday'] = True
-                case 'sat': week['Saturday'] = True
-                case 'sun': week['Sunday'] = True
+
+            week[b.day] = True
         
         message = f"""{teacher.firstname} {teacher.lastname}'s Stats.
         
         Days of the week working:
-        {"Monday " if week['Monday'] else ''}{"Tuesday " if week['Tuesday'] else ''}{"Wednesday " if week['Wednesday'] else ''}{"Thursday " if week['Thursday'] else ''}{"Friday " if week['Friday'] else ''}{"Saturday " if week['Saturday'] else ''}{"Sunday " if week['Sunday'] else ''}
+        {" ".join((week_str[k] if v else "") for k, v in week.items())}
         
         Hours of Work: {hours_of_work}
         Courses being taught:
@@ -588,7 +560,7 @@ class Schedule:
             num_sections = 0
             for s in sections:
                 if s.course is c: num_sections += 1
-            message += f"-> {c.print_description2()} ({num_sections} Section(s))\n"
+            message += f"-> {c.description} ({num_sections} Section(s))\n"
         
         return message
 
@@ -602,7 +574,7 @@ class Schedule:
         Parameter teacher -> The teacher who's schedule to print
         """
         from functools import cmp_to_key
-        def __sort_blocks(a, b):
+        def __sort_blocks(a : Block, b : Block) -> int:
             if a.number < b.number: return 1
             elif a.number > b.number: return -1
             elif a.start_number < b.start_number: return 1
@@ -612,7 +584,7 @@ class Schedule:
         if not isinstance(teacher, Teacher): raise TypeError(f"{teacher} must be an object of type Teacher")
         head = "="*50
         text = f"\n\n{head}\n{teacher}\n{head}\n"
-        for c in sorted(Schedule.courses_for_teacher(teacher), key=lambda a : a.number.lower()):
+        for c in sorted(Schedule.courses_for_teacher(teacher), key = lambda a : a.number.lower()):
             text += f"\n{c.number} {c.name}\n"
             text += "-"*80
 
@@ -674,20 +646,20 @@ class Schedule:
         block.remove_all_labs()
 
     # --------------------------------------------------------
-    # get block infor for specified ViewType object
+    # get block info for specified ViewType object
     # --------------------------------------------------------
-    def get_blocks_for_obj(self, obj) -> tuple[Block]:
+    def get_blocks_for_obj(self, obj : Teacher | Lab | Stream) -> tuple[Block]:
         """ Returns a tuple of blocks associated with the specified ViewType object"""
-        if isinstance(obj,Teacher): return self.blocks_for_teacher(obj)
-        if isinstance(obj,Lab): return self.blocks_for_lab(obj)
-        if isinstance(obj,Stream): return self.blocks_for_stream(obj)
+        if isinstance(obj, Teacher): return self.blocks_for_teacher(obj)
+        if isinstance(obj, Lab): return self.blocks_in_lab(obj)
+        if isinstance(obj, Stream): return self.blocks_for_stream(obj)
         return tuple()
 
     @staticmethod
-    def get_view_type_of_object(obj)->ViewType:
+    def get_view_type_of_object(obj) -> ViewType | None:
         # was originally named: get_scheduable_object_type
         """Returns the type of the ViewType object"""
         for vtype in ViewType:
-            if isinstance(obj,vtype.value): return vtype
+            if isinstance(obj, vtype.value): return vtype
         return None
 

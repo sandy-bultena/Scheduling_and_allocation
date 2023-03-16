@@ -1,8 +1,10 @@
 from __future__ import annotations
+from typing import TYPE_CHECKING
 import sys
 from os import path
 from ScheduleEnums import ViewType, ConflictType
 sys.path.append(path.dirname(path.dirname(__file__)))
+if TYPE_CHECKING: import Block
 # NOTE: using an enum will impact ViewBase.py when it is coded
 
 # TODO:  Evaluate if we even need to keep a list of conflict objects, since the conflict numbers
@@ -14,7 +16,7 @@ sys.path.append(path.dirname(path.dirname(__file__)))
     from Schedule.Conflict import Conflict
 
     blocks = [block1, block2, ...]
-    new_conflict = Conflict(type = Conflict.MINIMUM_DAYS, blocks = blocks)
+    new_conflict = Conflict(type = ConflictType.MINIMUM_DAYS, blocks = blocks)
 """
 
 class Conflict:
@@ -37,13 +39,15 @@ class Conflict:
     # ========================================================
     # CONSTRUCTOR
     # ========================================================
-    def __init__(self, type: ConflictType, blocks: list):
+    def __init__(self, type: ConflictType, blocks: list[Block.Block]):
         """
         Creates an instance of the Conflict class.
         - Parameter type -> defines the type of conflict.
         - Parameter blocks -> defines the list of blocks involved in the conflict.
         """
-        if type is None or not blocks: raise TypeError("Bad inputs")
+        if not isinstance(type, ConflictType) or not blocks: raise TypeError("Bad inputs")
+
+        if isinstance(blocks, tuple) or isinstance(blocks, set): blocks = list(blocks)
 
         self.type = type
         self.blocks = blocks.copy()  # if list is changed, the Conflict won't be
@@ -95,13 +99,13 @@ class Conflict:
     # does the confict number contain the appropriate the specified type
     # --------------------------------------------------------
     @staticmethod
-    def is_time(conflict_number:int):
+    def is_time(conflict_number:int) -> int:
         """does the conflict number include a time conflict?"""
         return conflict_number & ConflictType.TIME.value
 
 
     @staticmethod
-    def is_time_lab(conflict_number: int):
+    def is_time_lab(conflict_number: int) -> int:
         """does the conflict number include a time - lab conflict?"""
         return conflict_number & ConflictType.TIME_LAB.value
 
@@ -112,17 +116,17 @@ class Conflict:
 
 
     @staticmethod
-    def is_time_lunch(conflict_number: int):
+    def is_time_lunch(conflict_number: int) -> int:
         """does the conflict number include a lunch conflict?"""
         return conflict_number & ConflictType.LUNCH.value
 
     @staticmethod
-    def is_minimum_days(conflict_number: int):
+    def is_minimum_days(conflict_number: int) -> int:
         """does the conflict number include a minimum days conflict?"""
         return conflict_number & ConflictType.MINIMUM_DAYS.value
 
     @staticmethod
-    def is_availability(conflict_number: int):
+    def is_availability(conflict_number: int) -> int:
         """does the conflict number include a minimum days conflict?"""
         return conflict_number & ConflictType.AVAILABILITY.value
 
@@ -134,18 +138,15 @@ class Conflict:
     def most_severe(conflict_number: int, view_type: ViewType) -> ConflictType:
         """
         Identify the most severe conflict type in a conflict
-        - Parameter conflict_number -> defines the types of conflicts. integer
+        - Parameter conflict_number -> defines the types of conflicts. int
         - Parameter view_type -> defines the user's current view. ViewType (enum)
         """
         severest = None
         sorted_conflicts = Conflict._sorted_conflicts.copy()
-        match view_type:
-            case ViewType.lab:
-                sorted_conflicts.insert(0, ConflictType.TIME_LAB)
-            case ViewType.stream:
-                sorted_conflicts.insert(0, ConflictType.TIME_STREAM)
-            case ViewType.teacher:
-                sorted_conflicts.insert(0, ConflictType.TIME_TEACHER)
+
+        if view_type:
+            conflict_key = f"time_{view_type._name_}".upper()
+            if conflict_key in ConflictType.__members__: sorted_conflicts.insert(0, ConflictType[conflict_key])
 
         for conflict in sorted_conflicts:
             if conflict_number & conflict.value:
@@ -158,7 +159,7 @@ class Conflict:
     # get_description
     # --------------------------------------------------------
     @staticmethod
-    def get_description(type):
+    def get_description(type : ConflictType) -> str:
         """ Returns the description of the provided conflict type """
         return Conflict._hash_descriptions()[type]
 
@@ -169,7 +170,7 @@ class Conflict:
     # --------------------------------------------------------
     # add_block
     # --------------------------------------------------------
-    def add_block(self, new_block):
+    def add_block(self, new_block : Block):
         """
         Adds a new affected block to the conflict.
         - Parameter new_block -> the new block to be added.
