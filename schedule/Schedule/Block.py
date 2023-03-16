@@ -6,7 +6,7 @@ import Teacher
 from ScheduleEnums import WeekDay
 
 from database.PonyDatabaseConnection import Block as dbBlock, \
-    TimeSlot as dbTimeSlot, Lab as dbLab, \
+    Lab as dbLab, \
     Teacher as dbTeacher, Section as dbSection
 from pony.orm import *
 
@@ -55,8 +55,8 @@ class Block(TimeSlot):
     # =================================================================
 
     def __init__(self, day: str | WeekDay, start: str, duration: float, number: int,
-                 movable: bool = True, *, id: int = None,
-                 time_slot_id: int = None) -> None:
+                 movable: bool = True, *, 
+                 id: int = None) -> None:
         """Creates a new Block object.
         
         - Parameter day: str -> a valid Weekday enum, ex: Weekday.Monday
@@ -65,12 +65,10 @@ class Block(TimeSlot):
         - Parameter number: int -> A number representing this specific Block.
         """
         self._sync : list[Block] = list()
-        if (id and not time_slot_id) or (time_slot_id and not id):
-            raise ValueError("Error: id and time_slot_id must be both defined or neither defined")
 
         if isinstance(day, str) and len(day) == 3: day = day.lower()
         day = WeekDay.validate(day)
-        super().__init__(day, start, duration, movable, id=time_slot_id)
+        super().__init__(day, start, duration, movable)
         self.number = number  # NOTE: Based on the code found in CSV.pm and Section.pm
         self.__section = None
         self._teachers : dict[int, Teacher.Teacher] = dict()
@@ -83,7 +81,7 @@ class Block(TimeSlot):
     @db_session
     @staticmethod
     def __create_entity(instance: Block):
-        entity_block = dbBlock(time_slot_id=instance.time_id, number=instance.number)
+        entity_block = dbBlock(number=instance.number, day=instance.day, duration=instance.duration, movable=instance.movable, start=instance.start)
         commit()
         return entity_block.get_pk()
 
@@ -126,7 +124,6 @@ class Block(TimeSlot):
         # self) self = None
         if self in Block.__instances.values():
             Block.__delete_entity(self)
-            if self.time_id in Block._TimeSlot__instances: del Block._TimeSlot__instances[self.time_id]
             del Block.__instances[self._block_id]
 
     @db_session
@@ -135,12 +132,12 @@ class Block(TimeSlot):
         """Removes the corresponding records for a passed Block object from the Block and
         TimeSlot tables of the database. """
         entity_block = dbBlock.get(id=instance.id)
-        if entity_block is not None:
+        if entity_block is not None: entity_block.delete()
             # Contrary to what you might expect, entity_block.time_slot_id is a TimeSlot entity
             # reference, not an integer.
-            entity_slot: dbTimeSlot = entity_block.time_slot_id
+            #entity_slot: dbTimeSlot = entity_block.time_slot_id
             # Deleting the instance's TimeSlot entity will cascade delete its Block entity too.
-            entity_slot.delete()
+            #entity_slot.delete()
 
     # =================================================================
     # start
@@ -190,11 +187,6 @@ class Block(TimeSlot):
     def id(self) -> int:
         """Gets the Block id."""
         return self._block_id
-
-    @property
-    def time_id(self) -> int:
-        """Gets the associated Time Slot's id."""
-        return super().id
 
     # =================================================================
     # section

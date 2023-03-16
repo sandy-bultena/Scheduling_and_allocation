@@ -38,7 +38,7 @@ class Lab(db.Entity):
     number = Required(str, max_len=50)
     description = Optional(str, max_len=100)
     # This field won't be present in the database, but we have to declare it here to establish a
-    # one-to-many relationship between Lab and TimeSlot.
+    # one-to-many relationship between Lab and LabUnavailableTime.
     unavailable_slots = Set('LabUnavailableTime')
     blocks = Set('Block')
 
@@ -60,20 +60,8 @@ class Course(db.Entity):
     name = Required(str, max_len=50)
     number = Optional(str, max_len=15)
     allocation = Optional(bool, default=True, sql_default='1')
-    semester = Required(int, sql_default='4')
+    semester = Required(int, default=4, sql_default='4')
     sections = Set('Section')
-
-
-class TimeSlot(db.Entity):
-    _table_ = "time_slot"  # Give the table a custom name; otherwise it becomes "timeslot".
-    # id = PrimaryKey(int)
-    day = Required(str, max_len=3)
-    duration = Required(Decimal, 3, 1)
-    start = Required(str, max_len=5)
-    movable = Optional(bool, default=True, sql_default='1')
-    block_id = Optional('Block', cascade_delete=True)
-    # unavailable_lab_id = Optional(Lab)
-    # schedule_id = Optional('Schedule')
 
 
 class Scenario(db.Entity):
@@ -120,11 +108,11 @@ class Stream(db.Entity):
 
 class Block(db.Entity):
     # id = PrimaryKey(int)
-    # Every Block is an instance of a TimeSlot. However, using normal inheritance causes problems
-    # here because you can't give the child class a different primary key from the parent class,
-    # and you can't use a non-primary key as a foreign key in other tables. Because of this,
-    # we've decided to simply create a link between the two tables without inheriting anything.
-    time_slot_id = Required(TimeSlot)
+    day = Required(str, max_len=3)
+    duration = Required(Decimal, 3, 1)
+    start = Required(str, max_len=5)
+    movable = Optional(bool, default=True, sql_default='1')
+    number = Required(int, min=0)
 
     # Blocks have a many-to-one relationship with Sections. A Block can belong to one Section,
     # or none.
@@ -132,7 +120,6 @@ class Block(db.Entity):
     # Blocks have many-to-many relationships with Labs and Teachers.
     labs = Set(Lab)
     teachers = Set(Teacher)
-    number = Required(int, min=0)
 
 
 class Schedule_Teacher(db.Entity):
