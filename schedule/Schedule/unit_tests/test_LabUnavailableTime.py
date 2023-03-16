@@ -117,3 +117,12 @@ def test_save():
     commit()
     assert d_unavailable.start == new_start and d_unavailable.duration == new_duration
 
+
+def test_list():
+    """Verifies that list() returns a tuple containing all extant LabUnavailableTime objects."""
+    sched = Schedule.read_DB(1)
+    unavailable_1 = LabUnavailableTime("mon", "8:30", 2, schedule=sched)
+    unavailable_2 = LabUnavailableTime("tue", "10:00", 1.5, schedule=sched)
+    times = LabUnavailableTime.list()
+    assert isinstance(times, tuple) and len(times) == 2 and unavailable_1 in times \
+           and unavailable_2 in times
