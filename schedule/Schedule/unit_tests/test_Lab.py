@@ -297,13 +297,14 @@ def test_remove():
 
 def test_remove_gets_slots():
     """Verifies that remove() deletes any TimeSlots in the Block's unavailable attribute."""
+    sched = Schedule.read_DB(1)
     Lab.reset()
     TimeSlot.reset()
     lab1 = Lab("R-101", "Worst place in the world")
     lab2 = Lab("R-102", "Second-worst place in the world")
-    lab1.add_unavailable("mon", "8:00", 1.5)
+    lab1.add_unavailable("mon", "8:00", 1.5, schedule=sched)
     lab1.delete()
-    assert lab1 not in Lab.list() and len(TimeSlot.list()) == 0
+    assert lab1 not in Lab.list() and len(LabUnavailableTime.list()) == 0
 
 
 @db_session
@@ -317,16 +318,17 @@ def test_remove_gets_database():
 
 
 @db_session
-def test_remove_gets_database_labs():
+def test_remove_gets_database_times():
     """Verifies that delete() removes the records of the Lab's unavailable time slots from the
     database. """
+    sched = Schedule.read_DB(1)
     lab = Lab("R-101", "Worst place in the world")
-    lab.add_unavailable("mon", "8:00", 1.5)
+    lab.add_unavailable("mon", "8:00", 1.5, schedule=sched)
     commit()
     lab.delete()
     commit()
-    d_slots = select(s for s in dbTimeSlot)
-    assert len(d_slots) == 0
+    d_times = select(s for s in dbUnavailableTime)
+    assert len(d_times) == 0
 
 
 def test_get_good():
