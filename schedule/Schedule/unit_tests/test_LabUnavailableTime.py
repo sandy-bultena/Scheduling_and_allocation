@@ -76,3 +76,27 @@ def test_constructor_updates_db():
            and db_unavailable.start == unavailable.start \
            and db_unavailable.duration == unavailable.duration \
            and db_unavailable.schedule_id == db_sched
+
+
+@db_session
+def test_delete():
+    """Verifies that delete() works as intended."""
+    sched = Schedule.read_DB(1)
+    unavailable = LabUnavailableTime("mon", "8:30", 2, schedule=sched)
+    flush()
+    unavailable.delete()
+    flush()
+    times = LabUnavailableTime.list()
+    assert len(times) == 0
+
+
+@db_session
+def test_delete_updates_database():
+    """Verifies that delete() removes the corresponding record from the database."""
+    sched = Schedule.read_DB(1)
+    unavailable = LabUnavailableTime("mon", "8:30", 2, schedule=sched)
+    flush()
+    unavailable.delete()
+    flush()
+    db_times = dbUnavailableTime.select()
+    assert len(db_times) == 0

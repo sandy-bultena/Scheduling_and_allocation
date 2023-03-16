@@ -36,7 +36,6 @@ class LabUnavailableTime(Time_slot.TimeSlot):
         """Creates a database record of a passed LabUnavailableTime object.
 
         Returns the record's automatically-generated id."""
-        # TODO: Fill me in once the database class has been defined.
         d_sched = dbSchedule[schedule_id]
         entity_time = dbUnavailableTime(day=instance.day, duration=instance.duration,
                                         start=instance.start, movable=instance.movable,
@@ -66,8 +65,9 @@ class LabUnavailableTime(Time_slot.TimeSlot):
     @staticmethod
     def __delete_entity(instance: LabUnavailableTime):
         """Removes the corresponding record of a passed LabUnavailableTime from the database."""
-        # TODO: Implement me once the database LabUnavailableTime has been created.
-        pass
+        entity_time = dbUnavailableTime.get(id=instance.id)
+        if entity_time:
+            entity_time.delete()
 
     # ====================================
     # save
