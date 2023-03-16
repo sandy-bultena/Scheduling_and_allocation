@@ -3,8 +3,11 @@ import Time_slot
 from ScheduleEnums import WeekDay
 from pony.orm import *
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     import Schedule
+from database.PonyDatabaseConnection import LabUnavailableTime as dbUnavailableTime, \
+    Schedule as dbSchedule
 
 
 class LabUnavailableTime(Time_slot.TimeSlot):
@@ -24,17 +27,22 @@ class LabUnavailableTime(Time_slot.TimeSlot):
                  schedule: Schedule.Schedule):
         super().__init__(day, start, duration, movable, id=id)
         self.schedule = schedule
-        self.__id = id if id else LabUnavailableTime.__create_entity(self)
+        self.__id = id if id else LabUnavailableTime.__create_entity(self, schedule.id)
         LabUnavailableTime.__instances[self.id] = self
 
     @db_session
     @staticmethod
-    def __create_entity(instance: LabUnavailableTime) -> int:
+    def __create_entity(instance: LabUnavailableTime, schedule_id: int) -> int:
         """Creates a database record of a passed LabUnavailableTime object.
 
         Returns the record's automatically-generated id."""
         # TODO: Fill me in once the database class has been defined.
-        pass
+        d_sched = dbSchedule[schedule_id]
+        entity_time = dbUnavailableTime(day=instance.day, duration=instance.duration,
+                                        start=instance.start, movable=instance.movable,
+                                        schedule_id=d_sched)
+        commit()
+        return entity_time.get_pk()
 
     # ====================================
     # id

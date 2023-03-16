@@ -39,7 +39,7 @@ class Lab(db.Entity):
     description = Optional(str, max_len=100)
     # This field won't be present in the database, but we have to declare it here to establish a
     # one-to-many relationship between Lab and TimeSlot.
-    unavailable_slots = Set('TimeSlot')
+    unavailable_slots = Set('LabUnavailableTime')
     blocks = Set('Block')
 
 
@@ -72,7 +72,7 @@ class TimeSlot(db.Entity):
     start = Required(str, max_len=5)
     movable = Optional(bool, default=True, sql_default='1')
     block_id = Optional('Block', cascade_delete=True)
-    unavailable_lab_id = Optional(Lab)
+    # unavailable_lab_id = Optional(Lab)
     # schedule_id = Optional('Schedule')
 
 
@@ -94,6 +94,7 @@ class Schedule(db.Entity):
     # teachers = Set(Teacher)
     teachers = Set('Schedule_Teacher')
     # time_slots = Set(TimeSlot)
+    unavailable_times = Set('LabUnavailableTime')
 
 
 class Section(db.Entity):
@@ -146,6 +147,16 @@ class Section_Teacher(db.Entity):
     section_id = Required(Section)
     allocation = Required(Decimal, 3, 1)
     PrimaryKey(teacher_id, section_id)
+
+
+class LabUnavailableTime(db.Entity):
+    _table_ = "lab_unavailable_time" # Custom title: otherwise it becomes "labunavailabletime".
+    day = Required(str, max_len=3)
+    duration = Required(Decimal, 3, 1)
+    start = Required(str, max_len=5)
+    movable = Optional(bool, default=True, sql_default='1')
+    lab_id = Optional(Lab)
+    schedule_id = Required(Schedule)
 
 
 def bind_entities(**db_params):

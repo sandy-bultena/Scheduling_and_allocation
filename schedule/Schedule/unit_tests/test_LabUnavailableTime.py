@@ -9,7 +9,7 @@ from Schedule import Schedule
 from LabUnavailableTime import LabUnavailableTime
 from Lab import Lab
 from database.PonyDatabaseConnection import define_database, Scenario as dbScenario, \
-    Schedule as dbSchedule, Lab as dbLab
+    Schedule as dbSchedule, Lab as dbLab, LabUnavailableTime as dbUnavailableTime
 from unit_tests.db_constants import *
 from ScheduleEnums import WeekDay
 
@@ -55,3 +55,24 @@ def test_constructor_no_db():
     unavailable = LabUnavailableTime(day, start, dur, id=1, schedule=sched)
     assert unavailable.day == day and unavailable.start == start and unavailable.duration == dur \
            and unavailable.schedule == sched
+
+
+@db_session
+def test_constructor_updates_db():
+    """Verifies that the initializer updates the database when no ID is passed to the
+    constructor. """
+    sched = Schedule.read_DB(1)
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    num = 1
+    unavailable = LabUnavailableTime(day, start, dur, schedule=sched)
+    flush()
+    db_unavailable = dbUnavailableTime[1]
+    flush()
+    db_sched = dbSchedule[1]
+    flush()
+    assert db_unavailable.id == unavailable.id and db_unavailable.day == unavailable.day \
+           and db_unavailable.start == unavailable.start \
+           and db_unavailable.duration == unavailable.duration \
+           and db_unavailable.schedule_id == db_sched
