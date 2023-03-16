@@ -259,7 +259,7 @@ class TimeSlot:
 
         """
         day_of_week = self._snap_to_day(*args)
-        self.day = WeekDayNumber(day_of_week).name
+        self.day = ScheduleEnums.WeekDayNumber(day_of_week).name
 
     def _snap_to_day(self, *args: int):
         min_day = args[0] if len(args) >= 1 else 1

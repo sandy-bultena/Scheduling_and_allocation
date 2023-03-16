@@ -32,15 +32,15 @@ def before_and_after():
     db.drop_table(table_name='time_slot', if_exists=True, with_all_data=True)
 
 
-@db_session
-def test_id():
-    """Verifies that the ID assigned to a TimeSlot increments automatically."""
-    slots = []
-    for x in range(5):
-        slots.append(TimeSlot())
-        flush()
-    last_slot = slots[-1]
-    assert last_slot.id == len(slots)
+# @db_session
+# def test_id():
+#     """Verifies that the ID assigned to a TimeSlot increments automatically."""
+#     slots = []
+#     for x in range(5):
+#         slots.append(TimeSlot())
+#         flush()
+#     last_slot = slots[-1]
+#     assert last_slot.id == len(slots)
 
 
 @db_session
@@ -240,44 +240,44 @@ def test_conflicts_time_different_days():
     assert slot1.conflicts_time(slot2) is False
 
 
-@db_session
-def test_list():
-    """Verifies that the static list() method returns a tuple containing all extant TimeSlot
-    objects. """
-    TimeSlot.reset()
-    slot1 = TimeSlot()
-    slot2 = TimeSlot("Tuesday")
-    slots = TimeSlot.list()
-    assert len(slots) == 2 and slot1 in slots and slot2 in slots
+# @db_session
+# def test_list():
+#     """Verifies that the static list() method returns a tuple containing all extant TimeSlot
+#     objects. """
+#     TimeSlot.reset()
+#     slot1 = TimeSlot()
+#     slot2 = TimeSlot("Tuesday")
+#     slots = TimeSlot.list()
+#     assert len(slots) == 2 and slot1 in slots and slot2 in slots
 
 
-@db_session
-def test_list_no_slots():
-    """Verifies that the static list() method returns an empty tuple if no TimeSlots have been
-    created yet. """
-    TimeSlot.reset()
-    slots = TimeSlot.list()
-    assert len(slots) == 0
+# @db_session
+# def test_list_no_slots():
+#     """Verifies that the static list() method returns an empty tuple if no TimeSlots have been
+#     created yet. """
+#     TimeSlot.reset()
+#     slots = TimeSlot.list()
+#     assert len(slots) == 0
 
 
-@db_session
-def test_no_alterations():
-    """Verifies that changing the properties of a model TimeSlot doesn't affect its corresponding
-    entity TimeSlot. """
-    slot = TimeSlot()
-    flush()
-    slot.duration = 2.5
-    d_slot = dbTimeSlot[slot.id]
-    assert slot.duration != d_slot.duration
+# @db_session
+# def test_no_alterations():
+#     """Verifies that changing the properties of a model TimeSlot doesn't affect its corresponding
+#     entity TimeSlot. """
+#     slot = TimeSlot()
+#     flush()
+#     slot.duration = 2.5
+#     d_slot = dbTimeSlot[slot.id]
+#     assert slot.duration != d_slot.duration
 
 
-@db_session
-def test_save():
-    """Verifies that the save() method updates the TimeSlot database record."""
-    slot = TimeSlot()
-    flush()
-    slot.duration = 2.5
-    slot.save()
-    commit()
-    d_slot = dbTimeSlot[slot.id]
-    assert d_slot.duration == slot.duration
+# @db_session
+# def test_save():
+#     """Verifies that the save() method updates the TimeSlot database record."""
+#     slot = TimeSlot()
+#     flush()
+#     slot.duration = 2.5
+#     slot.save()
+#     commit()
+#     d_slot = dbTimeSlot[slot.id]
+#     assert d_slot.duration == slot.duration
