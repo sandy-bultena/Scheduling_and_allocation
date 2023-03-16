@@ -4,8 +4,8 @@ import Block
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    import LabUnavailableTime
     import Schedule
+    import LabUnavailableTime
 import Time_slot
 # import Schedule
 from ScheduleEnums import WeekDay
@@ -79,6 +79,9 @@ class Lab:
 
         - Parameter duration => how long does this class last, in hours
         """
+        # Importing the class here to help avoid circular dependency issues when running the tests.
+        # Not an ideal solution, admittedly.
+        import LabUnavailableTime
         # Create a LabUnavailableTime. (no need to verify day because it's verified in TimeSlot
         # constructor)
         return self.add_unavailable_slot(
