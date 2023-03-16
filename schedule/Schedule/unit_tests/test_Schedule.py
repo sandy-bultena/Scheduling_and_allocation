@@ -722,7 +722,7 @@ def test_write_db(after_write):
 
     # confirm correct number of labs and data was transferred correctly
     assert len(Lab.list()) == 3
-    assert Lab.get(1).get_unavailable(ids.get("ts1"))
+    assert Lab.get(1).get_unavailable(ids.get("lut1"))
     for i, l in enumerate(Lab.list()):
         assert l.number == f"P32{i}"
         assert l.descr == f"Computer Lab {i+1}"
