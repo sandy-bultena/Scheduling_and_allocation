@@ -299,7 +299,7 @@ def test_remove_gets_slots():
     """Verifies that remove() deletes any TimeSlots in the Block's unavailable attribute."""
     sched = Schedule.read_DB(1)
     Lab.reset()
-    TimeSlot.reset()
+    LabUnavailableTime.reset()
     lab1 = Lab("R-101", "Worst place in the world")
     lab2 = Lab("R-102", "Second-worst place in the world")
     lab1.add_unavailable("mon", "8:00", 1.5, schedule=sched)

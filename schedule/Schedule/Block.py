@@ -1,5 +1,5 @@
 from __future__ import annotations
-from Time_slot import TimeSlot
+import Time_slot
 import Lab
 import Section
 import Teacher
@@ -38,7 +38,7 @@ block.labs()
 """
 
 
-class Block(TimeSlot):
+class Block(Time_slot.TimeSlot):
     """
     Describes a block which is a specific time slot for teaching part of a section of a course.
     """
@@ -83,7 +83,8 @@ class Block(TimeSlot):
     @db_session
     @staticmethod
     def __create_entity(instance: Block):
-        entity_block = dbBlock(time_slot_id=instance.time_id, number=instance.number)
+        entity_block = dbBlock(day=instance.day, duration=instance.duration, start=instance.start,
+                               movable=instance.movable, number=instance.number)
         commit()
         return entity_block.get_pk()
 
