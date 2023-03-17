@@ -232,9 +232,17 @@ class Schedule:
     # courses
     # --------------------------------------------------------
     @staticmethod
+    # TODO: Do we want this method as part of the schedule class,
+    #       since it is independent of schedules
     def courses() -> tuple[Course]:
         """Returns a tuple of all the Course objects"""
         return Course.list()
+    
+    # TODO: make a non-static method that will return all the courses 
+    #       that belong in this schedule
+    #       -putting in a dummy one now so that I can continue my work (SLB)
+    def courses_in_schedule(self):
+        pass
 
     # TODO: make a non-static method that will return all the courses
     #       that belong in this schedule

@@ -217,21 +217,21 @@ def test_get_new_number_no_blocks():
 
 
 def test_string_representation_with_valid_name():
-    n = 10
-    s = Section(number=n, name="For students taking calculus", schedule_id=1)
+    n = "10"
+    s = Section(number=n, name="For students taking calculus", schedule_id=1, course=Course())
     assert re.search(f"{n}" + r".*?For students taking calculus", str(s))
 
 
 def test_string_representation_with_invalid_name():
-    n = 10
-    s = Section(number=n, name=f"Section {n}", schedule_id=1)
-    assert "s" == f"Section {10}"
+    n = "10"
+    s = Section(number=n, name=f"Section {n}", schedule_id=1, course=Course())
+    assert str(s) == f"Section {10}"
 
 
 def test_string_representation_with_no_name():
-    n = 10
-    s = Section(number=n, schedule_id=1)
-    assert "s" == f"Section {10}"
+    n = "10"
+    s = Section(number=n, schedule_id=1, course=Course())
+    assert str(s) == f"Section {10}"
 
 
 @db_session
