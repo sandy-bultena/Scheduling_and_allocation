@@ -69,6 +69,8 @@ class Schedule:
     # reset_local
     # --------------------------------------------------------
     @staticmethod
+    # TODO: Should this be global?  If we have two schedules open at the same time
+    #       doing this would mess up the other schedule
     def reset_local():
         """ Reset the local model data """
         Block.reset()
@@ -213,6 +215,12 @@ class Schedule:
     # --------------------------------------------------------
     # teachers
     # --------------------------------------------------------
+    # TODO: this should not be static.  Find the teachers who are teaching courses 
+    #       that are part of this schedule
+    #       If I remember correctly, teachers are assigned to blocks and streams,
+    #       so we could use those to find all the teachers attached to this schedule
+    #
+    #       If the user wants ALL the teachers, the can call Teacher.list() themselves
     @staticmethod
     def teachers() -> tuple[Teacher]:
         """Returns a tuple of all the Teacher objects"""
@@ -221,6 +229,8 @@ class Schedule:
     # --------------------------------------------------------
     # streams
     # --------------------------------------------------------
+    # TODO: this should not be static.  Find the streams that are part of this schedule
+    #       sections -> streams
     @staticmethod
     def streams() -> tuple[Stream]:
         """Returns a tuple of all the Stream objects"""
@@ -230,21 +240,17 @@ class Schedule:
     # courses
     # --------------------------------------------------------
     @staticmethod
-    # TODO: Do we want this method as part of the schedule class,
-    #       since it is independent of schedules
+    # TODO: this should not be static.  Find the courses that are part of this schedule
+    #       sections -> courses
     def courses() -> tuple[Course]:
         """Returns a tuple of all the Course objects"""
         return Course.list()
     
-    # TODO: make a non-static method that will return all the courses 
-    #       that belong in this schedule
-    #       -putting in a dummy one now so that I can continue my work (SLB)
-    def courses_in_schedule(self):
-        pass
-
     # --------------------------------------------------------
     # labs
     # --------------------------------------------------------
+    # TODO: this should not be static.  Find the labs that are part of this schedule
+    #       sections -> labs
     @staticmethod
     def labs() -> tuple[Lab]:
         """Returns a tuple of all the Lab objects"""
@@ -253,6 +259,8 @@ class Schedule:
     # --------------------------------------------------------
     # conflicts
     # --------------------------------------------------------
+    # TODO: definitely not static.  conflicts are very specific
+    #       to the schedule they are in
     @staticmethod
     def conflicts() -> tuple[Conflict]:
         """Returns the a tuple of all the Conflict objects"""
@@ -262,6 +270,7 @@ class Schedule:
     # sections_for_teacher
     # --------------------------------------------------------
     @staticmethod
+    # TODO: Again, not static, sections for this schedule only
     def sections_for_teacher(teacher : Teacher) -> tuple[Section]:
         """
         Returns a tuple of Sections that the given Teacher teaches
@@ -276,6 +285,7 @@ class Schedule:
     # --------------------------------------------------------
     # courses_for_teacher
     # --------------------------------------------------------
+    # TODO: Again, not static, courses for this schedule only
     @staticmethod
     def courses_for_teacher(teacher : Teacher) -> tuple[Course]:
         """
@@ -291,6 +301,7 @@ class Schedule:
     # --------------------------------------------------------
     # allocated_courses_for_teacher
     # --------------------------------------------------------
+    # TODO: Not static
     @staticmethod
     def allocated_courses_for_teacher(teacher : Teacher) -> tuple[Course]:
         """
@@ -303,6 +314,7 @@ class Schedule:
     # --------------------------------------------------------
     # blocks_for_teacher
     # --------------------------------------------------------
+    # TODO: Not static
     @staticmethod
     def blocks_for_teacher(teacher : Teacher) -> tuple[Block]:
         """
@@ -319,6 +331,7 @@ class Schedule:
     # --------------------------------------------------------
     # blocks_in_lab
     # --------------------------------------------------------
+    # TODO: Not static (blocks are specific to schedule)
     @staticmethod
     def blocks_in_lab(lab : Lab) -> tuple[Lab]:
         """
@@ -334,6 +347,7 @@ class Schedule:
     # --------------------------------------------------------
     # sections_for_stream
     # --------------------------------------------------------
+    # TODO: Not static, 
     @staticmethod
     def sections_for_stream(stream : Stream) -> tuple[Section]:
         """
@@ -349,6 +363,7 @@ class Schedule:
     # --------------------------------------------------------
     # blocks_for_stream
     # --------------------------------------------------------
+    # TODO: Not static
     @staticmethod
     def blocks_for_stream(stream : Stream) -> tuple[Block]:
         """
@@ -365,6 +380,8 @@ class Schedule:
     # --------------------------------------------------------
     # remove_course
     # --------------------------------------------------------
+    # TODO: Not static - remove course from schedule (i.e. remove sections from schedule)
+    # User can use course.delete() to delete a course from the database
     @staticmethod
     def remove_course(course : Course):
         """Removes Course from schedule"""
@@ -375,6 +392,9 @@ class Schedule:
     # remove_teacher
     # --------------------------------------------------------
     @staticmethod
+    # TODO: Not static - remove teacher from schedule (i.e. remove association of teacher from
+    #       any section or block)
+    # User can use teacher.delete() to delete a teacher from the database
     def remove_teacher(teacher : Teacher):
         """Removes Teacher from schedule"""
         if not isinstance(teacher, Teacher): raise TypeError(f"{teacher} must be an object of type Teacher")
@@ -386,6 +406,7 @@ class Schedule:
     # remove_lab
     # --------------------------------------------------------
     @staticmethod
+    # TODO: Not static
     def remove_lab(lab : Lab):
         """Removes Lab from schedule"""
         if not isinstance(lab, Lab): raise TypeError(f"{lab} must be an object of type Lab")
@@ -397,6 +418,7 @@ class Schedule:
     # remove_stream
     # --------------------------------------------------------
     @staticmethod
+    # TODO: Not static
     def remove_stream(stream : Stream):
         """Removes Stream from schedule"""
         if not isinstance(stream, Stream): raise TypeError(f"{stream} must be an object of type Stream")
@@ -408,6 +430,7 @@ class Schedule:
     # calculate_conflicts
     # --------------------------------------------------------
     @staticmethod
+    # Not static
     def calculate_conflicts():
         """Reviews the schedule, and creates a list of Conflict objects as necessary"""
         def __new_conflict(type : ConflictType, blocks : list[Block]):
@@ -506,6 +529,7 @@ class Schedule:
     # _conflict_lunch
     # --------------------------------------------------------
     @staticmethod
+    # TODO: Not static
     def _conflict_lunch(block : Block, lunch_start):
         lunch_end = lunch_start + .5
         block_end_number = block.start_number + block.duration
@@ -518,6 +542,7 @@ class Schedule:
     # teacher_stat
     # --------------------------------------------------------
     @staticmethod
+    # TODO: Not static
     def teacher_stat(teacher : Teacher) -> str:
         """
         Returns text that gives teacher statistics
@@ -576,6 +601,7 @@ class Schedule:
     # teacher_details
     # --------------------------------------------------------
     @staticmethod
+    # TODO: Not static
     def teacher_details(teacher : Teacher) -> str:
         """
         Prints a schedule for a specific teacher
@@ -612,6 +638,7 @@ class Schedule:
     # clear_all_from_course
     # --------------------------------------------------------
     @staticmethod
+    # TODO: Not static
     def clear_all_from_course(course : Course):
         """
         Removes all teachers, labs, and streams from course
@@ -625,6 +652,7 @@ class Schedule:
     # clear_all_from_section
     # --------------------------------------------------------
     @staticmethod
+    # TODO: Not static
     def clear_all_from_section(section : Section):
         """
         Removes all teachers, labs, and streams from section
@@ -642,6 +670,7 @@ class Schedule:
     # clear_all_from_block
     # --------------------------------------------------------
     @staticmethod
+    # TODO: Not static
     def clear_all_from_block(block : Block):
         """
         Removes all teachers, labs, and streams from block
