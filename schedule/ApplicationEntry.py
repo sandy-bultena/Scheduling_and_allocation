@@ -2,6 +2,11 @@ from tkinter import *
 from tkinter import ttk
 from functools import partial
 
+import mysql.connector
+
+from Schedule.unit_tests.db_constants import DB_NAME, HOST, PROVIDER
+import Schedule.database.PonyDatabaseConnection as PonyDatabaseConnection
+
 
 # TODO: Import the database constants so we can use/change them for the login and initial
 #  connection.
@@ -17,6 +22,12 @@ def verify_login(**kwargs: StringVar):
     if username is None or len(username) == 0 or passwd is None or len(passwd) == 0:
         # Display an error message.
         display_error_message("Username and password are required.")
+    else:
+        try:
+            db = PonyDatabaseConnection.define_database(host=HOST, db=DB_NAME, user=username,
+                                                        passwd=passwd, provider=PROVIDER)
+        except mysql.connector.DatabaseError as err:
+            display_error_message(str(err))
 
 
 def display_error_message(msg: str):
