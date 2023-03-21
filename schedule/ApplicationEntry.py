@@ -20,14 +20,19 @@ def verify_login(**kwargs: StringVar):
         display_error_message("Username and password are required.")
     else:
         try:
+            connect_msg = "Connecting..."
+            statusString.set(connect_msg)
             db = PonyDatabaseConnection.define_database(host=HOST, db=DB_NAME, user=username,
                                                         passwd=passwd, provider=PROVIDER)
-            print(f"Connection Successful. User '{username}' is now connected to database "
-                  f"{DB_NAME}.")
+            success_msg = f"Connection Successful. User '{username}' is now connected to " \
+                          f"database '{DB_NAME}'."
+            print(success_msg)
+            statusString.set(success_msg)
         except mysql.connector.DatabaseError as err:
             # Display a relevant error message for anything else that might go wrong with the
             # connection.
             display_error_message(str(err))
+            statusString.set("")
 
 
 def display_error_message(msg: str):
@@ -54,5 +59,7 @@ ttk.Entry(frm, textvariable=passwdInput, show="*").grid(column=1, row=2, columns
 ttk.Button(frm, text="Login",
            command=partial(verify_login, username=usernameInput, passwd=passwdInput))\
     .grid(column=1, row=3, columnspan=1)
+statusString = StringVar()
+ttk.Label(frm, textvariable=statusString).grid(column=0, row=4, columnspan=2)
 
 root.mainloop()
