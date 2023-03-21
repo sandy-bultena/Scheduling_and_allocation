@@ -3,12 +3,26 @@ from tkinter import ttk
 from functools import partial
 
 
-def verify_login(*args: StringVar):
+# TODO: Import the database constants so we can use/change them for the login and initial
+#  connection.
+
+
+def verify_login(**kwargs: StringVar):
     # Do something to verify the user's credentials.
-    print(args)
-    for arg in args:
-        print(arg.get())
-    pass
+    print(kwargs)
+    for arg in kwargs:
+        print(kwargs[arg])
+    username = kwargs['username'].get()
+    passwd = kwargs['passwd'].get()
+    if username is None or len(username) == 0 or passwd is None or len(passwd) == 0:
+        # Display an error message.
+        error_window = Toplevel(root)
+        error_window.title("ERROR")
+        err_frm = ttk.Frame(error_window, padding=20)
+        err_frm.grid()
+        ttk.Label(err_frm, text="Username and password are required").grid(row=0, column=0)
+        ttk.Button(err_frm, text="Okay", command=error_window.destroy).grid(row=1, column=0)
+        error_window.mainloop()
 
 
 root = Tk()
@@ -22,6 +36,8 @@ ttk.Entry(frm, textvariable=usernameInput).grid(column=1, row=1, columnspan=2)
 ttk.Label(frm, text="Password").grid(column=0, row=2)
 passwdInput = StringVar()
 ttk.Entry(frm, textvariable=passwdInput).grid(column=1, row=2, columnspan=2)
-ttk.Button(frm, text="Login", command=partial(verify_login, usernameInput, passwdInput)).grid(column=1, row=3, columnspan=1)
+ttk.Button(frm, text="Login",
+           command=partial(verify_login, username=usernameInput, passwd=passwdInput))\
+    .grid(column=1, row=3, columnspan=1)
 
 root.mainloop()
