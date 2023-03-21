@@ -68,14 +68,14 @@ class Scenario(db.Entity):
     # id = PrimaryKey(int)
     name = Optional(str, max_len=50)
     description = Optional(str, max_len=1000)
-    year = Optional(int, max=2200)
+    semester = Optional(str, max_len=11)
+    status = Optional(str, max_len=20)
     schedules = Set('Schedule')
 
 
 class Schedule(db.Entity):
     # id = PrimaryKey(int)
     description = Optional(str, max_len=100)
-    semester = Required(str, max_len=11)
     official = Required(bool)
     scenario_id = Required(Scenario)
     sections = Set('Section')
