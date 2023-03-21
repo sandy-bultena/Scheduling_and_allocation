@@ -8,10 +8,6 @@ from Schedule.unit_tests.db_constants import DB_NAME, HOST, PROVIDER
 import Schedule.database.PonyDatabaseConnection as PonyDatabaseConnection
 
 
-# TODO: Import the database constants so we can use/change them for the login and initial
-#  connection.
-
-
 def verify_login(**kwargs: StringVar):
     # Do something to verify the user's credentials.
     print(kwargs)
@@ -26,7 +22,11 @@ def verify_login(**kwargs: StringVar):
         try:
             db = PonyDatabaseConnection.define_database(host=HOST, db=DB_NAME, user=username,
                                                         passwd=passwd, provider=PROVIDER)
+            print(f"Connection Successful. User '{username}' is now connected to database "
+                  f"{DB_NAME}.")
         except mysql.connector.DatabaseError as err:
+            # Display a relevant error message for anything else that might go wrong with the
+            # connection.
             display_error_message(str(err))
 
 
@@ -50,7 +50,7 @@ usernameInput = StringVar()
 ttk.Entry(frm, textvariable=usernameInput).grid(column=1, row=1, columnspan=2)
 ttk.Label(frm, text="Password").grid(column=0, row=2)
 passwdInput = StringVar()
-ttk.Entry(frm, textvariable=passwdInput).grid(column=1, row=2, columnspan=2)
+ttk.Entry(frm, textvariable=passwdInput, show="*").grid(column=1, row=2, columnspan=2)
 ttk.Button(frm, text="Login",
            command=partial(verify_login, username=usernameInput, passwd=passwdInput))\
     .grid(column=1, row=3, columnspan=1)
