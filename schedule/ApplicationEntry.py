@@ -16,18 +16,22 @@ def verify_login(**kwargs: StringVar):
     passwd = kwargs['passwd'].get()
     if username is None or len(username) == 0 or passwd is None or len(passwd) == 0:
         # Display an error message.
-        error_window = Toplevel(root)
-        error_window.title("ERROR")
-        err_frm = ttk.Frame(error_window, padding=20)
-        err_frm.grid()
-        ttk.Label(err_frm, text="Username and password are required").grid(row=0, column=0)
-        ttk.Button(err_frm, text="Okay", command=error_window.destroy).grid(row=1, column=0)
-        error_window.mainloop()
+        display_error_message("Username and password are required.")
+
+
+def display_error_message(msg: str):
+    error_window = Toplevel(root)
+    error_window.title("ERROR")
+    err_frm = ttk.Frame(error_window, padding=20)
+    err_frm.grid()
+    ttk.Label(err_frm, text=msg).grid(row=0, column=0)
+    ttk.Button(err_frm, text="Okay", command=error_window.destroy).grid(row=1, column=0)
+    error_window.mainloop()
 
 
 root = Tk()
 root.title("Scheduling Application -  Login")
-frm = ttk.Frame(root, padding=10)
+frm = ttk.Frame(root, padding=30)
 frm.grid()
 ttk.Label(frm, text="Please login to access the scheduler").grid(column=1, row=0)
 ttk.Label(frm, text="Username").grid(column=0, row=1)
