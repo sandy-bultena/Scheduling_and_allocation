@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from Schedule.Schedule import Schedule
+from Schedule import Schedule
 from Teacher import Teacher
 from Course import Course
 from Lab import Lab
@@ -16,8 +16,13 @@ from pony.orm import *
 
 class ScheduleWrapper():
     def __init__(self):
-        self.schedules : dict[str, Schedule] # key representing the schedule's semester, ie fall or winter (for allocation manager)
+        self.schedules : dict[str, Schedule.Schedule] = dict() # key representing the schedule's semester, ie fall or winter (for allocation manager)
         ScheduleWrapper.read_DB()
+    
+    def load_schedule(self, sid : int, semester : str):
+        """ Load a schedule with a given id, marked as a given semester.
+        Semester should be taken from parent scenario. """
+        self.schedules[semester] = Schedule.read_DB(sid)
 
     # --------------------------------------------------------
     # reset_local

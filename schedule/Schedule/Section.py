@@ -6,7 +6,7 @@ import Block
 import Lab
 import re
 
-from database.PonyDatabaseConnection import Section as dbSection, Course as dbCourse, \
+from database.PonyDatabaseConnection import Section as dbSection, \
     Schedule as dbSchedule, Teacher as dbTeacher, Section_Teacher
 from pony.orm import *
 
@@ -73,17 +73,18 @@ class Section:
         self.number = number
         self.hours = hours
         self.num_students: int = 0
-        self.course = course
 
-        self.__id = id if id else Section.__create_entity(self, schedule_id)
+        self.__id = id if id else Section.__create_entity(self, schedule_id, course)
         Section.__instances[self.__id] = self
+        
+        course.add_section(self)
 
     @db_session
     @staticmethod
-    def __create_entity(instance: Section, schedule_id: int) -> int:
+    def __create_entity(instance: Section, schedule_id: int, course : Course.Course) -> int:
         entity_section = dbSection(name=instance.name, number=instance.number, hours=instance.hours,
                                    num_students=instance.num_students,
-                                   course_id=instance._course.id,
+                                   course_id=course.save(),
                                    schedule_id=schedule_id)
         commit()
         return entity_section.get_pk()
@@ -176,15 +177,16 @@ class Section:
     # course
     # --------------------------------------------------------
     @property
-    def course(self) -> Course:
+    def course(self) -> Course.Course:
         """ Gets and sets the course that contains this section """
         return self._course
 
     @course.setter
-    def course(self, val: Course):
+    def course(self, val: Course.Course):
         if not isinstance(val, Course.Course): raise TypeError(
             f"{type(val)}: invalid course - must be a Course object")
         self._course = val
+        if self not in val.sections(): val.add_section(self)
 
     # --------------------------------------------------------
     # labs
@@ -458,13 +460,22 @@ class Section:
     # delete
     # --------------------------------------------------------
     @db_session
-    def delete(self):
-        """ Delete this object and all its dependants """
+    def delete(self, from_list : bool = False):
+        """ Delete this object and all its dependants. 
+        Parameter from_list -> Whether or not the delete call comes from a SectionList object. Defaults to False.
+        """
+        from SectionList import SectionList
+
         for b in self.blocks:
             self.remove_block(b)
-        if dbSection.get(id=self.id): dbSection.get(
-            id=self.id).delete()  # should cascade and delete all associated blocks
+        # should cascade and delete all associated blocks
+        if dbSection.get(id=self.id): dbSection.get(id=self.id).delete()
         if self.id in Section.__instances: del Section.__instances[self.id]
+
+        if not from_list:
+            for sl in SectionList.lists():
+                sl.remove(self)
+
 
     # --------------------------------------------------------
     # __str__

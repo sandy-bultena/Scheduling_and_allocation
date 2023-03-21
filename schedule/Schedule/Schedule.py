@@ -28,7 +28,7 @@ class Schedule:
     """
     Provides the top level class for all schedule objects.
 
-    The data that creates the schedule can be saved to an external file, or read in from an external file.
+    The data that creates the schedule can be saved to or read from a MySQL database.
 
     This class provides links to all the other classes that are used to create and/or modify course schedules.
     """
@@ -80,7 +80,7 @@ class Schedule:
         slot : db.LabUnavailableTime
         for slot in select(ts for ts in db.LabUnavailableTime if ts.schedule_id.id == sched.id):
             ts = LabUnavailableTime(slot.day, slot.start, slot.duration, slot.movable, id = slot.id, schedule = schedule)
-            l = Schedule._create_lab(slot.lab_id)
+            l = Schedule._create_lab(slot.lab_id.id)
             l.add_unavailable_slot(ts)
         
         # add release for this schedule to any teachers
@@ -111,10 +111,10 @@ class Schedule:
             for block in select(b for b in db.Block if b.section_id.id == s.id):
                 b = Block(block.day, block.start, block.duration, block.number, movable = block.movable, id = block.id)
                 s.add_block(b)
-                for l in block.labs: b.assign_lab(Lab.get(l.id))
-                for t in block.teachers: b.assign_teacher(Teacher.get(t.id))
+                for l in block.labs: b.assign_lab(Schedule._create_lab(l.id))
+                for t in block.teachers: b.assign_teacher(Schedule._create_teacher(t.id))
         
-        Schedule.calculate_conflicts()
+        schedule.calculate_conflicts()
         return schedule
     
     @db_session
@@ -124,7 +124,7 @@ class Schedule:
         sched : db.Schedule = db.Schedule.get(id=self.id)
         scen : db.Scenario = db.Scenario.get(id=self.scenario_id)
         if not scen: scen = db.Scenario()
-        if not sched: sched = db.Schedule(semester=self, official=self.official, scenario_id=scen)
+        if not sched: sched = db.Schedule(official=self.official, scenario_id=scen)
         sched.official = self.official
         sched.description = self.descr
 
@@ -193,7 +193,7 @@ class Schedule:
         for s in self.sections:
             teachers.extend(s.teachers)
             for b in s.blocks:
-                teachers.extend(b.teachers)
+                teachers.extend(b.teachers())
         
         return tuple(set(teachers))
     
@@ -253,12 +253,14 @@ class Schedule:
     # conflicts
     # --------------------------------------------------------
     def conflicts(self) -> tuple[Conflict]:
-        """Returns the a tuple of all the Conflict objects"""
+        """Returns a tuple of all the Conflict objects"""
         cons : list[Conflict] = list(Conflict.list())
         correct : set[Conflict] = set()
+        print(self.sections)
         
         for c in cons:
-            if c.blocks[0].section not in self.sections: correct.add(c)
+            print(c.blocks[0].section)
+            if c.blocks[0].section in self.sections: correct.add(c)
         
         return tuple(correct)
 
@@ -273,7 +275,7 @@ class Schedule:
         if not isinstance(teacher, Teacher): raise TypeError(f"{teacher} must be an object of type Teacher")
         outp = set()
         s : Section
-        for s in self.sections():
+        for s in self.sections:
             if teacher in s.teachers: outp.add(s)
         return tuple(outp)
 
@@ -300,7 +302,7 @@ class Schedule:
         - Parameter teacher -> The Teacher to check
         """
         if not isinstance(teacher, Teacher): raise TypeError(f"{teacher} must be an object of type Teacher")
-        return tuple(filter(lambda c : c.needs_allocation, Schedule.courses_for_teacher(teacher)))
+        return tuple(filter(lambda c : c.needs_allocation, self.courses_for_teacher(teacher)))
 
     # --------------------------------------------------------
     # blocks_for_teacher
@@ -359,7 +361,7 @@ class Schedule:
         if not isinstance(stream, Stream): raise TypeError(f"{stream} must be an object of type Stream")
         outp = set()
         s : Section
-        for s in Schedule.sections_for_stream(stream): outp.update(s.blocks)
+        for s in self.sections_for_stream(stream): outp.update(s.blocks)
         return tuple(outp)
 
     # NOTE: all_x() methods have been removed, since they're now equivalent to x() methods
@@ -401,7 +403,7 @@ class Schedule:
         if not isinstance(stream, Stream): raise TypeError(f"{stream} must be an object of type Stream")
         # go through all sections, and remove stream from each
         s : Section
-        for s in self.sections(): s.remove_stream(stream)
+        for s in self.sections: s.remove_stream(stream)
 
     # --------------------------------------------------------
     # calculate_conflicts
@@ -639,7 +641,7 @@ class Schedule:
     # clear_all_from_block
     # --------------------------------------------------------
     @staticmethod
-    # TODO: can be static because the block is passed in
+    # can be static because the block is passed in
     def clear_all_from_block(block : Block):
         """
         Removes all teachers, labs, and streams from block
