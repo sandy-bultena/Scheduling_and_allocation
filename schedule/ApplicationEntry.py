@@ -11,9 +11,9 @@ import Schedule.database.PonyDatabaseConnection as PonyDatabaseConnection
 
 def verify_login(**kwargs: StringVar):
     # Do something to verify the user's credentials.
-    print(kwargs)
-    for arg in kwargs:
-        print(kwargs[arg])
+    # print(kwargs)
+    # for arg in kwargs:
+    #     print(kwargs[arg])
     username = kwargs['username'].get()
     passwd = kwargs['passwd'].get()
     if username is None or len(username) == 0 or passwd is None or len(passwd) == 0:
@@ -23,24 +23,29 @@ def verify_login(**kwargs: StringVar):
         try:
             connect_msg = "Connecting..."
             statusString.set(connect_msg)
-            # TODO: Verify that the ProgressBar works as intended once you have a reliable
-            #  connection to the VPN again.
             root.update()
-            pb = ttk.Progressbar(frm, orient='horizontal', length=300, mode='indeterminate')
+            pb = ttk.Progressbar(frm, orient='horizontal', length=200, mode='indeterminate')
             pb.grid(column=0, row=5, columnspan=2)
             pb.start()
+            root.update()
+            # TODO: To make the ProgressBar display properly, we would need to make this into an
+            #  async call. Ultimately, it may not be worth the effort.
             db = PonyDatabaseConnection.define_database(host=HOST, db=DB_NAME, user=username,
                                                         passwd=passwd, provider=PROVIDER)
-            success_msg = f"Connection Successful. User '{username}' is now connected to " \
-                          f"database '{DB_NAME}'."
+            success_msg = f"Connection Successful."
             pb.stop()
+            pb.destroy()
             print(success_msg)
             statusString.set(success_msg)
         except mysql.connector.DatabaseError as err:
             # Display a relevant error message for anything else that might go wrong with the
             # connection.
+            statusString.set(" ")
+            if pb is not None:
+                pb.stop()
+                pb.destroy()
             display_error_message(str(err))
-            statusString.set("")
+            # root.update()
 
 
 def display_error_message(msg: str):
@@ -50,6 +55,9 @@ def display_error_message(msg: str):
     err_frm.grid()
     ttk.Label(err_frm, text=msg).grid(row=0, column=0)
     ttk.Button(err_frm, text="Okay", command=error_window.destroy).grid(row=1, column=0)
+    # Disables the main window so the user can't click on it while this error message is displayed.
+    # Control will be restored when this window is closed.
+    error_window.grab_set()
     error_window.mainloop()
 
 

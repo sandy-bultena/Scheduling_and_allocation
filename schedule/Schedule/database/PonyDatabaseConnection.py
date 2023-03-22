@@ -4,26 +4,26 @@ from pony.orm import *
 import mysql.connector
 
 # Test database to verify that Pony works. Anything done here won't affect the main scheduler_db.
-db_name = "pony_scheduler_db"
+# db_name = "pony_scheduler_db"
 
 # Create the database if it doesn't exist. Using mysql.connector to accomplish this because Pony
 # doesn't let you use the create_db option when binding to a MySQL database.
-conn = mysql.connector.connect(
-    host="10.101.0.27",
-    username="evan_test",
-    password="test_stage_pwd_23"
-)
+# conn = mysql.connector.connect(
+#     host="10.101.0.27",
+#     username="evan_test",
+#     password="test_stage_pwd_23"
+# )
 
-cursor = conn.cursor()
+# cursor = conn.cursor()
 
-print("Initializing database...")
+# print("Initializing database...")
 
-cursor.execute(f"CREATE DATABASE IF NOT EXISTS {db_name};")
-cursor.execute(f"USE {db_name}")
+# cursor.execute(f"CREATE DATABASE IF NOT EXISTS {db_name};")
+# cursor.execute(f"USE {db_name}")
 
 # close the cursor and connection before switching over to Pony.
-cursor.close()
-conn.close()
+# cursor.close()
+# conn.close()
 
 # Create a Pony Database object.
 db = Database()
