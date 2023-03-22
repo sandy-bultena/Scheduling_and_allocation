@@ -1,3 +1,4 @@
+import re
 from tkinter import *
 from tkinter import ttk
 from tkinter.ttk import Progressbar
@@ -8,6 +9,11 @@ from pony.orm import Database, db_session, commit
 
 from Schedule.unit_tests.db_constants import DB_NAME, HOST, PROVIDER
 import Schedule.database.PonyDatabaseConnection as PonyDatabaseConnection
+
+
+def check_num(newval):
+    # Taken from the offical tkinter documentation here: https://tkdocs.com/tutorial/widgets.html#entry
+    return re.match('^[0-9]*$', newval) is not None
 
 
 @db_session
@@ -26,7 +32,7 @@ def _display_scenario_selector(db: Database):
     scenario_var = StringVar(value=scen_list)
     l_box = Listbox(scen_frm, listvariable=scenario_var)
     l_box.grid(row=0, column=0, columnspan=2)
-    ttk.Button(scen_frm, text="New", command=create_scenario).grid(row=2, column=0)
+    ttk.Button(scen_frm, text="New", command=add_new_session).grid(row=2, column=0)
     ttk.Button(scen_frm, text="Select").grid(row=2, column=1)
     ttk.Button(scen_frm, text="Delete").grid(row=3, column=0)
     ttk.Button(scen_frm, text="Cancel", command=scenario_window.destroy).grid(row=3, column=1)
@@ -34,12 +40,41 @@ def _display_scenario_selector(db: Database):
     pass
 
 
+def add_new_session():
+    """Create a window in which the user can fill out various entry fields to create a new
+    Scenario database object. """
+    add_window = Toplevel(root)
+    add_window.title("Add New Scenario")
+    add_window.grab_set()
+    add_frm = ttk.Frame(add_window, padding=25)
+    add_frm.grid()
+    scen_name = StringVar()
+    scen_descr = StringVar()
+    scen_year = IntVar()
+    ttk.Label(add_frm, text="Name").grid(row=0, column=0)
+    name_entry = ttk.Entry(add_frm, textvariable=scen_name)
+    name_entry.grid(row=0, column=1)
+    ttk.Label(add_frm, text="Description").grid(row=1, column=0)
+    descr_entry = ttk.Entry(add_frm, textvariable=scen_descr)
+    descr_entry.grid(row=1, column=1)
+    ttk.Label(add_frm, text="Year").grid(row=2, column=0)
+    # Validation ensures that the user can only enter integer numbers into this field.
+    year_entry = ttk.Entry(add_frm, textvariable=scen_year, validate='key',
+                           validatecommand=check_num_wrapper)
+    year_entry.grid(row=2, column=1)
+    ttk.Button(add_frm, text="Confirm", command=partial(
+        create_scenario, scen_name, scen_descr, scen_year)) \
+        .grid(row=3, column=0)
+    ttk.Button(add_frm, text="Cancel", command=add_window.destroy).grid(row=3, column=1)
+    add_window.mainloop()
+
+
 @db_session
-def create_scenario():
+def create_scenario(name: StringVar, description: StringVar, year: IntVar):
     """Create a new database Scenario object."""
     # TODO: Refactor this later once changes have been merged from the code_review branch.
-    scenario = PonyDatabaseConnection.Scenario(name="Test", description="This is a test.",
-                                               year=2023)
+    scenario = PonyDatabaseConnection.Scenario(name=name.get(), description=description.get(),
+                                               year=year.get())
     commit()
 
 
@@ -72,6 +107,12 @@ def _verify_login(**kwargs: StringVar):
         except mysql.connector.DatabaseError as err:
             # Display a relevant error message for anything else that might go wrong with the
             # connection.
+            statusString.set(" ")
+            if pb is not None:
+                pb.stop()
+                pb.destroy()
+            display_error_message(str(err))
+        except TypeError as err:
             statusString.set(" ")
             if pb is not None:
                 pb.stop()
@@ -110,5 +151,5 @@ if __name__ == "__main__":
         .grid(column=1, row=3, columnspan=1)
     statusString = StringVar()
     ttk.Label(frm, textvariable=statusString).grid(column=0, row=4, columnspan=2)
-
+    check_num_wrapper = (root.register(check_num), '%P')
     root.mainloop()
