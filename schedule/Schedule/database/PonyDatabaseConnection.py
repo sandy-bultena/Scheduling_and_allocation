@@ -87,6 +87,9 @@ class Schedule(db.Entity):
     # time_slots = Set(TimeSlot)
     unavailable_times = Set('LabUnavailableTime')
 
+    def __str__(self):
+        return f"{self.id} {self.semester} {self.scenario_id.year}: {self.description}"
+
 
 class Section(db.Entity):
     # id = PrimaryKey(int)

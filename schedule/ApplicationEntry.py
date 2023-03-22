@@ -11,7 +11,7 @@ from pony.orm import Database, db_session, commit, select, flush
 from Schedule.unit_tests.db_constants import DB_NAME, HOST, PROVIDER
 import Schedule.database.PonyDatabaseConnection as PonyDatabaseConnection
 
-
+# TODO: Fix import issues regarding this class.
 # import Schedule.Schedule as ModelSchedule
 
 
@@ -21,9 +21,22 @@ def check_num(newval):
     return re.match('^[0-9]*$', newval) is not None
 
 
+def _open_schedule(listbox: Listbox, schedule_dict: dict[str, PonyDatabaseConnection.Schedule]):
+    # sched_id = db_schedule.id
+    # schedule = ModelSchedule.Schedule.read_DB(sched_id)
+    indexes = listbox.curselection()
+    if len(indexes) < 0:
+        return
+    key = listbox.get(indexes[0])
+    db_schedule = schedule_dict[key]
+    # TODO: Come back to this once the import issues with Schedule have been solved.
+    pass
+
+
 @db_session
 def _create_schedule(descript_var: StringVar, semester_var: StringVar, official_var: BooleanVar,
                      scenario_id: PonyDatabaseConnection.Scenario):
+    """Create a database Schedule entity based on passed values."""
     description = descript_var.get()
     semester = semester_var.get()
     official = official_var.get()
@@ -34,6 +47,7 @@ def _create_schedule(descript_var: StringVar, semester_var: StringVar, official_
 
 @db_session
 def add_new_schedule(scenario: PonyDatabaseConnection.Scenario):
+    """Opens a window where the user can enter values to create a new Schedule object."""
     sched_window = Toplevel(root)
     sched_window.title("Add new Schedule")
     sched_window.grab_set()
@@ -61,6 +75,9 @@ def add_new_schedule(scenario: PonyDatabaseConnection.Scenario):
 
 @db_session
 def _display_selected_scenario(scenario: PonyDatabaseConnection.Scenario):
+    """Opens a window displaying detailed information about a passed Scenario.
+
+    Also allows the user to select an existing Schedule from the database, or create a new one."""
     scen_window = Toplevel(root)
     scen_window.title(f"Scenario: {scenario.name} {scenario.year}")
     scen_window.grab_set()
@@ -73,17 +90,23 @@ def _display_selected_scenario(scenario: PonyDatabaseConnection.Scenario):
     description_text.insert(tkinter.END, scenario.description)
     description_text['state'] = 'disabled'
     description_text.grid(row=2, column=0, columnspan=2)
+
     # List all the Schedules belonging to this section.
     db_schedules = select(sch for sch in PonyDatabaseConnection.Schedule
                           if sch.scenario_id == scenario)
     flush()
     sched_list = [s for s in db_schedules]
+    sched_dict: dict[str, PonyDatabaseConnection.Schedule] = {}
+    for sched in sched_list:
+        sched_dict[str(sched)] = sched
     schedule_var = StringVar(value=sched_list)
     ttk.Label(scen_frm, text=f"Schedules for {scenario.name}:").grid(row=3, column=0, columnspan=2)
     sched_listbox = Listbox(scen_frm, listvariable=schedule_var)
     sched_listbox.grid(row=4, column=0, columnspan=2)
-    ttk.Button(scen_frm, text="Add Schedule", command=partial(
-        add_new_schedule, scenario)).grid(row=5, column=0, columnspan=2)
+    ttk.Button(scen_frm, text="New", command=partial(
+        add_new_schedule, scenario)).grid(row=5, column=0)
+    ttk.Button(scen_frm, text="Open", command=partial(
+        _open_schedule, sched_listbox, sched_dict)).grid(row=5, column=1)
     scen_window.mainloop()
 
 
@@ -108,7 +131,7 @@ def _display_scenario_selector(db: Database):
     """Displays a window where the user can select an existing Scenario from the database,
     or create a new one."""
     scenario_window = Toplevel(root)
-    scenario_window.title = "SELECT SCENARIO"
+    scenario_window.title("SELECT SCENARIO")
     scenario_window.grab_set()
     scen_frm = ttk.Frame(scenario_window, padding=40)
     scen_frm.grid()
