@@ -1,7 +1,7 @@
 import re
 import tkinter
 from tkinter import *
-from tkinter import ttk
+from tkinter import ttk, messagebox
 from tkinter.ttk import Progressbar
 from functools import partial
 
@@ -246,16 +246,17 @@ def _verify_login(**kwargs: StringVar):
 
 def display_error_message(msg: str):
     """Displays a passed error message in a new window."""
-    error_window = Toplevel(root)
-    error_window.title("ERROR")
-    err_frm = ttk.Frame(error_window, padding=20)
-    err_frm.grid()
-    ttk.Label(err_frm, text=msg).grid(row=0, column=0)
-    ttk.Button(err_frm, text="Okay", command=error_window.destroy).grid(row=1, column=0)
-    # Disables the main window so the user can't click on it while this error message is displayed.
-    # Control will be restored when this window is closed.
-    error_window.grab_set()
-    error_window.mainloop()
+    # error_window = Toplevel(root)
+    # error_window.title("ERROR")
+    # err_frm = ttk.Frame(error_window, padding=20)
+    # err_frm.grid()
+    # ttk.Label(err_frm, text=msg).grid(row=0, column=0)
+    # ttk.Button(err_frm, text="Okay", command=error_window.destroy).grid(row=1, column=0)
+    # # Disables the main window so the user can't click on it while this error message is displayed.
+    # # Control will be restored when this window is closed.
+    # error_window.grab_set()
+    # error_window.mainloop()
+    messagebox.showerror("ERROR", msg)
 
 
 if __name__ == "__main__":
