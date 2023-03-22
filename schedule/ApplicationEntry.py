@@ -22,6 +22,44 @@ def check_num(newval):
 
 
 @db_session
+def _create_schedule(descript_var: StringVar, semester_var: StringVar, official_var: BooleanVar,
+                     scenario_id: PonyDatabaseConnection.Scenario):
+    description = descript_var.get()
+    semester = semester_var.get()
+    official = official_var.get()
+    schedule = PonyDatabaseConnection.Schedule(description=description, semester=semester,
+                                               official=official, scenario_id=scenario_id)
+    commit()
+
+
+@db_session
+def add_new_schedule(scenario: PonyDatabaseConnection.Scenario):
+    sched_window = Toplevel(root)
+    sched_window.title("Add new Schedule")
+    sched_window.grab_set()
+    sched_frm = ttk.Frame(sched_window, padding=35)
+    sched_frm.grid()
+    ttk.Label(sched_frm, text="Description (Optional)").grid(row=0, column=0)
+    descr_var = StringVar()
+    semester_var = StringVar()
+    official_var = BooleanVar()
+    semesters = ["winter", "summer", "fall"]
+    ttk.Entry(sched_frm, textvariable=descr_var).grid(row=0, column=1)
+    ttk.Label(sched_frm, text="Semester").grid(row=1, column=0)
+    semester_box = ttk.Combobox(sched_frm, textvariable=semester_var)
+    semester_box['values'] = semesters
+    semester_box.grid(row=1, column=1)
+    ttk.Label(sched_frm, text="Official?").grid(row=2, column=0)
+    ttk.Checkbutton(sched_frm, text="Yes", variable=official_var, onvalue=True, offvalue=False) \
+        .grid(row=2, column=1)
+    ttk.Button(sched_frm, text="Confirm", command=partial(
+        _create_schedule, descr_var, semester_var, official_var, scenario
+    )).grid(row=3, column=0)
+    ttk.Button(sched_frm, text="Cancel", command=sched_window.destroy).grid(row=3, column=1)
+    sched_window.mainloop()
+
+
+@db_session
 def _display_selected_scenario(scenario: PonyDatabaseConnection.Scenario):
     scen_window = Toplevel(root)
     scen_window.title(f"Scenario: {scenario.name} {scenario.year}")
@@ -44,6 +82,8 @@ def _display_selected_scenario(scenario: PonyDatabaseConnection.Scenario):
     ttk.Label(scen_frm, text=f"Schedules for {scenario.name}:").grid(row=3, column=0, columnspan=2)
     sched_listbox = Listbox(scen_frm, listvariable=schedule_var)
     sched_listbox.grid(row=4, column=0, columnspan=2)
+    ttk.Button(scen_frm, text="Add Schedule", command=partial(
+        add_new_schedule, scenario)).grid(row=5, column=0, columnspan=2)
     scen_window.mainloop()
 
 
