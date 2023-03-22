@@ -5,15 +5,34 @@ from tkinter.ttk import Progressbar
 from functools import partial
 
 import mysql.connector
-from pony.orm import Database, db_session, commit
+from pony.orm import Database, db_session, commit, select, flush
 
 from Schedule.unit_tests.db_constants import DB_NAME, HOST, PROVIDER
 import Schedule.database.PonyDatabaseConnection as PonyDatabaseConnection
+# import Schedule.Schedule as ModelSchedule
 
 
 def check_num(newval):
-    # Taken from the offical tkinter documentation here: https://tkdocs.com/tutorial/widgets.html#entry
+    # Taken from the official tkinter documentation here:
+    # https://tkdocs.com/tutorial/widgets.html#entry
     return re.match('^[0-9]*$', newval) is not None
+
+
+@db_session
+def _open_scenario(listbox: Listbox, db: Database):
+    # Have to jump through some complex hoops to get the Scenario entity corresponding to the
+    # selected index of the Listbox.
+    scenarios = listbox.curselection()
+    if len(scenarios) < 1:
+        return
+    # Listbox.get() returns a string in this context.
+    scenario_string = listbox.get(0)
+    # Use that string to query the database and get the corresponding entity.
+    scenario = eval(f"PonyDatabaseConnection.{scenario_string}")
+    sc_id = scenario.id
+    db_schedules = select(s for s in PonyDatabaseConnection.Schedule if s.scenario_id == scenario)
+    flush()
+    pass
 
 
 @db_session
@@ -32,15 +51,16 @@ def _display_scenario_selector(db: Database):
     scenario_var = StringVar(value=scen_list)
     l_box = Listbox(scen_frm, listvariable=scenario_var)
     l_box.grid(row=0, column=0, columnspan=2)
-    ttk.Button(scen_frm, text="New", command=add_new_session).grid(row=2, column=0)
-    ttk.Button(scen_frm, text="Select").grid(row=2, column=1)
+    ttk.Button(scen_frm, text="New", command=add_new_scenario).grid(row=2, column=0)
+    ttk.Button(scen_frm, text="Open", command=partial(
+        _open_scenario, l_box, db)).grid(row=2, column=1)
     ttk.Button(scen_frm, text="Delete").grid(row=3, column=0)
     ttk.Button(scen_frm, text="Cancel", command=scenario_window.destroy).grid(row=3, column=1)
     scenario_window.mainloop()
     pass
 
 
-def add_new_session():
+def add_new_scenario():
     """Create a window in which the user can fill out various entry fields to create a new
     Scenario database object. """
     add_window = Toplevel(root)
@@ -63,14 +83,14 @@ def add_new_session():
                            validatecommand=check_num_wrapper)
     year_entry.grid(row=2, column=1)
     ttk.Button(add_frm, text="Confirm", command=partial(
-        create_scenario, scen_name, scen_descr, scen_year)) \
+        _create_scenario, scen_name, scen_descr, scen_year)) \
         .grid(row=3, column=0)
     ttk.Button(add_frm, text="Cancel", command=add_window.destroy).grid(row=3, column=1)
     add_window.mainloop()
 
 
 @db_session
-def create_scenario(name: StringVar, description: StringVar, year: IntVar):
+def _create_scenario(name: StringVar, description: StringVar, year: IntVar):
     """Create a new database Scenario object."""
     # TODO: Refactor this later once changes have been merged from the code_review branch.
     scenario = PonyDatabaseConnection.Scenario(name=name.get(), description=description.get(),
@@ -79,6 +99,9 @@ def create_scenario(name: StringVar, description: StringVar, year: IntVar):
 
 
 def _verify_login(**kwargs: StringVar):
+    """Verifies the user's credentials and tries to connect to the database.
+
+    Displays an error message if anything goes wrong."""
     # Do something to verify the user's credentials.
     username = kwargs['username'].get()
     passwd = kwargs['passwd'].get()
@@ -122,6 +145,7 @@ def _verify_login(**kwargs: StringVar):
 
 
 def display_error_message(msg: str):
+    """Displays a passed error message in a new window."""
     error_window = Toplevel(root)
     error_window.title("ERROR")
     err_frm = ttk.Frame(error_window, padding=20)
