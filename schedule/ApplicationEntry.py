@@ -1,4 +1,5 @@
 import re
+import tkinter
 from tkinter import *
 from tkinter import ttk
 from tkinter.ttk import Progressbar
@@ -9,6 +10,8 @@ from pony.orm import Database, db_session, commit, select, flush
 
 from Schedule.unit_tests.db_constants import DB_NAME, HOST, PROVIDER
 import Schedule.database.PonyDatabaseConnection as PonyDatabaseConnection
+
+
 # import Schedule.Schedule as ModelSchedule
 
 
@@ -16,6 +19,32 @@ def check_num(newval):
     # Taken from the official tkinter documentation here:
     # https://tkdocs.com/tutorial/widgets.html#entry
     return re.match('^[0-9]*$', newval) is not None
+
+
+@db_session
+def _display_selected_scenario(scenario: PonyDatabaseConnection.Scenario):
+    scen_window = Toplevel(root)
+    scen_window.title(f"Scenario: {scenario.name} {scenario.year}")
+    scen_window.grab_set()
+    scen_frm = ttk.Frame(scen_window, padding=40)
+    scen_frm.grid()
+    ttk.Label(scen_frm, text="Name:").grid(row=0, column=0)
+    ttk.Label(scen_frm, text=scenario.name).grid(row=0, column=1)
+    ttk.Label(scen_frm, text="Description").grid(row=1, column=0, columnspan=2)
+    description_text = Text(scen_frm, width=18, height=5)
+    description_text.insert(tkinter.END, scenario.description)
+    description_text['state'] = 'disabled'
+    description_text.grid(row=2, column=0, columnspan=2)
+    # List all the Schedules belonging to this section.
+    db_schedules = select(sch for sch in PonyDatabaseConnection.Schedule
+                          if sch.scenario_id == scenario)
+    flush()
+    sched_list = [s for s in db_schedules]
+    schedule_var = StringVar(value=sched_list)
+    ttk.Label(scen_frm, text=f"Schedules for {scenario.name}:").grid(row=3, column=0, columnspan=2)
+    sched_listbox = Listbox(scen_frm, listvariable=schedule_var)
+    sched_listbox.grid(row=4, column=0, columnspan=2)
+    scen_window.mainloop()
 
 
 @db_session
@@ -28,11 +57,11 @@ def _open_scenario(listbox: Listbox, db: Database):
     # Listbox.get() returns a string in this context.
     scenario_string = listbox.get(0)
     # Use that string to query the database and get the corresponding entity.
-    scenario = eval(f"PonyDatabaseConnection.{scenario_string}")
-    sc_id = scenario.id
+    scenario: PonyDatabaseConnection.Scenario = eval(f"PonyDatabaseConnection.{scenario_string}")
+    # sc_id = scenario.id
     db_schedules = select(s for s in PonyDatabaseConnection.Schedule if s.scenario_id == scenario)
     flush()
-    pass
+    _display_selected_scenario(scenario)
 
 
 @db_session
