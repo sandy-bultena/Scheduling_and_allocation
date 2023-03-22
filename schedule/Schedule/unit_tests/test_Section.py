@@ -34,7 +34,7 @@ def before_and_after_module():
 def init_scenario_and_schedule():
     sc = dbScenario()
     flush()
-    s = dbSchedule(semester="Winter 2023", official=False, scenario_id=sc.id)
+    s = dbSchedule(official=False, scenario_id=sc.id)
 
 
 @pytest.fixture(autouse=True)
@@ -45,7 +45,6 @@ def before_and_after():
     yield
     db.drop_table(table_name='section', if_exists=True, with_all_data=True)
     db.drop_table(table_name='block', if_exists=True, with_all_data=True)
-    db.drop_table(table_name='time_slot', if_exists=True, with_all_data=True)
 
 
 # region General & Properties

@@ -352,62 +352,65 @@ def test_stream_remove():
 
 def test_calculate_conflicts():
     sched = Schedule(s.id, False, 2, "")
-    t1 = Teacher("Jane", "Doe")
-    t2 = Teacher("John", "Doe")
-    t3 = Teacher("Joe", "Doe")
-    t4 = Teacher("J", "D")
     c = Course()
 
-    l1 = Lab()
-    st1 = Stream()
-    s1 = Section(course=c, schedule_id=s.id).assign_stream(st1)
-
-    tue_block = Block('tue', "15:00", 1, 50)
-    wed_block = Block('wed', "15:00", 1, 51)
-    thu_block = Block('thu', "15:00", 1, 52)
-
     # TIME_TEACHER conflict
-    b1 = Block("mon", "13:00", 2, 1).assign_teacher(t1)
-    b2 = Block("mon", "14:00", 2, 2).assign_teacher(t1)
-    tue_block.assign_teacher(t1)
-    wed_block.assign_teacher(t1)
-    thu_block.assign_teacher(t1)
+    s1 = Section('1', course=c, schedule_id=s.id).add_block(
+        b1 := Block("mon", "13:00", 2, 1),
+        b2 := Block("mon", "14:00", 2, 2),
+        Block('tue', "15:00", 1, 50),
+        Block('wed', "15:00", 1, 51),
+        Block('thu', "15:00", 1, 52)
+        ).assign_teacher(Teacher("Jane", "Doe"))
     time_teacher_conflicted = set([b1, b2])
 
     # TIME_LAB conflict
-    b3 = Block("mon", "13:00", 2, 3).assign_lab(l1)
-    b4 = Block("mon", "14:00", 2, 4).assign_lab(l1)
+    s2 = Section('2', course=c, schedule_id=s.id).add_block(
+        b3 := Block("mon", "13:00", 2, 3),
+        b4 := Block("mon", "14:00", 2, 4)
+        ).assign_lab(Lab())
     time_lab_conflicted = set([b3, b4])
 
     # TIME_STREAM conflict
-    s1.add_block(b5 := Block("mon", "13:00", 2, 5)).add_block(b6 := Block("mon", "14:00", 2, 6))
+    s3 = Section('3', course=c, schedule_id=s.id).add_block(
+        b5 := Block("mon", "13:00", 2, 5),
+        b6 := Block("mon", "14:00", 2, 6)
+        ).assign_stream(Stream())
     time_stream_conflicted = set([b5, b6])
 
     # LUNCH conflict
-    b7 = Block("mon", "10:30", 4, 7).assign_teacher(t2)
-    tue_block.assign_teacher(t2)
-    wed_block.assign_teacher(t2)
-    thu_block.assign_teacher(t2)
+    s4 = Section('4', course=c, schedule_id=s.id).add_block(
+        b7 := Block("mon", "10:30", 4, 7),
+        Block('tue', "15:00", 1, 53),
+        Block('wed', "15:00", 1, 54),
+        Block('thu', "15:00", 1, 55)
+        ).assign_teacher(Teacher("John", "Doe"))
     lunch_conflicted = set([b7])
 
     # MINIMUM_DAYS conflict
-    b8 = Block("mon", "8:30", 2, 8).assign_teacher(t3)
+    s5 = Section('5', course=c, schedule_id=s.id).add_block(
+        b8 := Block("mon", "8:30", 2, 8)
+        ).assign_teacher(Teacher("Joe", "Doe"))
     min_days_conflicted = set([b8])
 
     # AVAILABILITY conflict
-    b9 = Block("mon", "11:30", 8, 9).assign_teacher(t4)
-    b10 = Block("tue", "11:30", 8, 10).assign_teacher(t4)
-    b11 = Block("wed", "11:30", 8, 11).assign_teacher(t4)
-    b12 = Block("thu", "11:30", 8, 12).assign_teacher(t4)
-    b13 = Block("fri", "11:30", 8, 13).assign_teacher(t4)
+    s6 = Section('6', course=c, schedule_id=s.id).add_block(
+        b9 := Block("mon", "11:30", 8, 9),
+        b10 := Block("tue", "11:30", 8, 10),
+        b11 := Block("wed", "11:30", 8, 11),
+        b12 := Block("thu", "11:30", 8, 12),
+        b13 := Block("fri", "11:30", 8, 13)
+        ).assign_teacher(Teacher("J", "D"))
     availability_conflicted = set([b9, b10, b11, b12, b13])
 
-    sched.sections.append(s1)
+    sched.sections.extend([s1, s2, s3, s4, s5, s6])
     sched.calculate_conflicts()
     conflict_types = dict()
     conflict_values = dict[int, Conflict]()
     conflict_block_sets = list[list[Block]]()
     for i in sched.conflicts():
+        print(i.type)
+        print(i.blocks)
         if i.type not in conflict_types: conflict_types[i.type] = 0
         conflict_types[i.type] += 1
         conflict_values[i.type] = i
@@ -665,8 +668,7 @@ def test_read_db():
     schedule = Schedule.read_DB(1)
 
     assert len(schedule.courses()) == 4
-    print(schedule.courses())
-    for i, c in enumerate(schedule.courses()):
+    for i, c in enumerate(sorted(schedule.courses(), key=lambda a: a.id)):
         assert len(c.sections()) == 1
         assert c.semester == i + 1
 
@@ -679,7 +681,7 @@ def test_read_db():
     assert len(schedule.lab_unavailable_times()) == 1
     lut = LabUnavailableTime.get(1)
     assert lut.day and lut.start and lut.duration
-    assert len(Lab.list()) == 3
+    assert len(schedule.labs()) == 3
     assert Lab.get(1).get_unavailable(1)
 
     assert len(schedule.sections) == 4
@@ -695,8 +697,8 @@ def test_read_db():
     
     assert len(schedule.conflicts()) == 1
     assert schedule.conflicts()[0].type == ConflictType.TIME
-    assert schedule.blocks()[1].conflicted
-    assert schedule.blocks()[2].conflicted
+    assert Block.get(2).conflicted
+    assert Block.get(3).conflicted
 
     assert schedule
     assert schedule.id == s.id
@@ -757,11 +759,11 @@ def test_write_db(after_write):
     assert new_schedule.id == schedule.id
     assert new_schedule.descr == schedule.descr
     assert new_schedule.official == schedule.official
-    assert new_schedule.scenario == schedule.scenario
+    assert new_schedule.scenario_id == schedule.scenario_id
 
     # confirm correct number of courses and data was transferred correctly
     assert len(schedule.courses()) == 4
-    for i, c in enumerate(schedule.courses()):
+    for i, c in enumerate(sorted(schedule.courses(), key=lambda a: a.id)):
         assert len(c.sections()) == 1
         assert c.name == f"Course {i+1}"
         assert c.number == f"10{i+1}-NYA"
@@ -770,13 +772,13 @@ def test_write_db(after_write):
 
     # confirm correct number of streams and data was transferred correctly
     assert len(schedule.streams()) == 4
-    for i, st in enumerate(schedule.streams()):
+    for i, st in enumerate(sorted(schedule.streams(), key=lambda a: a.id)):
         assert st.number == f"3{chr(i + 65)}"
         assert st.descr == f"Stream #{i + 1}"
 
     # confirm correct number of teachers and data was transferred correctly
     assert len(schedule.teachers()) == 3
-    for i, t in enumerate(schedule.teachers()):
+    for i, t in enumerate(sorted(schedule.teachers(), key=lambda a: a.id)):
         assert t.release == i + 3
         assert t.firstname.startswith(str(i))
         assert t.lastname.startswith(str(i))
@@ -785,7 +787,7 @@ def test_write_db(after_write):
     # confirm correct number of labs and data was transferred correctly
     assert len(schedule.labs()) == 3
     assert Lab.get(1).get_unavailable(ids.get("lut1"))
-    for i, l in enumerate(schedule.labs()):
+    for i, l in enumerate(sorted(schedule.labs(), key=lambda a: a.id)):
         assert l.number == f"P32{i}"
         assert l.descr == f"Computer Lab {i+1}"
 
@@ -801,7 +803,7 @@ def test_write_db(after_write):
 
     # confirm correct number of blocks and data was transferred correctly
     assert len(schedule.blocks()) == 3
-    for i, b in enumerate(schedule.blocks()):
+    for i, b in enumerate(sorted(schedule.blocks(), key=lambda a: a.id)):
         assert len(b.teachers()) == 1
         assert len(b.labs()) == 1
         assert b.number == i+1

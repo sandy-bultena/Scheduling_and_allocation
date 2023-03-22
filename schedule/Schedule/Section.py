@@ -70,7 +70,7 @@ class Section:
         self._blocks: dict[int, Block.Block] = {}
 
         self.name = name
-        self.number = number
+        self.number = str(number)
         self.hours = hours
         self.num_students: int = 0
 

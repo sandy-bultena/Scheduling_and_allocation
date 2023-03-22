@@ -256,10 +256,8 @@ class Schedule:
         """Returns a tuple of all the Conflict objects"""
         cons : list[Conflict] = list(Conflict.list())
         correct : set[Conflict] = set()
-        print(self.sections)
         
         for c in cons:
-            print(c.blocks[0].section)
             if c.blocks[0].section in self.sections: correct.add(c)
         
         return tuple(correct)

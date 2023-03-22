@@ -27,7 +27,7 @@ def before_and_after_module():
 def init_scenario_schedule_course():
     sc = dbScenario()
     flush()
-    s = dbSchedule(semester="Winter 2023", official=False, scenario_id=sc.id)
+    s = dbSchedule(official=False, scenario_id=sc.id)
 
 @pytest.fixture(autouse=True)
 def before_and_after():

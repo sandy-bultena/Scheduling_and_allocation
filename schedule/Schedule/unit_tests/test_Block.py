@@ -268,7 +268,7 @@ def test_section_setter_updates_database():
 
     d_scenario = dbScenario(name="Test")
     flush()
-    d_schedule = dbSchedule(semester="fall", official=False, scenario_id=d_scenario.id)
+    d_schedule = dbSchedule(official=False, scenario_id=d_scenario.id)
     flush()
     d_course = Course(name="Test")
     flush()

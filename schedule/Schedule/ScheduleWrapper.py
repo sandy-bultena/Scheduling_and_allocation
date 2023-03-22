@@ -17,12 +17,17 @@ from pony.orm import *
 class ScheduleWrapper():
     def __init__(self):
         self.schedules : dict[str, Schedule.Schedule] = dict() # key representing the schedule's semester, ie fall or winter (for allocation manager)
-        ScheduleWrapper.read_DB()
+        # if it's not already done, populate the local top-level model classes
+        if len(Course.list()) + len(Lab.list()) + len(Stream.list()) + len(Teacher.list()) == 0:
+            ScheduleWrapper.read_DB()
     
     def load_schedule(self, sid : int, semester : str):
         """ Load a schedule with a given id, marked as a given semester.
-        Semester should be taken from parent scenario. """
+        Semester should be taken from parent scenario. 
+        
+        Returns the loaded schedule."""
         self.schedules[semester] = Schedule.read_DB(sid)
+        return self.schedules[semester]
 
     # --------------------------------------------------------
     # reset_local
@@ -50,7 +55,7 @@ class ScheduleWrapper():
         
         # create all labs
         lab : db.Lab
-        for lab in select(l for l in db.Lab): Schedule._create_Lab(lab.id)
+        for lab in select(l for l in db.Lab): Schedule._create_lab(lab.id)
 
         # create all teachers
         teacher : db.Teacher
@@ -76,10 +81,11 @@ class ScheduleWrapper():
         for l in Lab.list(): l.save()
 
 @db_session
+@staticmethod
 def scenarios() -> tuple[Scenario]:
     """ Gets all scenarios from the database.
     # Important Note:
-         Schedules contained within these scenarios have **not** been populated. Schedule.read_DB() should be called to populate.
+         Schedules contained within these scenarios have **not** been populated. Schedule.read_DB() or ScheduleWrapper.load_schedule() should be called to populate.
     """
     scens = set()
     scen : db.Scenario
@@ -87,8 +93,8 @@ def scenarios() -> tuple[Scenario]:
         sc = Scenario(scen.semester, scen.status, scen.description)
         scens.add(sc)
         sched : db.Schedule
-        for sched in select(sd for sd in db.Schedule):
+        for sched in select(sd for sd in db.Schedule if sd.scenario_id == scen):
             schedule = Schedule(sched.id, sched.official, sched.scenario_id, sched.description)
-            sc.schedules.append(schedule)
+            sc.schedules.add(schedule)
     
     return tuple(scens)
