@@ -55,7 +55,7 @@ def _open_scenario(listbox: Listbox, db: Database):
     if len(scenarios) < 1:
         return
     # Listbox.get() returns a string in this context.
-    scenario_string = listbox.get(0)
+    scenario_string = listbox.get(scenarios[0])
     # Use that string to query the database and get the corresponding entity.
     scenario: PonyDatabaseConnection.Scenario = eval(f"PonyDatabaseConnection.{scenario_string}")
     # sc_id = scenario.id
@@ -165,6 +165,12 @@ def _verify_login(**kwargs: StringVar):
                 pb.destroy()
             display_error_message(str(err))
         except TypeError as err:
+            statusString.set(" ")
+            if pb is not None:
+                pb.stop()
+                pb.destroy()
+            display_error_message(str(err))
+        except mysql.connector.InterfaceError as err:
             statusString.set(" ")
             if pb is not None:
                 pb.stop()
