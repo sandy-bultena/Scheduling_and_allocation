@@ -88,7 +88,8 @@ def _display_selected_scenario(scenario: PonyDatabaseConnection.Scenario):
 
 
 @db_session
-def _open_scenario(listbox: Listbox, db: Database):
+def _open_scenario(listbox: Listbox, db: Database,
+                   scenario_dict: dict[str, PonyDatabaseConnection.Scenario]):
     # Have to jump through some complex hoops to get the Scenario entity corresponding to the
     # selected index of the Listbox.
     scenarios = listbox.curselection()
@@ -96,10 +97,8 @@ def _open_scenario(listbox: Listbox, db: Database):
         return
     # Listbox.get() returns a string in this context.
     scenario_string = listbox.get(scenarios[0])
-    # Use that string to query the database and get the corresponding entity.
-    scenario: PonyDatabaseConnection.Scenario = eval(f"PonyDatabaseConnection.{scenario_string}")
-    # sc_id = scenario.id
-    db_schedules = select(s for s in PonyDatabaseConnection.Schedule if s.scenario_id == scenario)
+    # Use that string to get the corresponding Scenario entity from the passed dictionary.
+    scenario = scenario_dict[scenario_string]
     flush()
     _display_selected_scenario(scenario)
 
@@ -117,12 +116,15 @@ def _display_scenario_selector(db: Database):
     db_scenarios = PonyDatabaseConnection.Scenario.select()
     commit()
     scen_list: list[PonyDatabaseConnection.Scenario] = [s for s in db_scenarios]
-    scenario_var = StringVar(value=scen_list)
+    scen_dict: dict[str, PonyDatabaseConnection.Scenario] = {}
+    for scen in scen_list:
+        scen_dict[str(scen)] = scen
+    scenario_var = tkinter.Variable(value=scen_list)
     l_box = Listbox(scen_frm, listvariable=scenario_var)
     l_box.grid(row=0, column=0, columnspan=2)
     ttk.Button(scen_frm, text="New", command=add_new_scenario).grid(row=2, column=0)
     ttk.Button(scen_frm, text="Open", command=partial(
-        _open_scenario, l_box, db)).grid(row=2, column=1)
+        _open_scenario, l_box, db, scen_dict)).grid(row=2, column=1)
     ttk.Button(scen_frm, text="Delete").grid(row=3, column=0)
     ttk.Button(scen_frm, text="Cancel", command=scenario_window.destroy).grid(row=3, column=1)
     scenario_window.mainloop()

@@ -71,6 +71,9 @@ class Scenario(db.Entity):
     year = Optional(int, max=2200)
     schedules = Set('Schedule')
 
+    def __str__(self):
+        return f"{self.id} {self.name} ({self.year}): {self.description}"
+
 
 class Schedule(db.Entity):
     # id = PrimaryKey(int)
