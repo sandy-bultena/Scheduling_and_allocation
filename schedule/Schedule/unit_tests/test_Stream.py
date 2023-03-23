@@ -105,11 +105,9 @@ def test_share_blocks_ignores_non_shared():
     """Confirm that share_blocks ignores streams without both blocks"""
     c = Course()
     b1 = b2 = Block('mon', '13:00', 2, 1)
-    se = Section(course = c, schedule_id = 1)
-    s = Stream()
-    b1.section = se
-    b2.section = Section(course = c, schedule_id = 1)
-    se.assign_stream(s)
+    b1.section = (se := Section(number=1, course = c, schedule_id = 1))
+    b2.section = Section(number=2, course = c, schedule_id = 1)
+    se.assign_stream(Stream())
     assert not Stream.share_blocks(b1, b2)
 
 
