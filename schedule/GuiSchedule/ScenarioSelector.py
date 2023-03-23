@@ -4,6 +4,8 @@ from pony.orm import Database, db_session, flush
 
 from Schedule.database import PonyDatabaseConnection as PonyDatabaseConnection
 
+from GuiSchedule.AddScenarioWindow import AddScenarioWindow
+
 
 class ScenarioSelector:
     """Class representing a window which allows the user to pick from one of several scenarios.
@@ -57,6 +59,11 @@ class ScenarioSelector:
     def add_new_scenario(self):
         """Opens a window in which the user can add a new scenario to the database by filling out
         a form."""
+        AddScenarioWindow(self.window, self.db)
+        self._get_all_scenarios()
+        flush()
+        self.scenario_var.set(self.scen_list)
+        self.window.update()
         pass
 
     def open_scenario(self):
