@@ -184,12 +184,20 @@ def add_new_scenario():
 
 
 @db_session
-def _create_scenario(name: StringVar, description: StringVar, year: IntVar):
+def _create_scenario(name: StringVar, description: StringVar, year: IntVar, parent: Toplevel):
     """Create a new database Scenario object."""
     # TODO: Refactor this later once changes have been merged from the code_review branch.
-    scenario = PonyDatabaseConnection.Scenario(name=name.get(), description=description.get(),
-                                               year=year.get())
-    commit()
+    try:
+        scenario = PonyDatabaseConnection.Scenario(name=name.get(), description=description.get(),
+                                                   year=year.get())
+        commit()
+        messagebox.showinfo("Success", "Successfully added this scenario to the database")
+        parent.destroy()
+    except mysql.connector.DatabaseError as err:
+        display_error_message(str(err))
+    except pony.orm.OperationalError as err:
+        display_error_message(str(err))
+        pass
 
 
 def _verify_login(**kwargs: StringVar):
@@ -246,16 +254,6 @@ def _verify_login(**kwargs: StringVar):
 
 def display_error_message(msg: str):
     """Displays a passed error message in a new window."""
-    # error_window = Toplevel(root)
-    # error_window.title("ERROR")
-    # err_frm = ttk.Frame(error_window, padding=20)
-    # err_frm.grid()
-    # ttk.Label(err_frm, text=msg).grid(row=0, column=0)
-    # ttk.Button(err_frm, text="Okay", command=error_window.destroy).grid(row=1, column=0)
-    # # Disables the main window so the user can't click on it while this error message is displayed.
-    # # Control will be restored when this window is closed.
-    # error_window.grab_set()
-    # error_window.mainloop()
     messagebox.showerror("ERROR", msg)
 
 
