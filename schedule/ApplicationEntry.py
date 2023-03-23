@@ -6,6 +6,7 @@ from tkinter.ttk import Progressbar
 from functools import partial
 
 import mysql.connector
+import pony.orm
 from pony.orm import Database, db_session, commit, select, flush
 
 from Schedule.unit_tests.db_constants import DB_NAME, HOST, PROVIDER
@@ -21,15 +22,20 @@ def check_num(newval):
     return re.match('^[0-9]*$', newval) is not None
 
 
+@db_session
 def _open_schedule(listbox: Listbox, schedule_dict: dict[str, PonyDatabaseConnection.Schedule]):
     # sched_id = db_schedule.id
     # schedule = ModelSchedule.Schedule.read_DB(sched_id)
     indexes = listbox.curselection()
-    if len(indexes) < 0:
+    if len(indexes) < 1:
         return
     key = listbox.get(indexes[0])
-    db_schedule = schedule_dict[key]
+    db_schedule: PonyDatabaseConnection.Schedule = schedule_dict[key]
     # TODO: Come back to this once the import issues with Schedule have been solved.
+    flush()
+    db_id = db_schedule.id
+    # real_schedule: ModelSchedule.Schedule = ModelSchedule.Schedule.read_DB(db_id)
+    # print(real_schedule)
     pass
 
 
@@ -136,16 +142,12 @@ def _display_scenario_selector(db: Database):
     scen_frm = ttk.Frame(scenario_window, padding=40)
     scen_frm.grid()
     ttk.Label(scen_frm, text="Select a scenario:").grid(row=0, column=0, columnspan=2)
-    db_scenarios = PonyDatabaseConnection.Scenario.select()
-    commit()
-    scen_list: list[PonyDatabaseConnection.Scenario] = [s for s in db_scenarios]
-    scen_dict: dict[str, PonyDatabaseConnection.Scenario] = {}
-    for scen in scen_list:
-        scen_dict[str(scen)] = scen
+    scen_dict, scen_list = _get_all_scenarios()
     scenario_var = tkinter.Variable(value=scen_list)
     l_box = Listbox(scen_frm, listvariable=scenario_var)
     l_box.grid(row=0, column=0, columnspan=2)
-    ttk.Button(scen_frm, text="New", command=add_new_scenario).grid(row=2, column=0)
+    ttk.Button(scen_frm, text="New", command=partial(
+        add_new_scenario, scen_dict, scen_list, scenario_var)).grid(row=2, column=0)
     ttk.Button(scen_frm, text="Open", command=partial(
         _open_scenario, l_box, db, scen_dict)).grid(row=2, column=1)
     ttk.Button(scen_frm, text="Delete").grid(row=3, column=0)
@@ -154,7 +156,19 @@ def _display_scenario_selector(db: Database):
     pass
 
 
-def add_new_scenario():
+def _get_all_scenarios():
+    db_scenarios = PonyDatabaseConnection.Scenario.select()
+    commit()
+    scen_list: list[PonyDatabaseConnection.Scenario] = [s for s in db_scenarios]
+    scen_dict: dict[str, PonyDatabaseConnection.Scenario] = {}
+    for scen in scen_list:
+        scen_dict[str(scen)] = scen
+    return scen_dict, scen_list
+
+
+def add_new_scenario(s_dict: dict[str, PonyDatabaseConnection.Scenario],
+                     s_list: list[PonyDatabaseConnection.Scenario],
+                     s_var: StringVar):
     """Create a window in which the user can fill out various entry fields to create a new
     Scenario database object. """
     add_window = Toplevel(root)
@@ -177,14 +191,16 @@ def add_new_scenario():
                            validatecommand=check_num_wrapper)
     year_entry.grid(row=2, column=1)
     ttk.Button(add_frm, text="Confirm", command=partial(
-        _create_scenario, scen_name, scen_descr, scen_year)) \
+        _create_scenario, scen_name, scen_descr, scen_year, add_window, s_dict, s_list, s_var)) \
         .grid(row=3, column=0)
     ttk.Button(add_frm, text="Cancel", command=add_window.destroy).grid(row=3, column=1)
     add_window.mainloop()
 
 
 @db_session
-def _create_scenario(name: StringVar, description: StringVar, year: IntVar, parent: Toplevel):
+def _create_scenario(name: StringVar, description: StringVar, year: IntVar, parent: Toplevel,
+                     scen_dict: dict[str, PonyDatabaseConnection.Scenario], scen_list: list,
+                     scen_var: StringVar):
     """Create a new database Scenario object."""
     # TODO: Refactor this later once changes have been merged from the code_review branch.
     try:
@@ -192,6 +208,9 @@ def _create_scenario(name: StringVar, description: StringVar, year: IntVar, pare
                                                    year=year.get())
         commit()
         messagebox.showinfo("Success", "Successfully added this scenario to the database")
+        # Update the list of scenarios displayed in the main window.
+        scen_dict, scen_list = _get_all_scenarios()
+        scen_var.set(scen_list)
         parent.destroy()
     except mysql.connector.DatabaseError as err:
         display_error_message(str(err))
