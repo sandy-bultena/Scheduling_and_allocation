@@ -1,4 +1,3 @@
-import re
 import tkinter
 from tkinter import *
 from tkinter import ttk, messagebox
@@ -11,16 +10,11 @@ from pony.orm import Database, db_session, commit, select, flush
 import Schedule.database.PonyDatabaseConnection as PonyDatabaseConnection
 from GuiSchedule.GuiHelpers import display_error_message
 from GuiSchedule.LoginWindow import LoginWindow
+from GuiSchedule.GuiHelpers import check_num
 
 
 # TODO: Fix import issues regarding this class.
 # import Schedule.Schedule as ModelSchedule
-
-
-def check_num(newval):
-    # Taken from the official tkinter documentation here:
-    # https://tkdocs.com/tutorial/widgets.html#entry
-    return re.match('^[0-9]*$', newval) is not None
 
 
 @db_session
