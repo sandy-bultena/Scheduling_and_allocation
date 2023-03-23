@@ -2,137 +2,19 @@ import re
 import tkinter
 from tkinter import *
 from tkinter import ttk, messagebox
-from tkinter.ttk import Progressbar
 from functools import partial
-from time import sleep
 
 import mysql.connector
 import pony.orm
 from pony.orm import Database, db_session, commit, select, flush
 
-from Schedule.unit_tests.db_constants import DB_NAME, HOST, PROVIDER
 import Schedule.database.PonyDatabaseConnection as PonyDatabaseConnection
+from GuiSchedule.GuiHelpers import display_error_message
+from GuiSchedule.LoginWindow import LoginWindow
 
 
 # TODO: Fix import issues regarding this class.
 # import Schedule.Schedule as ModelSchedule
-
-
-class LoginWindow:
-    """Class representing the login window of the application.
-
-    Allows the user to login by entering their username and password. If both are valid, window
-    will establish connection to remote database and take user to rest of app."""
-
-    def __init__(self, parent: Tk):
-        """Creates a new login window.
-
-        parent: TK = The root element that is the parent of this LoginWindow."""
-        self.parent = parent
-        self.frame = self._setup_frame()
-        self._setup_interface()
-
-    def _setup_frame(self):
-        frame = ttk.Frame(self.parent, padding=30)
-        frame.grid()
-        return frame
-
-    def _setup_interface(self):
-        ttk.Label(self.frame, text="Please login to access the scheduler.").grid(column=1, row=0)
-        ttk.Label(self.frame, text="Username").grid(column=0, row=1)
-        ttk.Label(self.frame, text="Password").grid(column=0, row=2)
-        username_input = StringVar()
-        password_input = StringVar()
-        self.username_entry = ttk.Entry(self.frame, textvariable=username_input)
-        self.username_entry.grid(column=1, row=1, columnspan=2)
-        self.password_entry = ttk.Entry(self.frame, textvariable=password_input, show="*")
-        self.password_entry.grid(column=1, row=2, columnspan=2)
-        self.login_btn = ttk.Button(self.frame, text="Login", command=self._verify_login)
-        self.login_btn.grid(column=1, row=3, columnspan=1)
-        self.__status_var = StringVar()
-        self.status_bar = ttk.Label(self.frame, textvariable=self.__status_var)
-        self.status_bar.grid(column=0, row=5, columnspan=3)
-
-    def _verify_login(self):
-        username = self.username_entry.get()
-        password = self.password_entry.get()
-        if len(username) == 0 or len(password) == 0:
-            display_error_message("Username and password are required.")
-            return
-        try:
-            self.__status_var.set("Connecting...")
-            self.parent.update()
-            # Attempt to connect to the database using these credentials.
-            db = PonyDatabaseConnection.define_database(host=HOST, db=DB_NAME, user=username,
-                                                        passwd=password, provider=PROVIDER)
-            # Display a success message. Give the user a chance to read it before it disappears.
-            self.__status_var.set("Connection successful.")
-            self.parent.update()
-            sleep(2)
-            # If successful, make the LoginWindow's parent disappear. We don't want the window
-            # hanging around as a distraction.
-            self.parent.withdraw()
-            # Then display the scenario selector window.
-            ScenarioSelector(self.parent, db)
-        except mysql.connector.DatabaseError as err:
-            display_error_message(str(err))
-        except TypeError as err:
-            display_error_message(str(err))
-        except mysql.connector.InterfaceError as err:
-            display_error_message(str(err))
-
-
-class ScenarioSelector:
-    """Class representing a window which allows the user to pick from one of several scenarios.
-
-    Scenarios are retrieved from the database. If no scenarios exist, the selector gives the user
-    the functionality to create new ones. """
-
-    def __init__(self, parent: Tk, db: Database):
-        self.db = db
-        self.scen_dict = {}
-        self.window = self._setup_window(parent)
-        self.frame = self._setup_frame()
-        self._setup_interface()
-        self.window.mainloop()
-
-    def _setup_frame(self) -> Frame:
-        frame = ttk.Frame(self.window, padding=40)
-        frame.grid()
-        return frame
-
-    @staticmethod
-    def _setup_window(parent) -> Toplevel:
-        window = Toplevel(parent)
-        window.title("SELECT SCENARIO")
-        return window
-
-    def _setup_interface(self):
-        ttk.Label(self.frame, text="Select a scenario:").grid(row=0, column=0, columnspan=2)
-        self._get_all_scenarios()
-        self.scenario_var = StringVar(value=self.scen_list)
-        self.listbox = Listbox(self.frame, listvariable=self.scenario_var)
-        self.listbox.grid(row=1, column=0, columnspan=2)
-        ttk.Button(self.frame, text="New", command=self.add_new_scenario).grid(row=2, column=0)
-        ttk.Button(self.frame, text="Open").grid(row=2, column=1)
-        self.window.protocol("WM_DELETE_WINDOW", root.destroy)
-        pass
-
-    @db_session
-    def _get_all_scenarios(self):
-        """Retrieves all scenario records from the database, storing them within this
-        ScenarioSelector object."""
-        db_scenarios = PonyDatabaseConnection.Scenario.select()
-        flush()
-        self.scen_list = [s for s in db_scenarios]
-        for scen in self.scen_list:
-            self.scen_dict[str(scen)] = scen
-
-    @db_session
-    def add_new_scenario(self):
-        """Opens a window in which the user can add a new scenario to the database by filling out
-        a form."""
-        pass
 
 
 def check_num(newval):
@@ -347,11 +229,6 @@ def _create_scenario(name: StringVar, description: StringVar, year: IntVar, pare
         display_error_message(str(err))
     except pony.orm.OperationalError as err:
         display_error_message(str(err))
-
-
-def display_error_message(msg: str):
-    """Displays a passed error message in a new window."""
-    messagebox.showerror("ERROR", msg)
 
 
 if __name__ == "__main__":
