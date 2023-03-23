@@ -4,6 +4,7 @@ from tkinter import *
 from tkinter import ttk, messagebox
 from tkinter.ttk import Progressbar
 from functools import partial
+from time import sleep
 
 import mysql.connector
 import pony.orm
@@ -18,7 +19,15 @@ import Schedule.database.PonyDatabaseConnection as PonyDatabaseConnection
 
 
 class LoginWindow:
+    """Class representing the login window of the application.
+
+    Allows the user to login by entering their username and password. If both are valid, window
+    will establish connection to remote database and take user to rest of app."""
+
     def __init__(self, parent: Tk):
+        """Creates a new login window.
+
+        parent: TK = The root element that is the parent of this LoginWindow."""
         self.parent = parent
         self.frame = self._setup_frame()
         self._setup_interface()
@@ -40,6 +49,9 @@ class LoginWindow:
         self.password_entry.grid(column=1, row=2, columnspan=2)
         self.login_btn = ttk.Button(self.frame, text="Login", command=self._verify_login)
         self.login_btn.grid(column=1, row=3, columnspan=1)
+        self.__status_var = StringVar()
+        self.status_bar = ttk.Label(self.frame, textvariable=self.__status_var)
+        self.status_bar.grid(column=0, row=5, columnspan=3)
 
     def _verify_login(self):
         username = self.username_entry.get()
@@ -48,9 +60,15 @@ class LoginWindow:
             display_error_message("Username and password are required.")
             return
         try:
+            self.__status_var.set("Connecting...")
+            self.parent.update()
             # Attempt to connect to the database using these credentials.
             db = PonyDatabaseConnection.define_database(host=HOST, db=DB_NAME, user=username,
                                                         passwd=password, provider=PROVIDER)
+            # Display a success message. Give the user a chance to read it before it disappears.
+            self.__status_var.set("Connection successful.")
+            self.parent.update()
+            sleep(2)
             # If successful, make the LoginWindow's parent disappear. We don't want the window
             # hanging around as a distraction.
             self.parent.withdraw()
@@ -278,59 +296,6 @@ def _create_scenario(name: StringVar, description: StringVar, year: IntVar, pare
         display_error_message(str(err))
 
 
-# def _verify_login(**kwargs: StringVar):
-#     """Verifies the user's credentials and tries to connect to the database.
-#
-#     Displays an error message if anything goes wrong."""
-#     # Do something to verify the user's credentials.
-#     username = kwargs['username'].get()
-#     passwd = kwargs['passwd'].get()
-#     if username is None or len(username) == 0 or passwd is None or len(passwd) == 0:
-#         # Display an error message.
-#         display_error_message("Username and password are required.")
-#     else:
-#         try:
-#             connect_msg = "Connecting..."
-#             statusString.set(connect_msg)
-#             root.update()
-#             pb = ttk.Progressbar(frm, orient='horizontal', length=200, mode='indeterminate')
-#             pb.grid(column=0, row=5, columnspan=2)
-#             pb.start()
-#             root.update()
-#             # TODO: To make the ProgressBar display properly, we would need to make this into an
-#             #  async call. Ultimately, it may not be worth the effort.
-#             db = PonyDatabaseConnection.define_database(host=HOST, db=DB_NAME, user=username,
-#                                                         passwd=passwd, provider=PROVIDER)
-#             success_msg = f"Connection Successful."
-#             pb.stop()
-#             pb.destroy()
-#             print(success_msg)
-#             statusString.set(success_msg)
-#             root.withdraw()
-#             _display_scenario_selector(db)
-#         except mysql.connector.DatabaseError as err:
-#             # Display a relevant error message for anything else that might go wrong with the
-#             # connection.
-#             statusString.set(" ")
-#             if pb is not None:
-#                 pb.stop()
-#                 pb.destroy()
-#             display_error_message(str(err))
-#         except TypeError as err:
-#             statusString.set(" ")
-#             if pb is not None:
-#                 pb.stop()
-#                 pb.destroy()
-#             display_error_message(str(err))
-#         except mysql.connector.InterfaceError as err:
-#             statusString.set(" ")
-#             if pb is not None:
-#                 pb.stop()
-#                 pb.destroy()
-#             display_error_message(str(err))
-#             # root.update()
-
-
 def display_error_message(msg: str):
     """Displays a passed error message in a new window."""
     messagebox.showerror("ERROR", msg)
@@ -339,21 +304,6 @@ def display_error_message(msg: str):
 if __name__ == "__main__":
     root = Tk()
     root.title("Scheduling Application -  Login")
-    # frm = ttk.Frame(root, padding=30)
-    # frm.grid()
-    # ttk.Label(frm, text="Please login to access the scheduler").grid(column=1, row=0)
-    # ttk.Label(frm, text="Username").grid(column=0, row=1)
-    # usernameInput = StringVar()
-    # ttk.Entry(frm, textvariable=usernameInput).grid(column=1, row=1, columnspan=2)
-    # ttk.Label(frm, text="Password").grid(column=0, row=2)
-    # passwdInput = StringVar()
-    # ttk.Entry(frm, textvariable=passwdInput, show="*").grid(column=1, row=2, columnspan=2)
-    # ttk.Button(frm, text="Login",
-    #            command=partial(_verify_login, username=usernameInput, passwd=passwdInput)) \
-    #     .grid(column=1, row=3, columnspan=1)
-    # ttk.Separator(frm, orient=HORIZONTAL).grid(column=0, row=4, columnspan=3, sticky="ew")
-    # statusString = StringVar()
-    # ttk.Label(frm, textvariable=statusString).grid(column=0, row=5, columnspan=2)
     frm = LoginWindow(root)
     check_num_wrapper = (root.register(check_num), '%P')
     root.mainloop()
