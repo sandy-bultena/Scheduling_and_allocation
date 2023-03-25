@@ -94,7 +94,7 @@ class NumStudents:
             # for each course in the semester
             # --------------------------------------------------------------------------------------------------
             courses: [Course] = sorted(
-                (c for c in schedule.courses_in_schedule() if c.needs_allocation),
+                (c for c in schedule.courses() if c.needs_allocation),
                 key=lambda x: x.description)
             for course in courses:
                 course_data = gui_form.NumStudentsDataCourse(name=course.description)
