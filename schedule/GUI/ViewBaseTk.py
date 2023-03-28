@@ -117,3 +117,20 @@ class ViewBaseTk(ABC):
         view_menu = Menu(main_menu)
         main_menu.add_cascade(menu=view_menu, label="View", underline=0)
         view_menu.add_command(label="50%", underline=0, command=_resize_view(self, 0.50))
+        view_menu.add_command(label="100%", underline=0, command=_resize_view(self, 1.00))
+        self._main_menu = main_menu
+
+        # ---------------------------------------------------------------
+        # if there is a popup menu defined, make sure you can make it
+        # go away by clicking the toplevel (as opposed to the menu)
+        # ---------------------------------------------------------------
+        # TODO: Verify that this works.
+        if self._popup_menu:
+            tl.bind('<1>', _unpost_menu(self))
+            tl.bind(('<2>', _unpost_menu(self)))
+
+        # ---------------------------------------------------------------
+        # create status bar
+        # ---------------------------------------------------------------
+        status
+        self._status_bar = self._create_status_bar(status)
