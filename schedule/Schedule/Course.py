@@ -93,13 +93,15 @@ class Course:
             # Verify that this is actually a Section object.
             if not isinstance(section, Section.Section):
                 raise TypeError(f"<{section}>: invalid section - must be a Section object.")
+            
+            # If this section is already on the Course, skip it
+            if section.number in self._sections and section.id == self._sections[section.number].id: continue
 
             # -------------------------------------------------------
             # Section numbers must be unique for this Course.
             # -------------------------------------------------------
-            if section.number in (sec.number for sec in self._sections.values()):
-                raise Exception(
-                    f"<{section.number}>: section number is not unique for this Course.")
+            if section.number in self._sections:
+                raise Exception(f"<{section.number}>: section number is not unique for this Course.")
 
             # ----------------------------------------------------------
             # save section for this course, save course for this section
@@ -164,7 +166,7 @@ class Course:
         if not isinstance(section, Section.Section):
             raise TypeError(f"<{section}>: invalid section - must be a Section object")
 
-        if section.number in getattr(self, '_sections', {}):
+        if section.number in self._sections:
             del self._sections[section.number]
             self.__remove_entity_section(section.id)
             section.delete()
@@ -182,8 +184,7 @@ class Course:
     # delete
     # =================================================================
     def remove(self):
-        """Removes this object from the application, without deleting its corresponding
-        database record."""
+        """Removes this object from the application, without deleting its corresponding database record."""
         # Remove each of its associated sections.
         for section in self.sections():
             self.remove_section(section)

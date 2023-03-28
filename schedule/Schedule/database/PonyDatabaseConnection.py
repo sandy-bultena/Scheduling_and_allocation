@@ -1,18 +1,25 @@
+import sys
+from os import path
+sys.path.append(path.dirname(path.dirname(__file__)))
+
 from decimal import Decimal
 
 from pony.orm import *
 import mysql.connector
+from database.db_constants import *
 
 # Test database to verify that Pony works. Anything done here won't affect the main scheduler_db.
 # db_name = "pony_scheduler_db"
 
 # Create the database if it doesn't exist. Using mysql.connector to accomplish this because Pony
 # doesn't let you use the create_db option when binding to a MySQL database.
-# conn = mysql.connector.connect(
-#     host="10.101.0.27",
-#     username="evan_test",
-#     password="test_stage_pwd_23"
-# )
+
+conn = mysql.connector.connect(
+    host=HOST,
+    username=USERNAME,
+    password=PASSWD
+)
+
 
 # cursor = conn.cursor()
 
@@ -68,7 +75,8 @@ class Scenario(db.Entity):
     # id = PrimaryKey(int)
     name = Optional(str, max_len=50)
     description = Optional(str, max_len=1000)
-    year = Optional(int, max=2200)
+    semester = Optional(str, max_len=11)
+    status = Optional(str, max_len=20)
     schedules = Set('Schedule')
 
     def __str__(self):
@@ -78,7 +86,6 @@ class Scenario(db.Entity):
 class Schedule(db.Entity):
     # id = PrimaryKey(int)
     description = Optional(str, max_len=100)
-    semester = Required(str, max_len=11)
     official = Required(bool)
     scenario_id = Required(Scenario)
     sections = Set('Section')
@@ -182,14 +189,14 @@ def define_database(**db_params):
 
 
 if __name__ == "__main__":
-    define_database(provider='mysql',
-                    host='10.101.0.27',
-                    user='evan_test',
-                    passwd='test_stage_pwd_23',
+    define_database(provider=PROVIDER,
+                    host=HOST,
+                    user=USERNAME,
+                    passwd=PASSWD,
                     db=db_name)
-    """db.bind(provider='mysql',
-        host='10.101.0.27',
-        user='evan_test',
-        passwd='test_stage_pwd_23',
+    """db.bind(provider=PROVIDER,
+        host=HOST,
+        user=USERNAME,
+        passwd=PASSWD,
         db=db_name)
     db.generate_mapping(create_tables=True)"""

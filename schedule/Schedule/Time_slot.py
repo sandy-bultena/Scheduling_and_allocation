@@ -296,13 +296,11 @@ class TimeSlot:
     # =================================================================
     # save
     # =================================================================
-    @db_session
     def save(self):
         """Saves this TimeSlot to the database, updating its corresponding record.
 
         Returns the corresponding TimeSlot database entity."""
-        # TODO: Make this an abstract method, or just replace with "pass". Let the child classes
-        #  implement this.
+        # Let child classes implement
         # d_slot = dbTimeSlot.get(
         #     id=self.__id)  # use the __id so it refers to the time slot's ID correctly, not block ID (when relevant)
         # if not d_slot: d_slot = dbTimeSlot(day=self.day, duration=self.duration, start=self.start)
