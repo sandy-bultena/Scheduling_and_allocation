@@ -108,3 +108,12 @@ class ViewBaseTk(ABC):
         self._width_scale = 100
         self._horiz_scale = 60
         self.current_scale = 1
+
+        # ---------------------------------------------------------------
+        # create scale menu
+        # ---------------------------------------------------------------
+        main_menu = Menu(mw)
+        tl.configure(menu=main_menu)
+        view_menu = Menu(main_menu)
+        main_menu.add_cascade(menu=view_menu, label="View", underline=0)
+        view_menu.add_command(label="50%", underline=0, command=_resize_view(self, 0.50))
