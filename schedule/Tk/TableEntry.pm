@@ -16,7 +16,7 @@ my $image_dir = Tk::FindImages::get_image_dir();
 =cut
 
 # ===================================================================
-# Create a tool for Entering text (excel style?)
+# Create a tool for Entering text (spreadsheet style?)
 # ===================================================================
 use Carp;
 our $VERSION = 2.01;
@@ -360,7 +360,7 @@ sub add_empty_row {
     my $row       = shift;
     my $colwidths = $t->colwidths;
     my $disabled  = $t->disabled;
-
+    
     # for each column, add an entry box
     foreach my $c ( 1 .. $t->columns ) {
 

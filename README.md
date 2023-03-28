@@ -1,11 +1,11 @@
 # SchedProg
 
-A package of tools used for scheduling and allocating 
+A package of tools used for scheduling and allocating
 teachers and labs etc.
 
 
 
-Uses Perl/Tk GUI 
+Uses Perl/Tk GUI
 
 Takes into account the following contraints
 1. Teachers
@@ -13,7 +13,7 @@ Takes into account the following contraints
 3. Streams
 4. Limits schedules based on current Collective Agreement Rules
 
-Files are saved in YAML format, so they can be edited manually 
+Files are saved in YAML format, so they can be edited manually
 if  you are brave enough.
 
 ## MAC OS X
@@ -30,11 +30,10 @@ Assuming that you installed perl into /usr/local/bin...
 sudo /usr/local/bin/cpan install YAML
 sudo /usr/local/bin/cpan -fi Tk         # must force install Tk
 sudo /usr/local/bin/cpan install Text::CSV
-sudo /usr/local/bin/cpan install Excel::Writer::XLSX
 sudo /usr/local/bin/cpan install PDF::API2
 ```
 
-### Install Scheduler
+### Install Scheduler and AllocationManager
 Download zip file and unzip
 
 From a terminal window (bash)
@@ -52,12 +51,12 @@ Recommended: XQuartz
 
 ## MS Windows (Tested on Windows 10)
 
-### Install Strawberry Perl 
+### Install Strawberry Perl
 
 (version used .0.1-64bit - Newer versions available but have issues with Tk Package)
 http://strawberryperl.com/release-notes/5.30.0.1-64bit.html
 
- 
+
 ### Install required Perl Packages
 
 Run Command Prompt as Administrator
@@ -66,6 +65,5 @@ Run Command Prompt as Administrator
 cpan YAML
 cpanm --Force Tk         # must force install Tk
 cpan Text::CSV
-cpan Excel::Writer::XLSX
 cpan PDF::API2
 ```

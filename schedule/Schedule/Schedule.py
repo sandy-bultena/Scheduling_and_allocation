@@ -24,6 +24,7 @@ from pony.orm import *
     sched.write_DB()
 """
 
+
 class Schedule:
     """
     Provides the top level class for all schedule objects.
@@ -36,7 +37,9 @@ class Schedule:
     # ========================================================
     # CONSTRUCTOR
     # ========================================================
+
     def __init__(self, id : int, official : bool, scenario_id : int, descr : str = ""):
+
         """
         Creates an instance of the Schedule class.
         
@@ -51,6 +54,7 @@ class Schedule:
         self.descr = descr
         self.sections = SectionList()
     
+
     # ========================================================
     # PROPERTIES
     # ========================================================
@@ -82,22 +86,25 @@ class Schedule:
             ts = LabUnavailableTime(slot.day, slot.start, slot.duration, slot.movable, id = slot.id, schedule = schedule)
             l = Schedule._create_lab(slot.lab_id.id)
             l.add_unavailable_slot(ts)
-        
+      
+
         # add release for this schedule to any teachers
-        schedule_teacher : db.Schedule_Teacher
+        schedule_teacher: db.Schedule_Teacher
         for schedule_teacher in select(t for t in db.Schedule_Teacher if t.schedule_id.id == id):
             Schedule._create_teacher(schedule_teacher.teacher_id.id).release = schedule_teacher.work_release
             
+
         # create all sections in this schedule
-        section : db.Section
+        section: db.Section
         for section in select(s for s in db.Section if s.schedule_id.id == id):
             c = Schedule._create_course(section.course_id.id)
             s = Section(section.number, section.hours, section.name, c, id = section.id)
             schedule.sections.append(s)
+
             s.num_students = section.num_students
             c.add_section(s)
             # identify teachers and set allocation
-            section_teacher : db.Section_Teacher
+            section_teacher: db.Section_Teacher
             for section_teacher in select(t for t in db.Section_Teacher if t.section_id.id == section.id):
                 t = Schedule._create_teacher(section_teacher.teacher_id.id)
                 s.assign_teacher(t)
@@ -107,22 +114,24 @@ class Schedule:
                 st = Schedule._create_stream(section_stream.id)
                 s.assign_stream(st)
             # identify, create, and assign blocks
-            block : db.Block
+            block: db.Block
             for block in select(b for b in db.Block if b.section_id.id == s.id):
-                b = Block(block.day, block.start, block.duration, block.number, movable = block.movable, id = block.id)
+                b = Block(block.day, block.start, block.duration, block.number, movable=block.movable, id=block.id)
                 s.add_block(b)
+
                 for l in block.labs: b.assign_lab(Schedule._create_lab(l.id))
                 for t in block.teachers: b.assign_teacher(Schedule._create_teacher(t.id))
         
         schedule.calculate_conflicts()
         return schedule
-    
+
     @db_session
     def write_DB(self):
         """ Save any schedule-level changes to the database """
         # update any schedule changes
         sched : db.Schedule = db.Schedule.get(id=self.id)
         scen : db.Scenario = db.Scenario.get(id=self.scenario_id)
+
         if not scen: scen = db.Scenario()
         if not sched: sched = db.Schedule(official=self.official, scenario_id=scen)
         sched.official = self.official
@@ -133,6 +142,7 @@ class Schedule:
 
         # update all teachers (needs to stay here to update schedule-teacher linking table)
         for t in self.teachers(): t.save(sched)
+
 
         # update all lab unavailable times
         for lut in self.lab_unavailable_times(): lut.save()
@@ -182,6 +192,7 @@ class Schedule:
         if Course.get(id): return Course.get(id)
         course : db.Course = db.Course.get(id = id)
         return Course(course.number, course.name, course.semester, course.allocation, id = id) if course else Course(id = id)
+
 
     # --------------------------------------------------------
     # teachers
@@ -266,6 +277,7 @@ class Schedule:
     # sections_for_teacher
     # --------------------------------------------------------
     def sections_for_teacher(self, teacher : Teacher) -> tuple[Section]:
+
         """
         Returns a tuple of Sections that the given Teacher teaches
         - Parameter teacher -> The Teacher who's Sections should be found
@@ -281,6 +293,7 @@ class Schedule:
     # courses_for_teacher
     # --------------------------------------------------------
     def courses_for_teacher(self, teacher : Teacher) -> tuple[Course]:
+
         """
         Returns a list of Courses that the given Teacher teaches
         - Parameter teacher -> The Teacher who's Courses should be found
@@ -295,6 +308,7 @@ class Schedule:
     # allocated_courses_for_teacher
     # --------------------------------------------------------
     def allocated_courses_for_teacher(self, teacher : Teacher) -> tuple[Course]:
+
         """
         Returns a list of courses that this teacher teaches, which is an allocated type course
         - Parameter teacher -> The Teacher to check
@@ -302,10 +316,12 @@ class Schedule:
         if not isinstance(teacher, Teacher): raise TypeError(f"{teacher} must be an object of type Teacher")
         return tuple(filter(lambda c : c.needs_allocation, self.courses_for_teacher(teacher)))
 
+
     # --------------------------------------------------------
     # blocks_for_teacher
     # --------------------------------------------------------
     def blocks_for_teacher(self, teacher : Teacher) -> tuple[Block]:
+
         """
         Returns a list of Blocks that the given Teacher teaches
         - Parameter teacher -> The Teacher who's Blocks should be found
@@ -321,7 +337,9 @@ class Schedule:
     # --------------------------------------------------------
     # blocks_in_lab
     # --------------------------------------------------------
+
     def blocks_in_lab(self, lab : Lab) -> tuple[Lab]:
+
         """
         Returns a list of Blocks using the given Lab
         - Parameter lab -> The Lab that should be found
@@ -336,7 +354,9 @@ class Schedule:
     # --------------------------------------------------------
     # sections_for_stream
     # --------------------------------------------------------
+
     def sections_for_stream(self, stream : Stream) -> tuple[Section]:
+
         """
         Returns a list of Sections assigned to the given Stream
         - Parameter stream -> The Stream that should be found
@@ -351,7 +371,9 @@ class Schedule:
     # --------------------------------------------------------
     # blocks_for_stream
     # --------------------------------------------------------
+
     def blocks_for_stream(self, stream : Stream) -> tuple[Block]:
+
         """
         Returns a list of Blocks in the given Stream
         - Parameter stream -> The Stream who's Blocks should be found
@@ -367,7 +389,9 @@ class Schedule:
     # --------------------------------------------------------
     # remove_course
     # --------------------------------------------------------
+
     def remove_course(self, course : Course):
+
         """Removes Course from schedule"""
         if not isinstance(course, Course): raise TypeError(f"{course} must be an object of type Course")
         course.remove()
@@ -375,7 +399,9 @@ class Schedule:
     # --------------------------------------------------------
     # remove_teacher
     # --------------------------------------------------------
+
     def remove_teacher(self, teacher : Teacher):
+
         """Removes Teacher from schedule"""
         if not isinstance(teacher, Teacher): raise TypeError(f"{teacher} must be an object of type Teacher")
         # go through all blocks, and remove teacher from each
@@ -387,6 +413,7 @@ class Schedule:
     # remove_lab
     # --------------------------------------------------------
     def remove_lab(self, lab : Lab):
+
         """Removes Lab from schedule"""
         if not isinstance(lab, Lab): raise TypeError(f"{lab} must be an object of type Lab")
         # go through all blocks, and remove lab from each
@@ -397,6 +424,7 @@ class Schedule:
     # remove_stream
     # --------------------------------------------------------
     def remove_stream(self, stream : Stream):
+
         """Removes Stream from schedule"""
         if not isinstance(stream, Stream): raise TypeError(f"{stream} must be an object of type Stream")
         # go through all sections, and remove stream from each
@@ -408,7 +436,8 @@ class Schedule:
     # --------------------------------------------------------
     def calculate_conflicts(self):
         """Reviews the schedule, and creates a list of Conflict objects as necessary"""
-        def __new_conflict(type : ConflictType, blocks : list[Block]):
+
+        def __new_conflict(type: ConflictType, blocks: list[Block]):
             Conflict(type, blocks)
             for b in blocks: b.conflicted = type.value
 
@@ -436,7 +465,7 @@ class Schedule:
                     if Stream.share_blocks(b, bb):
                         is_conflict = True
                         b.conflicted = bb.conflicted = ConflictType.TIME_STREAM.value
-                    
+
                     # create a conflict object and mark the blocks as conflicting
                     if is_conflict: __new_conflict(ConflictType.TIME, [b, bb])
 
@@ -444,6 +473,7 @@ class Schedule:
         # check for lunch break conflicts by teacher
         start_lunch = 11
         end_lunch = 14
+
         lunch_periods = list(i/2 for i in range(start_lunch * 2, end_lunch * 2))
         for t in Teacher.list():    # no need to use schedule.teachers because it filters using self.blocks_for_teacher anyways
             # filter to only relevant blocks (that can possibly conflict)
@@ -452,10 +482,11 @@ class Schedule:
             # collect blocks by day
             blocks_by_day : dict[int, list[Block]] = { }
             b : Block
+
             for b in relevant_blocks:
                 if not b.day_number in blocks_by_day: blocks_by_day[b.day_number] = []
                 blocks_by_day[b.day_number].append(b)
-            
+
             for blocks in blocks_by_day.values():
                 # don't know how this could occur, but just being careful
                 if not blocks: continue
@@ -466,7 +497,7 @@ class Schedule:
                     # is this period free?
                     has_lunch = all(not Schedule._conflict_lunch(b, start) for b in blocks)
                     if has_lunch: break
-                
+
                 # if no lunch, create a conflict obj and mark blocks as conflicted
                 if not has_lunch: __new_conflict(ConflictType.LUNCH, blocks)
 
@@ -476,15 +507,17 @@ class Schedule:
             if t.release: continue
 
             # collect blocks by day
+
             blocks_by_day : dict[int, list[Block]] = { }
             blocks = self.blocks_for_teacher(t)
+
             for b in blocks:
                 if not b.day_number in blocks_by_day: blocks_by_day[b.day_number] = []
                 blocks_by_day[b.day_number].append(b)
 
             # if < 4 days, create a conflict and mark the blocks as conflicted
             if len(blocks_by_day.keys()) < 4 and blocks: __new_conflict(ConflictType.MINIMUM_DAYS, blocks)
-            
+
             # if they have more than 32 hours worth of classes
             availability = 0
             for blocks_in_day in blocks_by_day.values():
@@ -492,28 +525,30 @@ class Schedule:
                 day_end = max(map(lambda b: b.start_number + b.duration, blocks_in_day))
                 if day_end <= day_start: continue
                 availability += day_end - day_start - 0.5
-            
+
             # if over limit, create conflict
             if availability > 32: __new_conflict(ConflictType.AVAILABILITY, blocks)
-        
+
         # Perl ver. returns self here
 
     # --------------------------------------------------------
     # _conflict_lunch
     # --------------------------------------------------------
     @staticmethod
-    def _conflict_lunch(block : Block, lunch_start):
+    def _conflict_lunch(block: Block, lunch_start):
         lunch_end = lunch_start + .5
         block_end_number = block.start_number + block.duration
         return (
-            (block.start_number < lunch_end and lunch_start < block_end_number) or
-            (lunch_start < block_end_number and block.start_number < lunch_end)
+                (block.start_number < lunch_end and lunch_start < block_end_number) or
+                (lunch_start < block_end_number and block.start_number < lunch_end)
         )
 
     # --------------------------------------------------------
     # teacher_stat
     # --------------------------------------------------------
+
     def teacher_stat(self, teacher : Teacher) -> str:
+
         """
         Returns text that gives teacher statistics
         Parameter teacher -> The teacher who's statistics will be returned
@@ -524,23 +559,23 @@ class Schedule:
         sections = self.sections_for_teacher(teacher)
 
         week = dict(
-            mon = False,
-            tue = False,
-            wed = False,
-            thu = False,
-            fri = False,
-            sat = False,
-            sun = False,
+            mon=False,
+            tue=False,
+            wed=False,
+            thu=False,
+            fri=False,
+            sat=False,
+            sun=False,
         )
 
         week_str = dict(
-            mon = "Monday",
-            tue = "Tuesday",
-            wed = "Wednesday",
-            thu = "Thursday",
-            fri = "Friday",
-            sat = "Saturday",
-            sun = "Sunday"
+            mon="Monday",
+            tue="Tuesday",
+            wed="Wednesday",
+            thu="Thursday",
+            fri="Friday",
+            sat="Saturday",
+            sun="Sunday"
         )
 
         hours_of_work = 0
@@ -549,7 +584,7 @@ class Schedule:
             hours_of_work += b.duration
 
             week[b.day] = True
-        
+
         message = f"""{teacher.firstname} {teacher.lastname}'s Stats.
         
         Days of the week working:
@@ -558,43 +593,52 @@ class Schedule:
         Hours of Work: {hours_of_work}
         Courses being taught:
         """
-        
+
         for c in courses:
             num_sections = 0
             for s in sections:
                 if s.course is c: num_sections += 1
             message += f"-> {c.description} ({num_sections} Section(s))\n"
-        
+
         return message
 
     # --------------------------------------------------------
     # teacher_details
     # --------------------------------------------------------
+
     def teacher_details(self, teacher : Teacher) -> str:
+
         """
         Prints a schedule for a specific teacher
         Parameter teacher -> The teacher who's schedule to print
         """
         from functools import cmp_to_key
-        def __sort_blocks(a : Block, b : Block) -> int:
-            if a.number < b.number: return 1
-            elif a.number > b.number: return -1
-            elif a.start_number < b.start_number: return 1
-            elif a.start_number > b.start_number: return -1
-            else: return 0
+        def __sort_blocks(a: Block, b: Block) -> int:
+            if a.number < b.number:
+                return 1
+            elif a.number > b.number:
+                return -1
+            elif a.start_number < b.start_number:
+                return 1
+            elif a.start_number > b.start_number:
+                return -1
+            else:
+                return 0
 
         if not isinstance(teacher, Teacher): raise TypeError(f"{teacher} must be an object of type Teacher")
-        head = "="*50
+        head = "=" * 50
         text = f"\n\n{head}\n{teacher}\n{head}\n"
+
         c : Course
         for c in sorted(self.courses_for_teacher(teacher), key = lambda a : a.number.lower()):
+
             text += f"\n{c.number} {c.name}\n"
-            text += "-"*80
+            text += "-" * 80
 
             # sections
-            for s in sorted(c.sections(), key = lambda a : a.number):
+            for s in sorted(c.sections(), key=lambda a: a.number):
                 if s.has_teacher(teacher):
-                    text += f"\n{s}\n\t" + "- "*25 + "\n"
+                    text += f"\n{s}\n\t" + "- " * 25 + "\n"
 
                     # blocks
                     for b in sorted(s.blocks, key=cmp_to_key(__sort_blocks)):
@@ -606,7 +650,9 @@ class Schedule:
     # --------------------------------------------------------
     # clear_all_from_course
     # --------------------------------------------------------
+
     def clear_all_from_course(self, course : Course):
+
         """
         Removes all teachers, labs, and streams from course
         - Parameter course -> The course to be cleared.
@@ -623,6 +669,7 @@ class Schedule:
     @staticmethod
     # can be static because the section is passed in
     def clear_all_from_section(section : Section):
+
         """
         Removes all teachers, labs, and streams from section
         - Parameter section -> The section to be cleared.
@@ -632,7 +679,7 @@ class Schedule:
         # done manually in Perl ver
         section.remove_all_teachers()
         section.remove_all_streams()
-        labs = Lab.list()   # why does this use the global list of Labs?
+        labs = Lab.list()  # why does this use the global list of Labs?
         for l in labs: section.remove_lab(l)
 
     # --------------------------------------------------------
@@ -641,6 +688,7 @@ class Schedule:
     @staticmethod
     # can be static because the block is passed in
     def clear_all_from_block(block : Block):
+
         """
         Removes all teachers, labs, and streams from block
         - Parameter block -> The block to be cleared.
@@ -654,7 +702,7 @@ class Schedule:
     # --------------------------------------------------------
     # get block info for specified ViewType object
     # --------------------------------------------------------
-    def get_blocks_for_obj(self, obj : Teacher | Lab | Stream) -> tuple[Block]:
+    def get_blocks_for_obj(self, obj: Teacher | Lab | Stream) -> tuple[Block]:
         """ Returns a tuple of blocks associated with the specified ViewType object"""
         if isinstance(obj, Teacher): return self.blocks_for_teacher(obj)
         if isinstance(obj, Lab): return self.blocks_in_lab(obj)
@@ -668,4 +716,3 @@ class Schedule:
         for vtype in ViewType:
             if isinstance(obj, vtype.value): return vtype
         return None
-

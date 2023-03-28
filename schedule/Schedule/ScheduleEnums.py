@@ -7,7 +7,7 @@ from os import path
 sys.path.append(path.dirname(path.dirname(__file__)))
 import PerlLib.Colour as Colour
 
-''' Not all the classes are enums, but this file contains data that is needed throughout the 
+''' Not all the classes are enums, but this file contains data that is needed throughout the
 program'''
 
 
