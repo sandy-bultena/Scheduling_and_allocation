@@ -1,4 +1,6 @@
 from abc import ABC
+from tkinter import *
+from tkinter import ttk
 
 
 class ViewBaseTk(ABC):
@@ -15,7 +17,7 @@ class ViewBaseTk(ABC):
     # Public Properties
     # =================================================================
     @property
-    def mw(self):
+    def mw(self) -> Tk:
         """Gets/sets a Tk MainWindow object."""
         return self._mw
 
@@ -42,10 +44,28 @@ class ViewBaseTk(ABC):
     def on_closing(self, callback):
         self._closing_callback = callback
 
+    @property
+    def canvas(self) -> Canvas:
+        """Gets/Sets the canvas of this View object."""
+        return self.__canvas
+
+    @canvas.setter
+    def canvas(self, value: Canvas):
+        self.__canvas = value
+
+    @property
+    def current_scale(self):
+        """Gets/sets the current scale of this View object."""
+        return self._current_scale
+
+    @current_scale.setter
+    def current_scale(self, value):
+        self._current_scale = value
+
     # =================================================================
     # Public methods
     # =================================================================
-    def __init__(self, mw, conflict_info):
+    def __init__(self, mw: Tk, conflict_info: list):
         """Creates a new View object, but does NOT draw the view.
 
         Parameters:
@@ -53,3 +73,38 @@ class ViewBaseTk(ABC):
             conflict_info: a ptr to an array of hashes. Each hash has a key for the conflict text and the foreground and background colours."""
         self.mw = mw
 
+        # ---------------------------------------------------------------
+        # create a new toplevel window, add a canvas
+        # ---------------------------------------------------------------
+        tl = Toplevel(mw)
+        tl.protocol('WM_DELETE_WINDOW', self._close_view)
+        tl.resizable(False, False)
+
+        # ---------------------------------------------------------------
+        # Create bar at top to show colour coding of conflicts
+        # ---------------------------------------------------------------
+        f = Frame(tl)
+        f.pack(expand=1, fill="x")
+
+        for c in conflict_info:
+            ttk.Label(f, text=c.text, width=10, background=c.bg, foreground=c.fg)\
+                .pack(side='left', expand=1, fill="x")
+
+        # ---------------------------------------------------------------
+        # add canvas
+        # ---------------------------------------------------------------
+        cn = Canvas(tl, height=700, width=700, background="white")
+        cn.pack()
+
+        # ---------------------------------------------------------------
+        # create object
+        # ---------------------------------------------------------------
+        self.canvas = cn
+        self._toplevel = tl
+        self._x_offset = 1
+        self._y_offset = 1
+        self._x_origin = 0
+        self._y_origin = 0
+        self._width_scale = 100
+        self._horiz_scale = 60
+        self.current_scale = 1
