@@ -1,4 +1,5 @@
 from abc import ABC
+from functools import partial
 from tkinter import *
 from tkinter import ttk
 
@@ -134,3 +135,35 @@ class ViewBaseTk(ABC):
         # ---------------------------------------------------------------
         status
         self._status_bar = self._create_status_bar(status)
+
+    def set_title(self, title: str = ""):
+        """Sets the title of the toplevel widget.
+
+        Parameters:
+            title: Text used as title for the window."""
+        tl = self._toplevel
+        tl.title = title
+
+    def bind_popup_menu(self, gui_block):
+        """Draws the GuiBlock onto the view.
+        Binds a popup menu if one is defined.
+
+        Parameters:
+            gui_block: object where the popup menu is being bound to."""
+        # Menu bound to individual gui-blocks.
+        self.canvas.bind(gui_block.group, '<3>', partial(
+            _postmenu, self, Ev('X'), Ev('Y'), gui_block
+        ))
+        return gui_block
+
+    def draw_background(self):
+        """Draws the Schedule timetable on the View canvas."""
+        # NOTE: DrawView comes from the Export package. Come back to this once
+        # it's been implemented.
+        # DrawView.draw_background(self.canvas, self.get_scale_info())
+        return
+
+    def unset_popup_guiblock(self):
+        """No Block has a popup menu, so unset popup_guiblock."""
+        del self._popup_guiblock
+        return
