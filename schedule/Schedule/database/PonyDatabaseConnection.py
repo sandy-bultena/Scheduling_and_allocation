@@ -80,7 +80,7 @@ class Scenario(db.Entity):
     schedules = Set('Schedule')
 
     def __str__(self):
-        return f"{self.id} {self.name} ({self.year}): {self.description}"
+        return f"{self.id} {self.name} ({self.semester}): {self.description}"
 
 
 class Schedule(db.Entity):
