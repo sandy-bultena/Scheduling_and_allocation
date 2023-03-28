@@ -268,7 +268,7 @@ def test_section_setter_updates_database():
 
     d_scenario = dbScenario(name="Test")
     flush()
-    d_schedule = dbSchedule(semester="fall", official=False, scenario_id=d_scenario.id)
+    d_schedule = dbSchedule(official=False, scenario_id=d_scenario.id)
     flush()
     d_course = Course(name="Test")
     flush()
@@ -830,7 +830,7 @@ def test_string_representation():
     block.assign_lab(lab1)
     block.assign_lab(lab2)
     desc = str(block)
-    assert str(sect.number) in desc and day in desc and start in desc and lab1.number in desc \
+    assert sect.number in desc and day in desc and start in desc and lab1.number in desc \
            and lab2.number in desc
 
 

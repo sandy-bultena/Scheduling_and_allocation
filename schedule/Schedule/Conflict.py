@@ -7,11 +7,6 @@ sys.path.append(path.dirname(path.dirname(__file__)))
 if TYPE_CHECKING: import Block
 # NOTE: using an enum will impact ViewBase.py when it is coded
 
-# TODO:  Evaluate if we even need to keep a list of conflict objects, since the conflict numbers
-#        are stored with the blocks.
-#        - maybe conflict list is holdover from previous design
-#        - this can be validated as the gui is implemented
-
 """ SYNOPSIS/EXAMPLE:
     from Schedule.Conflict import Conflict
 

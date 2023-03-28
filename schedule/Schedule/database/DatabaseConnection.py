@@ -1,11 +1,16 @@
+import sys
+from os import path
+sys.path.append(path.dirname(path.dirname(__file__)))
+
 import mysql.connector
+from database.db_constants import *
 
 db_name = "scheduler_db"
 
 db = mysql.connector.connect(
-    host="10.101.0.27",
-    username="evan_test",
-    password="test_stage_pwd_23"
+    host=HOST,
+    username=USERNAME,
+    password=PASSWD
 )
 
 cursor = db.cursor()

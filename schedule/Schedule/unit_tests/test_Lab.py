@@ -32,7 +32,7 @@ def init_scenario_and_schedule():
     global s
     sc = dbScenario()
     flush()
-    s = dbSchedule(semester="Winter 2023", official=False, scenario_id=sc.id, description="W23")
+    s = dbSchedule(official=False, scenario_id=sc.id, description="W23")
 
 
 @pytest.fixture(autouse=True)

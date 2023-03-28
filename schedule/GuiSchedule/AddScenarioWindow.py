@@ -17,7 +17,6 @@ class AddScenarioWindow:
         self._setup_interface()
         self.window.grab_set()
         self.window.mainloop()
-
     pass
 
     @staticmethod

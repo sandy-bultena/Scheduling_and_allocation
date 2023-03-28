@@ -115,11 +115,10 @@ def test_add_section_duplicate():
     existing Section to the Course. """
     course_1 = Course(1)
     section_1 = Section(id=1, course=course_1)
-    section_2 = section_1
     course_2 = Course(2)
-    course_2.add_section(section_1)
+    section_2 = Section(id=2, course=course_2)
     with pytest.raises(Exception) as e:
-        course_2.add_section(section_2)
+        course_2.add_section(section_1)
     assert "section number is not unique" in str(e.value).lower()
 
 
@@ -130,7 +129,7 @@ def test_add_section_updates_database():
     course = Course(1)
     d_scenario = dbScenario(name="Test")
     flush()
-    d_schedule = dbSchedule(semester="fall", official=False, scenario_id=d_scenario.id)
+    d_schedule = dbSchedule(official=False, scenario_id=d_scenario.id)
     flush()
     sect = Section(course=course, schedule_id=d_schedule.id)
     commit()
@@ -238,7 +237,7 @@ def test_remove_section_updates_database():
     course = Course(1)
     d_scenario = dbScenario(name="Test")
     flush()
-    d_schedule = dbSchedule(semester="fall", official=False, scenario_id=d_scenario.id)
+    d_schedule = dbSchedule(official=False, scenario_id=d_scenario.id)
     flush()
     sect = Section(course=course, schedule_id=d_schedule.id)
     commit()
@@ -278,12 +277,12 @@ def test_remove_ignores_database():
     """Verifies that remove() doesn't affect the Course's corresponding database record."""
     course = Course(1)
     course.remove()
-    commit()
     d_courses = select(c for c in dbCourse)
     courses = list(d_courses)
     a_courses = Course.list()
-    assert len(a_courses) == 0 and len(courses) == 1 \
-           and courses[0].name == course.name
+    assert len(a_courses) == 0
+    assert len(courses) == 1
+    assert courses[0].name == course.name
 
 
 def test_sections():

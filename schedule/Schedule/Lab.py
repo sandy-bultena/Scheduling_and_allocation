@@ -96,7 +96,6 @@ class Lab:
     @db_session
     def __add_entity_unavailable(self, instance: LabUnavailableTime.LabUnavailableTime):
         """Links the passed TimeSlot's entity to this Lab's corresponding entity in the database."""
-        # TODO: Refactor me once db LabUnavailableTime has been implemented.
         entity_lab = dbLab.get(id=self.id)
         entity_time = dbUnavailableTime.get(id=instance.id)
         if entity_lab and entity_time:
@@ -121,7 +120,6 @@ class Lab:
     @db_session
     def __delete_unavailable_entity(self, slot_id: int):
         """Removes a LabUnavailableTime entity with the passed ID from the database."""
-        # TODO: Refactor me once db LabUnavailableTime has been implemented.
         entity_time = dbUnavailableTime.get(id=slot_id)
         if entity_time is not None:
             entity_time.delete()

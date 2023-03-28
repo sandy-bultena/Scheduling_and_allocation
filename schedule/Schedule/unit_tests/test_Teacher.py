@@ -234,6 +234,7 @@ def test_delete_updates_database():
 @db_session
 def test_remove_ignores_database():
     """Verifies that remove() doesn't affect the Teacher's corresponding database record."""
+    Teacher.reset()
     teach = Teacher("John", "Smith")
     teach.remove()
     commit()

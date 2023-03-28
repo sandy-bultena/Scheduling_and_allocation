@@ -34,7 +34,7 @@ def before_and_after_module():
 def init_scenario_and_schedule():
     sc = dbScenario()
     flush()
-    s = dbSchedule(semester="Winter 2023", official=False, scenario_id=sc.id)
+    s = dbSchedule(official=False, scenario_id=sc.id)
 
 
 @pytest.fixture(autouse=True)
@@ -45,7 +45,6 @@ def before_and_after():
     yield
     db.drop_table(table_name='section', if_exists=True, with_all_data=True)
     db.drop_table(table_name='block', if_exists=True, with_all_data=True)
-    db.drop_table(table_name='time_slot', if_exists=True, with_all_data=True)
 
 
 # region General & Properties
@@ -217,21 +216,21 @@ def test_get_new_number_no_blocks():
 
 
 def test_string_representation_with_valid_name():
-    n = 10
-    s = Section(number=n, name="For students taking calculus", schedule_id=1)
+    n = "10"
+    s = Section(number=n, name="For students taking calculus", schedule_id=1, course=Course())
     assert re.search(f"{n}" + r".*?For students taking calculus", str(s))
 
 
 def test_string_representation_with_invalid_name():
-    n = 10
-    s = Section(number=n, name=f"Section {n}", schedule_id=1)
-    assert "s" == f"Section {10}"
+    n = "10"
+    s = Section(number=n, name=f"Section {n}", schedule_id=1, course=Course())
+    assert str(s) == f"Section {10}"
 
 
 def test_string_representation_with_no_name():
-    n = 10
-    s = Section(number=n, schedule_id=1)
-    assert "s" == f"Section {10}"
+    n = "10"
+    s = Section(number=n, schedule_id=1, course=Course())
+    assert str(s) == f"Section {10}"
 
 
 @db_session
