@@ -9,8 +9,9 @@ def main():
     teacher = Teacher("John", "Smith", id=1)
 
     main_window = Tk()
+    # main_window.geometry('500x600-300-40')
     cn = Canvas(main_window)
-    cn.pack()
+    cn.pack(fill=BOTH)
 
     scl = {
         'xoff': 1,
