@@ -92,7 +92,7 @@ class ViewBaseTk(ABC):
         f.pack(expand=1, fill="x")
 
         for c in conflict_info:
-            ttk.Label(f, text=c.text, width=10, background=c.bg, foreground=c.fg)\
+            ttk.Label(f, text=c.text, width=10, background=c.bg, foreground=c.fg) \
                 .pack(side='left', expand=1, fill="x")
 
         # ---------------------------------------------------------------
@@ -268,8 +268,8 @@ class ViewBaseTk(ABC):
             start: The start time of the block.
             duration: Number of hours for this block."""
         scl = self.get_scale_info()
-        #TODO: Return to this once DrawView has been implemented.
-        coords = None # DrawView.get_coords(day, start, duration, scl)
+        # TODO: Return to this once DrawView has been implemented.
+        coords = None  # DrawView.get_coords(day, start, duration, scl)
         return coords
 
     def destroy(self):
@@ -277,3 +277,89 @@ class ViewBaseTk(ABC):
         toplevel = self._toplevel
         toplevel.destroy()
 
+    # =================================================================
+    # Private Properties
+    # =================================================================
+    # NOTE: Skipping _main_menu, _status_bar and _toplevel, since there's no special validation
+    # required here.
+
+    # =================================================================
+    # Private Methods
+    # =================================================================
+    def _resize_view(self, scale):
+        """Resizes the View to the new scale.
+
+        Parameters:
+            scale: Scale that the view will be resized to."""
+        # get height and width of toplevel.
+        window_height = self._toplevel.winfo_height()
+        window_width = self._toplevel.winfo_width()
+
+        # Get height and width of canvas.
+        heights = self.canvas.configure()['height']
+        canvas_height = heights[-1]
+        widths = self.canvas.configure()['width']
+        canvas_width = widths[-1]
+
+        # get current scaling sizes
+        x_origin = self._x_origin
+        y_origin = self._y_origin
+        horiz_scale = self._horiz_scale
+        width_scale = self._width_scale
+        current_scale = self.current_scale
+
+        # reset scales back to default value.
+        x_origin /= current_scale
+        y_origin /= current_scale
+        width_scale /= current_scale
+        horiz_scale /= current_scale
+        window_height /= current_scale
+        window_width /= current_scale
+        canvas_height /= current_scale
+        canvas_width /= current_scale
+
+        current_scale = scale
+
+        # set scales to new size
+        x_origin *= scale
+        y_origin *= scale
+        width_scale *= scale
+        horiz_scale *= scale
+        window_height *= scale
+        window_width *= scale
+        canvas_height *= scale
+        canvas_width *= scale
+
+        # set the new scaling sizes.
+        self._x_origin = x_origin
+        self._y_origin = y_origin
+        self._horiz_scale = horiz_scale
+        self._width_scale = width_scale
+        self.current_scale = current_scale
+
+        # set height and width of canvas and toplevel
+        self.canvas.configure(width=canvas_width,
+                              height=canvas_height)
+        self._toplevel.configure(width=window_width,
+                                 height=window_height)
+
+        # Now that all the sizes have changed, redraw.
+        self.redraw()
+
+    def _refresh_gui(self):
+        """Forces the graphics to update."""
+        self.mw.update()
+
+    def _create_status_bar(self):
+        """Status bar at the bottom of each View to show current movement type."""
+        if self._status_bar:
+            return
+
+        status_frame = Frame(self._toplevel, borderwidth=0, relief='flat')
+        status_frame.pack(side='bottom', expand=0, fill='x')
+        status_text_var = StringVar()
+        Label(status_frame, textvariable=status_text_var, borderwidth=1, relief='ridge')\
+            .pack(side='left', expand=1, fill='x')
+        status_text_var.set(ViewBaseTk.status_text)
+
+        return status_frame
