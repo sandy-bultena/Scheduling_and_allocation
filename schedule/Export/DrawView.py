@@ -5,8 +5,10 @@ from tkinter import Canvas
 from schedule.PerlLib import Colour
 from schedule.Schedule.Block import Block
 
+# TODO: Make this into a static class?
+
 # region METHODS
-edge = 5
+Edge = 5
 days = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
 times: dict[int, str] = {
     8: "8am",
@@ -219,4 +221,92 @@ def get_block_text(block: Block, scale: float = 1, type = "teacher"):
     block_text = block_text.rstrip()
 
     return block_text
+
+# =================================================================
+# draw_block
+# =================================================================
+def draw_block(canvas: Canvas, block, scl: dict, type, colour = None, edge = None):
+    """Draws the Schedule timetable on the specified canvas.
+
+    Parameters:
+        canvas: Canvas to draw on.
+        block: Block object.
+        scl: Scaling info [dictionary].
+        type: Type of view [teacher|block|stream] (affects what gets drawn on the block).
+        colour: colour of block.
+
+    Returns:
+        -A dict containing the following keys:
+        -lines: a list of canvas line objects.
+        -text: text printed on the block.
+        -coords: array of canvas coordinates for the block.
+        -rectangle: the canvas rectangle object.
+        -colour: the colour of the block."""
+    scale = scl['scale']
+    if not block: return
+
+    # --------------------------------------------------------------------
+    # set the colour and pixel width of edge
+    # --------------------------------------------------------------------
+    if colour is None:
+        colour = colours[type] or colours['teacher']
+
+    if edge is None:
+        edge = Edge
+    Edge = edge
+
+    colour = Colour[str(colour)]
+
+    # --------------------------------------------------------------------
+    # get coords
+    # --------------------------------------------------------------------
+    coords = get_coords(block.day_number, block.start_number, block.duration, scl)
+
+    # --------------------------------------------------------------------
+    # get needed block information
+    # --------------------------------------------------------------------
+    block_text = get_block_text(block, scale, type)
+
+    # --------------------------------------------------------------------
+    # draw the block
+    # --------------------------------------------------------------------
+    # Create a rectangle.
+    rectangle = canvas.create_rectangle(coords, fill=colour, outline=colour)
+
+    # shade edges of guiblock rectangle
+    lines = []
+    (x1, y1, x2, y2) = coords
+    (light, dark, text_colour) = get_colour_shades(colour)
+    for i in range(0, edge - 1):
+        lines.append(
+            canvas.create_line(x2 - i, y1 + i, x2 - i, y2 - i, x1 + i, y2 - i, fill=dark[i])
+        )
+        lines.append(
+            canvas.create_line(
+                x2 - i, y1 + i, x1 + i, y1 + i, x1 + i, y2-i, fill=light[i]
+            )
+        )
+
+    # set text
+    text = canvas.create_text(
+        (x1 + x2) / 2, (y1 + y2) / 2, text=block_text, fill=text_colour
+    )
+
+    # group rectangle and text to create a guiblock,
+    # so that they both move as one on UI
+    # NOTE: createGroup is specific to the Perl/Tk version of the canvas widget. Need a workaround
+    # for this.
+    # group = canvas.create_g
+
+    return {
+        'lines': lines,
+        'text': text,
+        'coords': coords,
+        'rectangle': rectangle,
+        'colour': colour
+    }
+
+def get_colour_shades(colour):
+    pass
+
 # endregion
