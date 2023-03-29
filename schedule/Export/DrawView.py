@@ -103,14 +103,14 @@ def draw_background(canvas: Canvas, scl: dict):
     # --------------------------------------------------------------------
     # draw hourly lines
     # --------------------------------------------------------------------
-    (dummy_x, x_max) = _days_x_coords(days, x_offset, xorig, h_stretch)
+    (dummy_x, x_max) = _days_x_coords(len(days), x_offset, xorig, h_stretch)
     (x_min, dummy_y) = _days_x_coords(1, x_offset, xorig, h_stretch)
 
     for time in times.keys():
         # Draw each hour line.
         (y_hour, y_half) = _time_y_coords(time, 0.5, y_offset, yorig, v_stretch)
         canvas.create_line(
-            x_min, y_half, x_max, y_hour,
+            x_min, y_hour, x_max, y_hour,
             fill="dark grey",
             dash="-"
         )
@@ -124,7 +124,7 @@ def draw_background(canvas: Canvas, scl: dict):
         # for all inner times, draw a dotted line for the half hour.
         if time != latest_time:
             canvas.create_line(
-                x_min, y_half, x_max, y_hour,
+                x_min, y_half, x_max, y_half,
                 fill="grey",
                 dash="."
             )
@@ -216,7 +216,7 @@ def get_block_text(block: Block, scale: float = 1, type="teacher"):
         block_teacher = ""
 
         # Don't add teachers if this is a teacher view.
-        if type is not "teacher":
+        if type != "teacher":
             for t in teachers:
                 block_teacher = block_teacher + ", ".join(map(t.firstname[0:1], t.lastname[0:1]))
 
@@ -230,7 +230,7 @@ def get_block_text(block: Block, scale: float = 1, type="teacher"):
         # labs/resources (scale < .75)
         # -----------------------------------------------------------
         block_lab = ""
-        if type is not "lab":
+        if type != "lab":
             block_lab = ", ".join(map(lambda l: l.number, labs))
 
             # add ellipsis to end of lab string as necessary
@@ -246,7 +246,7 @@ def get_block_text(block: Block, scale: float = 1, type="teacher"):
 
         # only add stream/text if no teachers or labs,
         # or GuiBlock can fit all info (i.e. duration of 2 hours or more)
-        if type is not "stream" or block_duration >= 2:
+        if type != "stream" or block_duration >= 2:
             block_streams = ", ".join(map(lambda s: s.number, streams))
 
             # add ellipsis to end of stream as necessary.
@@ -260,11 +260,11 @@ def get_block_text(block: Block, scale: float = 1, type="teacher"):
     # --------------------------------------------------------------------
 
     block_text = f"{block_num}\n{block_section_name}\n"
-    if type is not "teacher" and block_teacher:
+    if type != "teacher" and block_teacher:
         block_text += f"{block_teacher}\n"
-    if type is not "lab" and block_lab:
+    if type != "lab" and block_lab:
         block_text += f"{block_lab}\n"
-    if type is not "stream" and block_streams:
+    if type != "stream" and block_streams:
         block_text += f"{block_streams}\n"
     block_text = block_text.rstrip()
 
