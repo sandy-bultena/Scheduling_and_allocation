@@ -3,6 +3,10 @@ from functools import partial
 from tkinter import *
 from tkinter import ttk
 
+import schedule.Schedule.Block as Block
+from schedule.Schedule.Conflict import Conflict
+from schedule.Schedule.ScheduleEnums import ViewType
+
 
 class ViewBaseTk(ABC):
     """Basic view with days/weeks printed on it.
@@ -167,3 +171,109 @@ class ViewBaseTk(ABC):
         """No Block has a popup menu, so unset popup_guiblock."""
         del self._popup_guiblock
         return
+
+    def move_block(self, guiblock):
+        """Moves the gui block to the appropriate place, based on the block's new day and time.
+
+        Parameters:
+            guiblock: The gui block to move."""
+        block: Block.Block = guiblock.block
+
+        # Get new coordinates of the block.
+        coords = self.get_time_coords(block.day_number, block.start_number, block.duration)
+
+        # Get the current x/y of the guiblock.
+        (cur_x_pos, cur_y_pos) = guiblock.gui_view.canvas.coords(guiblock.rectangle)
+
+        # bring the guiblock to the front, passes over others.
+        # guiblock.gui_view.canvas.raise(guiblock.group) # Commented out for now because the interpreter thinks I'm trying to raise an exception.
+
+        # move guiblock to new position
+        guiblock.gui_view.canvas.move(guiblock.group, coords[0] - cur_x_pos, coords[1] - cur_y_pos)
+
+    def colour_block(self, guiblock, type: ViewType):
+        """Colours the block according to conflicts.
+
+        Parameters:
+            guiblock: The guiblock that will be coloured.
+            type: The type of schedulable object that this guiblock is attached to (Teacher/Lab/Stream)"""
+        conflict = Conflict.most_severe(guiblock.block.is_conflicted, type)
+
+        # If the block is unmovable, then grey it out, and do not change its colour even if
+        # there is a conflict.
+        if not guiblock.block.movable:
+            guiblock.change_colour(ViewBaseTk.immovable_colour)
+            return
+
+        # else...
+
+        # change the colour of the block to the most important conflict.
+        if conflict is not None:
+            guiblock.change_colour(Conflict.colours()[conflict])
+
+        # no conflict found, reset back to default colour.
+        else:
+            guiblock.change_colour(guiblock.colour)
+
+    def redraw(self):
+        """Redraws the View with new GuiBlocks and their positions."""
+        try:
+            cn = self.canvas
+        except Exception:
+            return
+
+        # remove everything on the canvas.
+        cn.delete('all')
+
+        # redraw background (things that don't change, like time, etc.)
+        self.draw_background()
+
+        # remove any binding to the canvas itself.
+        self.canvas.bind("<1>", "")
+        self.canvas.bind("<B1-Motion>", "")
+        self.canvas.bind("<ButtonRelease-1>", "")
+
+    def get_scale_info(self):
+        """Returns a hash with the following values:
+            =item * -xoff => x offset
+
+            =item * -yoff => y offset
+
+            =item * -xorg => x origin
+
+            =item * -yorg => y origin
+
+            =item * -xscl => x scale
+
+            =item * -yscl => y scale
+
+            =item * -scale => current scaling
+
+        """
+        return {
+            "xoff": self._x_offset,
+            "yoff": self._y_offset,
+            "xorg": self._x_origin,
+            "yorg": self._y_origin,
+            "xscl": self._width_scale,
+            "yscl": self._horiz_scale,
+            "scale": self.current_scale
+        }
+
+    def get_time_coords(self, day, start, duration):
+        """Converts the times into x and y coordinates and returns them.
+
+        Parameters:
+            day: The day.
+            start: The start time of the block.
+            duration: Number of hours for this block."""
+        scl = self.get_scale_info()
+        #TODO: Return to this once DrawView has been implemented.
+        coords = None # DrawView.get_coords(day, start, duration, scl)
+        return coords
+
+    def destroy(self):
+        """Close/destroy the gui window."""
+        toplevel = self._toplevel
+        toplevel.destroy()
+
