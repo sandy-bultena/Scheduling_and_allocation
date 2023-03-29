@@ -1,4 +1,3 @@
-from abc import ABC
 from functools import partial
 from tkinter import *
 from tkinter import ttk
@@ -8,7 +7,7 @@ from schedule.Schedule.Conflict import Conflict
 from schedule.Schedule.ScheduleEnums import ViewType
 
 
-class ViewBaseTk(ABC):
+class ViewBaseTk:
     """Basic view with days/weeks printed on it.
 
     Don't call this class directly. This is a base class for different types of schedule views."""
@@ -121,8 +120,10 @@ class ViewBaseTk(ABC):
         tl.configure(menu=main_menu)
         view_menu = Menu(main_menu)
         main_menu.add_cascade(menu=view_menu, label="View", underline=0)
-        view_menu.add_command(label="50%", underline=0, command=_resize_view(self, 0.50))
-        view_menu.add_command(label="100%", underline=0, command=_resize_view(self, 1.00))
+        view_menu.add_command(label="50%", underline=0, command=partial(
+            self._resize_view, 0.50))
+        view_menu.add_command(label="100%", underline=0, command=partial(
+            self._resize_view, 1.00))
         self._main_menu = main_menu
 
         # ---------------------------------------------------------------
@@ -131,14 +132,14 @@ class ViewBaseTk(ABC):
         # ---------------------------------------------------------------
         # TODO: Verify that this works.
         if self._popup_menu:
-            tl.bind('<1>', _unpost_menu(self))
-            tl.bind(('<2>', _unpost_menu(self)))
+            tl.bind('<1>', partial(self._unpostmenu))
+            tl.bind('<2>', partial(self._unpostmenu))
 
         # ---------------------------------------------------------------
         # create status bar
         # ---------------------------------------------------------------
-        status
-        self._status_bar = self._create_status_bar(status)
+        # status # This variable seems to be unused.
+        self._status_bar = self._create_status_bar()
 
     def set_title(self, title: str = ""):
         """Sets the title of the toplevel widget.
@@ -180,6 +181,7 @@ class ViewBaseTk(ABC):
         block: Block.Block = guiblock.block
 
         # Get new coordinates of the block.
+        # TODO: Come back to this function once DrawView is implemented.
         coords = self.get_time_coords(block.day_number, block.start_number, block.duration)
 
         # Get the current x/y of the guiblock.
@@ -282,6 +284,14 @@ class ViewBaseTk(ABC):
     # =================================================================
     # NOTE: Skipping _main_menu, _status_bar and _toplevel, since there's no special validation
     # required here.
+    @property
+    def _popup_menu(self):
+        """Get/set the popup menu for this guiblock."""
+        return self.__popup
+
+    @_popup_menu.setter
+    def _popup_menu(self, value: Menu):
+        self.__popup = value
 
     # =================================================================
     # Private Methods
@@ -363,3 +373,68 @@ class ViewBaseTk(ABC):
         status_text_var.set(ViewBaseTk.status_text)
 
         return status_frame
+
+    def _postmenu(self, c: Canvas, x, y, guiblock):
+        """Posts (shows) the popup menu at location (x,y).
+
+        Parameters:
+            c: The Canvas object.
+            x, y: the x,y position of the mouse.
+            guiblock: The guiblock associated with the popup menu."""
+        if self._popup_menu:
+            self._popup_guiblock = guiblock
+            self._popup_menu.post(x, y)
+
+    def _unpostmenu(self, c: Canvas = None):
+        """Removes the Context Menu.
+
+        Parameters:
+            c: The Canvas object."""
+        if self._popup_menu:
+            self._popup_menu.unpost()
+
+        self.unset_popup_guiblock()
+
+    def _close_view(self):
+        """Close the current View."""
+        self.on_closing()
+
+    def _set_block_coords(self, guiblock, x, y):
+        """Converts the X and Y coordinates into times and sets the time to the Block associated with the guiblock.
+
+        Parameters:
+            guiblock: The guiblock that was moved.
+            x: the x position of the block.
+            y: the y position of the block."""
+        scl = self.get_scale_info()
+
+        if guiblock is None:
+            return
+
+        (day, time, duration) = DrawView.coords_to_day_time_duration(x, y, y, scl)
+        guiblock.block.day_number = day
+        guiblock.block.start_number = time
+
+# =================================================================
+# footer
+# =================================================================
+"""
+=head1 AUTHOR
+
+Sandy Bultena, Ian Clement, Jack Burns
+
+Rewritten for Python by Evan Laverdiere
+
+=head1 COPYRIGHT
+
+Copyright (c) 2016, Jack Burns, Sandy Bultena, Ian Clement. 
+
+All Rights Reserved.
+
+This module is free software. It may be used, redistributed
+and/or modified under the terms of the Perl Artistic License
+
+     (see http://www.perl.com/perl/misc/Artistic.html)
+
+
+"""
