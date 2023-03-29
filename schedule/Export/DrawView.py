@@ -385,4 +385,63 @@ def get_colour_shades(colour: str):
     # Return info.
     return light, dark, textcolour
 
+
+# =================================================================
+# using scale info, get the y limits for a specific time period
+# =================================================================
+def _time_y_coords(start, duration, y_offset, yorig, v_stretch):
+    """using scale info, get the y limits for a specific time period."""
+    y_offset = y_offset * v_stretch + yorig
+    y = y_offset + (start - earliest_time) * v_stretch
+    y2 = duration * v_stretch + y - 1
+
+    return y, y2
+
+
+# =================================================================
+# using scale info, get the x limits for a specific day
+# =================================================================
+def _days_x_coords(day: int, x_offset, xorig, h_stretch):
+    x_offset = x_offset * h_stretch + xorig
+    x = x_offset + (day - 1) * h_stretch
+    x2 = x_offset + (day) * h_stretch - 1
+
+    return x, x2
 # endregion
+
+"""
+Canvas Requirements
+
+This code draws on a generic canvas.  
+
+The interface to this canvas follows a subset of the Tk->canvas methods.  For a
+more detailed list of what the various options means, check the Tk manuals online.
+
+It must follow these rules:
+
+=head2 Coordinates
+
+The coordinate system of the canvas is the same as the Tk coordinate system,
+where the origin (0,0) is the top left corner, and 'y' increases as it goes 
+down the page.
+
+=head2 createLine
+
+B<Parameters>
+
+=over
+
+=item * C<x1,y1,x2,y2,> coordinates of the start and stop position of the line
+
+=item * C<< -fill => "colour", >> the colour of the line (OPTIONAL... default is "black"),
+
+=item * C<< -dash => "dash string" >> the type of dash line (OPTIONAL ... default is no dash)
+
+=back
+
+B<Returns>
+
+A canvas CreateLine object
+
+
+"""
