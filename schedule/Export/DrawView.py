@@ -257,7 +257,7 @@ def draw_block(canvas: Canvas, block, scl: dict, type, colour=None, edge=None):
         edge = Edge
     Edge = edge
 
-    colour = Colour[str(colour)]
+    colour = Colour.string(colour)
 
     # --------------------------------------------------------------------
     # get coords
@@ -326,7 +326,63 @@ def coords_to_day_time_duration(x, y, y2, scl: dict):
 
     return day, time, duration
 
-def get_colour_shades(colour):
-    pass
+
+# =================================================================
+# get_coords
+# =================================================================
+def get_coords(day, start, duration, scl):
+    """Determines the canvas coordinates based on day, start time, and duration.
+
+    Parameters:
+        day: day of week (1 = Monday)
+        start: start time (24-hour clock)
+        scl: Scaling info [dictionary]"""
+    (x, x2) = _days_x_coords(day, scl['xoff'], scl['xorg'], scl['xscl'])
+    (y, y2) = _time_y_coords(start, duration, scl['yoff'], scl['yorg'], scl['yscl'])
+
+    return x, y, x2, y2
+
+
+# =================================================================
+# get the shades of the colour
+# =================================================================
+
+def get_colour_shades(colour: str):
+    """Get the shades of the passed colour.
+
+    Parameters:
+        colour: A hexadecimal colour code.
+
+    Returns:
+        Array of colours lighter than passed colour
+        Array of colours darker than passed colour
+        Recommended colour for text if overlaid on colour"""
+    edge = Edge
+
+    # convert colour to hue, saturation, and light.
+    (h, s, l) = Colour.hsl(colour)
+
+    # Calculate the light/dark changes.
+    # light_intensity = l > .7 ? (1 - l) * 75 : 30 * .75
+    light_intensity = (1 - l) * 75 if l > .7 else 30 * .75
+    dark_intensity = l * 75 if l < .3 else 30 * .75
+
+    # recommended text colour
+    textcolour = "black"
+    if not Colour.is_light(colour):
+        textcolour = "white"
+
+    # create a light/dark gradient of colours.
+    light = []
+    dark = []
+
+    for i in range(edge - 1):
+        l_factor = (1 - (i / edge)) * light_intensity
+        d_factor = (1 - (i / edge)) * dark_intensity
+        light.append(Colour.lighten(colour, l_factor))
+        dark.append(Colour.darken(colour, d_factor))
+
+    # Return info.
+    return light, dark, textcolour
 
 # endregion
