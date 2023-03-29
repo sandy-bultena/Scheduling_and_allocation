@@ -56,8 +56,8 @@ def draw_background(canvas: Canvas, scl: dict):
     # --------------------------------------------------------------------
     # draw hourly lines
     # --------------------------------------------------------------------
-    (None, x_max) = _days_x_coords(days, x_offset, xorig, h_stretch)
-    (x_min, None) = _days_x_coords(1, x_offset, xorig, h_stretch)
+    (dummy_x, x_max) = _days_x_coords(days, x_offset, xorig, h_stretch)
+    (x_min, dummy_y) = _days_x_coords(1, x_offset, xorig, h_stretch)
 
     for time in times.keys():
         # Draw each hour line.
@@ -115,11 +115,12 @@ def draw_background(canvas: Canvas, scl: dict):
                     text=days[i]
                 )
 
+
 # =================================================================
 # get_block_text
 # =================================================================
-#Todo: Implement the ViewType enum in some capacity.
-def get_block_text(block: Block, scale: float = 1, type = "teacher"):
+# Todo: Implement the ViewType enum in some capacity.
+def get_block_text(block: Block, scale: float = 1, type="teacher"):
     """Get the text for a specific type of block.
 
     Parameters:
@@ -173,7 +174,7 @@ def get_block_text(block: Block, scale: float = 1, type = "teacher"):
                 block_teacher = block_teacher + ", ".join(map(t.firstname[0:1], t.lastname[0:1]))
 
                 # add ellipsis to end of teacher string as necessary
-                if scale == 0.5 and len(teachers) >=3:
+                if scale == 0.5 and len(teachers) >= 3:
                     block_teacher = block_teacher[0:7] + "..."
                 elif len(teachers) >= 4:
                     block_teacher = block_teacher[0:11] + "..."
@@ -222,10 +223,11 @@ def get_block_text(block: Block, scale: float = 1, type = "teacher"):
 
     return block_text
 
+
 # =================================================================
 # draw_block
 # =================================================================
-def draw_block(canvas: Canvas, block, scl: dict, type, colour = None, edge = None):
+def draw_block(canvas: Canvas, block, scl: dict, type, colour=None, edge=None):
     """Draws the Schedule timetable on the specified canvas.
 
     Parameters:
@@ -283,7 +285,7 @@ def draw_block(canvas: Canvas, block, scl: dict, type, colour = None, edge = Non
         )
         lines.append(
             canvas.create_line(
-                x2 - i, y1 + i, x1 + i, y1 + i, x1 + i, y2-i, fill=light[i]
+                x2 - i, y1 + i, x1 + i, y1 + i, x1 + i, y2 - i, fill=light[i]
             )
         )
 
@@ -305,6 +307,24 @@ def draw_block(canvas: Canvas, block, scl: dict, type, colour = None, edge = Non
         'rectangle': rectangle,
         'colour': colour
     }
+
+
+# =================================================================
+# coords_to_day_time_duration
+# =================================================================
+def coords_to_day_time_duration(x, y, y2, scl: dict):
+    """Determines the day, start time, and duration based on canvas coordinates.
+
+    Parameters:
+        x: x position (determines day).
+        y: y1 position (determines start).
+        y2: y2 position (determines duration).
+        scl: Scaling info [dictionary]."""
+    day = x / scl['xscl'] - scl['xoff'] - scl['xorg']
+    time = y / scl['yscl'] - scl['yoff'] + earliest_time - scl['yorg']
+    duration = (y2 + 1 - y) / scl['yscl']
+
+    return day, time, duration
 
 def get_colour_shades(colour):
     pass
