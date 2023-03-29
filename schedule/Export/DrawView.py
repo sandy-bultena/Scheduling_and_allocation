@@ -5,6 +5,53 @@ from tkinter import Canvas
 from schedule.PerlLib import Colour
 from schedule.Schedule.Block import Block
 
+"""
+=head1 SYNOPSIS
+
+    use Schedule::Schedule;
+    use Tk;
+    use Export::PDF;
+    
+    my $Schedule = Schedule->read_YAML('myschedule_file.yaml');
+    my $teacher  = $Schedule->teachers()->get_by_name("Sandy","Bultena");
+    my @blocks   = $schedule->blocks_for_teacher($teacher);
+        
+    # ----------------------------------------------------------
+    # create a pdf, as well as a Tk canvas
+    # ----------------------------------------------------------
+    my $pdf         = PDF->new();
+    my $mw          = MainWindow->new();
+    my $cn          = $mw->Canvas()->pack();
+
+    # ----------------------------------------------------------
+    # what scale you want
+    # ----------------------------------------------------------
+    my $scl = {
+             -xoff  => 1,       # before being scaled by xscl
+             -yoff  => 1,       # before being scaled by yscl
+             -xorg  => 0,       # start drawing at this position
+             -yorg  => 0,       # start drawing at this position
+             -xscl  => 100,     # stretch horizontally
+             -yscl  => 60,      # stretch vertically
+             -scale => 1,       # 1 = 100%.  Text may be modified if scale < 1
+    };
+
+    # ----------------------------------------------------------
+    # Draw the grid on both pdf and canvas
+    # ----------------------------------------------------------
+    DrawView->draw_background($cn,$scl);
+    DrawView->draw_background($pdf,$scl); 
+    
+    # ----------------------------------------------------------
+    # Draw the teacher blocks on both pdf and canvas
+    # ----------------------------------------------------------
+    foreach my $block (@blocks) {
+        DrawView->draw_block($cn,$block,$scl,"teacher");
+        DrawView->draw_block($pdf,$block,$scl,"teacher");
+    }
+
+"""
+
 # TODO: Make this into a static class?
 
 # region METHODS
