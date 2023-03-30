@@ -1,6 +1,8 @@
 """A half hour time block used to select time slots on a view."""
 from tkinter import Canvas
 
+from ..PerlLib import Colour
+
 
 class AssignBlockTk:
     """Defines a 1/2 hour block of time within a view.
@@ -54,7 +56,7 @@ class AssignBlockTk:
         self.day = day
         self.start = start
         self.view = view
-        self.canvas = view.gui.canvas
+        self.canvas: Canvas = view.gui.canvas
 
         # just in case, want coords to be from top left -> bottom right
         # or other logic in this class may fail
@@ -156,5 +158,27 @@ class AssignBlockTk:
     # =================================================================
     # at_canvas_coords ($x, $y)
     # =================================================================
+    def at_canvas_coords(self, x, y) -> bool:
+        """Does this block contain the canvas coordinates x & y?
 
+        NOTE: Will not return true if edge is detected, which is not a bad thing. Maybe the user
+        wanted something else."""
+        return True if (self.x1 < x < self.x2) and (self.y1 < y < self.y2) else False
+
+    # =================================================================
+    # set_colour ( $colour)
+    # =================================================================
+    def set_colour(self, colour: str = "mistyrose3"):
+        """Fills the block with the specified colour.
+
+        Colour string can be of type '#rrggbb' or a valid unix colour name.
+
+        Parameters:
+            colour: default value is 'mistyrose3'.
+
+        Returns:
+            This modified block."""
+        c = Colour.string(colour)
+        self.canvas.itemconfigure(self.id, fill=c)
+        return self
     # endregion
