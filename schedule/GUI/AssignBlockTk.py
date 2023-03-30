@@ -181,4 +181,51 @@ class AssignBlockTk:
         c = Colour.string(colour)
         self.canvas.itemconfigure(self.id, fill=c)
         return self
+
+    # =================================================================
+    # remove_colour ()
+    # unfill ()
+    # =================================================================
+    def unfill(self):
+        return self.remove_colour()
+
+    def remove_colour(self):
+        """Removes any colour from the block.
+
+        Returns:
+            The modified block."""
+        self.canvas.itemconfigure(self.id, fill='')
+        return self
+
+    # =================================================================
+    # getters and setters
+    # =================================================================
+    # Skipping these. No special validation to speak of.
     # endregion
+
+# =================================================================
+# footer
+# =================================================================
+"""
+=head1 AUTHOR
+
+Sandy Bultena, Alex Oxorn
+
+Translated to Python by Evan Laverdiere
+
+=head1 COPYRIGHT
+
+Copyright (c) 2020, Sandy Bultena, Alex Oxorn. 
+
+All Rights Reserved.
+
+This module is free software. It may be used, redistributed
+and/or modified under the terms of the Perl Artistic License
+
+     (see http://www.perl.com/perl/misc/Artistic.html)
+
+=cut
+
+1;
+
+"""
