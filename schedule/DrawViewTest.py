@@ -55,6 +55,8 @@ def main():
     # ----------------------------------------------------------
     for block in blocks:
         DrawView.draw_block(cn, block, scl, "stream")
+
+    print(cn.find_withtag("rectangle"))
     main_window.mainloop()
 
 

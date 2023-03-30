@@ -1,4 +1,6 @@
+from .ViewTk import ViewTk
 from ..Export import DrawView
+from ..PerlLib import Colour
 from ..Schedule.Block import Block
 
 
@@ -13,7 +15,7 @@ class GuiBlockTk:
     # =================================================================
     # new
     # =================================================================
-    def __init__(self, type: str, gui_view, block: Block, colour: str = ""):
+    def __init__(self, type: str, gui_view: ViewTk, block: Block, colour: str = ""):
         """Creates, draws and returns a GuiBlock object.
 
         Parameters:
@@ -36,7 +38,13 @@ class GuiBlockTk:
         # Group rectangle and text to create a GuiBlock,
         # So that they both move as one on the UI.
         # NOTE: canvas.createGroup() doesn't exist in Tkinter. It's exclusive to Perl/Tk.
-        # Plus, Sandy told us not to bother with it.
+        # Plus, Sandy told us not to bother with drag-and-drop functionality.
+        # Still, we need it for the change_colour function...
+        group = (
+            canvas.find_withtag("rectangle"),
+            canvas.find_withtag("text"),
+            canvas.find_withtag("lines")
+        )
 
         # Create the object.
         self._id = GuiBlockTk.Max_id + 1
@@ -46,5 +54,74 @@ class GuiBlockTk:
         self.colour = colour
         self.rectangle = rectangle
         self.text = text
+        self.group = group
         self.is_controlled = False
 
+    # =================================================================
+    # change the colour of the guiblock
+    # =================================================================
+    def change_colour(self, colour: str):
+        """Change the colour of the GuiBlock (including text and shading).
+
+        Parameters:
+            colour: A string specifying a valid colour (name or #rrggbb acceptable)."""
+        colour = Colour.string(colour)
+
+        cn = self.gui_view.canvas # Come back to this once ViewTk has been fully implemented.
+
+        (light, dark, textcolour) = DrawView.get_colour_shades(colour)
+
+        try:
+            (rect, text, lines) = self.group
+            cn.itemconfigure(rect, fill=colour, outline=colour)
+            cn.itemconfigure(text, fill=textcolour)
+
+            for i in range(len(lines)):
+                cn.itemconfigure(lines[i * 2], fill=dark[i])
+                cn.itemconfigure(lines[i * 2 + 1], fill=lines[i])
+
+        except IndexError:
+            print("FAILED CHANGE COLOUR\n")
+
+    # =================================================================
+    # getters/setters
+    # =================================================================
+    # Skipping most of these except for Colour, as that's the only one with special validation.
+    @property
+    def colour(self):
+        """Gets/sets the colour for this GuiBlock."""
+        return self._colour
+
+    @colour.setter
+    def colour(self, value: str):
+        self._colour = value
+        canvas = self.gui_view.canvas
+        rectangle = self.rectangle
+        canvas.itemconfigure(rectangle, fill=self._colour)
+
+# =================================================================
+# footer
+# =================================================================
+"""
+=head1 AUTHOR
+
+Sandy Bultena, Ian Clement, Jack Burns
+
+Rewritten for Python by Evan Laverdiere
+
+=head1 COPYRIGHT
+
+Copyright (c) 2016, Jack Burns, Sandy Bultena, Ian Clement. 
+
+All Rights Reserved.
+
+This module is free software. It may be used, redistributed
+and/or modified under the terms of the Perl Artistic License
+
+     (see http://www.perl.com/perl/misc/Artistic.html)
+
+=cut
+
+1;
+
+"""

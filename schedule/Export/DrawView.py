@@ -341,7 +341,8 @@ def draw_block(canvas: Canvas, block, scl: dict, type, colour=None, edge=None) -
     # draw the block
     # --------------------------------------------------------------------
     # Create a rectangle.
-    rectangle = canvas.create_rectangle(coords, fill=colour, outline=colour)
+    rectangle = canvas.create_rectangle(coords, fill=colour, outline=colour,
+                                        tags=("rectangle", "members"))
 
     # shade edges of guiblock rectangle
     lines = []
@@ -349,17 +350,18 @@ def draw_block(canvas: Canvas, block, scl: dict, type, colour=None, edge=None) -
     (light, dark, text_colour) = get_colour_shades(colour)
     for i in range(0, edge - 1):
         lines.append(
-            canvas.create_line(x2 - i, y1 + i, x2 - i, y2 - i, x1 + i, y2 - i, fill=dark[i])
+            canvas.create_line(x2 - i, y1 + i, x2 - i, y2 - i, x1 + i, y2 - i, fill=dark[i], tags="lines")
         )
         lines.append(
             canvas.create_line(
-                x2 - i, y1 + i, x1 + i, y1 + i, x1 + i, y2 - i, fill=light[i]
+                x2 - i, y1 + i, x1 + i, y1 + i, x1 + i, y2 - i, fill=light[i], tags="lines"
             )
         )
 
     # set text
     text = canvas.create_text(
-        (x1 + x2) / 2, (y1 + y2) / 2, text=block_text, fill=text_colour
+        (x1 + x2) / 2, (y1 + y2) / 2, text=block_text, fill=text_colour,
+        tags=("text", "members")
     )
 
     # group rectangle and text to create a guiblock,

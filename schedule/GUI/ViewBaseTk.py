@@ -2,10 +2,10 @@ from functools import partial
 from tkinter import *
 from tkinter import ttk
 
-import schedule.Schedule.Block as Block
-from schedule.Schedule.Conflict import Conflict
-from schedule.Schedule.ScheduleEnums import ViewType
-from schedule.Export import DrawView
+from ..Schedule.Block import Block
+from ..Schedule.Conflict import Conflict
+from ..Schedule.ScheduleEnums import ViewType
+from ..Export import DrawView
 
 
 class ViewBaseTk:

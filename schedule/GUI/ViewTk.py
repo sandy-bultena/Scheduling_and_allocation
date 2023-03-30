@@ -2,6 +2,8 @@ from functools import partial
 from tkinter import *
 from tkinter import ttk
 
+from .ViewBaseTk import ViewBaseTk
+
 
 class ViewTk(ViewBaseTk):
     # ============================================================================
