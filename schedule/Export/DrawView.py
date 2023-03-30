@@ -177,14 +177,15 @@ def get_block_text(block: Block, scale: float = 1, type="teacher"):
     # --------------------------------------------------------------------
     # get needed block information
     # --------------------------------------------------------------------
-    block_num = block.section.course.number
-    block_sec = f"({block.section.number})"
-    block_section_name = block.section.title
+    # These checks prevent the app from crashing if the Block doesn't have an associated Section.
+    block_num = block.section.course.number if block.section else ""
+    block_sec = f"({block.section.number})" if block.section else ""
+    block_section_name = block.section.title if block.section else ""
     labs = block.labs()
     block_lab = ",".join(labs)
     block_duration = block.duration
     block_start_time = block.start_number
-    streams = block.section.streams
+    streams = block.section.streams if block.section else ()
     block_streams = ",".join(streams)
 
     # If teacher name is too long, split into multiple lines.
@@ -299,6 +300,8 @@ def draw_block(canvas: Canvas, block, scl: dict, type, colour=None, edge=None):
     # --------------------------------------------------------------------
     if colour is None:
         colour = colours[type] or colours['teacher']
+
+    global Edge
 
     if edge is None:
         edge = Edge
