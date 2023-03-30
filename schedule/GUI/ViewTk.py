@@ -159,4 +159,52 @@ class ViewTk(ViewBaseTk):
             )
         )
 
+    def _prepare_to_select_assign_blocks(self, cn, day, x1, y1, assignable_blocks):
+        """Binds mouse movement for selecting AssignBlocks.
+
+        Binds mouse release for processing selected AssignBlocks.
+
+        Want to add (or subtract) any AssignBlocks if the mouse passes over said blocks.
+
+        Once mouse has been pressed, the selection of 'selectable' AssignBlocks is limited to the day of the initial selection.
+
+        Parameters:
+            cn: The canvas object.
+            day: Day of the first selection.
+            x1: X canvas coordinate of the mouse when it was initially clicked.
+            y1: Y canvas coordinate of the mouse when it was initially clicked.
+            assignable_blocks: array of all assignable blocks."""
+        selected_assigned_blocks = []
+
+        # Get a list of all the AssignBlocks associated with a given day.
+        assign_blocks_day = [b.day for b in assignable_blocks if b.day == day]
+
+        # Binds motion to a motion sub to handle the selection of multiple time slots when moving
+        # mouse.
+        cn.bind('<Motion>', partial(
+            self._selecting_assigned_blocks,
+            self.mw.winfo_pointerx(),
+            self.mw.winfo_pointery(),
+            x1,
+            y1,
+            selected_assigned_blocks,
+            assign_blocks_day
+        ))
+
+        # Binds the release of Mouse 1 to process the selection of AssignBlocks.
+        def dummy(cn: Canvas, x, y1, y2, selected_assigned_blocks):
+            # Unbind everything.
+            cn.bind('<Motion>', "")
+            cn.bind('<ButtonRelease-1>', "")
+
+            something_to_do = selected_assigned_blocks
+            if not something_to_do or len(something_to_do) == 0:
+                return
+            self._selected_assigned_blocks # TODO: Figure out if this is a function or a property. Seems like a function, from context.
+
+        cn.bind('<ButtonRelease-1>', partial(
+            dummy, x1, y1, self.mw.winfo_pointery(), selected_assigned_blocks
+        ))
+
+
 

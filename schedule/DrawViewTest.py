@@ -57,6 +57,8 @@ def main():
         DrawView.draw_block(cn, block, scl, "stream")
 
     print(cn.find_withtag("rectangle"))
+    days = [b.day for b in blocks if b.day == "mon"]
+    print(days)
     main_window.mainloop()
 
 
