@@ -159,7 +159,7 @@ class ViewTk(ViewBaseTk):
             )
         )
 
-    def _prepare_to_select_assign_blocks(self, cn, day, x1, y1, assignable_blocks):
+    def _prepare_to_select_assign_blocks(self, cn: Canvas, day, x1, y1, assignable_blocks):
         """Binds mouse movement for selecting AssignBlocks.
 
         Binds mouse release for processing selected AssignBlocks.
@@ -206,5 +206,23 @@ class ViewTk(ViewBaseTk):
             dummy, x1, y1, self.mw.winfo_pointery(), selected_assigned_blocks
         ))
 
+    @staticmethod
+    def _selecting_assigned_blocks(cn: Canvas, x2, y2, x1, y1, selected_assigned_blocks, assign_blocks_day):
+        """Called when the mouse is moving, and in the process of selecting AssignBlocks.
 
+        Parameters:
+            cn: canvas object
+            x2: current x position of mouse
+            y2: current y position of mouse
+            x1: x position of mouse when first clicked
+            y1: y position of mouse when first clicked
+            selected_assigned_blocks: array of selected AssignBlocks (reset in this method)
+            assign_blocks_day: list of AssignBlocks for the day (when the mouse was first clicked, the day was calculated"""
+        # Temporarily unbind motion
+        cn.bind('<Motion>', "")
+
+        # get the AssignBlocks currently under the selection window
+        # TODO: Implement the AssignBlockTk class first, then uncomment this.
+        #selected_assigned_blocks = AssignBlockTk.in_range(x1, y1, x2, y2, assign_blocks_day)
+        pass
 
