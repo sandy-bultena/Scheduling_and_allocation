@@ -59,10 +59,13 @@ class Block(Time_slot.TimeSlot):
                  id: int = None) -> None:
         """Creates a new Block object.
         
-        - Parameter day: str -> a valid Weekday enum, ex: Weekday.Monday
-        - Parameter start: str -> start time using 24 h clock (i.e 1pm is "13:00")
-        - Parameter duration: float -> how long does this class last, in hours
-        - Parameter number: int -> A number representing this specific Block.
+        Parameters:
+            day: str -> a valid Weekday enum, ex: Weekday.Monday
+            start: str -> start time using 24 h clock (i.e. 1pm is "13:00")
+            duration: float -> how long does this class last, in hours
+            number: int -> A number representing this specific Block.
+            movable: bool -> Whether this Block can be moved.
+            id: int -> The Block's id, if is meant to represent an existing Block retrieved from the database. Leave blank if this Block is meant to be completely new.
         """
         self._sync: list[Block] = list()
 
