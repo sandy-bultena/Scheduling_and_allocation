@@ -10,6 +10,8 @@ Required Event Handlers:
     -none-
 """
 
+import EditSectionDialogTk
+
 from tkinter import simpledialog, Frame
 from MultipleDialog import MultipleDialog
 import re
@@ -49,7 +51,7 @@ def _process_block_hours(db_num_blocks : int | None = None) -> list[int] | None:
         )
     
     # if cancelled, return
-    if not db_block_hours: return None
+    if not db_block_hours or not db_block_hours.result: return None
     
     results = db_block_hours.result
     for i, c in enumerate(results):
