@@ -3,6 +3,7 @@ from tkinter import *
 from tkinter import ttk
 from typing import Callable
 
+from .AssignBlockTk import AssignBlockTk
 from .ViewBaseTk import ViewBaseTk
 
 global mw
@@ -143,7 +144,7 @@ class ViewTk(ViewBaseTk):
             if clicked_block: return  # allow another event to take control
 
             # if mouse is not on an assignable block, bail out
-            ass_block = None # AssignBlockTk.find(x, y, assignable_blocks) TODO: Come back to this once AssignBlockTk has been implemented.
+            ass_block = AssignBlockTk.find(x, y, assignable_blocks)
             if not ass_block:
                 return
 
@@ -200,14 +201,16 @@ class ViewTk(ViewBaseTk):
             something_to_do = selected_assigned_blocks
             if not something_to_do or len(something_to_do) == 0:
                 return
-            self._selected_assigned_blocks # TODO: Figure out if this is a function or a property. Seems like a function, from context.
-
+            # TODO: I have no idea if the partial will recognize what this is meant to do.
+            self._selected_assigned_blocks(cn, selected_assigned_blocks)
         cn.bind('<ButtonRelease-1>', partial(
             dummy, x1, y1, self.mw.winfo_pointery(), selected_assigned_blocks
         ))
 
     @staticmethod
-    def _selecting_assigned_blocks(cn: Canvas, x2, y2, x1, y1, selected_assigned_blocks, assign_blocks_day):
+    def _selecting_assigned_blocks(cn: Canvas, x2, y2, x1, y1,
+                                   selected_assigned_blocks: list[AssignBlockTk],
+                                   assign_blocks_day: list[AssignBlockTk]):
         """Called when the mouse is moving, and in the process of selecting AssignBlocks.
 
         Parameters:
@@ -222,7 +225,45 @@ class ViewTk(ViewBaseTk):
         cn.bind('<Motion>', "")
 
         # get the AssignBlocks currently under the selection window
-        # TODO: Implement the AssignBlockTk class first, then uncomment this.
-        #selected_assigned_blocks = AssignBlockTk.in_range(x1, y1, x2, y2, assign_blocks_day)
-        pass
+        selected_assigned_blocks = AssignBlockTk.in_range(x1, y1, x2, y2, assign_blocks_day)
+
+        # colour the selection blue
+        for blk in assign_blocks_day:
+            blk.unfill()
+        for blk in selected_assigned_blocks:
+            blk.set_colour(select_colour)
+
+        # rebind Motion
+        cn.bind('<Motion>', partial(
+            ViewTk._selecting_assigned_blocks,
+            mw.winfo_pointerx(),
+            mw.winfo_pointery(),
+            x1, y1, selected_assigned_blocks, assign_blocks_day
+        ))
+
+    def _selectedAssignBlocks(self, cn: Canvas, selected_assigned_blocks: list[AssignBlockTk]):
+        """Mouse is up, AssignBlocks have been selected. Deal with it!
+
+        Calls the callback routine defined in setup_assign_blocks.
+
+        Parameters:
+            cn: Canvas object.
+            selected_assigned_blocks: Array of selected AssignBlocks."""
+
+        # Unbind everything.
+        cn.bind('<Motion>', "")
+        cn.bind('<ButtonRelease-1>', "")
+
+        something_to_do = selected_assigned_blocks
+        if not something_to_do or len(something_to_do) == 0:
+            return
+        selected_assign_block_completed_cb(self.view, selected_assigned_blocks)
+
+# ============================================================================
+# Dragging Guiblocks around
+# ============================================================================
+
+# NOTE: Since we don't plan to have drag-&-drop between views in this version of the app,
+# and since the methods in this section seem to be doing just that, I'm not sure if I should skip
+# them.
 
