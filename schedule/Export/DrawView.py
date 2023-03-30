@@ -293,7 +293,7 @@ def get_block_text(block: Block, scale: float = 1, type="teacher"):
 # =================================================================
 # draw_block
 # =================================================================
-def draw_block(canvas: Canvas, block, scl: dict, type, colour=None, edge=None):
+def draw_block(canvas: Canvas, block, scl: dict, type, colour=None, edge=None) -> dict:
     """Draws the Schedule timetable on the specified canvas.
 
     Parameters:
