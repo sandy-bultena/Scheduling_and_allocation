@@ -37,7 +37,7 @@ class AssignBlockTk:
         # draw 1/2 the block
         # ---------------------------------------------------------------
         cn: Canvas = view.gui.canvas
-        coords = view.gui.get_time_coords(day, start, 1/2)
+        coords = view.gui.get_time_coords(day, start, 1 / 2)
 
         r = cn.create_rectangle(
             coords,
@@ -93,7 +93,7 @@ class AssignBlockTk:
         if not assigned_blocks:
             return
 
-        found: list[AssignBlockTk] = [b for b in assigned_blocks if b._at_canvas_coords(x,y)]
+        found: list[AssignBlockTk] = [b for b in assigned_blocks if b._at_canvas_coords(x, y)]
         return found[0] if len(found) > 0 else None
 
     # =================================================================
@@ -124,4 +124,37 @@ class AssignBlockTk:
             y2 = tmp
 
         return [b for b in assigned_blocks if b.x1 < x2 and b.x2 > x1 and b.y1 < y2 and b.y2 > y1]
+
+    # =================================================================
+    # get_day_start_duration ($chosen)
+    # =================================================================
+    @classmethod
+    def get_day_start_duration(cls, chosen: list) -> tuple[int, float, float]:
+        """For the given AssignBlocks that were chosen by the user, calculate and return
+        information about the range of blocks chosen.
+
+        Parameters:
+            chosen: Array of AssignBlocks."""
+        x: list[AssignBlockTk] = chosen.copy()
+
+        day = x[0].day
+        start = x[0].start
+        size = len(x)
+
+        for i in x:
+            temp = i.start
+            if temp < start:
+                start = temp
+
+        # Note that each block is a 1/2 hour, so the duration (in hours) would be the number of
+        # blocks divided by two.
+        return day, start, size / 2
+
+    # endregion
+
+    # region INSTANCE METHODS
+    # =================================================================
+    # at_canvas_coords ($x, $y)
+    # =================================================================
+
     # endregion
