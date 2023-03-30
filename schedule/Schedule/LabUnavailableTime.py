@@ -1,12 +1,12 @@
 from __future__ import annotations
-import Time_slot
-from ScheduleEnums import WeekDay
+from . import Time_slot
+from .ScheduleEnums import WeekDay
 from pony.orm import *
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    import Schedule
-from database.PonyDatabaseConnection import LabUnavailableTime as dbUnavailableTime, \
+    from . import Schedule
+from .database.PonyDatabaseConnection import LabUnavailableTime as dbUnavailableTime, \
     Schedule as dbSchedule
 
 

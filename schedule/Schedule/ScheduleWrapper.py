@@ -1,17 +1,17 @@
 from __future__ import annotations
 
-from Schedule import Schedule
-from Teacher import Teacher
-from Course import Course
-from Lab import Lab
-from Stream import Stream
-from Block import Block
-from Section import Section
-from LabUnavailableTime import LabUnavailableTime
-from Conflict import Conflict
-from Scenario import Scenario
+from .Schedule import Schedule
+from .Teacher import Teacher
+from .Course import Course
+from .Lab import Lab
+from .Stream import Stream
+from .Block import Block
+from .Section import Section
+from .LabUnavailableTime import LabUnavailableTime
+from .Conflict import Conflict
+from .Scenario import Scenario
 
-import database.PonyDatabaseConnection as db
+from .database import PonyDatabaseConnection as db
 from pony.orm import *
 
 class ScheduleWrapper():

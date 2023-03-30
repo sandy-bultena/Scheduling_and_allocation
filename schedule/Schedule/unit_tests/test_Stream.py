@@ -2,13 +2,13 @@ import sys
 from os import path
 sys.path.append(path.dirname(path.dirname(__file__)))
 import pytest
-from unit_tests.db_constants import *
+from .db_constants import *
 
-from Stream import Stream
-from Block import Block
-from Section import Section
-from Course import Course
-from database.PonyDatabaseConnection import define_database, Schedule as dbSchedule, Scenario as dbScenario, Stream as dbStream
+from ..Stream import Stream
+from ..Block import Block
+from ..Section import Section
+from ..Course import Course
+from ..database.PonyDatabaseConnection import define_database, Schedule as dbSchedule, Scenario as dbScenario, Stream as dbStream
 from pony.orm import *
 
 db : Database

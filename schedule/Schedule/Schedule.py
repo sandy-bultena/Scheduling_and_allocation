@@ -1,17 +1,17 @@
 from __future__ import annotations
-from Teacher import Teacher
-from Course import Course
-from Conflict import Conflict
-from Lab import Lab
-from Stream import Stream
-from Section import Section
-from Block import Block
-from LabUnavailableTime import LabUnavailableTime
-from ScheduleEnums import ConflictType, ViewType
+from .Teacher import Teacher
+from .Course import Course
+from .Conflict import Conflict
+from .Lab import Lab
+from .Stream import Stream
+from .Section import Section
+from .Block import Block
+from .LabUnavailableTime import LabUnavailableTime
+from .ScheduleEnums import ConflictType, ViewType
 
-from SectionList import SectionList
+from .SectionList import SectionList
 
-import database.PonyDatabaseConnection as db
+from .database import PonyDatabaseConnection as db
 from pony.orm import *
 
 """ SYNOPSIS/EXAMPLE:

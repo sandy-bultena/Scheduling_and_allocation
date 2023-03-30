@@ -1,5 +1,5 @@
 from __future__ import annotations
-from Section import Section
+from .Section import Section
 
 class SectionList(list):
     """

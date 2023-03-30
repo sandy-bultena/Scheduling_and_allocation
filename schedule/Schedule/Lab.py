@@ -2,15 +2,15 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import Block
+from . import Block
 
 if TYPE_CHECKING:
-    import Schedule
-    import LabUnavailableTime
+    from . import Schedule
+    from . import LabUnavailableTime
 # import Schedule
-from ScheduleEnums import WeekDay
+from .ScheduleEnums import WeekDay
 
-from database.PonyDatabaseConnection import Lab as dbLab, LabUnavailableTime as dbUnavailableTime
+from .database.PonyDatabaseConnection import Lab as dbLab, LabUnavailableTime as dbUnavailableTime
 from pony.orm import *
 
 """ SYNOPSIS/EXAMPLE:
@@ -81,7 +81,7 @@ class Lab:
         """
         # Importing the class here to help avoid circular dependency issues when running the tests.
         # Not an ideal solution, admittedly.
-        import LabUnavailableTime
+        from . import LabUnavailableTime
         # Create a LabUnavailableTime. (no need to verify day because it's verified in TimeSlot
         # constructor)
         return self.add_unavailable_slot(

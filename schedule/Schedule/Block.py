@@ -1,11 +1,11 @@
 from __future__ import annotations
-import Time_slot
-import Lab
-import Section
-import Teacher
-from ScheduleEnums import WeekDay
+from . import Time_slot
+from . import Lab
+from . import Section
+from . import Teacher
+from .ScheduleEnums import WeekDay
 
-from database.PonyDatabaseConnection import Block as dbBlock, \
+from .database.PonyDatabaseConnection import Block as dbBlock, \
     Lab as dbLab, \
     Teacher as dbTeacher, Section as dbSection
 from pony.orm import *

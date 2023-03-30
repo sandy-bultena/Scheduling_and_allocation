@@ -4,18 +4,18 @@ from os import path
 
 sys.path.append(path.dirname(path.dirname(__file__)))
 
-from Course import Course
-from Section import Section
-from Teacher import Teacher
-from Block import Block
-from Lab import Lab
-from Stream import Stream
+from ..Course import Course
+from ..Section import Section
+from ..Teacher import Teacher
+from ..Block import Block
+from ..Lab import Lab
+from ..Stream import Stream
 
-from database.PonyDatabaseConnection import define_database, Course as dbCourse, \
+from ..database.PonyDatabaseConnection import define_database, Course as dbCourse, \
     Section as dbSection, Schedule as dbSchedule, Scenario as dbScenario
 from pony.orm import *
-from unit_tests.db_constants import *
-from ScheduleEnums import SemesterType
+from .db_constants import *
+from ..ScheduleEnums import SemesterType
 
 db: Database
 

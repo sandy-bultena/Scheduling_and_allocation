@@ -1,14 +1,14 @@
 from __future__ import annotations
 # directly importing modules to avoid circular dependencies
-import Stream
-import Teacher
-import Lab
-import Section
-import Block
+from . import Stream
+from . import Teacher
+from . import Lab
+from . import Section
+from . import Block
 
-from database.PonyDatabaseConnection import Course as dbCourse, Section as dbSection
+from .database.PonyDatabaseConnection import Course as dbCourse, Section as dbSection
 from pony.orm import *
-from ScheduleEnums import SemesterType
+from .ScheduleEnums import SemesterType
 
 '''SYNOPSIS
 

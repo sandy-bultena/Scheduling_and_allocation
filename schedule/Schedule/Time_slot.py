@@ -4,7 +4,7 @@ from __future__ import annotations
 import re
 from warnings import warn
 # from ScheduleEnums import WeekDay, WeekDayNumber
-import ScheduleEnums
+from . import ScheduleEnums
 
 #from database.PonyDatabaseConnection import TimeSlot as dbTimeSlot
 from pony.orm import *

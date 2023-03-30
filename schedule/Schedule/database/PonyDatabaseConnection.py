@@ -6,7 +6,7 @@ from decimal import Decimal
 
 from pony.orm import *
 import mysql.connector
-from database.db_constants import *
+from .db_constants import *
 
 # Test database to verify that Pony works. Anything done here won't affect the main scheduler_db.
 # db_name = "pony_scheduler_db"
@@ -193,7 +193,7 @@ if __name__ == "__main__":
                     host=HOST,
                     user=USERNAME,
                     passwd=PASSWD,
-                    db=db_name)
+                    db=DB_NAME)
     """db.bind(provider=PROVIDER,
         host=HOST,
         user=USERNAME,

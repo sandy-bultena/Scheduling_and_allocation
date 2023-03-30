@@ -5,11 +5,11 @@ from os import path
 
 sys.path.append(path.dirname(path.dirname(__file__)))
 
-from Teacher import Teacher
-from Block import Block
-from database.PonyDatabaseConnection import define_database, Teacher as dbTeacher
+from ..Teacher import Teacher
+from ..Block import Block
+from ..database.PonyDatabaseConnection import define_database, Teacher as dbTeacher
 from pony.orm import *
-from unit_tests.db_constants import *
+from .db_constants import *
 
 db: Database
 

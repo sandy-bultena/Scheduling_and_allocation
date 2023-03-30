@@ -3,23 +3,23 @@ import sys
 from os import path
 sys.path.append(path.dirname(path.dirname(__file__)))
 
-from ScheduleEnums import ConflictType
-from LabUnavailableTime import LabUnavailableTime
-from Block import Block
-from Section import Section
-from Conflict import Conflict
-from Lab import Lab
-from Course import Course
-from Stream import Stream
-from Teacher import Teacher
-from Schedule import Schedule
-from ScheduleWrapper import ScheduleWrapper
-from database.PonyDatabaseConnection import\
+from ..ScheduleEnums import ConflictType
+from ..LabUnavailableTime import LabUnavailableTime
+from ..Block import Block
+from ..Section import Section
+from ..Conflict import Conflict
+from ..Lab import Lab
+from ..Course import Course
+from ..Stream import Stream
+from ..Teacher import Teacher
+from ..Schedule import Schedule
+from ..ScheduleWrapper import ScheduleWrapper
+from ..database.PonyDatabaseConnection import\
     define_database, Schedule as dbSchedule, Scenario as dbScenario, Lab as dbLab, Teacher as dbTeacher, Section_Teacher as dbSecTeach,\
     Course as dbCourse, Section as dbSection, Stream as dbStream, Block as dbBlock, Schedule_Teacher as dbSchedTeach,\
     LabUnavailableTime as dbLUT
 from pony.orm import *
-from unit_tests.db_constants import *
+from .db_constants import *
 
 
 db: Database

@@ -1,12 +1,12 @@
 from __future__ import annotations
-import Course
-import Stream
-import Teacher
-import Block
-import Lab
+from . import Course
+from . import Stream
+from . import Teacher
+from . import Block
+from . import Lab
 import re
 
-from database.PonyDatabaseConnection import Section as dbSection, \
+from .database.PonyDatabaseConnection import Section as dbSection, \
     Schedule as dbSchedule, Teacher as dbTeacher, Section_Teacher
 from pony.orm import *
 
@@ -464,7 +464,7 @@ class Section:
         """ Delete this object and all its dependants. 
         Parameter from_list -> Whether or not the delete call comes from a SectionList object. Defaults to False.
         """
-        from SectionList import SectionList
+        from .SectionList import SectionList
 
         for b in self.blocks:
             self.remove_block(b)

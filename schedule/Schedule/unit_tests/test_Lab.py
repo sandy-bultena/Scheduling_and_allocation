@@ -3,13 +3,13 @@ from os import path
 
 sys.path.append(path.dirname(path.dirname(__file__)))
 import pytest
-from unit_tests.db_constants import *
+from .db_constants import *
 
-from Schedule import Schedule
-from Lab import Lab
-from LabUnavailableTime import LabUnavailableTime
-from Block import Block
-from database.PonyDatabaseConnection import define_database, Lab as dbLab, Schedule as dbSchedule, \
+from ..Schedule import Schedule
+from ..Lab import Lab
+from ..LabUnavailableTime import LabUnavailableTime
+from ..Block import Block
+from ..database.PonyDatabaseConnection import define_database, Lab as dbLab, Schedule as dbSchedule, \
     Scenario as dbScenario, LabUnavailableTime as dbUnavailableTime
 from pony.orm import *
 

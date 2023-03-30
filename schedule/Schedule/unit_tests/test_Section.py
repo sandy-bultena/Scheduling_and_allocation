@@ -4,17 +4,17 @@ import re
 
 sys.path.append(path.dirname(path.dirname(__file__)))
 import pytest
-from unit_tests.db_constants import *
-from database.PonyDatabaseConnection import define_database, Schedule as dbSchedule, Scenario as dbScenario, \
+from .db_constants import *
+from ..database.PonyDatabaseConnection import define_database, Schedule as dbSchedule, Scenario as dbScenario, \
     Section as dbSection
 from pony.orm import *
 
-from Section import Section
-from Course import Course
-from Block import Block
-from Lab import Lab
-from Teacher import Teacher
-from Stream import Stream
+from ..Section import Section
+from ..Course import Course
+from ..Block import Block
+from ..Lab import Lab
+from ..Teacher import Teacher
+from ..Stream import Stream
 
 db: Database
 

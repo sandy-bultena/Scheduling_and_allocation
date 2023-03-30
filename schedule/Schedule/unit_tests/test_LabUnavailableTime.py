@@ -5,12 +5,12 @@ from pony.orm import *
 
 sys.path.append(path.dirname(path.dirname(__file__)))
 
-from Schedule import Schedule
-from ScheduleWrapper import ScheduleWrapper
-from LabUnavailableTime import LabUnavailableTime
-from database.PonyDatabaseConnection import define_database, Scenario as dbScenario, \
+from ..Schedule import Schedule
+from ..ScheduleWrapper import ScheduleWrapper
+from ..LabUnavailableTime import LabUnavailableTime
+from ..database.PonyDatabaseConnection import define_database, Scenario as dbScenario, \
     Schedule as dbSchedule, LabUnavailableTime as dbUnavailableTime
-from unit_tests.db_constants import *
+from .db_constants import *
 
 db: Database
 s: dbSchedule

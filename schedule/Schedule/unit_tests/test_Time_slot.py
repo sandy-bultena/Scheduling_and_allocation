@@ -4,12 +4,12 @@ from os import path
 
 sys.path.append(path.dirname(path.dirname(__file__)))
 import pytest
-from unit_tests.db_constants import *
+from .db_constants import *
 
-import Block    # avoids circular import
-from Time_slot import TimeSlot
-from ScheduleEnums import WeekDay
-from database.PonyDatabaseConnection import define_database
+from .. import Block    # avoids circular import
+from ..Time_slot import TimeSlot
+from ..ScheduleEnums import WeekDay
+from ..database.PonyDatabaseConnection import define_database
 from pony.orm import *
 
 db: Database

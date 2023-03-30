@@ -1,5 +1,5 @@
 from __future__ import annotations
-from Schedule import Schedule
+from .Schedule import Schedule
 
 class Scenario():
     def __init__(self, semester : str = "", status : str = "", description : str = "", schedules : set[Schedule] = None):

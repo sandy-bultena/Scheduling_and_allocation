@@ -2,9 +2,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 import sys
 from os import path
-from ScheduleEnums import ViewType, ConflictType
+from .ScheduleEnums import ViewType, ConflictType
 sys.path.append(path.dirname(path.dirname(__file__)))
-if TYPE_CHECKING: import Block
+if TYPE_CHECKING: from . import Block
 # NOTE: using an enum will impact ViewBase.py when it is coded
 
 """ SYNOPSIS/EXAMPLE:
