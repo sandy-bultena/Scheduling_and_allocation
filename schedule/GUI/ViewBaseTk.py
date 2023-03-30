@@ -2,9 +2,10 @@ from functools import partial
 from tkinter import *
 from tkinter import ttk
 
+from .GuiBlockTk import GuiBlockTk
 from ..Schedule.Block import Block
 from ..Schedule.Conflict import Conflict
-from ..Schedule.ScheduleEnums import ViewType
+from ..Schedule.ScheduleEnums import ViewType, WeekDayNumber
 from ..Export import DrawView
 
 
@@ -150,22 +151,22 @@ class ViewBaseTk:
         tl = self._toplevel
         tl.title = title
 
-    def bind_popup_menu(self, gui_block):
+    def bind_popup_menu(self, gui_block: GuiBlockTk):
         """Draws the GuiBlock onto the view.
         Binds a popup menu if one is defined.
 
         Parameters:
             gui_block: object where the popup menu is being bound to."""
         # Menu bound to individual gui-blocks.
+        # Had to do quite a bit of digging to figure out what the two Ev() functions were doing in
+        # the original Perl script. They're getting the mouse coordinates.
         self.canvas.bind(gui_block.group, '<3>', partial(
-            self._postmenu, self, Ev('X'), Ev('Y'), gui_block
+            self._postmenu, self, self.mw.winfo_pointerx(), self.mw.winfo_pointery(), gui_block
         ))
         return gui_block
 
     def draw_background(self):
         """Draws the Schedule timetable on the View canvas."""
-        # NOTE: DrawView comes from the Export package. Come back to this once
-        # it's been implemented.
         DrawView.draw_background(self.canvas, self.get_scale_info())
         return
 
@@ -174,15 +175,14 @@ class ViewBaseTk:
         del self._popup_guiblock
         return
 
-    def move_block(self, guiblock):
+    def move_block(self, guiblock: GuiBlockTk):
         """Moves the gui block to the appropriate place, based on the block's new day and time.
 
         Parameters:
             guiblock: The gui block to move."""
-        block: Block.Block = guiblock.block
+        block: Block = guiblock.block
 
         # Get new coordinates of the block.
-        # TODO: Come back to this function once DrawView is implemented.
         coords = self.get_time_coords(block.day_number, block.start_number, block.duration)
 
         # Get the current x/y of the guiblock.
@@ -194,7 +194,7 @@ class ViewBaseTk:
         # move guiblock to new position
         guiblock.gui_view.canvas.move(guiblock.group, coords[0] - cur_x_pos, coords[1] - cur_y_pos)
 
-    def colour_block(self, guiblock, type: ViewType):
+    def colour_block(self, guiblock: GuiBlockTk, type: ViewType):
         """Colours the block according to conflicts.
 
         Parameters:
@@ -263,7 +263,7 @@ class ViewBaseTk:
             "scale": self.current_scale
         }
 
-    def get_time_coords(self, day, start, duration):
+    def get_time_coords(self, day, start, duration) -> tuple[int]:
         """Converts the times into x and y coordinates and returns them.
 
         Parameters:
@@ -271,7 +271,6 @@ class ViewBaseTk:
             start: The start time of the block.
             duration: Number of hours for this block."""
         scl = self.get_scale_info()
-        # TODO: Return to this once DrawView has been implemented.
         coords = DrawView.get_coords(day, start, duration, scl)
         return coords
 
@@ -369,13 +368,13 @@ class ViewBaseTk:
         status_frame = Frame(self._toplevel, borderwidth=0, relief='flat')
         status_frame.pack(side='bottom', expand=0, fill='x')
         status_text_var = StringVar()
-        Label(status_frame, textvariable=status_text_var, borderwidth=1, relief='ridge')\
+        Label(status_frame, textvariable=status_text_var, borderwidth=1, relief='ridge') \
             .pack(side='left', expand=1, fill='x')
         status_text_var.set(ViewBaseTk.status_text)
 
         return status_frame
 
-    def _postmenu(self, c: Canvas, x, y, guiblock):
+    def _postmenu(self, c: Canvas, x: int, y: int, guiblock: GuiBlockTk):
         """Posts (shows) the popup menu at location (x,y).
 
         Parameters:
@@ -400,7 +399,7 @@ class ViewBaseTk:
         """Close the current View."""
         self.on_closing()
 
-    def _set_block_coords(self, guiblock, x, y):
+    def _set_block_coords(self, guiblock: GuiBlockTk, x, y):
         """Converts the X and Y coordinates into times and sets the time to the Block associated with the guiblock.
 
         Parameters:
@@ -413,8 +412,26 @@ class ViewBaseTk:
             return
 
         (day, time, duration) = DrawView.coords_to_day_time_duration(x, y, y, scl)
-        guiblock.block.day_number = day
-        guiblock.block.start_number = time
+        # Originally, the day_number property had a setter, and day could accept numbers or strings.
+        # However, we disallowed that. So the day value must be converted to a string/WeekDay.
+        guiblock.block.day = WeekDayNumber[day]
+        # Similarly, Block's start_number is no longer a property and doesn't affect the start
+        # property. Thus, a bit more work is required here than in the Perl version.
+        time_string = self._get_time_string_from_number(float(time))
+        guiblock.block.start = time_string
+
+    @staticmethod
+    def _get_time_string_from_number(time) -> str:
+        remainder = time % 1
+        hour = time - remainder
+        minutes = remainder * 60
+        time_parts = [str(int(hour)), str(int(minutes))]
+        if time_parts[1] == "0":
+            time_parts[1] = "00"
+        time_string = ":".join(time_parts)
+        return time_string
+        pass
+
 
 # =================================================================
 # footer
