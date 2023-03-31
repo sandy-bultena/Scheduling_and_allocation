@@ -5,13 +5,12 @@ from pony.orm import *
 
 sys.path.append(path.dirname(path.dirname(__file__)))
 
-from Schedule import Schedule
-from LabUnavailableTime import LabUnavailableTime
-from Lab import Lab
-from database.PonyDatabaseConnection import define_database, Scenario as dbScenario, \
-    Schedule as dbSchedule, Lab as dbLab, LabUnavailableTime as dbUnavailableTime
-from unit_tests.db_constants import *
-from ScheduleEnums import WeekDay
+from ..Schedule import Schedule
+from ..ScheduleWrapper import ScheduleWrapper
+from ..LabUnavailableTime import LabUnavailableTime
+from ..database.PonyDatabaseConnection import define_database, Scenario as dbScenario, \
+    Schedule as dbSchedule, LabUnavailableTime as dbUnavailableTime
+from .db_constants import *
 
 db: Database
 s: dbSchedule
@@ -32,14 +31,14 @@ def init_scenario_and_schedule():
     global s
     sc = dbScenario()
     flush()
-    s = dbSchedule(semester="Winter 2023", official=False, scenario_id=sc.id, description="W23")
+    s = dbSchedule(official=False, scenario_id=sc.id, description="W23")
 
 
 @pytest.fixture(autouse=True)
 def run_before():
     db.create_tables()
     init_scenario_and_schedule()
-    Schedule.reset_local()
+    ScheduleWrapper.reset_local()
     yield
     db.drop_all_tables(with_all_data=True)
 

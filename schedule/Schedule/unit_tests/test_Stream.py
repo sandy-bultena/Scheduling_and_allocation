@@ -2,13 +2,13 @@ import sys
 from os import path
 sys.path.append(path.dirname(path.dirname(__file__)))
 import pytest
-from unit_tests.db_constants import *
+from .db_constants import *
 
-from Stream import Stream
-from Block import Block
-from Section import Section
-from Course import Course
-from database.PonyDatabaseConnection import define_database, Schedule as dbSchedule, Scenario as dbScenario, Stream as dbStream
+from ..Stream import Stream
+from ..Block import Block
+from ..Section import Section
+from ..Course import Course
+from ..database.PonyDatabaseConnection import define_database, Schedule as dbSchedule, Scenario as dbScenario, Stream as dbStream
 from pony.orm import *
 
 db : Database
@@ -27,7 +27,7 @@ def before_and_after_module():
 def init_scenario_schedule_course():
     sc = dbScenario()
     flush()
-    s = dbSchedule(semester="Winter 2023", official=False, scenario_id=sc.id)
+    s = dbSchedule(official=False, scenario_id=sc.id)
 
 @pytest.fixture(autouse=True)
 def before_and_after():
@@ -105,11 +105,9 @@ def test_share_blocks_ignores_non_shared():
     """Confirm that share_blocks ignores streams without both blocks"""
     c = Course()
     b1 = b2 = Block('mon', '13:00', 2, 1)
-    se = Section(course = c, schedule_id = 1)
-    s = Stream()
-    b1.section = se
-    b2.section = Section(course = c, schedule_id = 1)
-    se.assign_stream(s)
+    b1.section = (se := Section(number=1, course = c, schedule_id = 1))
+    b2.section = Section(number=2, course = c, schedule_id = 1)
+    se.assign_stream(Stream())
     assert not Stream.share_blocks(b1, b2)
 
 

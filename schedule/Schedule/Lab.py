@@ -2,15 +2,15 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import Block
+from . import Block
 
 if TYPE_CHECKING:
-    import Schedule
-    import LabUnavailableTime
+    from . import Schedule
+    from . import LabUnavailableTime
 # import Schedule
-from ScheduleEnums import WeekDay
+from .ScheduleEnums import WeekDay
 
-from database.PonyDatabaseConnection import Lab as dbLab, LabUnavailableTime as dbUnavailableTime
+from .database.PonyDatabaseConnection import Lab as dbLab, LabUnavailableTime as dbUnavailableTime
 from pony.orm import *
 
 """ SYNOPSIS/EXAMPLE:
@@ -81,7 +81,7 @@ class Lab:
         """
         # Importing the class here to help avoid circular dependency issues when running the tests.
         # Not an ideal solution, admittedly.
-        import LabUnavailableTime
+        from . import LabUnavailableTime
         # Create a LabUnavailableTime. (no need to verify day because it's verified in TimeSlot
         # constructor)
         return self.add_unavailable_slot(
@@ -96,7 +96,6 @@ class Lab:
     @db_session
     def __add_entity_unavailable(self, instance: LabUnavailableTime.LabUnavailableTime):
         """Links the passed TimeSlot's entity to this Lab's corresponding entity in the database."""
-        # TODO: Refactor me once db LabUnavailableTime has been implemented.
         entity_lab = dbLab.get(id=self.id)
         entity_time = dbUnavailableTime.get(id=instance.id)
         if entity_lab and entity_time:
@@ -121,7 +120,6 @@ class Lab:
     @db_session
     def __delete_unavailable_entity(self, slot_id: int):
         """Removes a LabUnavailableTime entity with the passed ID from the database."""
-        # TODO: Refactor me once db LabUnavailableTime has been implemented.
         entity_time = dbUnavailableTime.get(id=slot_id)
         if entity_time is not None:
             entity_time.delete()

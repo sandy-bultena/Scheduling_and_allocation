@@ -3,13 +3,13 @@ from os import path
 
 sys.path.append(path.dirname(path.dirname(__file__)))
 import pytest
-from unit_tests.db_constants import *
+from .db_constants import *
 
-from Schedule import Schedule
-from Lab import Lab
-from LabUnavailableTime import LabUnavailableTime
-from Block import Block
-from database.PonyDatabaseConnection import define_database, Lab as dbLab, Schedule as dbSchedule, \
+from ..Schedule import Schedule
+from ..Lab import Lab
+from ..LabUnavailableTime import LabUnavailableTime
+from ..Block import Block
+from ..database.PonyDatabaseConnection import define_database, Lab as dbLab, Schedule as dbSchedule, \
     Scenario as dbScenario, LabUnavailableTime as dbUnavailableTime
 from pony.orm import *
 
@@ -32,7 +32,7 @@ def init_scenario_and_schedule():
     global s
     sc = dbScenario()
     flush()
-    s = dbSchedule(semester="Winter 2023", official=False, scenario_id=sc.id, description="W23")
+    s = dbSchedule(official=False, scenario_id=sc.id, description="W23")
 
 
 @pytest.fixture(autouse=True)

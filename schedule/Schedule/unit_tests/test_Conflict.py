@@ -2,12 +2,12 @@ import sys
 from os import path
 sys.path.append(path.dirname(path.dirname(__file__)))
 import pytest
-from unit_tests.db_constants import *
-from database.PonyDatabaseConnection import define_database
+from .db_constants import *
+from ..database.PonyDatabaseConnection import define_database
 from pony.orm import *
-from ScheduleEnums import ConflictType, ViewType
+from ..ScheduleEnums import ConflictType, ViewType
 
-from Conflict import Conflict
+from ..Conflict import Conflict
 
 conflict_types = Conflict._sorted_conflicts.copy()
 conflict_types.append(ConflictType.TIME_LAB)

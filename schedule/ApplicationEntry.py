@@ -14,7 +14,7 @@ from GuiSchedule.GuiHelpers import check_num
 
 
 # TODO: Fix import issues regarding this class.
-# import Schedule.Schedule as ModelSchedule
+import Schedule.Schedule as ModelSchedule
 
 
 @db_session
@@ -29,8 +29,8 @@ def _open_schedule(listbox: Listbox, schedule_dict: dict[str, PonyDatabaseConnec
     # TODO: Come back to this once the import issues with Schedule have been solved.
     flush()
     db_id = db_schedule.id
-    # real_schedule: ModelSchedule.Schedule = ModelSchedule.Schedule.read_DB(db_id)
-    # print(real_schedule)
+    real_schedule: ModelSchedule.Schedule = ModelSchedule.Schedule.read_DB(db_id)
+    print(real_schedule)
     pass
 
 

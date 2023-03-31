@@ -95,9 +95,9 @@ class ConflictType(ExtendedEnum):
 
 
 class ViewType(ExtendedEnum):
-    import Teacher
-    import Lab
-    import Stream
+    from . import Teacher
+    from . import Lab
+    from . import Stream
     lab = Lab
     teacher = Teacher
     stream = Stream

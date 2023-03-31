@@ -1,7 +1,7 @@
 from tkinter import Toplevel, Frame, ttk, StringVar, IntVar, messagebox
 
 import mysql.connector
-from pony.orm import Database, flush
+from pony.orm import Database, flush, commit
 
 from GuiSchedule.GuiHelpers import check_num
 from Schedule.database import PonyDatabaseConnection as PonyDatabaseConnection
@@ -36,25 +36,25 @@ class AddScenarioWindow:
         ttk.Label(self.frame, text="Year").grid(row=2, column=0)
         name_var = StringVar()
         descr_var = StringVar()
-        year_var = IntVar()
+        semester_var = StringVar()
         self.name_entry = ttk.Entry(self.frame, textvariable=name_var)
         self.name_entry.grid(row=0, column=1)
         self.description_entry = ttk.Entry(self.frame, textvariable=descr_var)
         self.description_entry.grid(row=1, column=1)
-        self.year_entry = ttk.Entry(self.frame, textvariable=year_var, validate='key',
-                                    validatecommand=self.check_num_wrapper)
-        self.year_entry.grid(row=2, column=1)
+        self.semester_entry = ttk.Entry(self.frame, textvariable=semester_var)
+        self.semester_entry.grid(row=2, column=1)
         ttk.Button(self.frame, text="Confirm", command=self._create_scenario).grid(row=3, column=0)
         ttk.Button(self.frame, text="Cancel").grid(row=3, column=1)
 
     def _create_scenario(self):
         name = self.name_entry.get()
         description = self.description_entry.get()
-        year = int(self.year_entry.get())
+        semester = self.semester_entry.get()
         try:
             scenario = PonyDatabaseConnection.Scenario(name=name, description=description,
-                                                       year=year)
-            flush()
+                                                       semester=semester)
+            commit()
             messagebox.showinfo("Success", "Successfully added this scenario to the database.")
+            self.window.destroy()  # TODO: Figure out why the list isn't updating.
         except mysql.connector.DatabaseError as err:
             pass

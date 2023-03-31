@@ -125,6 +125,7 @@ class Scrolled(Frame):
         self._vertical_scrollbar = None
         self._horizontal_scrollbar = None
         self._widget = None
+        
         # ----------------------------------------------------------------------------------------
         # get the Tk object that needs to be created
         # ----------------------------------------------------------------------------------------
@@ -182,10 +183,13 @@ class Scrolled(Frame):
             # the widget is not scrollable, so we are going to put it inside a canvas object
             # which is scrollable
             # ----------------------------------------------------------------------------------------
-            _canvas = Canvas(self)
+            canvas_args = {}
+            if 'width' in kwargs: canvas_args['width'] = kwargs['width']
+            if 'height' in kwargs: canvas_args['height'] = kwargs['height']
+            _canvas = Canvas(self, **canvas_args)
             _canvas.pack(side=TOP, fill=BOTH, expand=1)
 
-            self._widget = _tk_widget_type(_canvas, **kwargs)
+            self._widget = _tk_widget_type(_canvas)
 
             _canvas.bind('<Configure>', lambda _e: _canvas.configure(scrollregion=_canvas.bbox("all")))
             _canvas.create_window((0, 0), window=self._widget, anchor="nw")
@@ -292,7 +296,7 @@ class Scrolled(Frame):
 
         if widget is not None:
             scrollable_object_height = self._widget.winfo_height()
-            scrollable_object_top = self.widget.winfo_rooty();
+            scrollable_object_top = self.widget.winfo_rooty()
 
             to_be_seen_top = widget.winfo_rooty()
             to_be_seen_height = widget.winfo_height()

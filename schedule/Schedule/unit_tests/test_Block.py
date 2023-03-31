@@ -4,18 +4,18 @@ from os import path
 
 sys.path.append(path.dirname(path.dirname(__file__)))
 
-from Block import Block
-from Section import Section
-from Lab import Lab
-from Teacher import Teacher
-from Time_slot import TimeSlot
-from Course import Course
+from ..Block import Block
+from ..Section import Section
+from ..Lab import Lab
+from ..Teacher import Teacher
+from ..Time_slot import TimeSlot
+from ..Course import Course
 from pony.orm import *
-from database.PonyDatabaseConnection import define_database, Block as dbBlock, \
+from ..database.PonyDatabaseConnection import define_database, Block as dbBlock, \
     Lab as dbLab, Teacher as dbTeacher, Scenario as dbScenario, \
     Schedule as dbSchedule, Course as dbCourse, Section as dbSection
 from unit_tests.db_constants import *
-from ScheduleEnums import WeekDay
+from ..ScheduleEnums import WeekDay
 
 db: Database
 
@@ -268,7 +268,7 @@ def test_section_setter_updates_database():
 
     d_scenario = dbScenario(name="Test")
     flush()
-    d_schedule = dbSchedule(semester="fall", official=False, scenario_id=d_scenario.id)
+    d_schedule = dbSchedule(official=False, scenario_id=d_scenario.id)
     flush()
     d_course = Course(name="Test")
     flush()
@@ -830,7 +830,7 @@ def test_string_representation():
     block.assign_lab(lab1)
     block.assign_lab(lab2)
     desc = str(block)
-    assert str(sect.number) in desc and day in desc and start in desc and lab1.number in desc \
+    assert sect.number in desc and day in desc and start in desc and lab1.number in desc \
            and lab2.number in desc
 
 

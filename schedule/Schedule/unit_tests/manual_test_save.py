@@ -25,7 +25,7 @@ def init():
     global s
     sc = dbScenario()
     flush()
-    s = dbSchedule(semester="Winter 2023", official=False, scenario_id=sc.id)
+    s = dbSchedule(official=False, scenario_id=sc.id)
 
 if __name__ == "__main__":
     db = define_database(host=HOST, passwd=PASSWD, db=DB_NAME, provider=PROVIDER, user=USERNAME)
