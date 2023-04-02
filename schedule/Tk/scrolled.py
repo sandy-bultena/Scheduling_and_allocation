@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import sys
 import traceback
+from typing import Any
 
 
 def eprint(*args, **kwargs):
@@ -11,6 +12,7 @@ def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
     print(traceback.format_stack()[0], file=sys.stderr, **kwargs)
     exit()
+
 
 ###############
 # https://docstore.mik.ua/orelly/perl3/tk/ch06_03.htm
@@ -121,11 +123,12 @@ class Scrolled(Frame):
         a widget of widget type will be created inside the frame (self.widget)
         scrollbars will be created as requested (self.horizontal_scrollbar, self.vertical_scrollbar)
         """
+        self._widget_type = widget_type
         self._scrollable_object = None
         self._vertical_scrollbar = None
         self._horizontal_scrollbar = None
         self._widget = None
-        
+
         # ----------------------------------------------------------------------------------------
         # get the Tk object that needs to be created
         # ----------------------------------------------------------------------------------------
@@ -189,7 +192,7 @@ class Scrolled(Frame):
             _canvas = Canvas(self, **canvas_args)
             _canvas.pack(side=TOP, fill=BOTH, expand=1)
 
-            self._widget = _tk_widget_type(_canvas)
+            self._widget = _tk_widget_type(_canvas, **kwargs)
 
             _canvas.bind('<Configure>', lambda _e: _canvas.configure(scrollregion=_canvas.bbox("all")))
             _canvas.create_window((0, 0), window=self._widget, anchor="nw")
@@ -207,6 +210,25 @@ class Scrolled(Frame):
         if self._horizontal_scrollbar is not None:
             self._horizontal_scrollbar.configure(command=self._scrollable_object.hview)
             self._scrollable_object.configure(xscrollcommand=self._horizontal_scrollbar.set)
+
+    # ===============================================================================================================
+    # pass on all 'configure' to the scrollable object
+    # ===============================================================================================================
+    def configure(self,**kwargs):
+        self._widget.configure(**kwargs)
+
+    # ===============================================================================================================
+    # Subwidget
+    # ===============================================================================================================
+    def Subwidget(self, name: str) -> Any:
+        if name == 'xscrollbar':
+            return self.horizontal_scrollbar
+        if name == 'yscrollbar':
+            return self.vertical_scrollbar
+        if name == self._widget_type:
+            return self.widget
+        if name == 'scrollable':
+            return self._scrollable_object
 
     # ===============================================================================================================
     # scrolling methods
@@ -318,7 +340,7 @@ class Scrolled(Frame):
 
         return self.vertical_scrollbar.get()
 
-    def xview_scroll(self, number:int, what: str) -> None:
+    def xview_scroll(self, number: int, what: str) -> None:
         """ Shift the x-view according to NUMBER which is measured in "units" or "pages" (WHAT).
 
         'what' must be  Literal["units", "pages"]
@@ -326,7 +348,7 @@ class Scrolled(Frame):
         if self.vertical_scrollbar is None:
             self._scrollable_object.xview_scroll(number, what)
 
-    def yview_scroll(self, number:int, what:str) -> None:
+    def yview_scroll(self, number: int, what: str) -> None:
         """ Shift the y-view according to NUMBER which is measured in "units" or "pages" (WHAT).
 
         'what' must be  Literal["units", "pages"]
