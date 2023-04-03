@@ -1,6 +1,6 @@
+from __future__ import annotations
 from tkinter import *
 import tkinter as tk
-from __future__ import annotations
 
 import sys
 import traceback
@@ -123,6 +123,8 @@ class Scrolled(Frame):
         a widget of widget type will be created inside the frame (self.widget)
         scrollbars will be created as requested (self.horizontal_scrollbar, self.vertical_scrollbar)
         """
+        Frame.__init__(self,parent)
+
         self._widget_type = widget_type
         self._scrollable_object = None
         self._vertical_scrollbar = None
@@ -208,7 +210,7 @@ class Scrolled(Frame):
             self._scrollable_object.configure(yscrollcommand=self._vertical_scrollbar.set)
 
         if self._horizontal_scrollbar is not None:
-            self._horizontal_scrollbar.configure(command=self._scrollable_object.hview)
+            self._horizontal_scrollbar.configure(command=self._scrollable_object.xview)
             self._scrollable_object.configure(xscrollcommand=self._horizontal_scrollbar.set)
 
     # ===============================================================================================================
@@ -222,11 +224,12 @@ class Scrolled(Frame):
     # ===============================================================================================================
     def Subwidget(self, name: str) -> Any:
         if name == 'xscrollbar':
-            return self.horizontal_scrollbar
+            print (f"Returning {self._horizontal_scrollbar}")
+            return self._horizontal_scrollbar
         if name == 'yscrollbar':
-            return self.vertical_scrollbar
+            return self._vertical_scrollbar
         if name == self._widget_type:
-            return self.widget
+            return self._widget
         if name == 'scrollable':
             return self._scrollable_object
 
