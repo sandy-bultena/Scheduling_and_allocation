@@ -1,4 +1,5 @@
 from tkinter import *
+import tkinter as tk
 from typing import Any
 from os import path
 import sys
@@ -8,7 +9,7 @@ sys.path.append(path.dirname(path.dirname(__file__)))
 from Tk.scrolled import Scrolled
 
 
-class TableEntry(Frame):
+class TableEntry(tk.Frame):
     """ Creates a TableEntry object, inside a frame """
 
     # ===================================================================
@@ -36,11 +37,10 @@ class TableEntry(Frame):
     # Constructor
     # ===================================================================
     def __init__(self, parent: Any, **kwargs):
-        super().__init__(self, parent)
+        tk.Frame.__init__(self, parent)
         self.rows = 0
         self.parent = parent
         self._cget = dict()
-        self._defaults = dict()
         self._title_widgets = list()
         self.frame = None
 
@@ -50,7 +50,6 @@ class TableEntry(Frame):
         self.__reverse_lookup = dict()
         self.__lookup = dict()
 
-        self.__populate_the_frame(parent, **kwargs)
         self.__config_specs = {
             'bg_entry': self.__bg_entry,
             'rows': self.__set_rows,
@@ -64,7 +63,7 @@ class TableEntry(Frame):
             'defwidth': self.__set_default_width,
         }
         bg = self.winfo_toplevel().cget("bg")
-        self.__defaults = {
+        self._defaults = {
             "rows": 10,
             "bg_entry": "#ffffff",
             "columns": 10,
@@ -77,8 +76,9 @@ class TableEntry(Frame):
             "relief": 'flat',
             "buttontext": "Go",
             "bg": bg,
+            "delete": None,
+            "buttoncmd": None,
         }
-
         self.__populate_the_frame(**kwargs)
 
     # ===================================================================
@@ -89,10 +89,10 @@ class TableEntry(Frame):
         # ---------------------------------------------------------------
         # create a scrolled pane
         # ---------------------------------------------------------------
-        scrolled_frame = Scrolled(self, "Frame", scrollbars="e", border=2, relief="flat", Name='TableEntry')
+        scrolled_frame = Scrolled(self, "Frame", scrollbars="se", border=2, relief="flat")
         scrolled_frame.pack(side='left', fill='both')
         scrolled_frame.Subwidget('xscrollbar').configure(elementborderwidth=2, relief='ridge', width=12)
-        scrolled_frame.Subwidget('yscrollbar').configure(elementborderwidht=2, relief='ridge', width=12)
+        scrolled_frame.Subwidget('yscrollbar').configure(elementborderwidth=2, relief='ridge', width=12)
         self.scrolled_frame = scrolled_frame
         self.frame = scrolled_frame.Subwidget("Frame")
 
@@ -107,7 +107,7 @@ class TableEntry(Frame):
         # ---------------------------------------------------------------
         to_configure = self._defaults.copy()
         to_configure.update(kwargs)
-        self.configure(**to_configure)
+        self._configure(**to_configure)
         self.__draw()
 
     # ===================================================================
@@ -115,7 +115,9 @@ class TableEntry(Frame):
     # ===================================================================
     def get_widget(self, r, c) -> Entry:
         """get the widget in the row/col"""
-        return self.__lookup[(r, c)]
+        if (r, c) in self.__lookup:
+            return self.__lookup[(r, c)]
+        return None
 
     # ====================================================================================
     # find row and column position for given widget
@@ -134,7 +136,7 @@ class TableEntry(Frame):
         self.__create_header_row()
 
         # add rows
-        for r in range(1, self.rows + 1):
+        for r in range(1, self.number_of_rows + 1):
             self.__add_empty_row(r)
 
         # calculate the width of the row, to set the pane width
@@ -184,7 +186,7 @@ class TableEntry(Frame):
             self.cget("buttoncmd")(data)
 
     def __add_empty_row(self, row):
-        column_widths = self.cget("colwidth")
+        column_widths = self.cget("colwidths")
         columns_enabled_disabled = self.cget("disabled")
 
         # make sure lists are long enough
@@ -202,12 +204,13 @@ class TableEntry(Frame):
             column_widths[c - 1] = column_widths[c - 1] if column_widths[c - 1] else self.cget("defwidth")
 
             # if there is something already there, delete it
-            old = self.__lookup[(row, c)]
-            if old:
-                old.destroy()
+            if (row, c) in self.__lookup:
+                old = self.__lookup[(row, c)]
+                if old:
+                    old.destroy()
 
             # make entry widget
-            w = Entry(self.frame.Subwidget("Frame"),
+            w = Entry(self.scrolled_frame.Subwidget("Frame"),
                       width=column_widths[c - 1],
                       bg=self.cget("bg_entry"),
                       disabledforeground="black",
@@ -221,7 +224,7 @@ class TableEntry(Frame):
 
             # key bindings for this entry widget
             w.bind("<Tab>", partial(self.__next_cell, self, w))
-            w.bind("<key-Return", partial(self.__next_cell, self, w))
+            w.bind("<Key-Return>", partial(self.__next_cell, self, w))
             w.bind("<Shift-Tab>", partial(self.__prev_cell, self, w))
             w.bind("<Key-Left>", partial(self.__prev_cell, self, w))
             w.bind("<Key-leftarrow>", partial(self.__prev_cell, self, w))
@@ -326,16 +329,16 @@ class TableEntry(Frame):
     # ====================================================================================
     # change focus to next cell (bound to Entry widgets)
     # ====================================================================================
-    def __next_cell(self, w: Any):
+    def __next_cell(self, w:Any, *args, **kwargs):
         self.__move_cell(w, 1, 0)
 
-    def __prev_cell(self, w: Any):
+    def __prev_cell(self, w: Any, **kwargs):
         self.__move_cell(w, -1, 0)
 
-    def __next_row(self, w: Any):
+    def __next_row(self, w: Any, **kwargs):
         self.__move_cell(w, 0, 1)
 
-    def __prev_row(self, w: Any):
+    def __prev_row(self, w: Any, **kwargs):
         self.__move_cell(w, 0, -1)
 
     def __move_cell(self, w: Entry, x_dir: int, y_dir: int):
@@ -379,7 +382,7 @@ class TableEntry(Frame):
     # ====================================================================================
     # binding subroutine for <Button> on entry widget
     # ====================================================================================
-    def __select_all(self, w: Entry):
+    def __select_all(self, w: Entry, **kwargs):
         if w:
             w.focus()
             w.selection_clear()
@@ -411,6 +414,7 @@ class TableEntry(Frame):
         if option in self._cget:
             return self._cget[option]
         else:
+            print(f"cget option is : {option}")
             return super().cget(option)
 
     def configure(self, **kwargs):
@@ -418,7 +422,8 @@ class TableEntry(Frame):
             if k in self._cget:
                 self.__config_specs[k](v)
             else:
-                super().configure(**{k: v})
+                pass
+            #  super().configure(**{k: v})
 
     # =================================================================================================
     # Configuration routines
@@ -498,3 +503,44 @@ class TableEntry(Frame):
     def __set_default_width(self, default_width: int):
         self._configure(defwidth=default_width)
         return self.cget("width")
+
+
+def example():
+    #    import Tk.TableEntr_.pm as te
+    mw = Tk()
+    frame = Frame(mw)
+    frame.pack(expand=1, fill="both")
+
+    titles = ["one", "two", "three"]
+    col_widths = [10, 20, 5]
+    de = TableEntry(frame, rows=3, columns=3, colwidths=col_widths)
+    de.pack(side="top", expand=1, fill="both")
+    mw.mainloop()
+
+    """
+    # ---------------------------------------------------------------
+    # create the table entry object
+    # ---------------------------------------------------------------
+    my $de = $frame->TableEntry(
+                                 -rows      => 1,
+                                 -columns   => scalar(@$titles),
+                                 -titles    => $titles,
+                                 -colwidths => $col_widths,
+                                 -delete    => [ $del_callback, $data_entry ],
+    )->pack( -side => 'top', -expand => 1, -fill => 'both' );
+
+    # disable the first columns, but not the rest
+    my @disabled = (1);
+    push @disabled, (0) x ( $de->columns - 1 );
+
+    $de->configure( -disabled => \@disabled );
+
+    # --------------------------------------------------------------------------
+    # NOTE: If weird shit is happening, give up and use a 'Save' button
+    # ... clicking the 'Delete' triggers a 'Leave'...
+    # --------------------------------------------------------------------------
+
+    """
+
+
+example()
