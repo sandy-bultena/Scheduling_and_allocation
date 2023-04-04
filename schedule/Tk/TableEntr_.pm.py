@@ -214,7 +214,7 @@ class TableEntry(tk.Frame):
                       width=column_widths[c - 1],
                       bg=self.cget("bg_entry"),
                       disabledforeground="black",
-                      relief="flat",
+                      relief="ridge",
                       )
 
             if columns_enabled_disabled[c - 1]:
@@ -223,18 +223,18 @@ class TableEntry(tk.Frame):
             w.grid(column=c, sticky="nsew", row=row)
 
             # key bindings for this entry widget
-            w.bind("<Tab>", partial(self.__next_cell, self, w))
-            w.bind("<Key-Return>", partial(self.__next_cell, self, w))
-            w.bind("<Shift-Tab>", partial(self.__prev_cell, self, w))
-            w.bind("<Key-Left>", partial(self.__prev_cell, self, w))
-            w.bind("<Key-leftarrow>", partial(self.__prev_cell, self, w))
-            w.bind("<Key-Up>", partial(self.__prev_row, self, w))
-            w.bind("<Key-uparrow>", partial(self.__prev_row, self, w))
-            w.bind("<Key-Down>", partial(self.__next_row, self, w))
-            w.bind("<Key-downarrow>", partial(self.__next_row, self, w))
-            w.bind("<Key-Right>", partial(self.__next_cell, self, w))
-            w.bind("<Key-rightarrow>", partial(self.__next_cell, self, w))
-            w.bind("<Button>", partial(self.__select_all, self, w))
+            w.bind("<Tab>", partial(self.__next_cell, w))
+            w.bind("<Key-Return>", partial(self.__next_cell, w))
+            w.bind("<Shift-Tab>", partial(self.__prev_cell, w))
+            w.bind("<Key-Left>", partial(self.__prev_cell, w))
+            w.bind("<Key-leftarrow>", partial(self.__prev_cell, w))
+            w.bind("<Key-Up>", partial(self.__prev_row, w))
+            w.bind("<Key-uparrow>", partial(self.__prev_row, w))
+            w.bind("<Key-Down>", partial(self.__next_row, w))
+            w.bind("<Key-downarrow>", partial(self.__next_row, w))
+            w.bind("<Key-Right>", partial(self.__next_cell,  w))
+            w.bind("<Key-rightarrow>", partial(self.__next_cell,  w))
+            w.bind("<Button>", partial(self.__select_all, w))
 
             # I want my bindings to happen BEFORE the class bindings
             # w.bindtags( [ ($w.bindtags )[ 1, 0, 2, 3 ] ] );
@@ -271,6 +271,10 @@ class TableEntry(tk.Frame):
         height += 2 * self.cget('border')
         height += self.scrolled_frame.Subwidget("xscrollbar").winfo_height()
         self.frame.configure(height=height)
+
+        # update scrollbars
+        self.update()
+        self.scrolled_frame.update_scrollbars()
 
     # ====================================================================================
     # put the "delete" button at the beginning of a row
@@ -321,6 +325,8 @@ class TableEntry(tk.Frame):
     # ====================================================================================
     def __are_all_disabled(self) -> BooleanVar:
         disabled_columns = self.cget("disabled")
+        if not disabled_columns:
+            return False
         flag = True
         for col in disabled_columns:
             flag = flag and col
@@ -332,17 +338,17 @@ class TableEntry(tk.Frame):
     def __next_cell(self, w:Any, *args, **kwargs):
         self.__move_cell(w, 1, 0)
 
-    def __prev_cell(self, w: Any, **kwargs):
+    def __prev_cell(self, w: Any, *args, **kwargs):
         self.__move_cell(w, -1, 0)
 
-    def __next_row(self, w: Any, **kwargs):
+    def __next_row(self, w: Any, *args, **kwargs):
         self.__move_cell(w, 0, 1)
 
-    def __prev_row(self, w: Any, **kwargs):
+    def __prev_row(self, w: Any, *args, **kwargs):
         self.__move_cell(w, 0, -1)
 
     def __move_cell(self, w: Entry, x_dir: int, y_dir: int):
-        if self.__are_all_disabled:
+        if self.__are_all_disabled():
             return
 
         w.selection_clear()
@@ -370,7 +376,7 @@ class TableEntry(tk.Frame):
         if w2:
             self.scrolled_frame.see(w2)
             self.update()
-            w2.focus_get()
+            w2.focus_set()
             w2.selection_range(0, 'end')
 
         # if we land on a disabled widget, keep moving
@@ -382,7 +388,7 @@ class TableEntry(tk.Frame):
     # ====================================================================================
     # binding subroutine for <Button> on entry widget
     # ====================================================================================
-    def __select_all(self, w: Entry, **kwargs):
+    def __select_all(self, w: Entry, *args, **kwargs):
         if w:
             w.focus()
             w.selection_clear()
