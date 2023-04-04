@@ -452,4 +452,67 @@ class ViewTk(ViewBaseTk):
         # Update everything that needs to be updated once the block data is finalized.
         self._update_after_cb(view, block)
 
+    # ============================================================================
+    # Double clicking guiblock
+    # ============================================================================
+    def bind_double_click(self, view, guiblock: GuiBlockTk, callback: Callable):
+        """
 
+        Parameters:
+            view: The view object that called this method.
+            guiblock: The guiblock that we want to bind the double click event to.
+            callback: Callback function that handles the double click.
+        """
+
+        # Get the actual canvas objects that make up this object.
+        group_of_canvas_objs = guiblock.group
+        self.canvas.tag_bind(
+            group_of_canvas_objs,
+            "<Double-1>",
+            partial(
+                self._was_double_clicked,
+                view,
+                guiblock,
+                callback
+            )
+        )
+
+    def _was_double_clicked(self, view, guiblock: GuiBlockTk, callback: Callable):
+        """Invokes callback defined in bind_double_click.
+
+        Parameters:
+            view: View object.
+            guiblock: GuiBlock that was double-clicked."""
+        callback(view, guiblock)
+
+
+# =================================================================
+# footer
+# =================================================================
+"""
+=head1 AUTHOR
+
+Sandy Bultena, Ian Clement, Jack Burns - 2016
+
+Sandy Bultena 2020 - Major Update
+
+Rewritten for Python by Evan Laverdiere - 2023
+
+=head1 COPYRIGHT
+
+Copyright (c) 2016, Jack Burns, Sandy Bultena, Ian Clement.
+
+Copyright (c) 2021, Sandy Bultena 
+
+All Rights Reserved.
+
+This module is free software. It may be used, redistributed
+and/or modified under the terms of the Perl Artistic License
+
+     (see http://www.perl.com/perl/misc/Artistic.html)
+
+=cut
+
+1;
+
+"""
