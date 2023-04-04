@@ -1,0 +1,246 @@
+from tkinter import Tk
+
+from ..Export import DrawView
+from ..GUI.GuiBlockTk import GuiBlockTk
+from ..GUI.ViewTk import ViewTk
+from ..Schedule.Block import Block
+from ..Schedule.Lab import Lab
+from ..Schedule.Schedule import Schedule
+from ..Schedule.Stream import Stream
+from ..Schedule.Teacher import Teacher
+
+
+class View:
+    """View - describes the visual representation of a Schedule."""
+
+    # =================================================================
+    # global and package variables
+    # =================================================================
+    undo_number = ""
+    redo_number = ""
+    clicked_block = 0
+    days = DrawView.days
+    times = DrawView.times
+    earliest_time = min(times.keys())
+    latest_time = max(times.keys())
+    max_id = 0
+
+    # =================================================================
+    # getters/setters
+    # =================================================================
+    # TODO: Decide which of these to keep, beyond id and gui_blocks.
+    @property
+    def schedule(self) -> Schedule:
+        """Get/Set the schedule object."""
+        return self._schedule
+
+    @schedule.setter
+    def schedule(self, value: Schedule):
+        self._schedule = value
+
+    @property
+    def gui(self) -> ViewTk:
+        """Returns the GUI object for this view."""
+        return self._gui
+
+    @gui.setter
+    def gui(self, value: ViewTk):
+        self._gui = value
+
+    @property
+    def id(self) -> int:
+        """Returns the unique ID for this View object."""
+        return self._id
+
+    @property
+    def schedulable(self) -> Teacher | Lab | Stream:
+        """Gets/Sets the Teacher, Lab, or Stream associated to this View."""
+        return self._obj
+
+    @schedulable.setter
+    def schedulable(self, value: Teacher | Lab | Stream):
+        self._obj = value
+
+    @property
+    def type(self):
+        """Gets/Sets the type of this View object."""
+        return self._type
+
+    @type.setter
+    def type(self, value: str):
+        self._type = value
+
+    @property
+    def blocks(self) -> list[Block]:
+        """Gets/Sets the Blocks of this View object. An array."""
+        return self._blocks
+
+    @blocks.setter
+    def blocks(self, value: list[Block]):
+        self._blocks = value
+
+    @property
+    def gui_blocks(self):
+        """Gets the GuiBlocks of this View object."""
+        return self._gui_blocks
+
+    @property
+    def views_manager(self):
+        """Gets/Sets the ViewsManager of this View object."""
+        return self._views_manager
+
+    @views_manager.setter
+    def views_manager(self, value):
+        self._views_manager = value
+
+    # region PUBLIC METHODS
+
+    # =================================================================
+    # new
+    # =================================================================
+
+    def __init__(self, views_manager, mw: Tk, schedule: Schedule,
+                 schedulable_object: Teacher | Lab | Stream):
+        """Creates a View object, draws the necessary GuiBlocks, and returns the View object.
+
+        Parameters:
+            views_manager: The ViewsManager object responsible for keeping track of all the views.
+            mw: Tk main window.
+            schedule: Where course/sections/teachers/labs/streams are defined.
+            schedulable_object: Teacher/Lab/Stream that the View is being made for."""
+        self._id = ++ View.max_id
+        conflict_info = self._get_conflict_info()
+
+        # ---------------------------------------------------------------
+        # create the Gui
+        # ---------------------------------------------------------------
+        gui = ViewTk(self, mw, conflict_info)
+
+        # ---------------------------------------------------------------
+        # this is what needs to be done to close the window
+        # ---------------------------------------------------------------
+        gui.on_closing = _cb_close_view(self)
+
+        # ---------------------------------------------------------------
+        # type of view depends on which object it is for
+        # ---------------------------------------------------------------
+        blocks = schedule.get_blocks_for_obj(schedulable_object)
+        type = schedule.get_view_type_of_object(schedulable_object)
+
+        # ---------------------------------------------------------------
+        # save some parameters
+        # ---------------------------------------------------------------
+        self.gui = gui
+        self.views_manager = views_manager
+        self.blocks = blocks
+        self.schedule = schedule
+        self.type = type
+        self.schedulable = schedulable_object
+
+        # ---------------------------------------------------------------
+        # set the title
+        # ---------------------------------------------------------------
+        title = ""
+        if schedulable_object and isinstance(schedulable_object, Teacher):
+            self.gui.set_title(schedulable_object.firstname[0:1].upper()
+                               + " " + schedulable_object.lastname)
+        elif schedulable_object:
+            self.gui.set_title(schedulable_object.number)
+
+        # --------------------------------------------------------------
+        # popup menu for guiblocks
+        # ---------------------------------------------------------------
+        named_schedulable_objects = self.get_named_schedulable_for_popup(type)
+        self.gui.setup_popup_menu(self.type, named_schedulable_objects, _cb_toggle_movement,
+                                  _cb_move_block_between_schedulable_objects)
+
+        # ---------------------------------------------------------------
+        # undo/redo
+        # ---------------------------------------------------------------
+        self.gui.setup_undo_redo(View.undo_number, View.redo_number, _cb_undo_redo)
+
+        # ---------------------------------------------------------------
+        # refresh drawing - redrawing creates the guiblocks
+        # ---------------------------------------------------------------
+        self.redraw()
+        self.schedule.calculate_conflicts()
+        self.update_for_conflicts(self.type)
+
+    def redraw(self):
+        """Redraws the View with new GuiBlocks and their positions."""
+        schedule = self.schedule
+
+        # ---------------------------------------------------------------
+        # draw the background, date/time stuff, etc
+        # ---------------------------------------------------------------
+        self.gui.redraw()
+
+        # ---------------------------------------------------------------
+        # create and draw the gui blocks
+        # ---------------------------------------------------------------
+
+        # Get blocks for this object.
+        blocks = schedule.get_blocks_for_obj(self.schedulable)
+
+        # Remove all GuiBlocks stored in the View.
+        self._remove_all_guiblocks()
+
+        # redraw all GuiBlocks.
+        for b in blocks:
+
+            # This makes sure that synced blocks have the same start time.
+            b.start = b.start
+            b.day = b.day
+
+            gui_block = GuiBlockTk(self.type, self.gui, b)
+
+            self.gui.bind_popup_menu(gui_block)
+            self._add_guiblock(gui_block)
+
+        self.blocks = blocks
+        schedule.calculate_conflicts()
+        self.update_for_conflicts(self.type)
+
+        # ---------------------------------------------------------------
+        # If this is a lab or teacher view, then add 'AssignBlocks'
+        # to the view, and bind as necessary
+        # ---------------------------------------------------------------
+        self._setup_for_assignable_blocks()
+
+        # ---------------------------------------------------------------
+        # set colour for all buttons on main window, "Schedules" tab
+        # ---------------------------------------------------------------
+        self._set_view_button_colours()
+        if self.views_manager:
+            self.views_manager.update_for_conflicts()
+
+        # ---------------------------------------------------------------
+        # bind events for each gui block
+        # ---------------------------------------------------------------
+        gbs = self.gui_blocks
+        for guiblock in gbs.values():
+            block: Block = guiblock.block
+
+            # Bind to allow block to move if clicked and dragged.
+            if block.movable:
+                self.gui.set_bindings_for_dragging_guiblocks(self, guiblock,
+                                                             _cb_guiblock_is_moving,
+                                                             _cb_guiblock_has_stopped_moving,
+                                                             cb_update_after_moving_block)
+
+            # double click opens companion views.
+            self.gui.bind_double_click(self, guiblock, _cb_open_companion_view)
+
+
+    # endregion
+    def _remove_all_guiblocks(self):
+        pass
+
+    def _add_guiblock(self, gui_block):
+        pass
+
+    def update_for_conflicts(self, type):
+        pass
+
+    def _setup_for_assignable_blocks(self):
+        pass

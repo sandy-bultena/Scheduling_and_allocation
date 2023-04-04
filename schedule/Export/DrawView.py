@@ -4,6 +4,7 @@ from tkinter import Canvas
 
 from schedule.PerlLib import Colour
 from schedule.Schedule.Block import Block
+
 """SYNOPSIS
     
     from tkinter import *
@@ -34,9 +35,9 @@ from schedule.Schedule.Block import Block
     # Create the Tk main window and the canvas
     # ----------------------------------------------------------
     main_window = Tk()
-    # main_window.geometry('500x600-300-40')
+    main_window.geometry('500x600-300-40')
     cn = Canvas(main_window)
-    cn.pack(fill=BOTH)
+    cn.pack(fill=BOTH, expand=True)
 
     # ----------------------------------------------------------
     # Define what scale you want
@@ -67,8 +68,6 @@ from schedule.Schedule.Block import Block
     main_window.mainloop()
 
 """
-
-
 
 # TODO: Make this into a static class?
 
@@ -147,11 +146,12 @@ def draw_background(canvas: Canvas, scl: dict):
                 dash="."
             )
 
-        # Half-hour text. NOTE: Font size supposedly too big in original perl version of the code.
-        canvas.create_text(
-            (x_min + xorig) / 2,
-            y_half, text=":30"
-        )
+            # Half-hour text. NOTE: Font size supposedly too big in original perl version of the
+            # code.
+            canvas.create_text(
+                (x_min + xorig) / 2,
+                y_half, text=":30"
+            )
 
     # --------------------------------------------------------------------
     # draw day lines
@@ -293,7 +293,7 @@ def get_block_text(block: Block, scale: float = 1, type="teacher"):
 # =================================================================
 # draw_block
 # =================================================================
-def draw_block(canvas: Canvas, block, scl: dict, type, colour=None, edge=None) -> dict:
+def draw_block(canvas: Canvas, block, scl: dict, type, colour=None, edge=None) -> dict | None:
     """Draws the Schedule timetable on the specified canvas.
 
     Parameters:
@@ -311,7 +311,8 @@ def draw_block(canvas: Canvas, block, scl: dict, type, colour=None, edge=None) -
         -rectangle: the canvas rectangle object.
         -colour: the colour of the block."""
     scale = scl['scale']
-    if not block: return
+    if not block:
+        return
 
     # --------------------------------------------------------------------
     # set the colour and pixel width of edge
@@ -350,7 +351,8 @@ def draw_block(canvas: Canvas, block, scl: dict, type, colour=None, edge=None) -
     (light, dark, text_colour) = get_colour_shades(colour)
     for i in range(0, edge - 1):
         lines.append(
-            canvas.create_line(x2 - i, y1 + i, x2 - i, y2 - i, x1 + i, y2 - i, fill=dark[i], tags="lines")
+            canvas.create_line(x2 - i, y1 + i, x2 - i, y2 - i, x1 + i, y2 - i, fill=dark[i],
+                               tags="lines")
         )
         lines.append(
             canvas.create_line(
@@ -477,6 +479,8 @@ def _days_x_coords(day: int, x_offset, xorig, h_stretch):
     x2 = x_offset + (day) * h_stretch - 1
 
     return x, x2
+
+
 # endregion
 
 """
@@ -515,7 +519,6 @@ A canvas CreateLine object
 
 
 """
-
 
 """
 Adapted to Python by Evan Laverdiere

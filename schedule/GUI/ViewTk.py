@@ -1,10 +1,14 @@
+from __future__ import annotations
 from functools import partial
 from tkinter import *
 from tkinter import ttk
-from typing import Callable
+from typing import Callable, TYPE_CHECKING
 
 from .AssignBlockTk import AssignBlockTk
 from .ViewBaseTk import ViewBaseTk
+
+if TYPE_CHECKING:
+    from .GuiBlockTk import GuiBlockTk
 
 global mw
 global clicked_block
@@ -201,8 +205,8 @@ class ViewTk(ViewBaseTk):
             something_to_do = selected_assigned_blocks
             if not something_to_do or len(something_to_do) == 0:
                 return
-            # TODO: I have no idea if the partial will recognize what this is meant to do.
-            self._selected_assigned_blocks(cn, selected_assigned_blocks)
+            self._selectedAssignBlocks(cn, selected_assigned_blocks)
+
         cn.bind('<ButtonRelease-1>', partial(
             dummy, x1, y1, self.mw.winfo_pointery(), selected_assigned_blocks
         ))
@@ -259,11 +263,256 @@ class ViewTk(ViewBaseTk):
             return
         selected_assign_block_completed_cb(self.view, selected_assigned_blocks)
 
-# ============================================================================
-# Dragging Guiblocks around
-# ============================================================================
+    # ============================================================================
+    # Dragging Guiblocks around
+    # ============================================================================
 
-# NOTE: Since we don't plan to have drag-&-drop between views in this version of the app,
-# and since the methods in this section seem to be doing just that, I'm not sure if I should skip
-# them.
+    # NOTE: Since we don't plan to have drag-&-drop between views in this version of the app,
+    # and since the methods in this section seem to be doing just that, I'm not sure if I should
+    # skip them.
+    def set_bindings_for_dragging_guiblocks(self, view, guiblock: GuiBlockTk, moving_cb: Callable,
+                                            after_release_cb: Callable, update_after_cb: Callable):
+        """Create the necessary binding to allow guiblocks to be grabbed from one place and
+        dropped into another place.
 
+        Parameters:
+            view: View object that called this function.
+            guiblock: The object that the methods will be bound to.
+            moving_cb: Callback to invoke while the guiblock is being moved. Takes view and guiblock as inputs.
+            after_release_cb: Callback to invoke when the dragging has stopped. Takes view and guiblock as inputs.
+            update_after_cb: Callback to invoke when everything is finished and updates are possibly required. Takes the view and guiblock as inputs."""
+
+        self._moving_cb = moving_cb
+        self._after_release_cb = after_release_cb
+        self._update_after_cb = update_after_cb
+
+        # Get the actual canvas objects that make up this object.
+        group_of_canvas_objs = guiblock.group
+
+        self.canvas.tag_bind(
+            group_of_canvas_objs,
+            "<1>",
+            partial(
+                self._select_guiblock_to_move, guiblock, self, view,
+                self.mw.winfo_pointerx(), self.mw.winfo_pointery()
+            )
+        )
+
+    def _select_guiblock_to_move(self, guiblock: GuiBlockTk, view, x_start, y_start):
+        """Set up for drag and drop of GuiBlock. Binds motion and button release events to GuiBlock.
+
+        Parameters:
+            guiblock: GuiBlock that we want to move.
+            view: The View object that setup these functions.
+            x_start: X position of mouse when mouse was clicked.
+            y_start: Y position of mouse when mouse was clicked."""
+
+        (starting_x, starting_y) = self.canvas.coords(guiblock.rectangle)
+
+        # We are processing a click on a GuiBlock, so tell the click event for the canvas to not
+        # do anything.
+        global clicked_block
+        clicked_block = 1
+
+        # This block is being controlled by the mouse.
+        guiblock.is_controlled = True
+
+        # Unbind any previous binding for clicking and motion, just in case.
+        self.canvas.bind("<Motion>", "")
+        self.canvas.bind("<ButtonRelease-1>", "")
+
+        # bind for mouse motion.
+        self.canvas.bind(
+            "<Motion>",
+            partial(
+                self._gui_block_is_moving,
+                guiblock,
+                view,
+                x_start, y_start,
+                mw.winfo_pointerx(),
+                mw.winfo_pointery(),
+                starting_x,
+                starting_y
+            )
+        )
+
+        # bind for release of mouse up.
+        self.canvas.bind(
+            "<ButtonRelease-1>",
+            partial(
+                self._gui_block_has_stopped_moving,
+                view,
+                guiblock
+            )
+        )
+
+    def _gui_block_is_moving(self, guiblock: GuiBlockTk, view, x_start, y_start, x_mouse, y_mouse,
+                             starting_x, starting_y):
+        """The GuiBlock is moving... need to update stuff as it is being moved.
+
+        Invokes moving_cb callback (defined in set_bindings_for_dragging_guiblocks).
+
+        Parameters:
+            guiblock: The guiblock that is moving.
+            x_start: initial mouse position when mouse was clicked.
+            y_start: initial mouse position when mouse was clicked.
+            starting_x: current mouse position.
+            starting_y: current mouse position."""
+
+        # Temporarily disable motion while we process stuff (keeps execution cycles down)
+        self.canvas.bind("<Motion>", "")
+
+        # raise the block.
+        guiblock.gui_view.canvas.lift(guiblock.group)
+
+        # Where Block needs to go
+        desired_x = x_mouse - x_start + starting_x
+        desired_y = y_mouse - y_start + starting_y
+
+        # current x/y coordinates of the rectangle
+        (cur_x_pos, cur_y_pos) = self.canvas.coords(guiblock.rectangle)
+
+        # check for valid move.
+        if cur_x_pos and cur_y_pos:
+            # Where block is moving to:
+            delta_x = desired_x - cur_x_pos
+            delta_y = desired_y - cur_y_pos
+
+            # Move the GuiBlock
+            self.canvas.move(guiblock.group, delta_x, delta_y)
+            self._refresh_gui
+
+            # set the block's new coordinates (time/day).
+            self._set_block_coords(guiblock, cur_x_pos, cur_y_pos)
+
+            self._moving_cb(view, guiblock)
+
+        # ------------------------------------------------------------------------
+        # rebind to the mouse movements
+        # ------------------------------------------------------------------------
+        # what if we had a mouse up while processing this code?
+        # (1) handle the stopped moving functionality
+        # (2) do NOT rebind the motion even handler
+
+        if not guiblock.is_controlled:
+            self._gui_block_has_stopped_moving(view, guiblock)
+        # else - rebind the motion event handler
+        else:
+            self.canvas.bind(
+                "<Motion>",
+                partial(
+                    self._gui_block_is_moving,
+                    guiblock,
+                    view,
+                    x_start,
+                    y_start,
+                    self.mw.winfo_pointerx(),
+                    self.mw.winfo_pointery(),
+                    starting_x,
+                    starting_y
+                )
+            )
+
+    def _gui_block_has_stopped_moving(self, view, guiblock: GuiBlockTk):
+        """Moves the GuiBlock to the cursor's current position on the View and updates the Block's
+        time in the Schedule.
+
+        Invokes after_release_cb callback (defined in set_bindings_for_dragging_guiblocks).
+
+        Invokes update_after_cb callback (defined in set_bindings_for_dragging_guiblocks).
+
+        Parameters:
+            view: The View object.
+            guiblock: The GuiBlock that has been moved."""
+
+        # If is ok now to process a click on the canvas.
+        global clicked_block
+        clicked_block = 0  # TODO: Make this a boolean.
+
+        # unbind the motion on the gui_block.
+        self.canvas.bind("<Motion>", "")
+        self.canvas.bind("<ButtonRelease-1>", "")
+
+        guiblock.is_controlled = False
+
+        # Let the View do what it needs to do once the block has been dropped.
+        self._after_release_cb(view, guiblock)
+
+        # Get the GuiBlock's new coordinates (closest day/time).
+        block = guiblock.block
+        coords = self.get_time_coords(block.day_number, block.start_number, block.duration)
+
+        # Current x/y coordinates of the rectangle.
+        (cur_x_pos, cur_y_pos) = self.canvas.coords(guiblock.rectangle)
+
+        # Move the GuiBlock to new position.
+        self.canvas.move(guiblock.group, coords[0] - cur_x_pos, coords[1] - cur_y_pos)
+        self._refresh_gui()
+
+        # Update everything that needs to be updated once the block data is finalized.
+        self._update_after_cb(view, block)
+
+    # ============================================================================
+    # Double clicking guiblock
+    # ============================================================================
+    def bind_double_click(self, view, guiblock: GuiBlockTk, callback: Callable):
+        """
+
+        Parameters:
+            view: The view object that called this method.
+            guiblock: The guiblock that we want to bind the double click event to.
+            callback: Callback function that handles the double click.
+        """
+
+        # Get the actual canvas objects that make up this object.
+        group_of_canvas_objs = guiblock.group
+        self.canvas.tag_bind(
+            group_of_canvas_objs,
+            "<Double-1>",
+            partial(
+                self._was_double_clicked,
+                view,
+                guiblock,
+                callback
+            )
+        )
+
+    def _was_double_clicked(self, view, guiblock: GuiBlockTk, callback: Callable):
+        """Invokes callback defined in bind_double_click.
+
+        Parameters:
+            view: View object.
+            guiblock: GuiBlock that was double-clicked."""
+        callback(view, guiblock)
+
+
+# =================================================================
+# footer
+# =================================================================
+"""
+=head1 AUTHOR
+
+Sandy Bultena, Ian Clement, Jack Burns - 2016
+
+Sandy Bultena 2020 - Major Update
+
+Rewritten for Python by Evan Laverdiere - 2023
+
+=head1 COPYRIGHT
+
+Copyright (c) 2016, Jack Burns, Sandy Bultena, Ian Clement.
+
+Copyright (c) 2021, Sandy Bultena 
+
+All Rights Reserved.
+
+This module is free software. It may be used, redistributed
+and/or modified under the terms of the Perl Artistic License
+
+     (see http://www.perl.com/perl/misc/Artistic.html)
+
+=cut
+
+1;
+
+"""

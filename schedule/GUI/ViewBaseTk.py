@@ -1,8 +1,12 @@
+from __future__ import annotations
+
 from functools import partial
 from tkinter import *
 from tkinter import ttk
+from typing import TYPE_CHECKING
 
-from .GuiBlockTk import GuiBlockTk
+if TYPE_CHECKING:
+    from .GuiBlockTk import GuiBlockTk
 from ..Schedule.Block import Block
 from ..Schedule.Conflict import Conflict
 from ..Schedule.ScheduleEnums import ViewType, WeekDayNumber
@@ -160,7 +164,7 @@ class ViewBaseTk:
         # Menu bound to individual gui-blocks.
         # Had to do quite a bit of digging to figure out what the two Ev() functions were doing in
         # the original Perl script. They're getting the mouse coordinates.
-        self.canvas.bind(gui_block.group, '<3>', partial(
+        self.canvas.tag_bind(gui_block.group, '<3>', partial(
             self._postmenu, self, self.mw.winfo_pointerx(), self.mw.winfo_pointery(), gui_block
         ))
         return gui_block
@@ -189,7 +193,7 @@ class ViewBaseTk:
         (cur_x_pos, cur_y_pos) = guiblock.gui_view.canvas.coords(guiblock.rectangle)
 
         # bring the guiblock to the front, passes over others.
-        # guiblock.gui_view.canvas.raise(guiblock.group) # Commented out for now because the interpreter thinks I'm trying to raise an exception.
+        guiblock.gui_view.canvas.lift(guiblock.group) # Commented out for now because the interpreter thinks I'm trying to raise an exception.
 
         # move guiblock to new position
         guiblock.gui_view.canvas.move(guiblock.group, coords[0] - cur_x_pos, coords[1] - cur_y_pos)
