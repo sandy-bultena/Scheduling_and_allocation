@@ -45,11 +45,8 @@ class TableEntry(tk.Frame):
         self.frame = None
 
         # ---------------------------------------------------------------
-        # where we keep lookup info (widget to cell, cell to widget)
+        # configuration and defaults
         # ---------------------------------------------------------------
-        self.__reverse_lookup = dict()
-        self.__lookup = dict()
-
         self.__config_specs = {
             'bg_entry': self.__bg_entry,
             'rows': self.__set_rows,
@@ -115,17 +112,14 @@ class TableEntry(tk.Frame):
     # ===================================================================
     def get_widget(self, r, c) -> Entry:
         """get the widget in the row/col"""
-        if (r, c) in self.__lookup:
-            return self.__lookup[(r, c)]
+        w = self.frame.grid_slaves(r,c)
+        if w:
+            return w[0]
         return None
 
-    # ====================================================================================
-    # find row and column position for given widget
-    # ====================================================================================
-    def find_pos(self, w: Any) -> (int, int):
-        """find the row and column for a specific widget"""
-        if w:
-            return self.__reverse_lookup[w]
+    def find_pos(self,w:Entry):
+        i = w.grid_info()
+        return (i["row"],i["column"])
 
     # ===================================================================
     # draw the widgets, etc
@@ -137,7 +131,7 @@ class TableEntry(tk.Frame):
 
         # add rows
         for r in range(1, self.number_of_rows + 1):
-            self.__add_empty_row(r)
+            self.__add_empty_row()
 
         # calculate the width of the row, to set the pane width
         width_total = 0
@@ -172,8 +166,6 @@ class TableEntry(tk.Frame):
             colwidths[c - 1] = colwidths[c - 1] if colwidths[c - 1] else self.cget("defwidth")
             w = Label(self.frame, text=titles[c - 1], width=colwidths[c - 1])
             w.grid(column=c, sticky='nsew', row=0)
-            self.__lookup[(0, c)] = w
-            self.__reverse_lookup[w] = (0, c)
 
         self._configure(colwidths=colwidths)
 
@@ -185,7 +177,7 @@ class TableEntry(tk.Frame):
             data = self.__read_row(row)
             self.cget("buttoncmd")(data)
 
-    def __add_empty_row(self, row):
+    def __add_empty_row(self):
         column_widths = self.cget("colwidths")
         columns_enabled_disabled = self.cget("disabled")
 
@@ -198,16 +190,16 @@ class TableEntry(tk.Frame):
         # --------------------------------------------------------------------------------
         # add the row
         # --------------------------------------------------------------------------------
+        row = self.number_of_rows + 1
 
         # for each column, add an entry box
         for c in range(1, self.number_of_columns + 1):
             column_widths[c - 1] = column_widths[c - 1] if column_widths[c - 1] else self.cget("defwidth")
 
             # if there is something already there, delete it
-            if (row, c) in self.__lookup:
-                old = self.__lookup[(row, c)]
-                if old:
-                    old.destroy()
+            old = self.get_widget(row, c)
+            if old:
+                old.destroy()
 
             # make entry widget
             w = Entry(self.scrolled_frame.Subwidget("Frame"),
@@ -232,20 +224,19 @@ class TableEntry(tk.Frame):
             w.bind("<Key-uparrow>", partial(self.__prev_row, w))
             w.bind("<Key-Down>", partial(self.__next_row, w))
             w.bind("<Key-downarrow>", partial(self.__next_row, w))
-            w.bind("<Key-Right>", partial(self.__next_cell,  w))
-            w.bind("<Key-rightarrow>", partial(self.__next_cell,  w))
+            w.bind("<Key-Right>", partial(self.__next_cell, w))
+            w.bind("<Key-rightarrow>", partial(self.__next_cell, w))
             w.bind("<Button>", partial(self.__select_all, w))
 
             # I want my bindings to happen BEFORE the class bindings
-            # w.bindtags( [ ($w.bindtags )[ 1, 0, 2, 3 ] ] );
+            bindtags = w.bindtags()
+            print(bindtags)
 
-            # save positional info
-            self.__lookup[(row, c)] = w
-            self.__reverse_lookup[w] = (row, c)
+            w.bindtags((bindtags[1], bindtags[0], bindtags[2], bindtags[3]))
+            print(w.bindtags())
 
             # keep our row count up to date
-            if row > self.number_of_rows:
-                self.configure(rows=row)
+            self.configure(rows=row)
 
             # add a `delete button` in the first column
             self.__put_delete(row)
@@ -258,6 +249,12 @@ class TableEntry(tk.Frame):
                            )
                 b.grid(column=self.number_of_columns + 1, sticky="nsew", row=row)
 
+        self.__adjust_size_of_frame()
+
+    # ====================================================================================
+    # after a row add or row delete, adjust the size of the frame
+    # ====================================================================================
+    def __adjust_size_of_frame(self):
         # --------------------------------------------------------------------------------
         # adjust height of pane
         # --------------------------------------------------------------------------------
@@ -284,16 +281,12 @@ class TableEntry(tk.Frame):
         b = Button(self.frame,
                    text="del",
                    relief="flat",
-                   command=partial(self.__delete_row, self, row),
+                   command=partial(self.__delete_row, row),
                    highlightbackground=bg,
                    highlightcolor=bg,
                    bg=bg,
                    )
         b.grid(column=0, sticky="nsew", row=row)
-
-        # save positional info
-        self.__lookup[(row, 0)] = b
-        self.__reverse_lookup[b] = (row, 0)
 
         # disable button?
         if self.__are_all_disabled():
@@ -316,8 +309,6 @@ class TableEntry(tk.Frame):
         for c in range(0, self.number_of_columns + 1):
             w = self.get_widget(row, c)
             if w:
-                self.__reverse_lookup.pop(w)
-                self.__lookup.pop((row, c))
                 w.destroy()
 
     # ====================================================================================
@@ -335,7 +326,7 @@ class TableEntry(tk.Frame):
     # ====================================================================================
     # change focus to next cell (bound to Entry widgets)
     # ====================================================================================
-    def __next_cell(self, w:Any, *args, **kwargs):
+    def __next_cell(self, w: Any, *args, **kwargs):
         self.__move_cell(w, 1, 0)
 
     def __prev_cell(self, w: Any, *args, **kwargs):
@@ -348,10 +339,11 @@ class TableEntry(tk.Frame):
         self.__move_cell(w, 0, -1)
 
     def __move_cell(self, w: Entry, x_dir: int, y_dir: int):
-        if self.__are_all_disabled():
-            return
 
-        w.selection_clear()
+        #if self.__are_all_disabled():
+        #    return
+        if w:
+            w.selection_clear()
 
         (row, col) = self.find_pos(w)
         col = col + x_dir
@@ -368,8 +360,8 @@ class TableEntry(tk.Frame):
         if row > self.number_of_rows:
             self.__add_empty_row(row)
 
-        if row < 1:
-            row = 1
+        if row < 0:
+            row = 0
 
         # set the focus, and move the scrollbars appropriately
         w2: Entry = self.get_widget(row, col)
@@ -384,6 +376,9 @@ class TableEntry(tk.Frame):
         if disabled_list[col - 1]:
             w2 = self.get_widget(row, col)
             self.__move_cell(w2, x_dir, y_dir)
+
+        self.update()
+        return "break"
 
     # ====================================================================================
     # binding subroutine for <Button> on entry widget
@@ -407,6 +402,25 @@ class TableEntry(tk.Frame):
             if w:
                 data.append(w.get())
         return data
+
+
+    # ===================================================================
+    # put data
+    # ===================================================================
+    def put(self,row:int,col:int,data:Any):
+        if row<1:
+            return
+
+        # add rows, if required
+        if row > self.number_of_rows:
+            for row in range(row - self.number_of_rows):
+                self.__add_empty_row()
+
+        # put the data into the widget
+        w = self.get_widget(row,col)
+        if w:
+            w.configure(text=data)
+
 
     # =================================================================================================
     # configure, cget, etc
@@ -435,7 +449,7 @@ class TableEntry(tk.Frame):
     # Configuration routines
     # =================================================================================================
     def __apply_to_all_entry_widgets(self, func: callable):
-        if self.number_of_columns and self.rows:
+        if self.number_of_columns and self.number_of_rows:
             for c in range(1, self.number_of_columns + 1):
                 for r in range(1, self.number_of_rows + 1):
                     w = self.get_widget(r, c)
@@ -463,7 +477,7 @@ class TableEntry(tk.Frame):
             return self.cget("disabled")
         while len(column_disabled_list) < self.number_of_columns:
             column_disabled_list.append(0)
-        self._configure(titles=column_disabled_list)
+        self._configure(disabled=column_disabled_list)
 
         def _disable_widget(w, r, c):
             if column_disabled_list[c - 1]:
@@ -512,28 +526,32 @@ class TableEntry(tk.Frame):
 
 
 def example():
-    #    import Tk.TableEntr_.pm as te
     mw = Tk()
     frame = Frame(mw)
     frame.pack(expand=1, fill="both")
 
     titles = ["one", "two", "three"]
     col_widths = [10, 20, 5]
-    de = TableEntry(frame, rows=3, columns=3, colwidths=col_widths)
+    de = TableEntry(frame, rows=3, columns=3, colwidths=col_widths, titles=titles)
     de.pack(side="top", expand=1, fill="both")
+
+    # disable the first column, but not the rest
+    disabled = [1]
+    de.configure(disabled=disabled)
+
+    # callback for deleting a row
+    de.configure(delete=on_delete)
+
+
     mw.mainloop()
+
+def on_delete(data:list):
+    print (f"Deleted row, {data}")
 
     """
     # ---------------------------------------------------------------
     # create the table entry object
     # ---------------------------------------------------------------
-    my $de = $frame->TableEntry(
-                                 -rows      => 1,
-                                 -columns   => scalar(@$titles),
-                                 -titles    => $titles,
-                                 -colwidths => $col_widths,
-                                 -delete    => [ $del_callback, $data_entry ],
-    )->pack( -side => 'top', -expand => 1, -fill => 'both' );
 
     # disable the first columns, but not the rest
     my @disabled = (1);
