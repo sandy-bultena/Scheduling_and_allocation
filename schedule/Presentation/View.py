@@ -1,6 +1,7 @@
 from tkinter import Tk
 
 from ..Export import DrawView
+from ..GUI.GuiBlockTk import GuiBlockTk
 from ..GUI.ViewTk import ViewTk
 from ..Schedule.Block import Block
 from ..Schedule.Lab import Lab
@@ -165,5 +166,81 @@ class View:
         self.schedule.calculate_conflicts()
         self.update_for_conflicts(self.type)
 
+    def redraw(self):
+        """Redraws the View with new GuiBlocks and their positions."""
+        schedule = self.schedule
+
+        # ---------------------------------------------------------------
+        # draw the background, date/time stuff, etc
+        # ---------------------------------------------------------------
+        self.gui.redraw()
+
+        # ---------------------------------------------------------------
+        # create and draw the gui blocks
+        # ---------------------------------------------------------------
+
+        # Get blocks for this object.
+        blocks = schedule.get_blocks_for_obj(self.schedulable)
+
+        # Remove all GuiBlocks stored in the View.
+        self._remove_all_guiblocks()
+
+        # redraw all GuiBlocks.
+        for b in blocks:
+
+            # This makes sure that synced blocks have the same start time.
+            b.start = b.start
+            b.day = b.day
+
+            gui_block = GuiBlockTk(self.type, self.gui, b)
+
+            self.gui.bind_popup_menu(gui_block)
+            self._add_guiblock(gui_block)
+
+        self.blocks = blocks
+        schedule.calculate_conflicts()
+        self.update_for_conflicts(self.type)
+
+        # ---------------------------------------------------------------
+        # If this is a lab or teacher view, then add 'AssignBlocks'
+        # to the view, and bind as necessary
+        # ---------------------------------------------------------------
+        self._setup_for_assignable_blocks()
+
+        # ---------------------------------------------------------------
+        # set colour for all buttons on main window, "Schedules" tab
+        # ---------------------------------------------------------------
+        self._set_view_button_colours()
+        if self.views_manager:
+            self.views_manager.update_for_conflicts()
+
+        # ---------------------------------------------------------------
+        # bind events for each gui block
+        # ---------------------------------------------------------------
+        gbs = self.gui_blocks
+        for guiblock in gbs.values():
+            block: Block = guiblock.block
+
+            # Bind to allow block to move if clicked and dragged.
+            if block.movable:
+                self.gui.set_bindings_for_dragging_guiblocks(self, guiblock,
+                                                             _cb_guiblock_is_moving,
+                                                             _cb_guiblock_has_stopped_moving,
+                                                             cb_update_after_moving_block)
+
+            # double click opens companion views.
+            self.gui.bind_double_click(self, guiblock, _cb_open_companion_view)
+
 
     # endregion
+    def _remove_all_guiblocks(self):
+        pass
+
+    def _add_guiblock(self, gui_block):
+        pass
+
+    def update_for_conflicts(self, type):
+        pass
+
+    def _setup_for_assignable_blocks(self):
+        pass
