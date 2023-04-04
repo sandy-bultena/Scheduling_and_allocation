@@ -10,8 +10,6 @@ Required Event Handlers:
     -none-
 """
 
-import EditSectionDialogTk
-
 from tkinter import simpledialog, Frame
 from MultipleDialog import MultipleDialog
 import re
