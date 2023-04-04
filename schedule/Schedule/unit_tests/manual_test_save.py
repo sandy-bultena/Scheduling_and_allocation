@@ -6,15 +6,30 @@ which is populated by using Schedule.write_DB() on the read_DB generated object.
 NOTE: This script will not clear either database before or after it is run. The end result will include DB_NAME with its starting data and the dummy data, as well as
 DB_NAME_2 with the same data.
 """
-import sys
-from os import path
 
-sys.path.append(path.dirname(path.dirname(__file__)))
+import sys
+
+# https://stackoverflow.com/a/28154841 Solution #2
+if not __package__:
+    print('e')
+    from pathlib import Path
+    file = Path(__file__).resolve()
+    parent, top = file.parent, file.parents[3]
+
+    sys.path.append(str(top))
+    try:
+        sys.path.remove(str(parent))
+    except ValueError: # Already removed
+        pass
+
+    import schedule.Schedule.unit_tests
+    __package__ = "schedule.Schedule.unit_tests"
+
 from pony.orm import *
-from unit_tests.db_constants import *
-from Schedule import Schedule
-from unit_tests.test_Schedule import populate_db
-from database.PonyDatabaseConnection import define_database, Schedule as dbSchedule, Scenario as dbScenario
+from .db_constants import *
+from ..Schedule import Schedule
+from .test_Schedule import populate_db
+from ..database.PonyDatabaseConnection import define_database, Schedule as dbSchedule, Scenario as dbScenario
 
 db : Database
 s : dbSchedule
