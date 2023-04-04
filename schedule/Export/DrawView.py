@@ -147,11 +147,12 @@ def draw_background(canvas: Canvas, scl: dict):
                 dash="."
             )
 
-        # Half-hour text. NOTE: Font size supposedly too big in original perl version of the code.
-        canvas.create_text(
-            (x_min + xorig) / 2,
-            y_half, text=":30"
-        )
+            # Half-hour text. NOTE: Font size supposedly too big in original perl version of the
+            # code.
+            canvas.create_text(
+                (x_min + xorig) / 2,
+                y_half, text=":30"
+            )
 
     # --------------------------------------------------------------------
     # draw day lines
@@ -293,7 +294,7 @@ def get_block_text(block: Block, scale: float = 1, type="teacher"):
 # =================================================================
 # draw_block
 # =================================================================
-def draw_block(canvas: Canvas, block, scl: dict, type, colour=None, edge=None) -> dict:
+def draw_block(canvas: Canvas, block, scl: dict, type, colour=None, edge=None) -> dict | None:
     """Draws the Schedule timetable on the specified canvas.
 
     Parameters:
@@ -311,7 +312,8 @@ def draw_block(canvas: Canvas, block, scl: dict, type, colour=None, edge=None) -
         -rectangle: the canvas rectangle object.
         -colour: the colour of the block."""
     scale = scl['scale']
-    if not block: return
+    if not block:
+        return
 
     # --------------------------------------------------------------------
     # set the colour and pixel width of edge

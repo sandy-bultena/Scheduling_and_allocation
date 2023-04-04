@@ -28,9 +28,9 @@ def main():
     # Create the Tk main window and the canvas
     # ----------------------------------------------------------
     main_window = Tk()
-    # main_window.geometry('500x600-300-40')
+    main_window.geometry('500x600-300-40')
     cn = Canvas(main_window)
-    cn.pack(fill=BOTH)
+    cn.pack(fill=BOTH, expand=True)
 
     # ----------------------------------------------------------
     # Define what scale you want
