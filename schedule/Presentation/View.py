@@ -146,6 +146,24 @@ class View:
         elif schedulable_object:
             self.gui.set_title(schedulable_object.number)
 
+        # --------------------------------------------------------------
+        # popup menu for guiblocks
+        # ---------------------------------------------------------------
+        named_schedulable_objects = self.get_named_schedulable_for_popup(type)
+        self.gui.setup_popup_menu(self.type, named_schedulable_objects, _cb_toggle_movement,
+                                  _cb_move_block_between_schedulable_objects)
 
-        pass
+        # ---------------------------------------------------------------
+        # undo/redo
+        # ---------------------------------------------------------------
+        self.gui.setup_undo_redo(View.undo_number, View.redo_number, _cb_undo_redo)
+
+        # ---------------------------------------------------------------
+        # refresh drawing - redrawing creates the guiblocks
+        # ---------------------------------------------------------------
+        self.redraw()
+        self.schedule.calculate_conflicts()
+        self.update_for_conflicts(self.type)
+
+
     # endregion
