@@ -73,15 +73,18 @@ class ViewsManagerTk:
 
             # Create the command array reference including the ViewManager, the Teacher/Lab/Stream,
             # and its type.
-            command = partial(command_func, self, named_schedulable_obj, type)
+            command = [command_func, self, name, type]
 
             # Create the button on the frame.
-            btn = Button(frame, text=name, command=command)
+            btn = Button(frame, text=name, command=partial(
+                command_func, self, name, type
+            ))
             btn.grid(row=row, column=col, sticky="nsew",
                      ipadx=30, ipady=10)
 
             # Pass the button reference to the event handler # NOTE: ?
-            # TODO: Figure this out.
+            # TODO: Figure this out. Not even sure that this is necessary.
+            command.append(btn)
 
             # add it to the dict of button references.
             self.add_button_refs(btn, named_schedulable_obj)
