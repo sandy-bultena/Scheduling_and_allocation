@@ -1,3 +1,5 @@
+from tkinter import Tk
+
 from ..Export import DrawView
 from ..GUI.ViewTk import ViewTk
 from ..Schedule.Block import Block
@@ -90,3 +92,60 @@ class View:
     def views_manager(self, value):
         self._views_manager = value
 
+    # region PUBLIC METHODS
+
+    # =================================================================
+    # new
+    # =================================================================
+
+    def __init__(self, views_manager, mw: Tk, schedule: Schedule,
+                 schedulable_object: Teacher | Lab | Stream):
+        """Creates a View object, draws the necessary GuiBlocks, and returns the View object.
+
+        Parameters:
+            views_manager: The ViewsManager object responsible for keeping track of all the views.
+            mw: Tk main window.
+            schedule: Where course/sections/teachers/labs/streams are defined.
+            schedulable_object: Teacher/Lab/Stream that the View is being made for."""
+        self._id = ++ View.max_id
+        conflict_info = self._get_conflict_info()
+
+        # ---------------------------------------------------------------
+        # create the Gui
+        # ---------------------------------------------------------------
+        gui = ViewTk(self, mw, conflict_info)
+
+        # ---------------------------------------------------------------
+        # this is what needs to be done to close the window
+        # ---------------------------------------------------------------
+        gui.on_closing = _cb_close_view(self)
+
+        # ---------------------------------------------------------------
+        # type of view depends on which object it is for
+        # ---------------------------------------------------------------
+        blocks = schedule.get_blocks_for_obj(schedulable_object)
+        type = schedule.get_view_type_of_object(schedulable_object)
+
+        # ---------------------------------------------------------------
+        # save some parameters
+        # ---------------------------------------------------------------
+        self.gui = gui
+        self.views_manager = views_manager
+        self.blocks = blocks
+        self.schedule = schedule
+        self.type = type
+        self.schedulable = schedulable_object
+
+        # ---------------------------------------------------------------
+        # set the title
+        # ---------------------------------------------------------------
+        title = ""
+        if schedulable_object and isinstance(schedulable_object, Teacher):
+            self.gui.set_title(schedulable_object.firstname[0:1].upper()
+                               + " " + schedulable_object.lastname)
+        elif schedulable_object:
+            self.gui.set_title(schedulable_object.number)
+
+
+        pass
+    # endregion
