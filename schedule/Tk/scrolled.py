@@ -1,6 +1,7 @@
 from __future__ import annotations
 from tkinter import *
 import tkinter as tk
+from functools import partial
 
 import sys
 import traceback
@@ -17,6 +18,7 @@ def eprint(*args, **kwargs):
 ###############
 # https://docstore.mik.ua/orelly/perl3/tk/ch06_03.htm
 # Section 6.3.8
+# http://infohost.nmt.edu/tcc/help/pubs/tkinter/web/events.html
 ###############
 
 class Scrolled(Frame):
@@ -123,7 +125,10 @@ class Scrolled(Frame):
         a widget of widget type will be created inside the frame (self.widget)
         scrollbars will be created as requested (self.horizontal_scrollbar, self.vertical_scrollbar)
         """
-        Frame.__init__(self,parent)
+        # ----------------------------------------------------------------------------------------
+        # initialize the holding frame
+        # ----------------------------------------------------------------------------------------
+        Frame.__init__(self, parent)
 
         self._widget_type = widget_type
         self._scrollable_object = None
@@ -142,11 +147,6 @@ class Scrolled(Frame):
             eprint(str(e))
 
         # ----------------------------------------------------------------------------------------
-        # initialize the holding frame
-        # ----------------------------------------------------------------------------------------
-        tkinter.Frame.__init__(self, parent)
-
-        # ----------------------------------------------------------------------------------------
         # bail out if user is trying to create 2 scrollbars in the same orientation
         # ----------------------------------------------------------------------------------------
         if ('e' in scrollbars and 'w' in scrollbars) or ('n' in scrollbars and 's' in scrollbars):
@@ -157,19 +157,19 @@ class Scrolled(Frame):
         # ----------------------------------------------------------------------------------------
         # create scrollbars
         # ----------------------------------------------------------------------------------------
-        if 'e' in scrollbars or 'w' in scrollbars:
-            self._vertical_scrollbar = tk.Scrollbar(self, orient=VERTICAL, takefocus=0)
-            if 'e' in scrollbars:
-                self._vertical_scrollbar.pack(side=RIGHT, fill=Y)
-            else:
-                self._vertical_scrollbar.pack(side=LEFT, fill=Y)
-
         if 'n' in scrollbars or 's' in scrollbars:
             self._horizontal_scrollbar = tk.Scrollbar(self, orient=HORIZONTAL, takefocus=0)
             if 'n' in scrollbars:
                 self._horizontal_scrollbar.pack(side=TOP, fill=X)
             else:
                 self._horizontal_scrollbar.pack(side=BOTTOM, fill=X)
+
+        if 'e' in scrollbars or 'w' in scrollbars:
+            self._vertical_scrollbar = tk.Scrollbar(self, orient=VERTICAL, takefocus=0)
+            if 'e' in scrollbars:
+                self._vertical_scrollbar.pack(side=RIGHT, fill=Y)
+            else:
+                self._vertical_scrollbar.pack(side=LEFT, fill=Y)
 
         # ----------------------------------------------------------------------------------------
         # is the widget we want to scroll, scrollable?
@@ -196,7 +196,7 @@ class Scrolled(Frame):
 
             self._widget = _tk_widget_type(_canvas, **kwargs)
 
-            _canvas.bind('<Configure>', lambda _e: _canvas.configure(scrollregion=_canvas.bbox("all")))
+            _canvas.bind('<Configure>', partial(self.update_scrollbars, _canvas))
             _canvas.create_window((0, 0), window=self._widget, anchor="nw")
 
             self._scrollable_object = _canvas
@@ -216,15 +216,24 @@ class Scrolled(Frame):
     # ===============================================================================================================
     # pass on all 'configure' to the scrollable object
     # ===============================================================================================================
-    def configure(self,**kwargs):
+    def configure(self, **kwargs):
         self._widget.configure(**kwargs)
+
+    # ===============================================================================================================
+    # if adding things to the frame, we need to update the scrollbars.
+    # ... at this point must be done manually from the calling code
+    # ===============================================================================================================
+    def update_scrollbars(self,*args,**kwargs):
+        if isinstance(self._scrollable_object,Canvas):
+            canvas = self._scrollable_object
+            canvas.configure(scrollregion=canvas.bbox("all"))
 
     # ===============================================================================================================
     # Subwidget
     # ===============================================================================================================
     def Subwidget(self, name: str) -> Any:
         if name == 'xscrollbar':
-            print (f"Returning {self._horizontal_scrollbar}")
+            print(f"Returning {self._horizontal_scrollbar}")
             return self._horizontal_scrollbar
         if name == 'yscrollbar':
             return self._vertical_scrollbar
@@ -337,8 +346,10 @@ class Scrolled(Frame):
                 self._scrollable_object.yview_moveto(pos)
 
             if to_be_seen_bottom > scroll_region_bottom:
-                dy = to_be_seen_bottom - scroll_region_bottom
+                print (f"{to_be_seen_bottom=}, {scroll_region_bottom=}, {scroll_region_top=}, {scrollable_object_top=}")
+                dy = to_be_seen_bottom - scroll_region_bottom + to_be_seen_height
                 pos = (scroll_region_top - scrollable_object_top + dy) / scrollable_object_height
+                print (f"{dy=},{pos=}")
                 self._scrollable_object.yview_moveto(pos)
 
         return self.vertical_scrollbar.get()
