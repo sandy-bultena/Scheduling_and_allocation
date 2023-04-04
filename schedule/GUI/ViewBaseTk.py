@@ -160,7 +160,7 @@ class ViewBaseTk:
         # Menu bound to individual gui-blocks.
         # Had to do quite a bit of digging to figure out what the two Ev() functions were doing in
         # the original Perl script. They're getting the mouse coordinates.
-        self.canvas.bind(gui_block.group, '<3>', partial(
+        self.canvas.tag_bind(gui_block.group, '<3>', partial(
             self._postmenu, self, self.mw.winfo_pointerx(), self.mw.winfo_pointery(), gui_block
         ))
         return gui_block
