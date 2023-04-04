@@ -1,3 +1,4 @@
+from __future__ import annotations
 from functools import partial
 from tkinter import *
 from tkinter import ttk

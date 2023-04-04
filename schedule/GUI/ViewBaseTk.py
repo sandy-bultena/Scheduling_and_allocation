@@ -1,8 +1,12 @@
+from __future__ import annotations
+
 from functools import partial
 from tkinter import *
 from tkinter import ttk
+from typing import TYPE_CHECKING
 
-from .GuiBlockTk import GuiBlockTk
+if TYPE_CHECKING:
+    from .GuiBlockTk import GuiBlockTk
 from ..Schedule.Block import Block
 from ..Schedule.Conflict import Conflict
 from ..Schedule.ScheduleEnums import ViewType, WeekDayNumber
