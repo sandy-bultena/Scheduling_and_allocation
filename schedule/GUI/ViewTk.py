@@ -204,8 +204,7 @@ class ViewTk(ViewBaseTk):
             something_to_do = selected_assigned_blocks
             if not something_to_do or len(something_to_do) == 0:
                 return
-            # TODO: I have no idea if the partial will recognize what this is meant to do.
-            self._selected_assigned_blocks(cn, selected_assigned_blocks)
+            self._selectedAssignBlocks(cn, selected_assigned_blocks)
 
         cn.bind('<ButtonRelease-1>', partial(
             dummy, x1, y1, self.mw.winfo_pointery(), selected_assigned_blocks
@@ -289,7 +288,7 @@ class ViewTk(ViewBaseTk):
         # Get the actual canvas objects that make up this object.
         group_of_canvas_objs = guiblock.group
 
-        self.canvas.bind(
+        self.canvas.tag_bind(
             group_of_canvas_objs,
             "<1>",
             partial(
