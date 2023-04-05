@@ -564,7 +564,8 @@ class View:
         schedulables_by_type = all_schedulables.by_type(type)
 
         # remove the schedulable object that is associated with this view.
-        named_schedulable_objects = [o for o in schedulables_by_type if o.id != self.schedulable.id]
+        named_schedulable_objects = [o for o in schedulables_by_type.named_scheduable_objs
+                                     if o.id != self.schedulable.id]
 
         return named_schedulable_objects
 

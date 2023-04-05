@@ -1,3 +1,4 @@
+from .NamedObjects import NamedObject
 from ..Schedule.ScheduleEnums import ViewType
 
 
@@ -18,4 +19,10 @@ class ScheduablesByType:
         named_schedulable_objs = []
         for i in range(len(names)):
             named_schedulable_objs.append(NamedObject(names[i], scheduable_objs[i]))
+
+        self.type = type
+        self.title = title
+        self.scheduable_objs = scheduable_objs
+        self.named_scheduable_objs = named_schedulable_objs
+
 

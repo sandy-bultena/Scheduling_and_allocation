@@ -26,13 +26,15 @@ class ViewTk(ViewBaseTk):
     # properties
     # ============================================================================
 
-    def __init__(self, view, mw: Tk, conflict_info):
+    def __init__(self, view, new_mw: Tk, conflict_info):
         """Creates a new ViewTk object.
 
         - view: the View that is calling this function.
 
         - mw: The main window (TK main window)."""
-        super().__init__(mw, conflict_info)
+        global mw
+        mw = new_mw
+        super().__init__(new_mw, conflict_info)
         self.view = view
 
     # ============================================================================
@@ -57,6 +59,7 @@ class ViewTk(ViewBaseTk):
         view = self.view
 
         # create a menu.
+        global mw
         pm = Menu(mw)
 
         # toggle block from movable to unmovable.
@@ -93,11 +96,11 @@ class ViewTk(ViewBaseTk):
         # bind keys
         # ---------------------------------------------------------------
         tl.bind(
-            '<Control-KeyPress-z>', callback(self.view, 'undo')
+            '<Control-KeyPress-z>', partial(callback, self.view, 'undo')
         )
-        tl.bind('<Meta-Key-z', callback(self.view, 'undo'))
-        tl.bind('<Control-KeyPress-y', callback(self.view, 'redo'))
-        tl.bind('<Meta-Key-y', callback(self.view, 'redo'))
+        tl.bind('<Meta-Key-z>', partial(callback, self.view, 'undo'))
+        tl.bind('<Control-KeyPress-y>', partial(callback, self.view, 'redo'))
+        tl.bind('<Meta-Key-y>', partial(callback, self.view, 'redo'))
 
         # ---------------------------------------------------------------
         # add undo/redo to main menu

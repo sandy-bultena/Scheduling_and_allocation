@@ -1,3 +1,4 @@
+from .ScheduablesByType import ScheduablesByType
 from ..Schedule.Schedule import Schedule
 from ..Schedule.ScheduleEnums import ViewType
 
@@ -26,9 +27,11 @@ class AllScheduables:
         for stream in stream_ordered:
             stream_names.append(stream.number)
 
-        self.teachers = ScheduablesByType('teacher', 'Teacher View', teacher_names, teacher_ordered)
-        self.labs = ScheduablesByType('lab', 'Lab View', lab_names, lab_ordered)
-        self.streams = ScheduablesByType('stream', 'Stream View', stream_names, stream_ordered)
+        self.teachers = ScheduablesByType(ViewType.Teacher, 'Teacher View', teacher_names,
+                                          teacher_ordered)
+        self.labs = ScheduablesByType(ViewType.Lab, 'Lab View', lab_names, lab_ordered)
+        self.streams = ScheduablesByType(ViewType.Stream, 'Stream View', stream_names,
+                                         stream_ordered)
 
     def by_type(self, type: ViewType):
         # The Perl version of this used strings for the type parameter. Since we have an enum of
