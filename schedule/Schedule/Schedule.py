@@ -717,5 +717,8 @@ class Schedule:
             # NOTE: This throws an exception when invoked.
             # TypeError: isinstance() arg 2 must be a type, a tuple of types, or a union
             # According to the debugger, vtype.value is a module, not a class.
-            if isinstance(obj, vtype.value): return vtype
+
+            # This fix seems to work, since we're importing the three possible classes already.
+            my_class = eval(f"{vtype.name}")
+            if isinstance(obj, my_class): return vtype
         return None
