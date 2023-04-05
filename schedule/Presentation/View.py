@@ -80,7 +80,7 @@ class View:
         self._blocks = value
 
     @property
-    def gui_blocks(self):
+    def gui_blocks(self) -> dict[int, GuiBlockTk]:
         """Gets the GuiBlocks of this View object."""
         return self._gui_blocks
 
@@ -187,7 +187,6 @@ class View:
 
         # redraw all GuiBlocks.
         for b in blocks:
-
             # This makes sure that synced blocks have the same start time.
             b.start = b.start
             b.day = b.day
@@ -230,6 +229,97 @@ class View:
 
             # double click opens companion views.
             self.gui.bind_double_click(self, guiblock, _cb_open_companion_view)
+            # TODO: RESUME FROM HERE
+
+    # =================================================================
+    # update
+    # =================================================================
+    def update(self, block: Block):
+        """Updates the position of any GuiBlocks that have the same Block as the currently
+        moving GuiBlock.
+
+        Parameters:
+            block: The Block object that has been modified."""
+        # Go through each GuiBlock on the view.
+        if hasattr(self, self._gui_blocks):
+            for guiblock in self.gui_blocks.values():
+                # Race condition, no need to update the current moving block.
+                if guiblock.is_controlled():
+                    continue
+
+                # GuiBlock's block is the same as the moving block?
+                if guiblock.block.id == block.id:
+                    self.gui.move_block(guiblock)
+
+    def update_for_conflicts(self, type):
+        """Determines conflict status for all GuiBlocks on this view and colours them
+        accordingly.
+
+        Parameters:
+            type: The type of the View. Can be "Teacher", "Lab" or "Stream".
+        """
+        guiblocks = self.gui_blocks
+
+        view_conflict = 0
+
+        # For every guiblock in this view,
+        for guiblock in guiblocks.values():
+            self.gui.colour_block(guiblock, type)
+
+            # Colour block by conflict only if it is movable.
+            if guiblock.block.movable:
+                # Create conflict number for the entire View.
+                # TODO: This may need to change. Must look at Conflict class.
+                view_conflict = view_conflict | guiblock.block.is_conflicted()
+
+        return view_conflict
+
+    def close(self):
+        """Close the view."""
+        self.gui.destroy()
+
+    # =================================================================
+    # Callbacks (event handlers)
+    # =================================================================
+    def _cb_close_view(self):
+        """When the View is closed, need to let views_manager know.
+
+        Handles Event: View is closed via the gui interface."""
+        views_manager = self.views_manager
+        views_manager.close_view(self)
+
+    def _cb_undo_redo(self, type: str):
+        """Lets the views_manager manage the undo/redo action.
+
+        Parameters:
+            type: string, either 'undo' or 'redo'."""
+        self.views_manager.undo(type)
+
+        # Set colour for all buttons on main window, "Schedules" tab.
+        self._set_view_button_colours()
+
+        # Update status bar.
+        self._set_status_undo_info()
+
+    def _cb_assign_blocks(self, chosen_blocks: list):
+        """Give the option of assigning these blocks to a resource (add to course, assign block to
+        teacher/lab/stream).
+
+        Handles Event: AssignBlock objects have been selected.
+
+        Parameters:
+            chosen_blocks: Array of AssignBlocks that have been selected by the user."""
+
+        # Get the day and time of the chosen blocks.
+        from ..GUI.AssignBlockTk import AssignBlockTk
+        (day, start, duration) = AssignBlockTk.get_day_start_duration(chosen_blocks)
+
+        # Create the menu to select the block to assign to the timeslot.
+        # TODO: Implement AssignToResource module.
+        # AssignToResource(self.gui.mw, self.schedule, day, start, duration, self.schedulable)
+
+        # Redraw.
+        self.redraw()
 
 
     # endregion
@@ -237,9 +327,6 @@ class View:
         pass
 
     def _add_guiblock(self, gui_block):
-        pass
-
-    def update_for_conflicts(self, type):
         pass
 
     def _setup_for_assignable_blocks(self):
