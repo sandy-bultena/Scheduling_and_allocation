@@ -12,6 +12,7 @@ from ..Schedule.Stream import Stream
 from ..Schedule.Teacher import Teacher
 from ..Schedule.Undo import Undo
 from ..PerlLib import Colour
+from ..UsefulClasses.AllScheduables import AllScheduables
 
 
 class View:
