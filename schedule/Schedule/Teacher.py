@@ -154,7 +154,7 @@ class Teacher:
     # get_by_name
     # =================================================================
     @staticmethod
-    def get_by_name(first_name: str, last_name: str) -> str | None:
+    def get_by_name(first_name: str, last_name: str) -> Teacher | None:
         """Returns the first Teacher found matching the first name and last name, if one exists."""
         if not (first_name and last_name):
             return None

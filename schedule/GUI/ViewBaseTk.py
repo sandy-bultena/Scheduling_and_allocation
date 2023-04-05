@@ -97,7 +97,7 @@ class ViewBaseTk:
         f.pack(expand=1, fill="x")
 
         for c in conflict_info:
-            ttk.Label(f, text=c.text, width=10, background=c.bg, foreground=c.fg) \
+            ttk.Label(f, text=c['text'], width=10, background=c['bg'], foreground=c['fg']) \
                 .pack(side='left', expand=1, fill="x")
 
         # ---------------------------------------------------------------
@@ -136,8 +136,8 @@ class ViewBaseTk:
         # if there is a popup menu defined, make sure you can make it
         # go away by clicking the toplevel (as opposed to the menu)
         # ---------------------------------------------------------------
-        # TODO: Verify that this works.
-        if self._popup_menu:
+        # TODO: Verify that this works. NOTE: It does not.
+        if hasattr(self, '__popup'):
             tl.bind('<1>', partial(self._unpostmenu))
             tl.bind('<2>', partial(self._unpostmenu))
 
@@ -366,7 +366,7 @@ class ViewBaseTk:
 
     def _create_status_bar(self):
         """Status bar at the bottom of each View to show current movement type."""
-        if self._status_bar:
+        if hasattr(self, '_status_bar'):
             return
 
         status_frame = Frame(self._toplevel, borderwidth=0, relief='flat')

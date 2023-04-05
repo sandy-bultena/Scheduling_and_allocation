@@ -67,7 +67,7 @@ class GuiBlockTk:
             colour: A string specifying a valid colour (name or #rrggbb acceptable)."""
         colour = Colour.string(colour)
 
-        cn = self.gui_view.canvas # Come back to this once ViewTk has been fully implemented.
+        cn = self.gui_view.canvas
 
         (light, dark, textcolour) = DrawView.get_colour_shades(colour)
 

@@ -714,5 +714,8 @@ class Schedule:
         # was originally named: get_scheduable_object_type
         """Returns the type of the ViewType object"""
         for vtype in ViewType:
+            # NOTE: This throws an exception when invoked.
+            # TypeError: isinstance() arg 2 must be a type, a tuple of types, or a union
+            # According to the debugger, vtype.value is a module, not a class.
             if isinstance(obj, vtype.value): return vtype
         return None

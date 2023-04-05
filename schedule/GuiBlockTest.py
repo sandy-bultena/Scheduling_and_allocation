@@ -2,8 +2,8 @@ from tkinter import Tk
 
 from pony.orm import commit, db_session
 
-from schedule.GUI.ViewTk import ViewTk
 from schedule.GUI.GuiBlockTk import GuiBlockTk
+from schedule.Presentation.View import View
 
 from schedule.Schedule.Schedule import Schedule
 from schedule.Schedule.Teacher import Teacher
@@ -30,9 +30,12 @@ def main():
     my_schedule = Schedule.read_DB(db_schedule.id)
     teacher = Teacher.get_by_name("John", "Smith")
 
-    # my_view = ViewTk(mw=mw, ) TODO: Come back to this once the Presenter View class has been implemented.
+    my_view = View(views_manager=None, mw=mw, schedule=my_schedule, schedulable_object=teacher)
 
-    block = Block("Wed", "9:30", 1.5)
+    block = Block("Wed", "9:30", 1.5, 1)
+
+    gui_block = GuiBlockTk("teacher", my_view, block)
+    gui_block.change_colour("red")
 
 
 @db_session
