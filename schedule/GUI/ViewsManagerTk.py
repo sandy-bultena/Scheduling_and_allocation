@@ -9,6 +9,11 @@ class ViewsManagerTk:
         self._button_refs: dict[str, Button] = {}
 
     @property
+    def mw(self):
+        """Gets the MainWindow object."""
+        return self._main_window
+
+    @property
     def main_window(self):
         """Gets the MainWindow object."""
         return self._main_window
