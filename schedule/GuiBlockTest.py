@@ -34,8 +34,10 @@ def main():
 
     block = Block("Wed", "9:30", 1.5, 1)
 
-    gui_block = GuiBlockTk("teacher", my_view, block)
+    gui_block = GuiBlockTk("teacher", my_view.gui, block)
     gui_block.change_colour("red")
+
+    mw.mainloop()
 
 
 @db_session

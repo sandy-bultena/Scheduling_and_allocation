@@ -40,6 +40,7 @@ class GuiBlockTk:
         # NOTE: canvas.createGroup() doesn't exist in Tkinter. It's exclusive to Perl/Tk.
         # Plus, Sandy told us not to bother with drag-and-drop functionality.
         # Still, we need it for the change_colour function...
+        # NOTE: I think Sandy said something about a tkinter Group function.
         group = (
             canvas.find_withtag("rectangle"),
             canvas.find_withtag("text"),
@@ -51,8 +52,8 @@ class GuiBlockTk:
         self.block = block
         self.gui_view = gui_view
         self._coords = coords
-        self.colour = colour
         self.rectangle = rectangle
+        self.colour = colour
         self.text = text
         self.group = group
         self.is_controlled = False
@@ -78,7 +79,7 @@ class GuiBlockTk:
 
             for i in range(len(lines)):
                 cn.itemconfigure(lines[i * 2], fill=dark[i])
-                cn.itemconfigure(lines[i * 2 + 1], fill=lines[i])
+                cn.itemconfigure(lines[i * 2 + 1], fill=light[i])
 
         except IndexError:
             print("FAILED CHANGE COLOUR\n")

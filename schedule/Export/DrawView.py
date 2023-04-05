@@ -317,7 +317,7 @@ def draw_block(canvas: Canvas, block, scl: dict, type, colour=None, edge=None) -
     # --------------------------------------------------------------------
     # set the colour and pixel width of edge
     # --------------------------------------------------------------------
-    if colour is None:
+    if not colour:
         colour = colours[type] or colours['teacher']
 
     global Edge
