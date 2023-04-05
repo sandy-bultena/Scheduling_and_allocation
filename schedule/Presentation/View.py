@@ -8,6 +8,7 @@ from ..Schedule.Lab import Lab
 from ..Schedule.Schedule import Schedule
 from ..Schedule.Stream import Stream
 from ..Schedule.Teacher import Teacher
+from ..Schedule.Undo import Undo
 
 
 class View:
@@ -119,7 +120,7 @@ class View:
         # ---------------------------------------------------------------
         # this is what needs to be done to close the window
         # ---------------------------------------------------------------
-        gui.on_closing = _cb_close_view(self)
+        gui.on_closing = self._cb_close_view
 
         # ---------------------------------------------------------------
         # type of view depends on which object it is for
@@ -157,7 +158,7 @@ class View:
         # ---------------------------------------------------------------
         # undo/redo
         # ---------------------------------------------------------------
-        self.gui.setup_undo_redo(View.undo_number, View.redo_number, _cb_undo_redo)
+        self.gui.setup_undo_redo(View.undo_number, View.redo_number, self._cb_undo_redo)
 
         # ---------------------------------------------------------------
         # refresh drawing - redrawing creates the guiblocks
@@ -320,6 +321,70 @@ class View:
 
         # Redraw.
         self.redraw()
+
+    def _cb_toggle_movement(self):
+        """Toggles whether a GuiBlock is movable or not.
+
+        Handles Event: The toggle movable/unmovable on the popup menu has been clicked."""
+        # Get the block that was right-clicked.
+        if not self.gui.popup_guiblock:
+            return
+        block = self.gui.popup_guiblock.block
+
+        # Toggle movability.
+        if block.movable:
+            block.movable = False
+        else:
+            block.movable = True
+
+        # Redraw, and set the dirty flag.
+        self.views_manager.redraw_all_views()
+        views_manager = self.views_manager
+        if views_manager:
+            self.views_manager.set_dirty(views_manager.dirty_flag)
+
+    def _cb_move_block_between_schedulable_objects(self, that_schedulable: Teacher | Lab | Stream):
+        """Moves the selected class(es) from the original Views Teacher/Lab to the Teacher/Lab
+        object.
+
+        Handles Event: The user has selected to move a block between one selectable object and another
+        via the popup menu.
+
+        Parameters:
+            that_schedulable: Target destination of the block."""
+        this_schedulable = self.schedulable
+
+        # Get the GuiBlock that the popup_menu was invoked on.
+        guiblock = self.gui.popup_guiblock
+
+        # Reassign teacher/lab to blocks.
+        if self.type == "teacher":
+            guiblock.block.remove_teacher(this_schedulable)
+            guiblock.block.assign_teacher(that_schedulable)
+            guiblock.block.section.remove_teacher(this_schedulable)
+            guiblock.block.section.assign_teacher(that_schedulable)
+        elif self.type == "lab":
+            guiblock.block.remove_lab(this_schedulable)
+            guiblock.block.assign_lab(that_schedulable)
+        elif self.type == "stream":
+            guiblock.block.section.remove_stream(this_schedulable)
+            guiblock.block.section.assign_stream(that_schedulable)
+
+        # There was a change, so redraw all the views.
+        undo = Undo(guiblock.block.id, guiblock.block.start, guiblock.block.day,
+                    self.schedulable, self.type, that_schedulable)
+        self.views_manager.add_undo(undo)
+
+        # New move, so reset redo.
+        self.views_manager.remove_all_redoes()
+
+        # Update the status bar.
+        self._set_status_undo_info()
+
+        # Set the dirty flag, and redraw.
+        self.views_manager.set_dirty()
+        self.views_manager.redraw_all_views()
+
 
 
     # endregion
