@@ -4,11 +4,14 @@ from ..Export import DrawView
 from ..GUI.GuiBlockTk import GuiBlockTk
 from ..GUI.ViewTk import ViewTk
 from ..Schedule.Block import Block
+from ..Schedule.Conflict import Conflict
 from ..Schedule.Lab import Lab
 from ..Schedule.Schedule import Schedule
+from ..Schedule.ScheduleEnums import ConflictType
 from ..Schedule.Stream import Stream
 from ..Schedule.Teacher import Teacher
 from ..Schedule.Undo import Undo
+from ..PerlLib import Colour
 
 
 class View:
@@ -137,6 +140,7 @@ class View:
         self.schedule = schedule
         self.type = type
         self.schedulable = schedulable_object
+        self._gui_blocks = {}
 
         # ---------------------------------------------------------------
         # set the title
@@ -226,7 +230,7 @@ class View:
                 self.gui.set_bindings_for_dragging_guiblocks(self, guiblock,
                                                              self._cb_guiblock_is_moving,
                                                              self._cb_guiblock_has_stopped_moving,
-                                                             cb_update_after_moving_block)
+                                                             self.cb_update_after_moving_block)
 
             # double click opens companion views.
             self.gui.bind_double_click(self, guiblock, self._cb_open_companion_view)
@@ -242,7 +246,7 @@ class View:
         Parameters:
             block: The Block object that has been modified."""
         # Go through each GuiBlock on the view.
-        if hasattr(self, self._gui_blocks):
+        if hasattr(self, '_gui_blocks'):
             for guiblock in self.gui_blocks.values():
                 # Race condition, no need to update the current moving block.
                 if guiblock.is_controlled():
@@ -278,6 +282,10 @@ class View:
     def close(self):
         """Close the view."""
         self.gui.destroy()
+
+    # endregion
+
+    # region CALLBACKS
 
     # =================================================================
     # Callbacks (event handlers)
@@ -470,14 +478,74 @@ class View:
             self._set_status_undo_info()
 
     def cb_update_after_moving_block(self, block: Block):
+        """Update all views, calculate conflicts and set button colours, and set the dirty flag.
+
+        Handles Event: For when a GuiBlock has been dropped, and now it is time to refresh
+        everything.
+        Parameters:
+            block: The block that has been modified by moving a GuiBlock around."""
+        # update all the views that have the block just moved to its new position. NOTE: ???
+        views_manager = self.views_manager
+        views_manager.update_all_views(block)
+
+        # Calculate new conflicts and update other views to show these conflicts.
+        self.schedule.calculate_conflicts()
+        views_manager.update_for_conflicts()
+        views_manager.set_dirty()
+
+        # Set colour for all buttons on main window, "Schedules" tab.
+        self._set_view_button_colours()
+
         pass
 
     # endregion
-    def _remove_all_guiblocks(self):
-        pass
 
-    def _add_guiblock(self, gui_block):
-        pass
+    # region PRIVATE METHODS
+    def _add_guiblock(self, gui_block: GuiBlockTk):
+        """Adds the GuiBlock to the list of GuiBlocks on the View. Returns the View object.
+        Parameters:
+            gui_block: The GuiBlock to be added."""
+        # Save.
+        self._gui_blocks[gui_block.id] = gui_block
+        return self
+
+    def _remove_all_guiblocks(self):
+        """Remove all GuiBlocks associated with this View."""
+        self._gui_blocks.clear()
 
     def _setup_for_assignable_blocks(self):
-        pass
+        """Find all 1/2 blocks and turn them into AssignBlocks."""
+        type = self.type
+
+        # Don't do this for 'stream' types.
+        if type == "stream":
+            return
+
+        # Loop through each half hour time slot, and create and draw AssignBlock for each.
+        from ..GUI.AssignBlockTk import AssignBlockTk
+        assignable_blocks: list[AssignBlockTk] = []
+        for day in range(1, 6):
+            for start in range(View.earliest_time * 2, View.latest_time * 2):
+                assignable_blocks.append(AssignBlockTk(self, day, start / 2))
+
+        self.gui.setup_assign_blocks(assignable_blocks, self._cb_assign_blocks)
+
+    def _get_conflict_info(self) -> list[dict[str, str]]:
+        """What types of conflicts are there? What colours should they be?"""
+        conflict_info = []
+        for c in (ConflictType.TIME_TEACHER, ConflictType.TIME, ConflictType.LUNCH,
+                  ConflictType.MINIMUM_DAYS, ConflictType.AVAILABILITY):
+            bg = Conflict.colours()[c]
+            fg = "white"
+            if Colour.is_light(bg):
+                fg = "black"
+            text = Conflict.get_description(c)
+            conflict_info.append({
+                "bg": Colour.string(bg),
+                "fg": Colour.string(fg),
+                "text": text
+            })
+        return conflict_info
+
+    # endregion
+

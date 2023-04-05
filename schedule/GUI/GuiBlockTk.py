@@ -99,6 +99,11 @@ class GuiBlockTk:
         rectangle = self.rectangle
         canvas.itemconfigure(rectangle, fill=self._colour)
 
+    @property
+    def id(self) -> int:
+        """Returns the unique id for this GuiBlock object."""
+        return self._id
+
 # =================================================================
 # footer
 # =================================================================
