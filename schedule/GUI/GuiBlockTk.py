@@ -27,7 +27,8 @@ class GuiBlockTk:
         canvas = gui_view.canvas
 
         # draw the block
-        gui_objs = DrawView.draw_block(canvas, block, gui_view.get_scale_info(), type, colour)
+        gui_objs = DrawView.draw_block(canvas, block, gui_view.get_scale_info(), type, colour,
+                                       block_tag=GuiBlockTk.Max_id + 1)
 
         lines = gui_objs['lines']
         text = gui_objs['text']
@@ -40,15 +41,17 @@ class GuiBlockTk:
         # NOTE: canvas.createGroup() doesn't exist in Tkinter. It's exclusive to Perl/Tk.
         # Plus, Sandy told us not to bother with drag-and-drop functionality.
         # Still, we need it for the change_colour function...
-        # NOTE: I think Sandy said something about a tkinter Group function.
+        # NOTE: I think Sandy said something about a tkinter Group function. However, this seems
+        # to come from a different package altogether based on the email she showed me.
         group = (
-            canvas.find_withtag("rectangle"),
-            canvas.find_withtag("text"),
-            canvas.find_withtag("lines")
+            canvas.find_withtag(f"rectangle_block_{GuiBlockTk.Max_id + 1}"),
+            canvas.find_withtag(f"text_block_{GuiBlockTk.Max_id + 1}"),
+            canvas.find_withtag(f"lines_block_{GuiBlockTk.Max_id + 1}")
         )
 
         # Create the object.
-        self._id = GuiBlockTk.Max_id + 1
+        GuiBlockTk.Max_id += 1
+        self._id = GuiBlockTk.Max_id
         self.block = block
         self.gui_view = gui_view
         self._coords = coords

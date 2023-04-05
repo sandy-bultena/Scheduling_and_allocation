@@ -311,9 +311,9 @@ class ViewBaseTk:
 
         # Get height and width of canvas.
         heights = self.canvas.configure()['height']
-        canvas_height = heights[-1]
+        canvas_height = int(heights[-1])
         widths = self.canvas.configure()['width']
-        canvas_width = widths[-1]
+        canvas_width = int(widths[-1])
 
         # get current scaling sizes
         x_origin = self._x_origin

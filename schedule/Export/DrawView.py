@@ -293,7 +293,8 @@ def get_block_text(block: Block, scale: float = 1, type="teacher"):
 # =================================================================
 # draw_block
 # =================================================================
-def draw_block(canvas: Canvas, block, scl: dict, type, colour=None, edge=None) -> dict | None:
+def draw_block(canvas: Canvas, block, scl: dict, type,
+               colour=None, edge=None, block_tag: int = None) -> dict | None:
     """Draws the Schedule timetable on the specified canvas.
 
     Parameters:
@@ -302,6 +303,7 @@ def draw_block(canvas: Canvas, block, scl: dict, type, colour=None, edge=None) -
         scl: Scaling info [dictionary].
         type: Type of view [teacher|block|stream] (affects what gets drawn on the block).
         colour: colour of block.
+        block_tag: Integer used to give the drawn block a unique tag identifier.
 
     Returns:
         -A dict containing the following keys:
@@ -344,6 +346,8 @@ def draw_block(canvas: Canvas, block, scl: dict, type, colour=None, edge=None) -
     # Create a rectangle.
     rectangle = canvas.create_rectangle(coords, fill=colour, outline=colour,
                                         tags=("rectangle", "members"))
+    if block_tag:
+        canvas.addtag_withtag(f"rectangle_block_{block_tag}", "rectangle")
 
     # shade edges of guiblock rectangle
     lines = []
@@ -359,12 +363,17 @@ def draw_block(canvas: Canvas, block, scl: dict, type, colour=None, edge=None) -
                 x2 - i, y1 + i, x1 + i, y1 + i, x1 + i, y2 - i, fill=light[i], tags="lines"
             )
         )
+    if block_tag:
+        canvas.addtag_withtag(f"lines_block_{block_tag}", "lines")
 
     # set text
     text = canvas.create_text(
         (x1 + x2) / 2, (y1 + y2) / 2, text=block_text, fill=text_colour,
         tags=("text", "members")
     )
+
+    if block_tag:
+        canvas.addtag_withtag(f"text_block_{block_tag}", "text")
 
     # group rectangle and text to create a guiblock,
     # so that they both move as one on UI
