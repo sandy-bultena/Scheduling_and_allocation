@@ -547,5 +547,77 @@ class View:
             })
         return conflict_info
 
+    def _get_named_schedulable_for_popup(self, type):
+        """For this view, find all schedulable objects that are the same type as this view,
+        but not including the schedulable associated with this view.
+
+        Parameters:
+            type: Type of schedulable object (Teacher/Lab/Stream).
+
+        Returns:
+            Array of named objects, with the object being a Teacher/Lab/Stream."""
+        # Get all schedulables.
+        all_schedulables = AllScheduables(self.schedule)  # TODO: Implement this class.
+
+        # Get only the schedulables that match the type of this view.
+        schedulables_by_type = all_schedulables.by_type(type)
+
+        # remove the schedulable object that is associated with this view.
+        named_schedulable_objects = [o for o in schedulables_by_type if o.id != self.schedulable.id]
+
+        return named_schedulable_objects
+
+    def _set_view_button_colours(self):
+        """In the main window, in the schedules tab, there are buttons that are used to call up the
+        various Schedule Views.
+
+        This function will colour those buttons according to the maximum conflict for that given
+        view."""
+        if self.views_manager:
+            self.views_manager.determine_button_colours()
+
+    def _set_status_undo_info(self):
+        View.undo_number = f"{len(self.views_manager.undoes)} undoes left"
+
+        View.redo_number = f"{len(self.views_manager.redoes)} redoes left"
+
+    def _snap_gui_block(self, guiblock: GuiBlockTk):
+        """Takes the GuiBlock and forces it to be located on the nearest day and 1/2 boundary.
+
+        Parameters:
+            guiblock: GuiBlock that is being moved."""
+        guiblock.block.snap_to_day(1, len(View.days))
+        guiblock.block.snap_to_time(min(View.times.keys()), max(View.times.keys()))
+
     # endregion
 
+
+"""
+=head1 AUTHOR
+
+Sandy Bultena, Ian Clement, Jack Burns - 2016
+
+Sandy Bultena 2020
+
+Rewritten for Python by Evan Laverdiere - 2023
+
+Updat
+
+=head1 COPYRIGHT
+
+Copyright (c) 2016, Jack Burns, Sandy Bultena, Ian Clement.
+
+Copyright (c) 2021, Sandy Bultena 
+
+All Rights Reserved.
+
+This module is free software. It may be used, redistributed
+and/or modified under the terms of the Perl Artistic License
+
+     (see http://www.perl.com/perl/misc/Artistic.html)
+
+=cut
+
+1;
+
+"""
