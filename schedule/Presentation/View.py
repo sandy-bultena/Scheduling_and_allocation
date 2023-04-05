@@ -155,7 +155,7 @@ class View:
         # --------------------------------------------------------------
         # popup menu for guiblocks
         # ---------------------------------------------------------------
-        named_schedulable_objects = self.get_named_schedulable_for_popup(type)
+        named_schedulable_objects = self._get_named_schedulable_for_popup(type)
         self.gui.setup_popup_menu(self.type, named_schedulable_objects, self._cb_toggle_movement,
                                   self._cb_move_block_between_schedulable_objects)
 
