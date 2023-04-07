@@ -38,10 +38,7 @@ class TableEntry(tk.Frame):
     # ===================================================================
     def __init__(self, parent: Any, **kwargs):
         tk.Frame.__init__(self, parent)
-        self.rows = 0
-        self.parent = parent
         self._cget = dict()
-        self._title_widgets = list()
         self.frame = None
 
         # ---------------------------------------------------------------
@@ -52,7 +49,7 @@ class TableEntry(tk.Frame):
             'rows': self.__set_rows,
             'columns': self.__set_columns,
             'titles': self.__set_titles,
-            'disabled': self.__set_disabled,
+            'disabled': self.__set_disabled_columns,
             'delete': self.__set_delete_callback,
             'buttoncmd': self.__set_button_callback,
             'buttontext': self.__set_button_text,
@@ -78,106 +75,10 @@ class TableEntry(tk.Frame):
         }
         self.__populate_the_frame(**kwargs)
 
-    # ===================================================================
-    # populate the frame
-    # ===================================================================
-    def __populate_the_frame(self, **kwargs):
-
-        # ---------------------------------------------------------------
-        # create a scrolled pane
-        # ---------------------------------------------------------------
-        scrolled_frame = Scrolled(self, "Frame", scrollbars="se", border=2, relief="flat")
-        scrolled_frame.pack(side='left', fill='both')
-        scrolled_frame.Subwidget('xscrollbar').configure(elementborderwidth=2, relief='ridge', width=12)
-        scrolled_frame.Subwidget('yscrollbar').configure(elementborderwidth=2, relief='ridge', width=12)
-        self.scrolled_frame = scrolled_frame
-        self.frame = scrolled_frame.Subwidget("Frame")
-
-        # ---------------------------------------------------------------
-        # define the 'delete' image
-        # ---------------------------------------------------------------
-        image_dir = path.dirname(path.dirname(__file__)) + "/Images"
-        # ex_photo = self.winfo_toplevel().Photo(format='gig',file=image_dir + "/ex.gif")
-
-        # ---------------------------------------------------------------
-        # configure this table entry & draw
-        # ---------------------------------------------------------------
-        to_configure = self._defaults.copy()
-        to_configure.update(kwargs)
-        self._configure(**to_configure)
-        self.__draw()
-
-    # ===================================================================
-    # get widget in row/col
-    # ===================================================================
-    def get_widget(self, r, c) -> Entry:
-        """get the widget in the row/col"""
-        w = self.frame.grid_slaves(r,c)
-        if w:
-            return w[0]
-        return None
-
-    def find_pos(self,w:Entry):
-        i = w.grid_info()
-        return (i["row"],i["column"])
-
-    # ===================================================================
-    # draw the widgets, etc
-    # ===================================================================
-    def __draw(self):
-
-        # create header row
-        self.__create_header_row()
-
-        # add rows
-        for r in range(1, self.number_of_rows + 1):
-            self.__add_empty_row()
-
-        # calculate the width of the row, to set the pane width
-        width_total = 0
-        for c in range(self.number_of_columns + 1):
-            w = self.get_widget(1, c)
-            if w is not None:
-                width_total += w.winfo_width() + 12
-
-            if self.cget("buttoncmd"):
-                width_total += 100
-
-            width_total += 2 * self.cget("border")
-            self.frame.configure(width=width_total)
-
-    # ===================================================================
-    # insert header_row
-    # ===================================================================
-    def __create_header_row(self):
-        self._title_widgets.clear()
-        titles = self.cget("titles")
-        colwidths = self.cget("colwidths")
-
-        # make sure lists are long enough
-        while len(titles) < self.number_of_columns + 1:
-            titles.append("")
-
-        while len(colwidths) < self.number_of_columns + 1:
-            colwidths.append(0)
-
-        # add labels to the top row
-        for c in range(1, self.number_of_columns + 1):
-            colwidths[c - 1] = colwidths[c - 1] if colwidths[c - 1] else self.cget("defwidth")
-            w = Label(self.frame, text=titles[c - 1], width=colwidths[c - 1])
-            w.grid(column=c, sticky='nsew', row=0)
-
-        self._configure(colwidths=colwidths)
-
     # ====================================================================================
     # add empty_row
     # ====================================================================================
-    def __button_delete_cmd(self, row):
-        if self.cget("buttoncmd"):
-            data = self.__read_row(row)
-            self.cget("buttoncmd")(data)
-
-    def __add_empty_row(self):
+    def add_empty_row(self):
         column_widths = self.cget("colwidths")
         columns_enabled_disabled = self.cget("disabled")
 
@@ -197,7 +98,7 @@ class TableEntry(tk.Frame):
             column_widths[c - 1] = column_widths[c - 1] if column_widths[c - 1] else self.cget("defwidth")
 
             # if there is something already there, delete it
-            old = self.get_widget(row, c)
+            old = self.__get_widget_in_row_col(row, c)
             if old:
                 old.destroy()
 
@@ -230,202 +131,69 @@ class TableEntry(tk.Frame):
 
             # I want my bindings to happen BEFORE the class bindings
             bindtags = w.bindtags()
-            print(bindtags)
-
             w.bindtags((bindtags[1], bindtags[0], bindtags[2], bindtags[3]))
-            print(w.bindtags())
 
-            # keep our row count up to date
-            self.configure(rows=row)
+        # keep our row count up to date
+        self.configure(rows=row)
 
-            # add a `delete button` in the first column
-            self.__put_delete(row)
+        # add a `delete button` in the first column
+        self.__add_delete_btn_to_row(row)
 
-            # if we have a row button, add that to the last column
-            if self.cget("buttoncmd"):
-                b = Button(self.frame,
-                           text=self.cget("buttontext"),
-                           command=partial(self.__button_delete_cmd, self, row, c)
-                           )
-                b.grid(column=self.number_of_columns + 1, sticky="nsew", row=row)
+        # if we have a row button, add that to the last column
+        if self.cget("buttoncmd"):
+            b = Button(self.scrolled_frame.Subwidget("Frame"),
+                       text=self.cget("buttontext"),
+                       command=partial(self.__button_cmd, row, c)
+                       )
+            b.grid(column=self.number_of_columns + 1, sticky="nsew", row=row)
 
         self.__adjust_size_of_frame()
 
     # ====================================================================================
-    # after a row add or row delete, adjust the size of the frame
-    # ====================================================================================
-    def __adjust_size_of_frame(self):
-        # --------------------------------------------------------------------------------
-        # adjust height of pane
-        # --------------------------------------------------------------------------------
-        height = 0
-        for row in range(self.number_of_rows + 1):
-            w = self.get_widget(row, 1)
-            if not w:
-                continue
-            height += w.winfo_height()
-
-        height += 2 * self.cget('border')
-        height += self.scrolled_frame.Subwidget("xscrollbar").winfo_height()
-        self.frame.configure(height=height)
-
-        # update scrollbars
-        self.update()
-        self.scrolled_frame.update_scrollbars()
-
-    # ====================================================================================
-    # put the "delete" button at the beginning of a row
-    # ====================================================================================
-    def __put_delete(self, row):
-        bg = self.cget("bg")
-        b = Button(self.frame,
-                   text="del",
-                   relief="flat",
-                   command=partial(self.__delete_row, row),
-                   highlightbackground=bg,
-                   highlightcolor=bg,
-                   bg=bg,
-                   )
-        b.grid(column=0, sticky="nsew", row=row)
-
-        # disable button?
-        if self.__are_all_disabled():
-            b.configure(state='disabled')
-
-    # ====================================================================================
-    # delete a row
-    # ====================================================================================
-    def __delete_row(self, row):
-        if row == 0:
-            return  # cannot delete the header row
-
-        # run user supplied callback first
-        delete_callback = self.cget("delete")
-        if delete_callback:
-            data = self.__read_row(row)
-            delete_callback(data)
-
-        # now remove the widgets and the row
-        for c in range(0, self.number_of_columns + 1):
-            w = self.get_widget(row, c)
-            if w:
-                w.destroy()
-
-    # ====================================================================================
-    # are all columns disabled?
-    # ====================================================================================
-    def __are_all_disabled(self) -> BooleanVar:
-        disabled_columns = self.cget("disabled")
-        if not disabled_columns:
-            return False
-        flag = True
-        for col in disabled_columns:
-            flag = flag and col
-        return flag
-
-    # ====================================================================================
-    # change focus to next cell (bound to Entry widgets)
-    # ====================================================================================
-    def __next_cell(self, w: Any, *args, **kwargs):
-        self.__move_cell(w, 1, 0)
-
-    def __prev_cell(self, w: Any, *args, **kwargs):
-        self.__move_cell(w, -1, 0)
-
-    def __next_row(self, w: Any, *args, **kwargs):
-        self.__move_cell(w, 0, 1)
-
-    def __prev_row(self, w: Any, *args, **kwargs):
-        self.__move_cell(w, 0, -1)
-
-    def __move_cell(self, w: Entry, x_dir: int, y_dir: int):
-
-        #if self.__are_all_disabled():
-        #    return
-        if w:
-            w.selection_clear()
-
-        (row, col) = self.find_pos(w)
-        col = col + x_dir
-        row = row + y_dir
-
-        if col > self.number_of_columns:
-            row = row + 1
-            col = 1
-
-        if col < 1:
-            row = row - 1
-            col = self.number_of_columns
-
-        if row > self.number_of_rows:
-            self.__add_empty_row(row)
-
-        if row < 0:
-            row = 0
-
-        # set the focus, and move the scrollbars appropriately
-        w2: Entry = self.get_widget(row, col)
-        if w2:
-            self.scrolled_frame.see(w2)
-            self.update()
-            w2.focus_set()
-            w2.selection_range(0, 'end')
-
-        # if we land on a disabled widget, keep moving
-        disabled_list = self.cget("disabled")
-        if disabled_list[col - 1]:
-            w2 = self.get_widget(row, col)
-            self.__move_cell(w2, x_dir, y_dir)
-
-        self.update()
-        return "break"
-
-    # ====================================================================================
-    # binding subroutine for <Button> on entry widget
-    # ====================================================================================
-    def __select_all(self, w: Entry, *args, **kwargs):
-        if w:
-            w.focus()
-            w.selection_clear()
-            w.selection_range(0, 'end')
-
-    # ====================================================================================
     # read row
     # ====================================================================================
-    def __read_row(self, row):
+    def read_row(self, row):
         self.update()
         data = list()
-        if row < 1:
+        row = row + 1
+        if row < 0:
             return data
         for c in range(1, self.number_of_columns + 1):
-            w = self.get_widget(row, c)
+            w = self.__get_widget_in_row_col(row, c)
             if w:
                 data.append(w.get())
         return data
 
-
     # ===================================================================
     # put data
     # ===================================================================
-    def put(self,row:int,col:int,data:Any):
-        if row<1:
+    def put(self, row: int, col: int, data: Any):
+        if row < 0:
             return
+
+        row = row + 1
+        col = col + 1
 
         # add rows, if required
         if row > self.number_of_rows:
-            for row in range(row - self.number_of_rows):
-                self.__add_empty_row()
+            for _ in range(row - self.number_of_rows):
+                self.add_empty_row()
 
         # put the data into the widget
-        w = self.get_widget(row,col)
-        if w:
-            w.configure(text=data)
-
+        w = self.__get_widget_in_row_col(row, col)
+        if w and isinstance(w, Entry):
+            disabled_flag = w.cget("state") == "disabled"
+            if disabled_flag:
+                w.configure(state="normal")
+            w.selection_range(0, 'end')
+            w.insert(0, data)
+            if disabled_flag:
+                w.configure(state="disabled")
 
     # =================================================================================================
     # configure, cget, etc
     # =================================================================================================
-    def _configure(self, **kwargs):
+    def __configure(self, **kwargs):
         """save the configuration into the _cget dictionary"""
         for k, v in kwargs.items():
             self._cget[k] = v
@@ -442,8 +210,47 @@ class TableEntry(tk.Frame):
             if k in self._cget:
                 self.__config_specs[k](v)
             else:
+                print(f"Calling super configure {k=},{v=}")
+                super().configure(**{k: v})
                 pass
-            #  super().configure(**{k: v})
+
+    # ====================================================================================
+    # put the "delete" button at the beginning of a row
+    # ====================================================================================
+    def __add_delete_btn_to_row(self, row):
+        bg = self.cget("bg")
+        b = Button(self.scrolled_frame.Subwidget("Frame"),
+                   text="del",
+                   # relief="flat",
+                   command=partial(self.__delete_row, row),
+                   highlightbackground=bg,
+                   highlightcolor=bg,
+                   bg=bg,
+                   )
+        b.grid(column=0, sticky="nsew", row=row)
+
+        # disable button?
+        if self.__are_all_columns_disabled():
+            b.configure(state='disabled')
+
+    # ====================================================================================
+    # after a row add or row delete, adjust the size of the frame
+    # ====================================================================================
+    def __adjust_size_of_frame(self):
+        # --------------------------------------------------------------------------------
+        # adjust height of pane
+        # --------------------------------------------------------------------------------
+        height = 0
+        for row in range(self.number_of_rows + 1):
+            w = self.__get_widget_in_row_col(row, 1)
+            if not w:
+                continue
+            height += w.winfo_height()
+
+        height += 2 * self.cget('border')
+        height += self.scrolled_frame.Subwidget("xscrollbar").winfo_height()
+        self.frame.configure(height=height)
+        self.update()
 
     # =================================================================================================
     # Configuration routines
@@ -452,32 +259,265 @@ class TableEntry(tk.Frame):
         if self.number_of_columns and self.number_of_rows:
             for c in range(1, self.number_of_columns + 1):
                 for r in range(1, self.number_of_rows + 1):
-                    w = self.get_widget(r, c)
+                    w = self.__get_widget_in_row_col(r, c)
                     if w is not None:
                         func(w, r, c)
 
+    # ====================================================================================
+    # are all columns disabled?
+    # ====================================================================================
+    def __are_all_columns_disabled(self) -> BooleanVar:
+        disabled_columns = self.cget("disabled")
+        if not disabled_columns:
+            return False
+        flag = True
+        for col in disabled_columns:
+            flag = flag and col
+        return flag
+
+    # ====================================================================================
+    # set the background colour for all the entry widgets
+    # ====================================================================================
     def __bg_entry(self, colour):
         if colour is None:
             return self.cget('bg_entry')
-        self._configure(colour=colour)
+        self.__configure(colour=colour)
         self.__apply_to_all_entry_widgets(lambda w, r, c: w.configure(bg=colour))
         return self.cget("bg_entry")
 
+    # ====================================================================================
+    # callback for button at end of row being clicked
+    # ====================================================================================
+    def __button_cmd(self, row, *args, **kwargs):
+        if self.cget("buttoncmd"):
+            data = self.read_row(row - 1)  # read row adds 1
+            self.cget("buttoncmd")(data)
+
+    # ====================================================================================
+    # change focus to next cell (bound to Entry widgets)
+    # ====================================================================================
+    def __change_focus_to_new_cell(self, w: Entry, x_dir: int, y_dir: int):
+
+        if w:
+            w.selection_clear()
+
+        (row, col) = self.__get_row_col_of_widget(w)
+        print(f"{row=},{col=}")
+        col = col + x_dir
+        row = row + y_dir
+
+        if col > self.number_of_columns:
+            row = row + 1
+            col = 1
+
+        if col < 1:
+            row = row - 1
+            col = self.number_of_columns
+
+        if row > self.number_of_rows:
+            self.add_empty_row()
+            self.scrolled_frame.update_scrollbars()
+
+        if row < 0:
+            row = 0
+
+        # set the focus, and move the scrollbars appropriately
+        w2: Entry = self.__get_widget_in_row_col(row, col)
+        if w2:
+            self.scrolled_frame.see(w2)
+            self.update()
+            w2.focus_set()
+            w2.selection_range(0, 'end')
+
+        # if we land on a disabled widget, keep moving
+        disabled_list = self.cget("disabled")
+        if disabled_list[col - 1]:
+            w2 = self.__get_widget_in_row_col(row, col)
+            self.__change_focus_to_new_cell(w2, x_dir, y_dir)
+
+        self.update()
+        return "break"
+
+    # ===================================================================
+    # insert header_row
+    # ===================================================================
+    def __create_header_row(self):
+        titles = self.cget("titles")
+        colwidths = self.cget("colwidths")
+
+        # make sure lists are long enough
+        while len(titles) < self.number_of_columns + 1:
+            titles.append("")
+
+        while len(colwidths) < self.number_of_columns + 1:
+            colwidths.append(0)
+
+        # add labels to the top row
+        for c in range(1, self.number_of_columns + 1):
+            colwidths[c - 1] = colwidths[c - 1] if colwidths[c - 1] else self.cget("defwidth")
+            w = Label(self.frame, text=titles[c - 1], width=colwidths[c - 1])
+            w.grid(column=c, sticky='nsew', row=0)
+
+        self.__configure(colwidths=colwidths)
+
+    # ====================================================================================
+    # delete a row
+    # ====================================================================================
+    def __delete_row(self, row):
+        if row == 0:
+            return  # cannot delete the header row
+
+        # run user supplied callback first
+        delete_callback = self.cget("delete")
+        if delete_callback:
+            data = self.read_row(row - 1)  # because read_row adds 1
+            delete_callback(data)
+
+        # now remove the widgets and the row (but not the delete button)
+        for c in range(1, self.number_of_columns + 1):
+            w = self.__get_widget_in_row_col(row, c)
+            if w:
+                w.grid_forget()
+                w.destroy()
+
+        # we want to move everything up, (even though it looks
+        # ok without doing it, we want to make sure that all the
+        # row/cols stays in sync with what we have
+        for r in range(row + 1, self.number_of_rows + 1):
+            for c in range(1, self.number_of_columns + 1):
+                w = self.__get_widget_in_row_col(r, c)
+                if w:
+                    w.grid_forget()
+                    w.grid(row=r - 1, column=c, sticky="nsew")
+
+        w = self.__get_widget_in_row_col(self.number_of_rows, 0)
+        if w:
+            w.grid_forget()
+            w.destroy()
+        self.number_of_rows = self.number_of_columns - 1
+
+    # ===================================================================
+    # draw the widgets, etc
+    # ===================================================================
+    def __draw(self):
+
+        # create header row
+        self.__create_header_row()
+
+        # add rows
+        num_of_rows = self.number_of_rows
+        self.number_of_rows = 0
+        for r in range(1, num_of_rows + 1):
+            self.add_empty_row()
+
+        # calculate the width of the row, to set the pane width
+        width_total = 0
+        for c in range(self.number_of_columns + 1):
+            w = self.__get_widget_in_row_col(1, c)
+            if w is not None:
+                width_total += w.winfo_width() + 12
+
+            if self.cget("buttoncmd"):
+                width_total += 100
+
+            width_total += 2 * self.cget("border")
+            self.frame.configure(width=width_total)
+
+    # ===================================================================
+    # get row/col of a widget
+    # ===================================================================
+    def __get_row_col_of_widget(self, w: Entry):
+        if w:
+            i = w.grid_info()
+            return i["row"], i["column"]
+        return 0, 0
+
+    # ===================================================================
+    # get widget in row/col
+    # ===================================================================
+    def __get_widget_in_row_col(self, r, c) -> Entry:
+        """get the widget in the row/col"""
+        w = self.frame.grid_slaves(r, c)
+        if w:
+            return w[0]
+        return None
+
+    # ===================================================================
+    def __next_cell(self, w: Any, *args, **kwargs):
+        self.__change_focus_to_new_cell(w, 1, 0)
+
+    # ===================================================================
+    def __next_row(self, w: Any, *args, **kwargs):
+        self.__change_focus_to_new_cell(w, 0, 1)
+
+    # ===================================================================
+    # populate the frame
+    # ===================================================================
+    def __populate_the_frame(self, **kwargs):
+
+        # ---------------------------------------------------------------
+        # create a scrolled pane
+        # ---------------------------------------------------------------
+        scrolled_frame = Scrolled(self, "Frame", scrollbars="se", border=2, relief="flat")
+        scrolled_frame.pack(side='left', fill='both')
+        scrolled_frame.Subwidget('xscrollbar').configure(elementborderwidth=2, relief='ridge', width=12)
+        scrolled_frame.Subwidget('yscrollbar').configure(elementborderwidth=2, relief='ridge', width=12)
+        self.scrolled_frame = scrolled_frame
+        self.frame = scrolled_frame.Subwidget("Frame")
+
+        # ---------------------------------------------------------------
+        # define the 'delete' image
+        # ---------------------------------------------------------------
+        image_dir = path.dirname(path.dirname(__file__)) + "/Images"
+        # ex_photo = self.winfo_toplevel().Photo(format='gig',file=image_dir + "/ex.gif")
+
+        # ---------------------------------------------------------------
+        # configure this table entry & draw
+        # ---------------------------------------------------------------
+        to_configure = self._defaults.copy()
+        to_configure.update(kwargs)
+        self.__configure(**to_configure)
+        self.__draw()
+
+    # ====================================================================================
+    def __prev_cell(self, w: Any, *args, **kwargs):
+        self.__change_focus_to_new_cell(w, -1, 0)
+
+    # ====================================================================================
+    def __prev_row(self, w: Any, *args, **kwargs):
+        self.__change_focus_to_new_cell(w, 0, -1)
+
+
+    # ====================================================================================
+    # binding subroutine for clicking mouse button on entry widget
+    # ====================================================================================
+    def __select_all(self, w: Entry, *args, **kwargs):
+        if w:
+            w.focus()
+            w.selection_clear()
+            w.selection_range(0, 'end')
+
+    # ====================================================================================
+    # set the titles for each column
+    # ====================================================================================
     def __set_titles(self, title_list: list):
         if title_list is None:
             return self.cget('titles')
         while len(title_list) < self.number_of_columns:
             title_list.append("")
-        self._configure(titles=title_list)
+        self.__configure(titles=title_list)
         self.__apply_to_all_entry_widgets(lambda w, r, c: w.configure(text=title_list[c - 1]))
         return self.cget('titles')
 
-    def __set_disabled(self, column_disabled_list: list):
+    # ====================================================================================
+    # set which columns of entry widgets are disabled
+    # ====================================================================================
+    def __set_disabled_columns(self, column_disabled_list: list):
         if column_disabled_list is None:
             return self.cget("disabled")
         while len(column_disabled_list) < self.number_of_columns:
             column_disabled_list.append(0)
-        self._configure(disabled=column_disabled_list)
+        self.__configure(disabled=column_disabled_list)
 
         def _disable_widget(w, r, c):
             if column_disabled_list[c - 1]:
@@ -488,10 +528,36 @@ class TableEntry(tk.Frame):
         self.__apply_to_all_entry_widgets(_disable_widget)
         return self.cget('disabled')
 
+    # ====================================================================================
+    # set the callback for the button at the end of the row
+    # NB:  If this is not set during the __init__, there will NOT be a button at the end
+    #      of the row
+    # ====================================================================================
+    def __set_button_callback(self, button_callback: callable):
+        self.__configure(buttoncmd=button_callback)
+        return self.cget("buttoncmd")
+
+    # ====================================================================================
+    # define the button's text (the button at the end of the row)
+    # ====================================================================================
+    def __set_button_text(self, button_text: str):
+        self.__configure(buttontext=button_text)
+        return self.cget("buttontext")
+
+    # ====================================================================================
+    # set the number of columns
+    # ====================================================================================
+    def __set_columns(self, columns: list):
+        self.__configure(columns=columns)
+        return self.cget("columns")
+
+    # ====================================================================================
+    # set the widths for each column
+    # ====================================================================================
     def __set_column_widths(self, colwidths_list: list):
         if not colwidths_list:
             return self.cget("colwidths")
-        self._configure(colwidths=colwidths_list)
+        self.__configure(colwidths=colwidths_list)
 
         def _colwidths(w, r, c):
             width = colwidths_list[c - 1] or self.cget("defwidth") or 8
@@ -500,40 +566,50 @@ class TableEntry(tk.Frame):
         self.__apply_to_all_entry_widgets(_colwidths)
         return self.cget('colwidths')
 
-    def __set_rows(self, rows: list):
-        self._configure(rows=rows)
-        return self.cget("rows")
-
-    def __set_columns(self, columns: list):
-        self._configure(columns=columns)
-        return self.cget("columns")
-
+    # ====================================================================================
+    # set the callback function for the delete button
+    # ====================================================================================
     def __set_delete_callback(self, delete_callback: callable):
-        self._configure(delete=delete_callback)
+        self.__configure(delete=delete_callback)
         return self.cget("delete")
 
-    def __set_button_callback(self, button_callback: callable):
-        self._configure(buttoncmd=button_callback)
-        return self.cget("buttoncmd")
+    # ====================================================================================
+    # set the number of rows
+    # ====================================================================================
+    def __set_rows(self, rows: list):
+        self.__configure(rows=rows)
+        return self.cget("rows")
 
-    def __set_button_text(self, button_text: str):
-        self._configure(buttontext=button_text)
-        return self.cget("buttontext")
-
+    # ====================================================================================
+    # set the default width of a column
+    # ====================================================================================
     def __set_default_width(self, default_width: int):
-        self._configure(defwidth=default_width)
+        self.__configure(defwidth=default_width)
         return self.cget("width")
 
 
 def example():
+    data = [
+        [1, "datum 1", "m1"],
+        [2, "datum 2", "m2"],
+        [3, "datum 3", "m3"],
+    ]
+
+    # make a Tk window
     mw = Tk()
+    mw.geometry("500x300")
     frame = Frame(mw)
     frame.pack(expand=1, fill="both")
 
+    # add the TableEntry object
     titles = ["one", "two", "three"]
     col_widths = [10, 20, 5]
-    de = TableEntry(frame, rows=3, columns=3, colwidths=col_widths, titles=titles)
+
+    # note that buttoncmd must be here, it cannot be entered later via config
+    de = TableEntry(frame, rows=0, columns=len(data[0]), colwidths=col_widths, titles=titles,
+                    buttoncmd=on_button_click)
     de.pack(side="top", expand=1, fill="both")
+    de.configure(borderwidth=3)
 
     # disable the first column, but not the rest
     disabled = [1]
@@ -542,29 +618,26 @@ def example():
     # callback for deleting a row
     de.configure(delete=on_delete)
 
+    # populate with data
+    for r in range(len(data)):
+        for c in range(len(data[r])):
+            de.put(r, c, data[r][c])
+
+    de.add_empty_row();
 
     mw.mainloop()
 
-def on_delete(data:list):
-    print (f"Deleted row, {data}")
 
-    """
-    # ---------------------------------------------------------------
-    # create the table entry object
-    # ---------------------------------------------------------------
+def on_delete(data: list):
+    print(f"Deleted row, {data}")
 
-    # disable the first columns, but not the rest
-    my @disabled = (1);
-    push @disabled, (0) x ( $de->columns - 1 );
 
-    $de->configure( -disabled => \@disabled );
-
-    # --------------------------------------------------------------------------
-    # NOTE: If weird shit is happening, give up and use a 'Save' button
-    # ... clicking the 'Delete' triggers a 'Leave'...
-    # --------------------------------------------------------------------------
-
-    """
+def on_button_click(data: list):
+    print(f"Button clicked, {data}")
 
 
 example()
+
+#TODO: inserting data doesn't work for the column 0
+
+#TODO: deleting row has to get rid of last button
