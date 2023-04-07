@@ -128,7 +128,7 @@ class Scrolled(Frame):
         # ----------------------------------------------------------------------------------------
         # initialize the holding frame
         # ----------------------------------------------------------------------------------------
-        Frame.__init__(self, parent)
+        Frame.__init__(self,parent,**kwargs)
 
         self._widget_type = widget_type
         self._scrollable_object = None
@@ -180,7 +180,7 @@ class Scrolled(Frame):
 
             self._widget = _tk_widget_type(self, **kwargs)
             self._scrollable_object = self._widget
-            self._scrollable_object.pack(side=TOP, fill=BOTH, expand=1)
+            self._scrollable_object.pack()
 
         except AttributeError:
 
@@ -212,12 +212,13 @@ class Scrolled(Frame):
         if self._horizontal_scrollbar is not None:
             self._horizontal_scrollbar.configure(command=self._scrollable_object.xview)
             self._scrollable_object.configure(xscrollcommand=self._horizontal_scrollbar.set)
+        self.pack(fill="both",expand=1)
 
     # ===============================================================================================================
     # pass on all 'configure' to the scrollable object
     # ===============================================================================================================
-    def configure(self, **kwargs):
-        self._widget.configure(**kwargs)
+    #def configure(self, **kwargs):
+    #    self._widget.configure(**kwargs)
 
     # ===============================================================================================================
     # if adding things to the frame, we need to update the scrollbars.
