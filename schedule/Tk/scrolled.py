@@ -19,60 +19,72 @@ def eprint(*args, **kwargs):
 # https://docstore.mik.ua/orelly/perl3/tk/ch06_03.htm
 # Section 6.3.8
 # http://infohost.nmt.edu/tcc/help/pubs/tkinter/web/events.html
+# https://anzeljg.github.io/rin2/book2/2405/docs/tkinter/index.html
 ###############
 
 class Scrolled(Frame):
     """Creates a frame, creates and inserts the defined widget, and adds scrollbars
 
-    Parameters
-    ----------
+Parameters
+----------
     parent: Tk_container
     widget_type: str ->What widget you want to create
 
-    Options
-    -------
+Options
+-------
     scrollbars:str -> defines which scrollbars you want and where you want them: "nsew".
-                      'n' is a horizontal scrollbar at the top of the widget
-                      'e' is a vertical scrollbar at the right side of the widget
-                      you can only have one scrollbar for horizontal and one for vertical
+
+                        'n' is a horizontal scrollbar at the top of the widget
+
+                        'e' is a vertical scrollbar at the right side of the widget
+
+                        you can only have one scrollbar for horizontal and one for vertical
 
     all other options will be passed to the widget when it is created
 
 
-    Properties
-    ----------
+Properties
+----------
     widget -> the widget that you asked to be created
+
     horizontal_scrollbar -> the horizontal scrollbar that was created
+
     vertical_scrollbar -> the vertical scrollbar that was created
 
-    horizontal_scrollbar
-
-    vertical_scrollbar
-
-    Methods
-    -------
+Methods
+-------
     see (self,internal_widget)
-    yview_moveto(self, fraction):
-    xview_moveto(self, fraction):
+
+    yview_moveto(self, fraction)
+
+    xview_moveto(self, fraction)
+
     yview(self, widget=None)
+
     xview(self, widget=None)
+
     yview_scroll(self, number, what)
+
     xview_scroll(self, number, what)
 
 
-    Notes
-    -----
+Notes
+-----
     The created object will be a frame, so you can pack or grid it as desired
+
     To access the scrolled widget, use 'self.widget' property
+
     To access the scrollbars, use self.horizontal_scrollbar and self.vertical_scrollbar
+
      - scrollbars have been set to not take focus, if you want to change that you have to modify
        the scrollbars after the scrolled widget has been created
 
 
-    Examples
-    --------
+Examples
+--------
 
-    Example:
+example::
+
         from tkinter import *
         from scrolled import Scrolled
 
@@ -225,6 +237,7 @@ class Scrolled(Frame):
     # ... at this point must be done manually from the calling code
     # ===============================================================================================================
     def update_scrollbars(self,*args,**kwargs):
+        """resets the scrollbars to accommodate changes in the canvas size"""
         if isinstance(self._scrollable_object,Canvas):
             canvas = self._scrollable_object
             canvas.configure(scrollregion=canvas.bbox("all"))
@@ -233,8 +246,8 @@ class Scrolled(Frame):
     # Subwidget
     # ===============================================================================================================
     def Subwidget(self, name: str) -> Any:
+        """returns scrollbar, the widget to be scrolled, or the scrolled object"""
         if name == 'xscrollbar':
-            print(f"Returning {self._horizontal_scrollbar}")
             return self._horizontal_scrollbar
         if name == 'yscrollbar':
             return self._vertical_scrollbar
