@@ -360,10 +360,8 @@ example::
                 self._scrollable_object.yview_moveto(pos)
 
             if to_be_seen_bottom > scroll_region_bottom:
-                print (f"{to_be_seen_bottom=}, {scroll_region_bottom=}, {scroll_region_top=}, {scrollable_object_top=}")
                 dy = to_be_seen_bottom - scroll_region_bottom + to_be_seen_height
                 pos = (scroll_region_top - scrollable_object_top + dy) / scrollable_object_height
-                print (f"{dy=},{pos=}")
                 self._scrollable_object.yview_moveto(pos)
 
         return self.vertical_scrollbar.get()
