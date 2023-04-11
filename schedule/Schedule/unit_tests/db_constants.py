@@ -15,3 +15,6 @@ HOST = info['HOST']
 USERNAME = info['USERNAME']
 PASSWD = info['PASSWD']
 PROVIDER = info['PROVIDER']
+CREATE_DB = False
+if 'CREATE_DB' in info:
+    CREATE_DB = info['CREATE_DB']

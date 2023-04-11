@@ -24,7 +24,10 @@ def init_constants():
 @pytest.fixture(scope="module", autouse=True)
 def before_and_after_module():
     global db
-    db = define_database(host=HOST, passwd=PASSWD, db=DB_NAME, provider=PROVIDER, user=USERNAME)
+    if PROVIDER == "mysql":
+        db = define_database(host=HOST, passwd=PASSWD, db=DB_NAME, provider=PROVIDER, user=USERNAME)
+    elif PROVIDER == "sqlite":
+        db = define_database(provider=PROVIDER, filename=DB_NAME, create_db=CREATE_DB)
     init_constants()
     yield
     db.drop_all_tables(with_all_data=True)
