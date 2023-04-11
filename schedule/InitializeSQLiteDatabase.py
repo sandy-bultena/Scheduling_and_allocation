@@ -1,10 +1,12 @@
 """Initializes an SQLite database file containing test data for the whole application."""
 from pony.orm import db_session, commit
 
+from schedule.Schedule.Block import Block
 from schedule.Schedule.Course import Course
 from schedule.Schedule.Lab import Lab
 from schedule.Schedule.Schedule import Schedule
 from schedule.Schedule.Section import Section
+from schedule.Schedule.Teacher import Teacher
 from schedule.Schedule.database import PonyDatabaseConnection
 from schedule.Schedule.database.db_constants import *
 
@@ -48,8 +50,7 @@ def create_lab():
     if PonyDatabaseConnection.Lab.get(id=1) is None:
         my_lab = Lab("R-101", "Test Lab")
     else:
-        db_lab = PonyDatabaseConnection.Lab(number="R-101",
-                                            description="Test Lab")
+        db_lab = PonyDatabaseConnection.Lab.get(id=1)
         commit()
         my_lab = Lab(db_lab.number, db_lab.description, id=db_lab.id)
 
@@ -61,7 +62,8 @@ def create_section(ent_sched: Schedule, ent_course: Course):
     db_course = PonyDatabaseConnection.Course[ent_course.id]
     commit()
     if PonyDatabaseConnection.Section.get(id=1) is None:
-        my_sect = Section(name="Test Section", number="S-1", course=ent_course, schedule_id=ent_sched.id)
+        my_sect = Section(name="Test Section", number="S-1", course=ent_course,
+                          schedule_id=ent_sched.id)
     else:
         db_sect = PonyDatabaseConnection.Section.get(id=1)
         my_sect = Section(number=db_sect.number, hours=db_sect.hours,
@@ -70,8 +72,27 @@ def create_section(ent_sched: Schedule, ent_course: Course):
     return my_sect
 
 
-def create_block():
-    pass
+def create_block(sect: Section = None) -> Block:
+    if PonyDatabaseConnection.Block.get(id=1) is None:
+        my_block = Block("mon", "8:30", 1.5, 1)
+    else:
+        db_block = PonyDatabaseConnection.Block.get(id=1)
+        my_block = Block(db_block.day, db_block.start, db_block.duration, db_block.number,
+                         db_block.movable, id=db_block.id)
+    commit()
+    if isinstance(sect, Section):
+        my_block.section = sect
+        commit()
+    return my_block
+
+
+def create_teacher():
+    if PonyDatabaseConnection.Teacher.get(id=1) is None:
+        my_teach = Teacher("John", "Smith", "Computer Science")
+    else:
+        db_teach = PonyDatabaseConnection.Teacher.get(id=1)
+        my_teach = Teacher(db_teach.first_name, db_teach.last_name, db_teach.dept, id=db_teach.id)
+    return my_teach
 
 
 def main():
@@ -90,9 +111,17 @@ def main():
         course_a = create_course()
         lab_a = create_lab()
         section_a = create_section(my_sched, course_a)
-        block_a = create_block()
+        block_a = create_block(section_a)
     print(course_a)
+    section_a.add_block(block_a)
+    course_a.add_section(section_a)
     course_a.assign_lab(lab_a)
+
+    with db_session:
+        teacher_a = create_teacher()
+
+    course_a.assign_teacher(teacher_a)
+    print(course_a)
 
 
 if __name__ == "__main__":
