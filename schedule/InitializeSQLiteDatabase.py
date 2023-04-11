@@ -12,6 +12,32 @@ from schedule.Schedule.Teacher import Teacher
 from schedule.Schedule.database import PonyDatabaseConnection
 from schedule.Schedule.database.db_constants import *
 
+"""
+SYNOPSIS:
+(.env file):
+    PROVIDER="sqlite"
+    DB_NAME="test_db.sqlite"
+    CREATE_DB=True
+    HOST=""
+    USERNAME=""
+    PASSWD=""
+    
+    run this script from the command line to generate a local SQLite database based on the above parameters.
+    
+    Alternatively,
+    
+(.env file):
+    DB_NAME="[database name]"
+    HOST="[host IP address]"
+    USERNAME="[user's name]"
+    PASSWD="[user's password]"
+    PROVIDER="mysql"
+
+    run this script from the command line to generate a remote MySQL database.
+    
+    In either case, the database's contents will be the same.
+"""
+
 
 def create_scenario() -> PonyDatabaseConnection.Scenario:
     if PonyDatabaseConnection.Scenario.get(id=1) is None:
