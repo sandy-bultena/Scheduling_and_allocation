@@ -198,7 +198,10 @@ def after_write():
         new_db.drop_all_tables(with_all_data=True)
         new_db.disconnect()
         new_db.provider = new_db.schema = None
-        db = define_database(host=HOST, passwd=PASSWD, db=DB_NAME, provider=PROVIDER, user=USERNAME)
+        if PROVIDER == "mysql":
+            db = define_database(host=HOST, passwd=PASSWD, db=DB_NAME, provider=PROVIDER, user=USERNAME)
+        elif PROVIDER == "sqlite":
+            db = define_database(provider=PROVIDER, filename=DB_NAME, create_db=CREATE_DB)
 
 def test_write_DB(after_write):
     """
@@ -214,8 +217,10 @@ def test_write_DB(after_write):
     db.provider = db.schema = None
 
     db_name = DB_NAME + "_wrapper_write_test"
-    new_db = define_database(host=HOST, passwd=PASSWD, db=db_name, provider=PROVIDER, user=USERNAME)
-
+    if PROVIDER == "mysql":
+        new_db = define_database(host=HOST, passwd=PASSWD, db=db_name, provider=PROVIDER, user=USERNAME)
+    elif PROVIDER == "sqlite":
+        new_db = define_database(provider=PROVIDER, filename=db_name + ".sqlite", create_db=CREATE_DB)
     new_db.drop_all_tables(with_all_data=True)
     new_db.create_tables()
 
