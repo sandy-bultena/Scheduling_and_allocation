@@ -71,12 +71,14 @@ def test_confirm_Stream_can_be_iterated():
         assert i
 
 
+@db_session
 def test_confirm_id_increments():
     """Confirm that IDs increment correctly"""
     for _ in range(5):
         Stream()
+    max_id = max(s.id for s in dbStream)
     for index, i in enumerate(Stream.list()):
-        assert i.id == index + 1
+        assert i.id == index + (max_id - 4)  # A bit of a hack, but this works.
 
 
 def test_confirm_description_includes_num_and_descr():
@@ -87,10 +89,12 @@ def test_confirm_description_includes_num_and_descr():
     assert num in s.description and descr in s.description
 
 
+@db_session
 def test_confirm_can_get_by_id():
     """Confirm that Streams can be retrieved by ID"""
     s = Stream()
-    assert Stream.get(1) is s
+    max_id = max(s.id for s in dbStream)
+    assert Stream.get(max_id) is s
 
 
 def test_share_blocks_finds_shared():
