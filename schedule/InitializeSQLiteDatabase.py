@@ -2,7 +2,9 @@
 from pony.orm import db_session, commit
 
 from schedule.Schedule.Course import Course
+from schedule.Schedule.Lab import Lab
 from schedule.Schedule.Schedule import Schedule
+from schedule.Schedule.Section import Section
 from schedule.Schedule.database import PonyDatabaseConnection
 from schedule.Schedule.database.db_constants import *
 
@@ -42,6 +44,36 @@ def create_course() -> Course:
     return my_course
 
 
+def create_lab():
+    if PonyDatabaseConnection.Lab.get(id=1) is None:
+        my_lab = Lab("R-101", "Test Lab")
+    else:
+        db_lab = PonyDatabaseConnection.Lab(number="R-101",
+                                            description="Test Lab")
+        commit()
+        my_lab = Lab(db_lab.number, db_lab.description, id=db_lab.id)
+
+    return my_lab
+
+
+def create_section(ent_sched: Schedule, ent_course: Course):
+    db_sched = PonyDatabaseConnection.Schedule[ent_sched.id]
+    db_course = PonyDatabaseConnection.Course[ent_course.id]
+    commit()
+    if PonyDatabaseConnection.Section.get(id=1) is None:
+        my_sect = Section(name="Test Section", number="S-1", course=ent_course, schedule_id=ent_sched.id)
+    else:
+        db_sect = PonyDatabaseConnection.Section.get(id=1)
+        my_sect = Section(number=db_sect.number, hours=db_sect.hours,
+                          name=db_sect.name, course=ent_course,
+                          id=db_sect.id)
+    return my_sect
+
+
+def create_block():
+    pass
+
+
 def main():
     if PROVIDER != "sqlite":
         raise ValueError(f"Invalid pony provider format retrieved from .env file: {PROVIDER}")
@@ -56,7 +88,11 @@ def main():
 
     with db_session:
         course_a = create_course()
+        lab_a = create_lab()
+        section_a = create_section(my_sched, course_a)
+        block_a = create_block()
     print(course_a)
+    course_a.assign_lab(lab_a)
 
 
 if __name__ == "__main__":
