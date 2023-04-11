@@ -6,6 +6,7 @@ from schedule.Schedule.Course import Course
 from schedule.Schedule.Lab import Lab
 from schedule.Schedule.Schedule import Schedule
 from schedule.Schedule.Section import Section
+from schedule.Schedule.Stream import Stream
 from schedule.Schedule.Teacher import Teacher
 from schedule.Schedule.database import PonyDatabaseConnection
 from schedule.Schedule.database.db_constants import *
@@ -58,9 +59,6 @@ def create_lab():
 
 
 def create_section(ent_sched: Schedule, ent_course: Course):
-    db_sched = PonyDatabaseConnection.Schedule[ent_sched.id]
-    db_course = PonyDatabaseConnection.Course[ent_course.id]
-    commit()
     if PonyDatabaseConnection.Section.get(id=1) is None:
         my_sect = Section(name="Test Section", number="S-1", course=ent_course,
                           schedule_id=ent_sched.id)
@@ -95,6 +93,17 @@ def create_teacher():
     return my_teach
 
 
+def create_stream(sect: Section) -> Stream:
+    if PonyDatabaseConnection.Stream.get(id=1) is None:
+        my_stream = Stream("A")
+    else:
+        db_stream = PonyDatabaseConnection.Stream.get(id=1)
+        my_stream = Stream(db_stream.number, db_stream.descr, id=db_stream.id)
+    commit()
+    sect.assign_stream(my_stream)
+    return my_stream
+
+
 def main():
     if PROVIDER != "sqlite":
         raise ValueError(f"Invalid pony provider format retrieved from .env file: {PROVIDER}")
@@ -119,9 +128,19 @@ def main():
 
     with db_session:
         teacher_a = create_teacher()
+        stream_a = create_stream(section_a)
 
     course_a.assign_teacher(teacher_a)
+    course_a.assign_stream(stream_a)
     print(course_a)
+    print(my_sched.teachers())
+    print(my_sched.blocks())
+    print(my_sched.labs())
+    print(my_sched.courses())
+    print(my_sched.sections)
+
+    with db_session:
+        my_sched.write_DB()
 
 
 if __name__ == "__main__":
