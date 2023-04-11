@@ -58,11 +58,13 @@ def test_id():
     assert lab.id == 1  # The first Lab created will always have an ID of 1.
 
 
+@db_session
 def test_id_multiple_labs():
     """Verifies that the last Lab created will have the highest ID."""
     lab1 = Lab("R-101", "Worst place in the world")
     lab2 = Lab("R-102", "Second-worst place in the world")
-    assert lab2.id == 2
+    max_id = max(l.id for l in dbLab)
+    assert lab2.id == max_id
 
 
 def test_number_getter():
@@ -312,6 +314,7 @@ def test_remove_gets_slots():
 @db_session
 def test_remove_gets_database():
     """Verifies that delete() removes the corresponding Lab's entity from the database."""
+    delete(l for l in dbLab)
     lab = Lab("R-101", "Worst place in the world")
     lab.delete()
     commit()
@@ -333,12 +336,14 @@ def test_remove_gets_database_times():
     assert len(d_times) == 0
 
 
+@db_session
 def test_get_good():
     """Verifies that the static get() method works as intended."""
     Lab.reset()
     lab1 = Lab("R-101", "Worst place in the world")
     lab2 = Lab("R-102", "Second-worst place in the world")
-    assert Lab.get(2) == lab2
+    max_id = max(l.id for l in dbLab)
+    assert Lab.get(max_id) == lab2
 
 
 def test_get_bad():
