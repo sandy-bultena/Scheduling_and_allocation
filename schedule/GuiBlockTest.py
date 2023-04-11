@@ -17,8 +17,12 @@ from schedule.Schedule.database.db_constants import *
 # connect to the database, instantiate a Scenario.
 # ----------------------------------------------------------
 def main():
-    db = PonyDatabaseConnection.define_database(host=HOST, db=DB_NAME, user=USERNAME,
+    if PROVIDER == "mysql":
+        db = PonyDatabaseConnection.define_database(host=HOST, db=DB_NAME, user=USERNAME,
                                                 passwd=PASSWD, provider=PROVIDER)
+    elif PROVIDER == "sqlite":
+        db = PonyDatabaseConnection.define_database(provider=PROVIDER, filename=DB_NAME,
+                                                    create_db=CREATE_DB)
 
     mw = Tk()
     db_schedule = get_db_schedule()
@@ -32,7 +36,11 @@ def main():
 
     my_view = View(views_manager=None, mw=mw, schedule=my_schedule, schedulable_object=teacher)
 
-    block = Block("Wed", "9:30", 1.5, 1)
+    block = Block("Wed", "9:30", 1.5, 1, id=1)
+
+    dummy_block = {
+
+    }
 
     gui_block = GuiBlockTk("teacher", my_view.gui, block)
     gui_block.change_colour("red")

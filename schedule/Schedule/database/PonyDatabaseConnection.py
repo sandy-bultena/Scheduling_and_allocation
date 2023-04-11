@@ -14,11 +14,11 @@ from .db_constants import *
 # Create the database if it doesn't exist. Using mysql.connector to accomplish this because Pony
 # doesn't let you use the create_db option when binding to a MySQL database.
 
-conn = mysql.connector.connect(
-    host=HOST,
-    username=USERNAME,
-    password=PASSWD
-)
+# conn = mysql.connector.connect(
+#     host=HOST,
+#     username=USERNAME,
+#     password=PASSWD
+# )
 
 
 # cursor = conn.cursor()
