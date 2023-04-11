@@ -390,7 +390,7 @@ class Section:
         for s in streams:
             if not isinstance(s, Stream.Stream): raise TypeError(
                 f"{s}: invalid stream - must be a Stream object")
-            self._streams[s.id] = (s)
+            self._streams[s.id] = s
         return self
 
     # --------------------------------------------------------

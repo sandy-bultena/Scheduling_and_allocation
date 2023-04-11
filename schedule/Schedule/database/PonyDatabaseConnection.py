@@ -150,7 +150,7 @@ class Section_Teacher(db.Entity):
 
 
 class LabUnavailableTime(db.Entity):
-    _table_ = "lab_unavailable_time" # Custom title: otherwise it becomes "labunavailabletime".
+    _table_ = "lab_unavailable_time"  # Custom title: otherwise it becomes "labunavailabletime".
     day = Required(str, max_len=3)
     duration = Required(Decimal, 3, 1)
     start = Required(str, max_len=5)

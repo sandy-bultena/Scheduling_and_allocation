@@ -4,6 +4,7 @@ from pony.orm import db_session, commit
 from schedule.Schedule.Block import Block
 from schedule.Schedule.Course import Course
 from schedule.Schedule.Lab import Lab
+from schedule.Schedule.LabUnavailableTime import LabUnavailableTime
 from schedule.Schedule.Schedule import Schedule
 from schedule.Schedule.Section import Section
 from schedule.Schedule.Stream import Stream
@@ -104,6 +105,23 @@ def create_stream(sect: Section) -> Stream:
     return my_stream
 
 
+def create_unavailable_time(lab: Lab, sched: Schedule):
+    if PonyDatabaseConnection.LabUnavailableTime.get(id=1) is None:
+        my_time = LabUnavailableTime(schedule=sched)
+    else:
+        db_time = PonyDatabaseConnection.LabUnavailableTime.get(id=1)
+        my_time = LabUnavailableTime(
+            day=db_time.day,
+            start=db_time.start,
+            duration=db_time.duration,
+            movable=db_time.movable,
+            id=db_time.id,
+            schedule=sched
+        )
+    commit()
+    return my_time
+
+
 def main():
     if PROVIDER != "sqlite":
         raise ValueError(f"Invalid pony provider format retrieved from .env file: {PROVIDER}")
@@ -129,7 +147,9 @@ def main():
     with db_session:
         teacher_a = create_teacher()
         stream_a = create_stream(section_a)
+        unvailable_a = create_unavailable_time(lab_a, my_sched)
 
+    lab_a.add_unavailable_slot(unvailable_a)
     course_a.assign_teacher(teacher_a)
     course_a.assign_stream(stream_a)
     print(course_a)
