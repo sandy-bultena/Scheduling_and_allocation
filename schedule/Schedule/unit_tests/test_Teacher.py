@@ -151,12 +151,14 @@ def test_share_blocks_false():
     assert Teacher.share_blocks(block_1, block_2) is False
 
 
+@db_session
 def test_get_good_id():
     """Verifies that the static get() method works as intended."""
     Teacher._Teacher__instances = {}
     Teacher._max_id = 0
     teach = Teacher("John", "Smith")
-    assert Teacher.get(1) == teach
+    max_id = max(t.id for t in dbTeacher)
+    assert Teacher.get(max_id) == teach
 
 
 def test_get_bad_id():
@@ -227,6 +229,8 @@ def test_delete():
 @db_session
 def test_delete_updates_database():
     """Verifies that delete() removes the Teacher's corresponding database record."""
+    delete(t for t in dbTeacher)
+    commit()
     teach = Teacher("John", "Smith")
     teach.delete()
     commit()
