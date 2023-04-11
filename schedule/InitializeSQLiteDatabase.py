@@ -48,7 +48,7 @@ def create_course() -> Course:
     return my_course
 
 
-def create_lab():
+def create_lab() -> Lab:
     if PonyDatabaseConnection.Lab.get(id=1) is None:
         my_lab = Lab("R-101", "Test Lab")
     else:
@@ -59,7 +59,7 @@ def create_lab():
     return my_lab
 
 
-def create_section(ent_sched: Schedule, ent_course: Course):
+def create_section(ent_sched: Schedule, ent_course: Course) -> Section:
     if PonyDatabaseConnection.Section.get(id=1) is None:
         my_sect = Section(name="Test Section", number="S-1", course=ent_course,
                           schedule_id=ent_sched.id)
@@ -85,7 +85,7 @@ def create_block(sect: Section = None) -> Block:
     return my_block
 
 
-def create_teacher():
+def create_teacher() -> Teacher:
     if PonyDatabaseConnection.Teacher.get(id=1) is None:
         my_teach = Teacher("John", "Smith", "Computer Science")
     else:
@@ -96,7 +96,10 @@ def create_teacher():
 
 def create_stream(sect: Section) -> Stream:
     if PonyDatabaseConnection.Stream.get(id=1) is None:
+        db_section = PonyDatabaseConnection.Section[sect.id]
         my_stream = Stream("A")
+        db_stream = PonyDatabaseConnection.Stream[my_stream.id]
+        db_section.streams.add(db_stream)
     else:
         db_stream = PonyDatabaseConnection.Stream.get(id=1)
         my_stream = Stream(db_stream.number, db_stream.descr, id=db_stream.id)
@@ -105,7 +108,7 @@ def create_stream(sect: Section) -> Stream:
     return my_stream
 
 
-def create_unavailable_time(lab: Lab, sched: Schedule):
+def create_unavailable_time(lab: Lab, sched: Schedule) -> LabUnavailableTime:
     if PonyDatabaseConnection.LabUnavailableTime.get(id=1) is None:
         my_time = LabUnavailableTime(schedule=sched)
     else:
@@ -123,10 +126,12 @@ def create_unavailable_time(lab: Lab, sched: Schedule):
 
 
 def main():
-    if PROVIDER != "sqlite":
-        raise ValueError(f"Invalid pony provider format retrieved from .env file: {PROVIDER}")
-    db = PonyDatabaseConnection.define_database(provider=PROVIDER, filename=DB_NAME,
-                                                create_db=CREATE_DB)
+    if PROVIDER == "sqlite":
+        db = PonyDatabaseConnection.define_database(provider=PROVIDER, filename=DB_NAME,
+                                                    create_db=CREATE_DB)
+    elif PROVIDER == "mysql":
+        db = PonyDatabaseConnection.define_database(host=HOST, passwd=PASSWD, db=DB_NAME,
+                                                    provider=PROVIDER, user=USERNAME)
     with db_session:
         db_scen = create_scenario()
         db_sched = create_schedule(db_scen)
@@ -153,15 +158,12 @@ def main():
     course_a.assign_teacher(teacher_a)
     course_a.assign_stream(stream_a)
     print(course_a)
-    print(my_sched.teachers())
-    print(my_sched.blocks())
-    print(my_sched.labs())
-    print(my_sched.courses())
-    print(my_sched.sections)
 
     with db_session:
         my_sched.write_DB()
 
 
 if __name__ == "__main__":
+    """Run this file as a top-level script to create a MySQL or SQLite database and populate 
+    it with data for all tables."""
     main()
