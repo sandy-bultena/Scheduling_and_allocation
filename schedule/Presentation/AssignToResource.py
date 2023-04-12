@@ -1,4 +1,5 @@
 """Create or assign Time Blocks to various resources."""
+from ..GUI.AssignToResourceTk import AssignToResourceTk
 from ..Schedule.Lab import Lab
 from ..Schedule.Schedule import Schedule
 from ..Schedule.Stream import Stream
