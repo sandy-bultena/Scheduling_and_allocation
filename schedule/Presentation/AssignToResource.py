@@ -1,6 +1,7 @@
 """Create or assign Time Blocks to various resources."""
 from ..GUI.AssignToResourceTk import AssignToResourceTk
 from ..Schedule.Block import Block
+from ..Schedule.Course import Course
 from ..Schedule.Lab import Lab
 from ..Schedule.Schedule import Schedule
 from ..Schedule.Stream import Stream
@@ -103,7 +104,7 @@ class AssignToResource:
         # ------------------------------------
         # setup event handlers
         # ------------------------------------
-        gui.cb_course_selected(_cb_course_selected)
+        gui.cb_course_selected(AssignToResource._cb_course_selected)
         gui.cb_section_selected(_cb_section_selected)
         gui.cb_block_selected(_cb_block_selected)
         gui.cb_teacher_selected(_cb_teacher_selected)
@@ -162,4 +163,62 @@ class AssignToResource:
                     block.assign_teacher(Teacher)
                 return True
         return False
+
+    # ============================================================================
+    # callbacks
+    # ============================================================================
+
+    # ----------------------------------------------------------------------------
+    # course was selected
+    # ----------------------------------------------------------------------------
+    @staticmethod
+    def _cb_course_selected(id: int):
+        global course, schedule
+        schedule: Schedule
+        course: Course = Course.get(id)
+
+        # since we have a new course, we need to nullify the sections and blocks.
+        global section, block, gui
+        section = None
+        block = None
+        gui: AssignToResourceTk
+        gui.clear_sections_and_blocks()
+        gui.enable_new_section_button()
+
+        # What sections are available for this course?
+        sections = course.sections()
+        sections_dict = dict([(i.id, str(i)) for i in sections])
+        gui.set_section_choices(sections_dict)
+
+    # ----------------------------------------------------------------------------
+    # section was selected
+    # ----------------------------------------------------------------------------
+    @staticmethod
+    def _cb_section_selected(id: int):
+        # Get section id & save to the global Section variable.
+        global section, course
+        course: Course
+        section = course.get_section_by_id(id)
+
+        # Since we have a new section, we need to nullify the blocks.
+        global gui
+        gui: AssignToResourceTk
+        gui.clear_blocks()
+
+        # what blocks are available for this course/section?
+        blocks = section.blocks
+        blocks_dict = dict([(b.id, str(b)) for b in blocks])
+        gui.set_block_choices(blocks_dict)
+
+        # Set the default teacher for this course/section if this AssignToResource type is
+        # NOT a teacher.
+        global Type
+        if Type == 'teacher':
+            return
+
+        teachers = section.teachers
+        if len(teachers) > 0:
+            global teacher
+            teacher = teachers[0]
+            gui.set_teacher(str(teacher))
 
