@@ -1,5 +1,6 @@
 """Create or assign Time Blocks to various resources."""
 from ..GUI.AssignToResourceTk import AssignToResourceTk
+from ..Schedule.Block import Block
 from ..Schedule.Lab import Lab
 from ..Schedule.Schedule import Schedule
 from ..Schedule.Stream import Stream
@@ -38,6 +39,9 @@ class AssignToResource:
         4: "Thursday",
         5: "Friday"
     }
+    global Day
+    global Start
+    global Duration
 
     # ===================================================================
     # Constructor
@@ -53,6 +57,11 @@ class AssignToResource:
             start: new Block information
             duration: new Block information
             schedulable: Teacher or Lab (nothing will happen if this is a Stream object)."""
+        global Day, Start, Duration
+        Day = day
+        Start = start
+        Duration = duration
+
         global Type
         Type = schedule.get_view_type_of_object(schedulable)
         if Type == Lab:
@@ -89,6 +98,68 @@ class AssignToResource:
         # setup event handlers
         # ------------------------------------
         global gui
+        gui: AssignToResourceTk
 
-        pass
+        # ------------------------------------
+        # setup event handlers
+        # ------------------------------------
+        gui.cb_course_selected(_cb_course_selected)
+        gui.cb_section_selected(_cb_section_selected)
+        gui.cb_block_selected(_cb_block_selected)
+        gui.cb_teacher_selected(_cb_teacher_selected)
+        gui.cb_lab_selected(_cb_lab_selected)
+
+        gui.cb_add_new_section(_cb_add_new_section)
+        gui.cb_add_new_block(_cb_add_new_block)
+        gui.cb_add_new_teacher(_cb_add_new_teacher)
+        gui.cb_add_new_lab(_cb_add_new_lab)
+
+        # ------------------------------------
+        # get lists of resources
+        # ------------------------------------
+
+        # labs
+        lab_names = {}
+        global schedule
+        schedule: Schedule
+        for lab in schedule.labs():
+            lab_names[lab.id] = str(lab)
+        gui.set_lab_choices(lab_names)
+
+        # teachers
+        teacher_names = {}
+        for teacher in schedule.teachers():
+            teacher_names[teacher.id] = str(teacher)
+        gui.set_teacher_choices(teacher_names)
+
+        # courses
+        course_names = {}
+        for course in schedule.courses():
+            course_names[course.id] = course.description
+        gui.set_course_choices(course_names)
+
+        # ------------------------------------
+        # Show dialog
+        # ------------------------------------
+        answer = gui.show() or "Cancel"
+
+        # ------------------------------------
+        # assign block to resource
+        # ------------------------------------
+        if answer == "Ok":
+            # check if a Block is defined.
+            global block
+            if block:
+                block: Block
+                # If it is, assign all properties to the Block.
+                global Day, Start, Duration, Lab, Teacher
+                block.day = Day
+                block.start = _hours_to_string(Start)
+                block.duration = Duration
+                if Lab:
+                    block.assign_lab(Lab)
+                if Teacher:
+                    block.assign_teacher(Teacher)
+                return True
+        return False
 
