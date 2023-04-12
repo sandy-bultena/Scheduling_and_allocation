@@ -421,7 +421,7 @@ class View:
         Handles Event: double-clicking on a guiblock.
 
         Parameters:
-            guiblock: The GuiBlock that was double clicked."""
+            guiblock: The GuiBlock that was double-clicked."""
         type = self.type
 
         # NOTE: Sandy, or someone else, prefaced this in the original code with "TODO: WTF?"
