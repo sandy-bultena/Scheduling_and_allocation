@@ -113,7 +113,8 @@ class View:
             mw: Tk main window.
             schedule: Where course/sections/teachers/labs/streams are defined.
             schedulable_object: Teacher/Lab/Stream that the View is being made for."""
-        self._id = ++ View.max_id
+        View.max_id += 1
+        self._id = View.max_id
         conflict_info = self._get_conflict_info()
 
         # ---------------------------------------------------------------
@@ -291,6 +292,7 @@ class View:
     # =================================================================
     # Callbacks (event handlers)
     # =================================================================
+    # TODO: Consider making these callback methods static.
     def _cb_close_view(self):
         """When the View is closed, need to let views_manager know.
 

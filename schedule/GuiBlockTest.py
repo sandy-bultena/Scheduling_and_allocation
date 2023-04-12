@@ -36,13 +36,10 @@ def main():
 
     my_view = View(views_manager=None, mw=mw, schedule=my_schedule, schedulable_object=teacher)
 
-    block = Block("Wed", "9:30", 1.5, 1, id=1)
+    block = Block("Wed", "9:30", 1.5, 1)
+    block.assign_teacher(teacher)
 
-    dummy_block = {
-
-    }
-
-    gui_block = GuiBlockTk("teacher", my_view.gui, block)
+    gui_block = GuiBlockTk("stream", my_view.gui, block)
     gui_block.change_colour("red")
 
     mw.mainloop()

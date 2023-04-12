@@ -60,7 +60,7 @@ class ViewTk(ViewBaseTk):
 
         # create a menu.
         global mw
-        pm = Menu(mw)
+        pm = Menu(mw, tearoff=0)
 
         # toggle block from movable to unmovable.
         pm.add_command(label="Toggle Movable/Fixed", command=partial(
@@ -68,7 +68,7 @@ class ViewTk(ViewBaseTk):
         ))
 
         # create sub menu
-        mm = Menu(pm)
+        mm = Menu(pm, tearoff=0)
         pm.add_cascade(menu=mm, label="Move block(s) to ")
 
         for named_schedulable in named_schedulables:

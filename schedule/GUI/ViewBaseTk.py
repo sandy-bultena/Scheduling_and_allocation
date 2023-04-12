@@ -124,7 +124,7 @@ class ViewBaseTk:
         # ---------------------------------------------------------------
         main_menu = Menu(mw)
         tl.configure(menu=main_menu)
-        view_menu = Menu(main_menu)
+        view_menu = Menu(main_menu, tearoff=0)
         main_menu.add_cascade(menu=view_menu, label="View", underline=0)
         view_menu.add_command(label="50%", underline=0, command=partial(
             self._resize_view, 0.50))
