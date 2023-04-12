@@ -390,4 +390,44 @@ class AssignToResourceTk:
             )
         )
 
+    # ----------------------------------------------------------------------------
+    # Create Main Labels
+    # ----------------------------------------------------------------------------
+    @staticmethod
+    def _label(db, text: str, options: dict):
+        return Label(db, options, text=text)
+
+    def _create_main_labels(self, main_title):
+        # Dictionary of options to pass to _label.
+        opts = {}
+
+        db = self._frame
+
+        global big_font
+        self._lbl_title = AssignToResourceTk._label(db, main_title, {'font': big_font})
+        # Most subsequent calls will be anchored to the west side of the screen.
+        opts = {'anchor': 'w'}
+        self._lbl_course = AssignToResourceTk._label(db, "Choose Course", opts)
+        self._lbl_lab = AssignToResourceTk._label(db, "Choose Lab", opts)
+        self._lbl_teacher = AssignToResourceTk._label(db, "Choose Teacher", opts)
+        self._lbl_section = AssignToResourceTk._label(db, "Choose Section", opts)
+        self._lbl_block = AssignToResourceTk._label(db, "Choose Block to Modify", opts)
+
+        self._lbl_create_section = AssignToResourceTk._label(db, "Create new from Section Name",
+                                                             opts)
+        self._lbl_create_teacher = AssignToResourceTk._label(db, "Create new Firstname / Lastname",
+                                                             opts)
+        self._lbl_create_lab = AssignToResourceTk._label(db, "Create new from Lab number and name",
+                                                         opts)
+        self._lbl_create_block = AssignToResourceTk\
+            ._label(db, "Create block from selected date/time", opts)
+
+        # Remaining labels will be bolded and anchored to the west.
+        opts = {'font': bold_font, 'anchor': 'w'}
+        self._lbl_course_info = AssignToResourceTk._label(db, "Course Info (required)", opts)
+        self._lbl_teacher_info = AssignToResourceTk._label(db, "Teacher (optional)", opts)
+        self._lbl_lab_info = AssignToResourceTk._label(db, "Lab (optional)", opts)
+
+
+
 
