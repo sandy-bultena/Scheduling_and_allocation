@@ -276,3 +276,84 @@ class AssignToResourceTk:
                                           command=partial(
                                               add_new_section, self
                                           ))
+
+    # ============================================================================
+    # block
+    # ============================================================================
+    def _setup_block_widgets(self):
+        db = self._frame
+
+        def browse_cmd(self):
+            id = _get_id(self.list_blocks, self._tb_block)
+            self.cb_block_selected(id)
+
+        self._tb_block_jbe = ComboBoxDialog(db,
+                                            scrolledlist_items=self._tb_block_ptr,
+                                            width=20,
+                                            selectioncommand=partial(
+                                                browse_cmd, self
+                                            ))
+
+        block_drop_entry: Entry = self._tb_block_jbe.component("entry")
+        block_drop_entry.configure(disabledbackground="white")
+        block_drop_entry.configure(disabledforeground="black")
+
+        self._tk_block_entry = Entry(db,
+                                     textvariable=self._new_block_ptr,
+                                     state=DISABLED,
+                                     disabledbackground='white')
+
+        def new_block_clicked(self):
+            self.cb_add_new_block(self._new_block)
+            self._tk_block_new_btn.configure(state=DISABLED)
+            self._tk_block_entry.configure(state=DISABLED)
+
+        self._tk_block_new_btn = Button(db,
+                                        text="Create",
+                                        state=DISABLED,
+                                        command=partial(
+                                            new_block_clicked, self
+                                        ))
+
+    # ============================================================================
+    # teachers
+    # ============================================================================
+    def _setup_teacher_widgets(self):
+        db = self._frame
+
+        def browse_cmd(self):
+            id = _get_id(self.list_teachers, self._tb_teacher)
+            self.cb_teacher_selected(id)
+
+        self._tk_teacher_jbe = ComboBoxDialog(
+            db,
+            scrolledlist_items=self._tb_teacher_ptr,
+            width=20,
+            selectioncommand=partial(
+                browse_cmd, self
+            )
+        )
+
+        teacher_drop_entry: Entry = self._tk_teacher_jbe.component("entry")
+        teacher_drop_entry.configure(disabledbackground="white")
+        teacher_drop_entry.configure(disabledforeground="black")
+
+        self._tk_fname_entry = Entry(db, textvariable=self._new_teacher_fname_ptr)
+        self._tk_lname_entry = Entry(db, textvariable=self._new_teacher_lname_ptr)
+
+        def new_teacher_clicked(self):
+            self.cb_add_new_teacher(self._new_teacher_fname, self._new_teacher_lname)
+
+        self._tk_teacher_new_btn = Button(
+            db,
+            text="Create",
+            command=partial(
+                new_teacher_clicked, self
+            )
+        )
+
+    # ======================================================
+    # Lab
+    # ======================================================
+    def _setup_lab_widgets(self):
+        pass
