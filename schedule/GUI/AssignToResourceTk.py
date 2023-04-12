@@ -356,4 +356,38 @@ class AssignToResourceTk:
     # Lab
     # ======================================================
     def _setup_lab_widgets(self):
-        pass
+        db = self._frame
+
+        def browse_cmd(self):
+            id = _get_id(self.list_labs, self._tb_lab)
+            self.cb_lab_selected(id)
+
+        self._tk_lab_jbe = ComboBoxDialog(
+            db,
+            scrolledlist_items = self._tb_lab_ptr,
+            state='readonly',
+            width=20,
+            selectioncommand=partial(
+                browse_cmd, self
+            )
+        )
+
+        lab_drop_entry: Entry = self._tk_lab_jbe.component("entry")
+        lab_drop_entry.configure(disabledbackground="white")
+        lab_drop_entry.configure(disabledforeground="black")
+
+        self._tk_lab_num_entry = Entry(db, textvariable=self._new_lab_number_ptr)
+        self._tk_lab_descr_entry = Entry(db, textvariable=self._new_lab_name_ptr)
+
+        def new_lab_clicked(self):
+            self.cb_add_new_lab(self._new_lab_name, self._new_lab_number)
+
+        self._tk_lab_new_btn = Button(
+            db,
+            text="Create",
+            command=partial(
+                new_lab_clicked, self
+            )
+        )
+
+
