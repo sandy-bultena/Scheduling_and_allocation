@@ -4,6 +4,7 @@ from ..Schedule.Block import Block
 from ..Schedule.Course import Course
 from ..Schedule.Lab import Lab
 from ..Schedule.Schedule import Schedule
+from ..Schedule.Section import Section
 from ..Schedule.Stream import Stream
 from ..Schedule.Teacher import Teacher
 
@@ -89,7 +90,7 @@ class AssignToResource:
         # open dialog
         # ------------------------------------
         if schedule:
-            _open_dialog()
+            AssignToResource._open_dialog()
 
     # ============================================================================
     # OpenDialog
@@ -153,14 +154,14 @@ class AssignToResource:
             if block:
                 block: Block
                 # If it is, assign all properties to the Block.
-                global Day, Start, Duration, Lab, Teacher
+                global Day, Start, Duration, lab, teacher
                 block.day = Day
                 block.start = _hours_to_string(Start)
                 block.duration = Duration
-                if Lab:
-                    block.assign_lab(Lab)
-                if Teacher:
-                    block.assign_teacher(Teacher)
+                if lab:
+                    block.assign_lab(lab)
+                if teacher:
+                    block.assign_teacher(teacher)
                 return True
         return False
 
@@ -222,3 +223,35 @@ class AssignToResource:
             teacher = teachers[0]
             gui.set_teacher(str(teacher))
 
+    # ----------------------------------------------------------------------------
+    # block was selected
+    # ----------------------------------------------------------------------------
+    @staticmethod
+    def _cb_block_selected(id: int):
+        global block, section
+        section: Section
+        block = section.get_block_by_id(id)
+
+    # ----------------------------------------------------------------------------
+    # lab was selected
+    # ----------------------------------------------------------------------------
+    @staticmethod
+    def _cb_lab_selected(id: int):
+        global lab
+        lab: Lab = Lab.get(id)
+
+    # ----------------------------------------------------------------------------
+    # teacher was selected
+    # ----------------------------------------------------------------------------
+    @staticmethod
+    def _cb_teacher_selected(id):
+        global teacher
+        teacher = Teacher.get(id)
+
+    # ----------------------------------------------------------------------------
+    # add_new_section
+    # ----------------------------------------------------------------------------
+    @staticmethod
+    def _cb_add_new_section(name: str):
+        #TODO: Resume from here tomorrow.
+        pass
