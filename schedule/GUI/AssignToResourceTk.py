@@ -12,9 +12,11 @@ REQUIRED EVENT HANDLERS:
 * cb_add_new_teacher(firstname, lastname)
 * cb_add_new_lab(lab_name, lab_number)"""
 import tkinter.messagebox
+import tkinter.ttk
+from functools import partial
 from tkinter import *
 from tkinter import messagebox
-from Pmw import *
+from Pmw.Pmw_2_1_1.lib.PmwComboBoxDialog import ComboBoxDialog
 from Pmw.Pmw_2_1_1.lib.PmwDialog import Dialog
 
 # ============================================================================
@@ -58,7 +60,7 @@ class AssignToResourceTk:
 
         [Don't use Stream. This GUI is not set up for it.]
         """
-        self._frame = None
+        self._frame: Dialog
         global Type
         Type = type
 
@@ -215,3 +217,30 @@ class AssignToResourceTk:
                     buttons=["Yes", "No"])
         Label(db, text=question).pack()
         return db.show() or ""
+
+    # ============================================================================
+    # course
+    # ============================================================================
+    def _setup_course_widgets(self):
+        db = self._frame
+
+        # self._tk_course_jbe(
+        #     # Pmw equivalent of JBrowseEntry seems to be this, at least at first glance.
+        #     ComboBoxDialog(db,
+        #              )
+        # )
+        def browse_cmd(self):
+            id = _get_id(self.list_courses, self._tb_course)
+            self.cb_course_selected(id) # TODO: Figure out if this partial works.
+
+        # Pmw equivalent of JBrowseEntry seems to be this, at least at first glance.
+        self._tk_course_jbe = ComboBoxDialog(db,
+                                             scrolledlist_items=self._tb_course_ptr,
+                                             selectioncommand=partial(
+                                                 browse_cmd, self))
+
+        course_drop_entry = self._tk_course_jbe.component("entry")
+        course_drop_entry.configure(disabledbackground="white")
+        course_drop_entry.configure(disabledforeground="black")
+
+
