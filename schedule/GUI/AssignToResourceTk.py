@@ -11,6 +11,9 @@ REQUIRED EVENT HANDLERS:
 * cb_add_new_block(block_description)
 * cb_add_new_teacher(firstname, lastname)
 * cb_add_new_lab(lab_name, lab_number)"""
+import tkinter.messagebox
+from tkinter import *
+from tkinter import messagebox
 
 # ============================================================================
 # globals
@@ -52,6 +55,7 @@ class AssignToResourceTk:
 
         [Don't use Stream. This GUI is not set up for it.]
         """
+        self._frame = None
         global Type
         Type = type
 
@@ -66,5 +70,46 @@ class AssignToResourceTk:
     # ============================================================================
     # draw
     # ============================================================================
-    def draw(self, frame, title, block_text):
+    def draw(self, frame, title: str, block_text: str):
+        """Create and display the dialog box.
+
+        Parameters:
+            frame: A gui object that can support calls to create dialog boxes.
+            title: The title of the dialog box.
+            block_text: The description of the block that is the default block to assign."""
+        # -----------------------------------------------
+        # create dialog box
+        # -----------------------------------------------
+        # NOTE: tkinter doesn't have a direct analog to Perl/Tk's DialogBox. Must get creative.
+        db = messagebox.askokcancel(title="Assign Block")
+        self._frame = db
+        global OKAY
+        OKAY = db
+        # TODO: FIGURE THE ABOVE STUFF OUT.
+        # -----------------------------------------------
+        # description of selected block
+        # -----------------------------------------------
+        self._new_block(block_text)
+
+        # -----------------------------------------------
+        # create labels
+        # -----------------------------------------------
+        self._create_main_labels(title)
+
+        # -----------------------------------------------
+        # course / section / block widgets
+        # -----------------------------------------------
+        self._setup_course_widgets()
+        self._setup_section_widgets()
+        self._setup_block_widgets()
+        self._setup_teacher_widgets()
+        self._setup_lab_widgets()
+
+        # -----------------------------------------------
+        # layout
+        # -----------------------------------------------
+        self._layout()
+
+    def clear_sections_and_blocks(self):
+        """Reset the choices for sections and blocks to empty lists, etc."""
         pass
