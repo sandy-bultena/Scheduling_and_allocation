@@ -243,4 +243,36 @@ class AssignToResourceTk:
         course_drop_entry.configure(disabledbackground="white")
         course_drop_entry.configure(disabledforeground="black")
 
+    # ============================================================================
+    # section
+    # ============================================================================
+    def _setup_section_widgets(self):
+        db = self._frame
 
+        def browse_cmd(self):
+            id = _get_id(self.list_sections, self._tb_section)
+            self.cb_section_selected(id)
+
+        self._tk_section_jbe = ComboBoxDialog(db,
+                                              scrolledlist_items=self._tb_section_ptr,
+                                              selectioncommand=partial(
+                                                  browse_cmd, self
+                                              ))
+
+        sec_drop_entry: Entry = self._tk_section_jbe.component("entry")
+        sec_drop_entry.configure(disabledbackground="white")
+        sec_drop_entry.configure(disabledforeground="black")
+
+        self._tk_section_entry = Entry(db,
+                                       textvariable=self._new_section_ptr)
+
+        def add_new_section(self):
+            self.cb_add_new_section(self._new_section)
+
+        self._tk_section_new_btn = Button(db,
+                                          text="Create",
+                                          state=DISABLED,
+                                          width=20,
+                                          command=partial(
+                                              add_new_section, self
+                                          ))
