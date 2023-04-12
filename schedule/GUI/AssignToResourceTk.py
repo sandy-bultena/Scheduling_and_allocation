@@ -231,7 +231,7 @@ class AssignToResourceTk:
         # )
         def browse_cmd(self):
             id = _get_id(self.list_courses, self._tb_course)
-            self.cb_course_selected(id) # TODO: Figure out if this partial works.
+            self.cb_course_selected(id)  # TODO: Figure out if this partial works.
 
         # Pmw equivalent of JBrowseEntry seems to be this, at least at first glance.
         self._tk_course_jbe = ComboBoxDialog(db,
@@ -287,14 +287,14 @@ class AssignToResourceTk:
             id = _get_id(self.list_blocks, self._tb_block)
             self.cb_block_selected(id)
 
-        self._tb_block_jbe = ComboBoxDialog(db,
+        self._tk_block_jbe = ComboBoxDialog(db,
                                             scrolledlist_items=self._tb_block_ptr,
                                             width=20,
                                             selectioncommand=partial(
                                                 browse_cmd, self
                                             ))
 
-        block_drop_entry: Entry = self._tb_block_jbe.component("entry")
+        block_drop_entry: Entry = self._tk_block_jbe.component("entry")
         block_drop_entry.configure(disabledbackground="white")
         block_drop_entry.configure(disabledforeground="black")
 
@@ -364,7 +364,7 @@ class AssignToResourceTk:
 
         self._tk_lab_jbe = ComboBoxDialog(
             db,
-            scrolledlist_items = self._tb_lab_ptr,
+            scrolledlist_items=self._tb_lab_ptr,
             state='readonly',
             width=20,
             selectioncommand=partial(
@@ -419,7 +419,7 @@ class AssignToResourceTk:
                                                              opts)
         self._lbl_create_lab = AssignToResourceTk._label(db, "Create new from Lab number and name",
                                                          opts)
-        self._lbl_create_block = AssignToResourceTk\
+        self._lbl_create_block = AssignToResourceTk \
             ._label(db, "Create block from selected date/time", opts)
 
         # Remaining labels will be bolded and anchored to the west.
@@ -428,6 +428,86 @@ class AssignToResourceTk:
         self._lbl_teacher_info = AssignToResourceTk._label(db, "Teacher (optional)", opts)
         self._lbl_lab_info = AssignToResourceTk._label(db, "Lab (optional)", opts)
 
+    def _layout(self):
+        db = self._frame
 
+        # -------------------------------------------------------
+        # title
+        # -------------------------------------------------------
+        # NOTE: the "-", "-", "-" in the Perl code indicates relative placement: each "-" increases
+        # the columnspan to the left. Tkinter has no equivalent to this.
+        self._lbl_title.grid(padx=2, sticky='nsew')
 
+        # -------------------------------------------------------
+        # course
+        # -------------------------------------------------------
+        Label(db, text='').grid(sticky='nsew')
+        self._lbl_course_info.grid(padx=2, sticky='nsew')
+        self._lbl_course.grid(padx=2, sticky='nsew')
+        self._tk_course_jbe.grid(padx=2, sticky='nsew')
 
+        # -------------------------------------------------------
+        # section
+        # -------------------------------------------------------
+        self._lbl_section.grid(self._lbl_create_section, padx=2, sticky='nsew')
+        self._tk_section_jbe.grid(self._tk_section_entry, "-", self._tk_section_new_btn,
+                                  padx=2,
+                                  sticky='nsew')
+
+        # -------------------------------------------------------
+        # block
+        # -------------------------------------------------------
+        self._lbl_block.grid(self._lbl_create_block,
+                             "-", "-",
+                             padx=2,
+                             sticky='nsew')
+        self._tk_block_jbe.grid(self._tk_block_entry, "-", self._tk_block_new_btn,
+                                padx=2,
+                                sticky='nsew')
+
+        # -------------------------------------------------------
+        # teacher
+        # -------------------------------------------------------
+        global Type
+        if Type != "teacher":
+            Label(db, text='').grid("-", padx=2, sticky='nsew')
+            self._lbl_teacher_info.grid(
+                "-", "-", "-", padx=2, sticky='nsew'
+            )
+            self._lbl_teacher.grid(
+                self._lbl_create_teacher,
+                "-", "-",
+                padx=2,
+                sticky='nsew'
+            )
+            self._tk_teacher_jbe.grid(
+                self._tk_fname_entry, self._tk_lname_entry,
+                self._tk_teacher_new_btn,
+                sticky='nsew',
+                padx=2
+            )
+            Label(db, text='').grid("-", "-", "-", padx=2, sticky='nsew')
+
+        # -------------------------------------------------------
+        # lab
+        # -------------------------------------------------------
+        if Type != 'lab':
+            Label(db, text='').grid("-", "-", "-", padx=2, sticky='nsew')
+            self._lbl_lab_info.grid(
+                "-", "-", "-",
+                padx=2,
+                sticky='nsew'
+            )
+            self._lbl_lab.grid(
+                self._lbl_create_lab,
+                "-", "-",
+                padx=2,
+                sticky='nsew'
+            )
+            self._tk_lab_jbe.grid(
+                self._tk_lab_num_entry, self._tk_lab_descr_entry,
+                self._tk_lab_new_btn,
+                sticky='nsew',
+                padx=2
+            )
+            Label(db, text='').grid("-", "-", "-", padx=2, sticky='nsew')
