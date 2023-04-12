@@ -511,3 +511,112 @@ class AssignToResourceTk:
                 padx=2
             )
             Label(db, text='').grid("-", "-", "-", padx=2, sticky='nsew')
+
+    # ============================================================================
+    # setup getters and setters
+    # ============================================================================
+    def __setup(self):
+        # ------------------------------------------------------------------------
+        # Entry or Text Box variable bindings
+        # ------------------------------------------------------------------------
+        AssignToResourceTk._create_setters_and_getters(
+            category='list',
+            properties=["courses", "sections", "blocks", "teachers", "labs"],
+            default={}
+        )
+
+        AssignToResourceTk._create_setters_and_getters(
+            category="_tb",
+            properties=["course", "section", "block", "teacher", "lab"],
+            default=""
+        )
+
+        AssignToResourceTk._create_setters_and_getters(
+            category="_new",
+            properties=["section, teacher_fname", "teacher_lname", "lab_number", "lab_name", "block"],
+            default=""
+        )
+
+        # ------------------------------------------------------------------------
+        # getters and setters for callback routines
+        # ------------------------------------------------------------------------
+        callbacks = [
+            "add_new_section",
+            "section_selected",
+            "course_selected",
+            "block_selected",
+            "teacher_selected",
+            "lab_selected",
+            "add_new_block",
+            "add_new_teacher",
+            "add_new_lab"
+        ]
+        def default_cb():
+            return
+
+        AssignToResourceTk._create_setters_and_getters(
+            category="cb",
+            properties=callbacks,
+            default=default_cb
+        )
+
+        # ------------------------------------------------------------------------
+        # Tk Labels
+        # ------------------------------------------------------------------------
+        labels = ["title", "selected_block", "course_info", "teacher_info", "lab_info",
+                  "course", "teacher", "lab", "section", "block", "create_section",
+                  "create_teacher", "create_lab", "create_block"
+                  ]
+
+        AssignToResourceTk._create_setters_and_getters(
+            category="_lbl",
+            properties=labels,
+            default=None
+        )
+
+        # ------------------------------------------------------------------------
+        # Defining widget getters and setters
+        # ------------------------------------------------------------------------
+        widgets = [
+            "course_jbe", "section_jbe", "teacher+jbe", "lab_jbe", "block_jbe",
+            "section_entry", "fname_entry", "lname_entry", "block_entry", "lab_descr_entry", "lab_num_entry",
+            "section_new_btn", "teacher_new_btn", "block_new_btn", "lab_new_btn"
+        ]
+        AssignToResourceTk._create_setters_and_getters(
+            category="_tk",
+            properties=widgets,
+            default=None
+        )
+
+    # ============================================================================
+    # getters and setters
+    # - creates two subs for each property
+    # 1) cat_property
+    # 2) cat_property_ptr
+    # ============================================================================
+    @staticmethod
+    def _create_setters_and_getters(*, category, properties: list, default):
+        cat = category
+        props = properties
+
+        def make_prop(name: str, default):
+            def name(self):
+                return eval(f"{self}.{name}") or default
+
+        for prop in props:
+            #  Create a simple getter and setter.
+            name = f"{cat}_{prop}"
+        # TODO: Finish this method, or find an alternative.
+        pass
+
+    @staticmethod
+    def _get_id(hash_ptr: dict, name):
+        # my_ref = reversed(hash_ptr)
+        # return my_ref[name]
+        # More Pythonic way of doing this, taken from here.
+        # https://stackoverflow.com/questions/483666/reverse-invert-a-dictionary-mapping
+        inverted_hash = {v: k for k, v in hash_ptr}
+        return inverted_hash[name]
+
+
+
