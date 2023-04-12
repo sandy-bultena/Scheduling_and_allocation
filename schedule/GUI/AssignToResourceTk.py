@@ -84,7 +84,7 @@ class AssignToResourceTk:
         db = messagebox.askokcancel(title="Assign Block")
         self._frame = db
         global OKAY
-        OKAY = db
+        OKAY: Button = db
         # TODO: FIGURE THE ABOVE STUFF OUT.
         # -----------------------------------------------
         # description of selected block
@@ -112,4 +112,77 @@ class AssignToResourceTk:
 
     def clear_sections_and_blocks(self):
         """Reset the choices for sections and blocks to empty lists, etc."""
-        pass
+        self._tb_section = ""
+        sections = {}
+        self.list_sections = sections
+        self.set_section_choices()
+        self._tk_section_new_btn_configure(state=DISABLED)
+
+        self.clear_blocks()
+        global OKAY
+        OKAY.configure(state='disabled')
+
+        # Updating the dropdown with the new options.
+        self._tk_section_jbe.configure(choices=self.list_sections)
+        self._tk_block_jbe.configure(choices=self.list_sections)
+
+    def clear_blocks(self):
+        """Reset the choices for blocks to empty lists, etc."""
+        self._tb_block = ""
+        blocks = {}
+        self.list_blocks = blocks
+        self.set_block_choices()
+        self._tk_block_new_btn.configure(state=DISABLED)
+
+        global OKAY
+        OKAY.configure(state='disabled')
+
+    def enable_new_section_button(self):
+        self._tk_section_new_btn.configure(state=NORMAL)
+
+    def enable_new_block_button(self):
+        self._tk_block_new_btn.configure(state=NORMAL)
+
+    def set_teacher(self, teacher_name: str):
+        self._tb_teacher(teacher_name)
+        self._new_teacher_lname = ""
+        self._new_teacher_fname = ""
+
+    def set_section(self, section_name):
+        self._tb_section(section_name)
+        self._new_section = ""
+
+    def set_block(self, block_name):
+        self._tb_block(block_name)
+        self._new_block = ""
+        global OKAY
+        OKAY.configure(state=NORMAL)
+
+    def set_lab(self, lab_name):
+        self._tb_lab(lab_name)
+        self._new_lab_name = ""
+        self._new_lab_number = ""
+
+    def set_lab_choices(self, labs: dict[int, str]):
+        self.list_labs.update(labs)
+        self._tk_lab_jbe.configure(choices=self.list_labs)
+
+    def set_teacher_choices(self, teachers: dict[int, str]):
+        self.list_teachers.update(teachers)
+        self._tk_teacher_jbe.configure(choices=self.list_teachers)
+
+    def set_course_choices(self, courses: dict[int, str]):
+        self.list_courses.update(courses)
+        self._tk_course_jbe.configure(choices=self.list_courses)
+        global OKAY
+        OKAY.configure(state=DISABLED)
+
+    def set_section_choices(self, sections):
+        self.list_sections.update(sections)
+        self._tk_section_jbe.configure(choices=self.list_sections)
+        self.enable_new_section_button()
+        global OKAY
+        OKAY.configure(state=DISABLED)
+
+    def set_block_choices(self, blocks):
+        self.list_blocks.update(blocks)
