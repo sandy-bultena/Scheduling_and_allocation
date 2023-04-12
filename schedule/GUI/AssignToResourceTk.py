@@ -14,6 +14,8 @@ REQUIRED EVENT HANDLERS:
 import tkinter.messagebox
 from tkinter import *
 from tkinter import messagebox
+from Pmw import *
+from Pmw.Pmw_2_1_1.lib.PmwDialog import Dialog
 
 # ============================================================================
 # globals
@@ -41,6 +43,7 @@ class AssignToResourceTk:
     * cb_add_new_block(block_description)
     * cb_add_new_teacher(firstname, lastname)
     * cb_add_new_lab(lab_name, lab_number)"""
+
     # ============================================================================
     # constructor
     # ============================================================================
@@ -82,10 +85,17 @@ class AssignToResourceTk:
         # -----------------------------------------------
         # NOTE: tkinter doesn't have a direct analog to Perl/Tk's DialogBox. Must get creative.
         db = messagebox.askokcancel(title="Assign Block")
-        self._frame = db
+        db_2 = Dialog(frame,
+                      title="Assign Block",
+                      buttons=["Ok", "Cancel"])
+        self._frame = db_2
         global OKAY
-        OKAY: Button = db
-        # TODO: FIGURE THE ABOVE STUFF OUT.
+        OKAY = db_2.component("Ok")
+        OKAY.configure(state=DISABLED)
+        OKAY.configure(width=10)
+        cancel = db_2.component("Cancel")
+        cancel.configure(width=10)
+        # TODO: FIGURE THE ABOVE STUFF OUT. NOTE: This may or may not work.
         # -----------------------------------------------
         # description of selected block
         # -----------------------------------------------
@@ -186,3 +196,22 @@ class AssignToResourceTk:
 
     def set_block_choices(self, blocks):
         self.list_blocks.update(blocks)
+        self._tk_block_jbe.configure(choices=self.list_blocks)
+        self.enable_new_block_button()
+        global OKAY
+        OKAY.configure(state=DISABLED)
+
+    def show(self):
+        return self._frame.show()
+
+    def yes_no(self, title, question):
+        """Displays a yes/no dialog.
+
+        Parameters:
+            title: Title of the dialog box.
+            question: Question asked by the dialog box."""
+        db = Dialog(self._frame,
+                    title=title,
+                    buttons=["Yes", "No"])
+        Label(db, text=question).pack()
+        return db.show() or ""
