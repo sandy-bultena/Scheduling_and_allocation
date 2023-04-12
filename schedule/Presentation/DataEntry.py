@@ -1,11 +1,11 @@
 from collections import deque
 from time import sleep
 
-from schedule.Schedule.Lab import Lab
-import schedule.Schedule.Stream
-import schedule.Schedule.Teacher
-from schedule.Schedule.Schedule import Schedule
-from schedule.GuiSchedule.DataEntryTK import DataEntryTK
+from Schedule.Lab import Lab
+import Schedule.Stream
+import Schedule.Teacher
+from Schedule.Schedule import Schedule
+from GuiSchedule.DataEntryTK import DataEntryTK
 
 '''
 =head1 NAME

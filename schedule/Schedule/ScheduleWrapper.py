@@ -82,7 +82,7 @@ class ScheduleWrapper():
 
 @db_session
 @staticmethod
-def scenarios() -> tuple[Scenario]:
+def scenarios(ignore_schedules : bool = False) -> tuple[Scenario]:
     """ Gets all scenarios from the database.
     # Important Note:
          Schedules contained within these scenarios have **not** been populated. Schedule.read_DB() or ScheduleWrapper.load_schedule() should be called to populate.
@@ -90,11 +90,12 @@ def scenarios() -> tuple[Scenario]:
     scens = set()
     scen : db.Scenario
     for scen in select(s for s in db.Scenario):
-        sc = Scenario(scen.semester, scen.status, scen.description)
+        sc = Scenario(scen.id, scen.name, scen.semester, scen.status, scen.description)
         scens.add(sc)
-        sched : db.Schedule
-        for sched in select(sd for sd in db.Schedule if sd.scenario_id == scen):
-            schedule = Schedule(sched.id, sched.official, sched.scenario_id, sched.description)
-            sc.schedules.add(schedule)
+        if not ignore_schedules:
+            sched : db.Schedule
+            for sched in select(sd for sd in db.Schedule if sd.scenario_id == scen):
+                schedule = Schedule(sched.id, sched.official, sched.scenario_id, sched.description)
+                sc.schedules.add(schedule)
     
     return tuple(scens)

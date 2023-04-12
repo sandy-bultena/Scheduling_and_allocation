@@ -7,6 +7,7 @@ from GuiSchedule.ScenarioSelector import ScenarioSelector
 from GuiSchedule.GuiHelpers import display_error_message
 from Schedule.database import PonyDatabaseConnection as PonyDatabaseConnection
 from Schedule.unit_tests.db_constants import HOST, DB_NAME, PROVIDER
+from .ApplicationSelector import ApplicationSelector
 
 
 class LoginWindow:
@@ -63,8 +64,9 @@ class LoginWindow:
             # If successful, make the LoginWindow's parent disappear. We don't want the window
             # hanging around as a distraction.
             self.parent.withdraw()
+            ApplicationSelector(self.parent, db)
             # Then display the scenario selector window.
-            ScenarioSelector(self.parent, db)
+            #ScenarioSelector(self.parent, db)
         except mysql.connector.DatabaseError as err:
             display_error_message(str(err))
         except TypeError as err:

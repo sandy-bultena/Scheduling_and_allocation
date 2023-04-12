@@ -136,9 +136,9 @@ def string(colour : str) -> str:
   return string
 
 # --------------------------------------------------------
-# rgb_from_percent
+# rgb_from_percent # formerly setcolour_rgb
 # --------------------------------------------------------
-def rgb_from_percent(r : int, g : int, b : int) -> str:
+def rgb_from_percent(r : float, g : float, b : float) -> str:
   """
   Converts a percentage-based (0-1) RGB into a readable value.
   - Parameter r -> Red content of colour.
@@ -152,9 +152,9 @@ def rgb_from_percent(r : int, g : int, b : int) -> str:
   return "#{:02X}{:02X}{:02X}".format(r, g, b)
 
 # --------------------------------------------------------
-# hsl_from_percent
+# hsl_from_percent # formerly setcolour_hsl
 # --------------------------------------------------------
-def hsl_from_percent(h : int, s : int, l : int) -> str:
+def hsl_from_percent(h : float, s : float, l : float) -> str:
   """
   Converts a percentage-based (0-1) HSL into a readable RGB value.
   - Parameter h -> Hue of colour.

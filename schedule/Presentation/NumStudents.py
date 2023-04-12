@@ -4,7 +4,7 @@ from os import path
 
 sys.path.append(path.dirname(path.dirname(__file__)))
 import GUI.NumStudentsTk as gui_form
-import globals
+from . import globals
 import Schedule.Schedule as Schedule
 import Schedule.Course as Course
 import Schedule.Section as Section
@@ -35,7 +35,7 @@ class NumStudents:
     # Constructor
     # =======================================================================================================
 
-    def __init__(self, frame, schedules: [Schedule.Schedule]):
+    def __init__(self, frame, schedules: list[Schedule.Schedule]):
         """
         Gathers data to present to the NumStudents gui form
 
@@ -52,7 +52,7 @@ class NumStudents:
     # =======================================================================================================
     # update the data
     # =======================================================================================================
-    def _refresh(self, schedules: [Schedule.Schedule]):
+    def _refresh(self, schedules: list[Schedule.Schedule]):
         """
         Re-draw the student numbers for semesters/courses/section
 
@@ -68,7 +68,7 @@ class NumStudents:
     # =======================================================================================================
     # gather data
     # =======================================================================================================
-    def _gather_data(self, schedules: [Schedule.Schedule]):
+    def _gather_data(self, schedules: list[Schedule.Schedule]):
         """
         gather all the data for the required for the form
 
@@ -93,7 +93,7 @@ class NumStudents:
             # --------------------------------------------------------------------------------------------------
             # for each course in the semester
             # --------------------------------------------------------------------------------------------------
-            courses: [Course] = sorted(
+            courses: list[Course.Course] = sorted(
                 (c for c in schedule.courses() if c.needs_allocation),
                 key=lambda x: x.description)
             for course in courses:
@@ -103,7 +103,7 @@ class NumStudents:
                 # --------------------------------------------------------------------------------------------------
                 # for each section in the course
                 # --------------------------------------------------------------------------------------------------
-                sections: [Section] = sorted(course.sections(), key=lambda x: x.number)
+                sections: list[Section.Section] = sorted(course.sections(), key=lambda x: x.number)
                 for section in sections:
                     section_data = gui_form.NumStudentsDataSection(
                         name=section.number, num_students=section.num_students)

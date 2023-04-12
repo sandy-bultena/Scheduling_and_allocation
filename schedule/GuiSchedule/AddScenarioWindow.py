@@ -17,7 +17,6 @@ class AddScenarioWindow:
         self._setup_interface()
         self.window.grab_set()
         self.window.mainloop()
-    pass
 
     @staticmethod
     def _setup_window(parent) -> Toplevel:
@@ -33,7 +32,7 @@ class AddScenarioWindow:
     def _setup_interface(self):
         ttk.Label(self.frame, text="Name").grid(row=0, column=0)
         ttk.Label(self.frame, text="Description").grid(row=1, column=0)
-        ttk.Label(self.frame, text="Year").grid(row=2, column=0)
+        ttk.Label(self.frame, text="Semester (Season Year)").grid(row=2, column=0)
         name_var = StringVar()
         descr_var = StringVar()
         semester_var = StringVar()
@@ -57,4 +56,4 @@ class AddScenarioWindow:
             messagebox.showinfo("Success", "Successfully added this scenario to the database.")
             self.window.destroy()  # TODO: Figure out why the list isn't updating.
         except mysql.connector.DatabaseError as err:
-            pass
+            return

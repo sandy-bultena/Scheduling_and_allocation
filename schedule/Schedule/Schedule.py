@@ -38,7 +38,7 @@ class Schedule:
     # CONSTRUCTOR
     # ========================================================
 
-    def __init__(self, id : int, official : bool, scenario_id : int, descr : str = ""):
+    def __init__(self, id : int | None, official : bool, scenario_id : int, descr : str = ""):
 
         """
         Creates an instance of the Schedule class.
@@ -48,11 +48,18 @@ class Schedule:
         - Parameter scenario_id -> The idea of the schedule's parent scenario
         - Parameter descr -> A description of the schedule and any unique notes
         """
-        self._id = id
         self.official = official
         self.scenario_id = scenario_id
         self.descr = descr
         self.sections = SectionList()
+        self._id = id if id else Schedule.__create_entity(self)
+
+    @db_session
+    @staticmethod
+    def __create_entity(instance: Schedule):
+        entity_sched = db.Schedule(official = instance.official, description = instance.descr, scenario_id = db.Scenario.get(instance.scenario_id))
+        commit()
+        return entity_sched.get_pk()
     
 
     # ========================================================
