@@ -364,5 +364,39 @@ class ViewsManager:
             open.gui._toplevel.lift()
             open.gui._toplevel.focus()
 
+    def get_create_new_view_callback(self, *args):
+        """Creates a callback function from create_new_view that includes this object as the
+        first parameter.
+        Returns:
+            The new callback function."""
+        def dummy():
+            self.create_new_view(*args)
+        return dummy
+
+# =================================================================
+# footer
+# =================================================================
+"""
+=head1 AUTHOR
+
+Sandy Bultena, Ian Clement, Jack Burns
+
+Translated to Python by Evan Laverdiere
+
+=head1 COPYRIGHT
+
+Copyright (c) 2016, Jack Burns, Sandy Bultena, Ian Clement. 
+
+All Rights Reserved.
+
+This module is free software. It may be used, redistributed
+and/or modified under the terms of the Perl Artistic License
+
+     (see http://www.perl.com/perl/misc/Artistic.html)
+
+=cut
+
+1;
 
 
+"""
