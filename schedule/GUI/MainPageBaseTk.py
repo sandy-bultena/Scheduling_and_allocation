@@ -162,16 +162,16 @@ class MainPageBaseTk:
 
         return center_frame
     
-    # ONGOING ISSUE:
-        # Subpages are generated but not displayed
     def _create_standard_page(self):
         """Create the 'normal' page after the main page has fulfilled its purpose"""
         def tab_changed(notebook : Notebook, cmds : dict, *_):
             index = notebook.index(notebook.select())
-            cmds[index]()
+            # if not set, default to empty lambda. if set and not None, call
+            if (f := cmds.get(index, lambda *_: {})) is not None: f()
         
         def create_notebook(parent : Notebook, events : dict, pages : dict[int, Frame], tabs : list[NoteBookPageInfo], id_prefix : str = "", ):
             for info in tabs:
+                info.panel = Frame(self.mw, **info.frame_args)
                 parent.add(info.panel, text = info.name)
                 i = parent.index(info.panel)
                 events[i] = info.handler
@@ -184,6 +184,7 @@ class MainPageBaseTk:
                     sub_events = dict()
                     create_notebook(sub_page_frame, sub_events, pages, info.subpages, f"{i}-")
 
+                if info.frame_callback: info.frame_callback(info.panel)
             parent.bind("<<NotebookTabChanged>>", partial(tab_changed, parent, events))
         
         mw = self.mw
@@ -212,18 +213,18 @@ class MainPageBaseTk:
     def define_notebook_tabs(self, notebook_tabs : list[NoteBookPageInfo]):
         self.required_notebook_tabs = notebook_tabs
     
-    def get_notebook_page(self, page_id):
+    def get_notebook_page(self, page_id : int) -> NoteBookPageInfo:
         return self.pages[page_id]
     
-    def update_for_new_schedule_and_show_page(self, default_page_id):
-        """Reset the GUI when a new schedule is read"""
+    def update_for_new_schedule_and_show_page(self, default_page_id : int):
+        """Reset the GUI when a new schedule is read. default_page_id must be the integer ID of a TOP-LEVEL notebook tab"""
         if hasattr(self, 'notebook') and self.notebook:
             already_shown = self.notebook.index(self.notebook.select()) == default_page_id
             self.notebook.select(default_page_id)
 
             # cmd isn't invoked if page is already shown
             # call it anyways
-            if already_shown: self.notebook_events[default_page_id]()
+            if already_shown and (f := self.notebook_events.get(default_page_id, lambda *_: {})) is not None: f()
         else:
             self.front_page_frame.pack_forget()
             self._create_standard_page()
@@ -280,15 +281,15 @@ if __name__ == "__main__":
     m.create_menu_and_toolbars(['new', 'open', 'CSVimport', 'save', 'Mark Dirty', 'Mark Clean'], {
         'new': {
             'hint': 'Create new Schedule File',
-            'code': print
+            'code': lambda *_: print('New button pressed'),
         },
         'open': {
             'hint': 'Open Schedule File',
-            'code': partial(print, 2),
+            'code': lambda *_: print('Open button pressed'),
             'sc': 'o'
         },
         'CSVimport': {
-            'code': print,
+            'code': lambda *_: print('CSVimport button pressed'),
             'hint': 'Import Schedule from CSV',
         },
         'save': {
@@ -444,21 +445,34 @@ if __name__ == "__main__":
     
     m.bind_dirty_flag()
     
+    def view_streams(f):
+        Button(f, text = "View Streams tab", command = partial(m.update_for_new_schedule_and_show_page, 5))\
+            .pack(side = 'top', fill = 'y', expand = 0)
+    
+    # NOTE: The event_handler method is called on every first subpage, even if it's not visible, as it's selected by default
     m.define_notebook_tabs([
         	NoteBookPageInfo("Schedules", lambda *_: print("Schedules called"), [
-                NoteBookPageInfo("Schedules", lambda *_: print("Schedules/Schedules called"), []),
-                NoteBookPageInfo("Overview", lambda *_: print("Schedules/Overview called"), []),
-                NoteBookPageInfo("Courses", lambda *_: print("Schedules/Courses called"), []),
-                NoteBookPageInfo("Teachers", lambda *_: print("Schedules/Teachers called"), []),
-                NoteBookPageInfo("Labs", lambda *_: print("Schedules/Labs called"), []),
-                NoteBookPageInfo("Streams", lambda *_: print("Schedules/Streams called"), []),
-            ]),
-            NoteBookPageInfo("Overview", lambda *_: print("Overview called"), []),
-            NoteBookPageInfo("Courses", lambda *_: print("Courses called"), []),
-            NoteBookPageInfo("Teachers", lambda *_: print("Teachers called"), []),
-            NoteBookPageInfo("Labs", lambda *_: print("Labs called"), []),
-            NoteBookPageInfo("Streams", lambda *_: print("Streams called"), []),
+                NoteBookPageInfo("Schedules-2", lambda *_: print("Schedules/Schedules-2 called"), []),
+                NoteBookPageInfo("Overview-2", lambda *_: print("Schedules/Overview-2 called"), [
+                    NoteBookPageInfo("Schedules-3", lambda *_: print("Schedules/Overview/Schedules-3 called"), []),
+                    NoteBookPageInfo("Overview-3", lambda *_: print("Schedules/Overview/Overview-3 called"), []),
+                    NoteBookPageInfo("Courses-3", lambda *_: print("Schedules/Overview/Courses-3 called"), []),
+                    NoteBookPageInfo("Teachers-3", lambda *_: print("Schedules/Overview/Teachers-3 called"), []),
+                    NoteBookPageInfo("Labs-3", lambda *_: print("Schedules/Overview/Labs-3 called"), []),
+                    NoteBookPageInfo("Streams-3", lambda *_: print("Schedules/Overview/Streams-3 called"), []),
+                ], frame_callback = view_streams),
+                NoteBookPageInfo("Courses-2", lambda *_: print("Schedules/Courses-2 called"), []),
+                NoteBookPageInfo("Teachers-2", lambda *_: print("Schedules/Teachers-2 called"), []),
+                NoteBookPageInfo("Labs-2", lambda *_: print("Schedules/Labs-2 called"), []),
+                NoteBookPageInfo("Streams-2", lambda *_: print("Schedules/Streams-2 called"), []),
+            ], frame_callback = view_streams),
+            NoteBookPageInfo("Overview", lambda *_: print("Overview called"), [], frame_callback = view_streams),
+            NoteBookPageInfo("Courses", lambda *_: print("Courses called"), [], frame_args = { 'background': 'purple' }, frame_callback = view_streams),
+            NoteBookPageInfo("Teachers", lambda *_: print("Teachers called"), [], frame_callback = view_streams),
+            NoteBookPageInfo("Labs", lambda *_: print("Labs called"), [], frame_callback = view_streams),
+            NoteBookPageInfo("Streams", lambda *_: print("Streams called"), [], frame_callback = view_streams)
     ])
 
     m.define_exit_callback(lambda *_: print("Application exited"))
+    
     m.start_event_loop()

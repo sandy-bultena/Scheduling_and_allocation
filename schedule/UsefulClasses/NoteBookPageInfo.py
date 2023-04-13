@@ -2,9 +2,22 @@ from __future__ import annotations
 from tkinter import Frame
 
 class NoteBookPageInfo:
-    def __init__(self, name : str, event_handler, subpages : list[NoteBookPageInfo], panel = None):
+    def __init__(self, name : str, event_handler = None, subpages : list[NoteBookPageInfo] = [], frame_args : dict = None, frame_callback = None):
+        """
+        Create a NoteBookPageInfo instance.
+
+        ----
+        Parameters:
+        - name > Name of the notebook tab
+        - event_handler > Method called when the tab is selected
+        - subpages > Sub-tabs that should be included
+        - frame_args > Any arguments that should be passed to the Frame constructor on creation (tkinter.Frame NOT tkinter.ttk.Frame)
+        - frame_callback > A method to be called once the frame is created, to instantiate any sub-elements. Passes in the Frame object
+        """
         self.name = name
         self.handler = self.event_handler = event_handler
         self.subpages = subpages
         self.id = -1
-        self.panel = panel if panel else Frame()
+        self.panel : Frame = None
+        self.frame_args = frame_args if frame_args is not None else {}
+        self.frame_callback = frame_callback
