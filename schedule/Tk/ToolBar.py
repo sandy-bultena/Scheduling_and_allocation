@@ -34,9 +34,7 @@ class ToolBar(Frame):
     def cget(self, key):
         return getattr(self, key, None) if key in self.config_options\
             else super().cget(key)
-    
-    # ONGOING ISSUE:
-        # Button commands don't work for some reason? They work when the connected keybind is pressed, but not always when the actual button is pressed
+
     def add(self, **details):
         """Adds a button
 
@@ -91,6 +89,9 @@ class ToolBar(Frame):
             height              = 20
         )).pack(side = 'left')
         self.buttons[name] = b
+
+        # no idea why this is needed, but without it the buttons randomly don't call callback
+        b.bind('<Button-1>', callback)
 
         # add the tooltip
         if hint: Hovertip(b, hint, 500)
