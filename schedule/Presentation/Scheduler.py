@@ -164,7 +164,19 @@ def menu_info():
     # ----------------------------------------------------------
     # menu structure NOTE: SKIP FOR NOW
     # ----------------------------------------------------------
-    menu: list[dict] = [{}]
+    menu: list[dict] = [{
+        'itemType': 'cascade',
+        'label': 'File',
+        'tearoff': 0,
+        'menuitems': [
+            {
+                'itemType': 'command',
+                'label': 'New',
+                'accelerator': 'Ctrl-n',
+                'command': lambda *_: print("'File/New' Selected")
+            }
+        ]
+    }]
 
     return buttons, actions, menu
 
