@@ -146,7 +146,7 @@ class SchedulerTk(MainPageBaseTk):
                 btn_callback
             )
 
-    tbox3 = None
+    tbox3: Scrolled = None
     tbox = None
     tbox2: Scrolled = None
 
@@ -180,7 +180,7 @@ class SchedulerTk(MainPageBaseTk):
             SchedulerTk.overview_notebook.add(teacher2, text="by Teacher")
             SchedulerTk.overview_pages['teacher2'] = teacher2
         SchedulerTk._actions_course(course_text)
-        _actions_teacher(teacher_text)
+        SchedulerTk._actions_teacher(teacher_text)
 
     # Draw Course Overview
     @staticmethod
@@ -205,7 +205,25 @@ class SchedulerTk(MainPageBaseTk):
         for txt in text:
             SchedulerTk.tbox2.widget.insert('end', txt)
 
+    @staticmethod
+    def _actions_teacher(text: str):
+        f = SchedulerTk.overview_pages['teacher2']
 
+        if not SchedulerTk.tbox3:
+            SchedulerTk.tbox3 = Scrolled(
+                f,
+                "Text",
+                height=20,
+                width=50,
+                scrollbars='se',
+                wrap=NONE,
+                state=DISABLED
+            )
+            SchedulerTk.tbox3.pack(expand=True, fill=BOTH)
+        SchedulerTk.tbox3.widget.delete("1.0", "end")
+
+        for txt in text:
+            SchedulerTk.tbox3.widget.insert('end', txt)
 
     def choose_existing_file(self, curr_dir, file_types):
         pass
