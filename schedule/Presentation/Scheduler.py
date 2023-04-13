@@ -96,3 +96,58 @@ def pre_process_stuff():
     # TODO: Implement ViewsManager class.
     views_manager = ViewsManager(gui, schedule)
     gui.set_views_manager(views_manager)
+
+
+# ==================================================================
+# read_ini
+# ==================================================================
+def read_ini():
+    # NOTE: This function may no longer be necessary, since we aren't reading from YAML
+    # files anymore.
+    pass
+
+
+# ==================================================================
+# write_ini
+# ==================================================================
+def write_ini():
+    # NOTE: Same with this one.
+    pass
+
+
+# ==================================================================
+# define what goes in the menu and toolbar
+# ==================================================================
+def menu_info():
+    # NOTE: Per Sandy's recommendation, I am skipping some aspects of this for now.
+
+    # ----------------------------------------------------------
+    # button names
+    # ----------------------------------------------------------
+    buttons = ['new', 'open', 'save']
+
+    # ----------------------------------------------------------
+    # actions with callback and hints
+    # ----------------------------------------------------------
+    actions: dict[str, dict[str]] = {
+        'new': {
+            'code': new_schedule,
+            'hint': 'Create new Schedule File'
+        },
+        'open': {
+            'code': open_schedule,
+            'hint': 'Open Schedule File'
+        },
+        'save': {
+            'code': save_schedule,
+            'hint': 'Save Schedule File'
+        }
+    }
+
+    # ----------------------------------------------------------
+    # menu structure NOTE: SKIP FOR NOW
+    # ----------------------------------------------------------
+    menu: list[dict] = [{}]
+
+    return buttons, actions, menu
+
