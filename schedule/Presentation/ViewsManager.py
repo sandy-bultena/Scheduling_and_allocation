@@ -1,6 +1,8 @@
 """ViewsManager - Manage all of the views (presentations of schedules)"""
 from ..GUI.ViewsManagerTk import ViewsManagerTk
+from ..Schedule.Block import Block
 from ..Schedule.Schedule import Schedule
+from ..Schedule.Undo import Undo
 
 
 class ViewsManager:
@@ -28,7 +30,162 @@ class ViewsManager:
         self.gui = gui
         self.gui_main = gui_main
         ViewsManager.max_id += 1
-        self.id = ViewsManager.max_id
+        self._id = ViewsManager.max_id
         self.dirty_flag = dirty_flag_ptr  # NOTE: Replace this w/ call to the globals object?
         self.schedule = schedule
+        self._undoes: list[Undo] = []
+        self._redoes: list[Undo] = []
+
+    # =================================================================
+    # getters/setters
+    # =================================================================
+    @property
+    def id(self):
+        """Returns the unique ID for this ViewsManager object."""
+        return self._id
+
+    # =================================================================
+    # Undo and redo
+    # =================================================================
+    def undoes(self):
+        """Gets the Undo objects of this ViewsManager object."""
+        return self._undoes
+
+    def redoes(self):
+        """Gets the Redoes of this ViewsManager object."""
+        return self._redoes
+
+    def undo(self, type: str):
+        """Undo or Redo the last action.
+
+        Parameters:
+            type: 'undo' or 'redo'.
+            """
+        # NOTE: The parameter description in the Perl code, previously transcribed above,
+        # is misleading.
+
+        # ------------------------------------------------------------------------
+        # get the undo/redo
+        # ------------------------------------------------------------------------
+        action = None
+        if type == 'undo':
+            undoes: list = self.undoes()
+            action = undoes.pop()
+        else:
+            redoes: list = self.redoes()
+            action = redoes.pop()
+
+        if not action:
+            return
+
+        # ------------------------------------------------------------------------
+        # process action
+        # ------------------------------------------------------------------------
+
+        if action.move_type == "Day/Time":
+            obj = action.origin_obj
+            block: Block = self._find_block_to_apply_undo_redo(action, obj)
+
+            # --------------------------------------------------------------------
+            # make new undo/redo object as necessary
+            # --------------------------------------------------------------------
+            redo_or_undo = Undo(block.id, block.start, block.day, action.origin_obj,
+                                action.move_type, None)
+            if type == 'undo':
+                self.add_redo(redo_or_undo)
+                self.remove_last_undo()
+            else:
+                self.add_undo(redo_or_undo)
+                self.remove_last_redo()
+
+            # --------------------------------------------------------------------
+            # perform local undo/redo
+            # --------------------------------------------------------------------
+            block.start = action.origin_start
+            block.day = action.origin_day
+
+            # update all views to re-place blocks.
+            self.redraw_all_views()
+
+        # ------------------------------------------------------------------------
+        # moved a teacher from one course to another, or moved block from
+        # one lab to a different lab
+        # ------------------------------------------------------------------------
+        else:
+            original_obj = action.origin_obj
+            target_obj = action.new_obj
+            block: Block = self._find_block_to_apply_undo_redo(action, target_obj)
+
+            # --------------------------------------------------------------------
+            # make new undo/redo object as necessary
+            # --------------------------------------------------------------------
+            redo_or_undo = Undo(block.id, block.start, block.day, action.new_obj,
+                                action.move_type, action.origin_obj)
+            if type == 'undo':
+                self.add_redo(redo_or_undo)
+                self.remove_last_undo()
+            else:
+                self.add_undo(redo_or_undo)
+                self.remove_last_redo()
+
+            # reassign teacher/lab to block.
+            if action.move_type == 'teacher':
+                block.remove_teacher(target_obj)
+                block.assign_teacher(original_obj)
+                block.section.remove_teacher(target_obj)
+                block.section.assign_teacher(original_obj)
+            elif action.move_type == 'lab':
+                block.remove_lab(target_obj)
+                block.assign_lab(original_obj)
+
+            # Update all views to re-place the blocks.
+            self.redraw_all_views()
+
+    def _find_block_to_apply_undo_redo(self, action, obj) -> Block:
+        block: Block
+        blocks = self.schedule.get_blocks_for_obj(obj)
+        for b in blocks:
+            if b.id == action.block_id:
+                block = b
+                return block
+
+    def add_undo(self, undo: Undo):
+        """Add an Undo to the list of Undoes for this ViewsManager object.
+
+        Returns the modified ViewsManager object."""
+        self._undoes.append(undo)
+        return self
+
+    def add_redo(self, redo: Undo):
+        """Adds a Redo to the list of Redoes for this ViewsManager object.
+
+        Returns the modified ViewsManager object."""
+        self._redoes.append(redo)
+        return self
+
+    def remove_last_undo(self):
+        self._undoes.pop()
+
+    def remove_last_redo(self):
+        self._redoes.pop()
+
+    def remove_all_undoes(self):
+        """Removes all Undoes associated with this ViewsManager object.
+
+        Returns the modified ViewsManager object."""
+        self._undoes.clear()
+        return self
+
+    def remove_all_redoes(self):
+        """Removes all Redoes associated with this ViewsManager object.
+
+        Returns the modified ViewsManager object."""
+        self._redoes.clear()
+        return self
+
+    # ============================================================================
+    # house keeping
+    # ============================================================================
+    def add_manager_to_views(self):
+        pass
 
