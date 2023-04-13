@@ -316,5 +316,53 @@ class ViewsManager:
     # =================================================================
     # callbacks used by View objects
     # =================================================================
+    def create_view_containing_block(self, schedulable_objs, type, ob: Block):
+        """Used as a callback function for View objects.
+
+        Find a scheduable object(s) in the given list. If the given block object is also part of
+        that specific schedule, then create a new view.
+
+        Parameters:
+            schedulable_objs: A list of objects (teachers/labs/streams) where a schedule can be created for them, and so a view is created for each of these objects.
+            type: Type of view to draw (teacher/lab/stream).
+            ob: Block object."""
+        obj_id = ob.id if ob is not None else None
+
+        # Note: The original Perl code had a to-do in the description that went like this:
+        # TODO: Clarify what the hell this is doing, once we are working on the View.pm file
+        # I'm beginning to see why.
+
+        if type == 'teacher':
+            type = 'lab'
+        else:
+            type = 'teacher'
+
+        for scheduable_obj in schedulable_objs:
+            if not (obj_id and obj_id == scheduable_obj.id):
+                self.create_new_view(None, scheduable_obj, type)
+
+    def create_new_view(self, undef, scheduable_obj, type):
+        """Creates a new View for the selected Teacher, Lab, or Stream, depending on the
+        scheduable object.
+
+        If the View is already open, the View for that object is brought to the front.
+
+        Parameters:
+            undef: Set None as the first parameter, since this is an unnecessary parameter due to it being a callback function(?)
+            scheduable_obj: An object that can have a schedule (teacher/lab/stream).
+            type: Type of view to show (teacher/lab/stream)."""
+        open: View | False = self.is_open(scheduable_obj.id, type)
+
+        if not open:
+            view = View(self, self.gui.mw, self.schedule, scheduable_obj)
+            self.add_view(view)
+            self.add_manager_to_views()
+        else:
+            # NOTE: Someone left this to-do in the Perl code:
+            # TODO: Should have a View method for this instead of View->gui.
+            open: View
+            open.gui._toplevel.lift()
+            open.gui._toplevel.focus()
+
 
 
