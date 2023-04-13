@@ -1,6 +1,11 @@
 from functools import partial
 from tkinter import *
 
+from schedule.GUI.FontsAndColoursTk import FontsAndColoursTk
+from schedule.PerlLib import Colour
+from schedule.Schedule.Conflict import Conflict
+from schedule.UsefulClasses.ScheduablesByType import ScheduablesByType
+
 
 class ViewsManagerTk:
     def __init__(self, gui):
@@ -47,12 +52,19 @@ class ViewsManagerTk:
         # Get the button associated with the current teacher/lab/stream.
 
         button_pts = self._button_refs
-        btn = button_pts[obj]
+        btn = button_pts.get(obj)
 
         # Set button colour to conflict colour if there is a conflict.
-        # TODO: Come back to this once FontsAndColoursTk has been implemented.
+        colour = FontsAndColoursTk.colours['ButtonBackground']
+        if view_conflict:
+            colour = Conflict.colours()[view_conflict] or 'red'
+        active = Colour.darken(colour, 10)
+        if btn:
+            btn.configure(background=colour,
+                          activebackground=active)
 
-    def create_buttons_for_frame(self, frame: Frame, schedulables_by_type, command_func):
+    def create_buttons_for_frame(self, frame: Frame, schedulables_by_type: ScheduablesByType,
+                                 command_func):
         """Populates frame with buttons for all Teachers, Labs, or Streams depending on type,
         in alphabetical order.
 
@@ -60,7 +72,7 @@ class ViewsManagerTk:
             frame: Frame object which will be drawn on.
             schedulables_by_type: An object that defines everything needed to know what schedulable objects are available.
             command_func: Callback function to create a view if the button is clicked."""
-        schedulables = schedulables_by_type.named_schedulable_objs
+        schedulables = schedulables_by_type.named_scheduable_objs
         type = schedulables_by_type.type
 
         row = 0
@@ -84,7 +96,7 @@ class ViewsManagerTk:
             btn = Button(frame, text=name, command=partial(
                 command_func, self, name, type
             ))
-            btn.grid(row=row, column=col, sticky="nsew",
+            btn.grid(row=row, column=col, sticky=NSEW,
                      ipadx=30, ipady=10)
 
             # Pass the button reference to the event handler # NOTE: ?
