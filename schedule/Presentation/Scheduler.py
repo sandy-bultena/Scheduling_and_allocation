@@ -237,7 +237,11 @@ def _save_schedule(save_as: bool):
 def save_as_csv():
     pass
 
+
 # ==================================================================
 # update_choices_of_schedulable_views
 # (what teachers/labs/streams) can we create schedules for?
 # ==================================================================
+def update_choices_of_schedulable_views():
+    global views_manager
+    btn_callback = views_manager.get_create_new_view_callback
