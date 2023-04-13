@@ -35,4 +35,6 @@ class Scheduler:
     # ==================================================================
     @staticmethod
     def main():
+        # TODO: Implement SchedulerTk.
+        Scheduler.gui = SchedulerTk.new()
         pass
