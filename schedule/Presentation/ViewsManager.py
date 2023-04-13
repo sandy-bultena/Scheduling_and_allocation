@@ -2,8 +2,10 @@
 from .View import View
 from ..GUI.ViewsManagerTk import ViewsManagerTk
 from ..Schedule.Block import Block
+from ..Schedule.Conflict import Conflict
 from ..Schedule.Schedule import Schedule
 from ..Schedule.Undo import Undo
+from ..UsefulClasses.AllScheduables import AllScheduables
 
 
 class ViewsManager:
@@ -203,14 +205,8 @@ class ViewsManager:
         Parameters:
             view: The view to close and remove."""
         view.close()
-        self._remove_view(view)
         del self._views[view.id]
         return self
-
-    def _remove_view(self, view: View):
-        # NOTE: Why is this function necessary? Why does the key-value pair
-        # need to be deleted twice?
-        del self._views[view.id]
 
     def destroy_all(self):
         """Closes all open views."""
@@ -241,5 +237,84 @@ class ViewsManager:
     def views(self):
         """Get the Views of this ViewsManager object."""
         return self._views
+
+    def add_view(self, view: View):
+        """Add a View to the list of Views for this ViewsManager object.
+
+        Parameters:
+            view: The View to be added."""
+        self._views[view.id] = view
+        return self
+
+    # =================================================================
+    # update the views
+    # =================================================================
+    def update_all_views(self, block: Block):
+        """Updates the position of the current moving GuiBlock across all open Views.
+
+        Parameters:
+            block: the block object."""
+        open_views = self.views()
+
+        # Go through all currently open views.
+        for view in open_views.values():
+            # update the GuiBlocks on the view.
+            view.update(block)
+
+    def redraw_all_views(self):
+        """Redraw all open views with new GuiBlocks, if any."""
+        open_views = self.views()
+
+        for view in open_views.values():
+            view.redraw()
+
+    def update_for_conflicts(self):
+        """Goes through all open Views and updates their GuiBlocks for any new Conflicts."""
+        open_views = self.views()
+
+        for view in open_views.values():
+            view.update_for_conflicts(view.type)
+
+    def get_all_scheduables(self):
+        """Gets a list of all schedulable objects and organizes them by type (teacher/lab/stream).
+        Contains a list of the schedulable objects, the names to be displayed in the GUI, etc.
+
+        Returns:
+            An array of ScheduablesByType."""
+        return AllScheduables(self.schedule)
+
+    def determine_button_colours(self, all_view_choices=None):
+        """Finds the highest conflict for each teacher/lab/stream in the array and sets the
+        colour of the button accordingly. """
+        if not all_view_choices:
+            all_view_choices = self.get_all_scheduables()
+
+        for type in all_view_choices.valid_types():
+            scheduable_objs = all_view_choices.by_type(type).scheduable_objs
+
+            # Calculate conflicts.
+            self.schedule.calculate_conflicts()
+
+            # blocks = []
+
+            # For every teacher, lab, stream schedule
+            for scheduable_obj in scheduable_objs:
+                blocks = self.schedule.get_blocks_for_obj(scheduable_obj)
+
+                # What is this view's conflict? Start with 0.
+                view_conflict = 0
+
+                # for every block...
+                for block in blocks:
+                    view_conflict = Conflict.most_severe(view_conflict | block.is_conflicted(),
+                                                         type)
+                    if view_conflict == Conflict._sorted_conflicts[0]:
+                        break
+
+                self.gui.set_button_colour(scheduable_obj, view_conflict)
+
+    # =================================================================
+    # callbacks used by View objects
+    # =================================================================
 
 
