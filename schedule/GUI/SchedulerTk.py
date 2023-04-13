@@ -9,6 +9,7 @@ from .MainPageBaseTk import MainPageBaseTk
 from ..Tk import FindImages
 from tkinter import *
 
+from ..Tk.scrolled import Scrolled
 from ..UsefulClasses.AllScheduables import AllScheduables
 
 # ============================================================================
@@ -147,10 +148,10 @@ class SchedulerTk(MainPageBaseTk):
 
     tbox3 = None
     tbox = None
-    tbox2 = None
+    tbox2: Scrolled = None
 
     overview_notebook = None
-    overview_pages: dict = {}
+    overview_pages: dict[str, Frame] = {}
 
     def draw_overview(self, default_page: str, course_text, teacher_text):
         """Writes the text overview of the schedule to the appropriate GUI object.
@@ -178,10 +179,33 @@ class SchedulerTk(MainPageBaseTk):
             teacher2 = Frame(SchedulerTk.overview_notebook)
             SchedulerTk.overview_notebook.add(teacher2, text="by Teacher")
             SchedulerTk.overview_pages['teacher2'] = teacher2
-        _actions_course(course_text)
+        SchedulerTk._actions_course(course_text)
         _actions_teacher(teacher_text)
 
-        pass
+    # Draw Course Overview
+    @staticmethod
+    def _actions_course(text: str):
+        f = SchedulerTk.overview_pages['course2']
+
+        if not SchedulerTk.tbox2:
+            SchedulerTk.tbox2 = Scrolled(
+                f,
+                'Text',
+                height=20,
+                width=50,
+                scrollbars='se',
+                state=DISABLED,
+                wrap=NONE
+            )
+            SchedulerTk.tbox2.pack(expand=True, fill=BOTH)
+
+        # Note: Not sure if this will work in tkinter.
+        SchedulerTk.tbox2.widget.delete("1.0", "end")
+
+        for txt in text:
+            SchedulerTk.tbox2.widget.insert('end', txt)
+
+
 
     def choose_existing_file(self, curr_dir, file_types):
         pass
