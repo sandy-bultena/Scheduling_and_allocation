@@ -4,6 +4,7 @@ from .ViewsManager import ViewsManager
 from ..GUI.SchedulerTk import SchedulerTk
 from ..Schedule.Schedule import Schedule
 from ..UsefulClasses.NoteBookPageInfo import NoteBookPageInfo
+from .globals import *
 
 """
 # ==================================================================
@@ -26,6 +27,7 @@ current_schedule_file = ""
 current_directory = ""
 file_types = (("Schedules", ".yaml"), ("All Files", "*"))
 global gui
+gui: SchedulerTk
 views_manager = None
 
 # ==================================================================
@@ -75,7 +77,6 @@ def get_user_preferences():
 # ==================================================================
 def create_main_window():
     global gui, preferences
-    gui: SchedulerTk
     gui.create_main_window()
 
     (toolbar_buttons, button_properties, menu) = menu_info()
@@ -89,7 +90,6 @@ def create_main_window():
 # ==================================================================
 def pre_process_stuff():
     global gui
-    gui: SchedulerTk
     gui.bind_dirty_flag()
     gui.define_notebook_tabs(required_pages)
 
@@ -202,7 +202,6 @@ def save_as_schedule():
 
 def _save_schedule(save_as: bool):
     global schedule, gui
-    gui: SchedulerTk
     schedule: Schedule
 
     if schedule is None:
@@ -244,5 +243,101 @@ def save_as_csv():
 # (what teachers/labs/streams) can we create schedules for?
 # ==================================================================
 def update_choices_of_schedulable_views():
-    global views_manager
+    global views_manager, gui
+    views_manager: ViewsManager
     btn_callback = views_manager.get_create_new_view_callback
+    all_view_choices = views_manager.get_all_scheduables()
+    page_name = pages_lookup['Schedules'].name
+    gui.draw_view_choices(page_name, all_view_choices, btn_callback)
+
+    views_manager.determine_button_colours()
+
+
+# ==================================================================
+# update_overview
+# A text representation of the schedules
+# ==================================================================
+def update_overview():
+    pass
+
+
+# ==================================================================
+# update_edit_teachers
+# - A page where teachers can be added/modified or deleted
+# ==================================================================
+def update_edit_teachers():
+    pass
+
+
+# ==================================================================
+# update_edit_streams
+# - A page where streams can be added/modified or deleted
+# ==================================================================
+def update_edit_streams():
+    pass
+
+
+# ==================================================================
+# update_edit_labs
+# - A page where labs can be added/modified or deleted
+# ==================================================================
+def update_edit_labs():
+    pass
+
+
+# ==================================================================
+# draw_edit_courses
+# - A page where courses can be added/modified or deleted
+# ==================================================================
+def update_edit_courses():
+    pass
+
+
+# ==================================================================
+# print_views
+# - print the schedule 'views'
+# - type defines the output type, PDF, Latex
+# ==================================================================
+def print_views(print_type, type):
+    global gui
+    # --------------------------------------------------------------
+    # no schedule yet
+    # --------------------------------------------------------------
+
+    if not schedule:
+        gui.show_error("Export", "Cannot export - There is no schedule")
+
+    # --------------------------------------------------------------
+    # cannot print if the schedule is not saved
+    # --------------------------------------------------------------
+    if is_data_dirty():
+        ans = gui.question(
+            "Unsaved Changes",
+            "There are unsaved changes.\nDo you want to save them?"
+        )
+        if ans:
+            save_schedule()
+        else:
+            return
+
+    # --------------------------------------------------------------
+    # define base file name
+    # --------------------------------------------------------------
+    # NOTE: Come back to this later.
+    pass
+
+
+# ==================================================================
+# exit_schedule
+# ==================================================================
+def exit_schedule():
+    global gui
+    if is_data_dirty():
+        answer = gui.question("Save Schedule", "Do you want to save changes?")
+        if answer == "Yes":
+            save_schedule()
+        elif answer == "Cancel":
+            return
+    write_ini()
+
+
