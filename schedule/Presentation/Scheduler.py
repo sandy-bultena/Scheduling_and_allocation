@@ -1,5 +1,6 @@
 import pony.orm
 
+from .ViewsManager import ViewsManager
 from ..GUI.SchedulerTk import SchedulerTk
 from ..Schedule.Schedule import Schedule
 from ..UsefulClasses.NoteBookPageInfo import NoteBookPageInfo
