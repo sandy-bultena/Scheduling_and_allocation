@@ -28,7 +28,8 @@ current_directory = ""
 file_types = (("Schedules", ".yaml"), ("All Files", "*"))
 global gui
 gui: SchedulerTk
-views_manager = None
+global views_manager
+views_manager: ViewsManager
 
 # ==================================================================
 # required Notebook pages
@@ -202,7 +203,6 @@ def save_as_schedule():
 
 def _save_schedule(save_as: bool):
     global schedule, gui
-    schedule: Schedule
 
     if schedule is None:
         gui.show_error("Save Schedule", "There is no schedule to save!")
@@ -244,7 +244,6 @@ def save_as_csv():
 # ==================================================================
 def update_choices_of_schedulable_views():
     global views_manager, gui
-    views_manager: ViewsManager
     btn_callback = views_manager.get_create_new_view_callback
     all_view_choices = views_manager.get_all_scheduables()
     page_name = pages_lookup['Schedules'].name
