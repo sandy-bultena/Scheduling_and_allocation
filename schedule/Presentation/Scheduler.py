@@ -35,16 +35,17 @@ views_manager: ViewsManager
 # required Notebook pages
 # ==================================================================
 # NOTE: Come back to these later.
-required_pages = [
-    NoteBookPageInfo("Schedules", update_choices_of_schedulable_views),
-    NoteBookPageInfo("Overview", update_overview),
-    NoteBookPageInfo("Courses", update_edit_courses),
-    NoteBookPageInfo("Teachers", update_edit_teachers),
-    NoteBookPageInfo("Labs", update_edit_labs),
-    NoteBookPageInfo("Streams", update_edit_streams)
-]
+required_pages: list[NoteBookPageInfo]
+# required_pages = [
+#     NoteBookPageInfo("Schedules", update_choices_of_schedulable_views),
+#     NoteBookPageInfo("Overview", update_overview),
+#     NoteBookPageInfo("Courses", update_edit_courses),
+#     NoteBookPageInfo("Teachers", update_edit_teachers),
+#     NoteBookPageInfo("Labs", update_edit_labs),
+#     NoteBookPageInfo("Streams", update_edit_streams)
+# ]
 
-pages_lookup: dict[str, NoteBookPageInfo] = dict([(p.name, p) for p in required_pages])
+pages_lookup: dict[str, NoteBookPageInfo] #= dict([(p.name, p) for p in required_pages])
 
 
 # ==================================================================
@@ -54,10 +55,21 @@ def main():
     global gui
     gui = SchedulerTk()
 
-    # NOTE: I have no idea where this comes from.
-    for method in Scheduler.SchedulerManagerGui_methods:
-        if not hasattr(gui, method):
-            raise ValueError(f"Your GUI class does not contain the method {method}")
+    global required_pages, pages_lookup
+    required_pages = [
+        NoteBookPageInfo("Schedules", update_choices_of_schedulable_views),
+        NoteBookPageInfo("Overview", update_overview),
+        NoteBookPageInfo("Courses", update_edit_courses),
+        NoteBookPageInfo("Teachers", update_edit_teachers),
+        NoteBookPageInfo("Labs", update_edit_labs),
+        NoteBookPageInfo("Streams", update_edit_streams)
+    ]
+    pages_lookup = dict([(p.name, p) for p in required_pages])
+
+    # NOTE: I have no idea where this comes from. Commenting it out for now.
+    # for method in Scheduler.SchedulerManagerGui_methods:
+    #     if not hasattr(gui, method):
+    #         raise ValueError(f"Your GUI class does not contain the method {method}")
 
     get_user_preferences()
     create_main_window()
