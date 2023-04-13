@@ -1,4 +1,5 @@
 """ViewsManager - Manage all of the views (presentations of schedules)"""
+from .View import View
 from ..GUI.ViewsManagerTk import ViewsManagerTk
 from ..Schedule.Block import Block
 from ..Schedule.Schedule import Schedule
@@ -35,6 +36,7 @@ class ViewsManager:
         self.schedule = schedule
         self._undoes: list[Undo] = []
         self._redoes: list[Undo] = []
+        self._views: dict[int, View] = {}
 
     # =================================================================
     # getters/setters
@@ -187,5 +189,57 @@ class ViewsManager:
     # house keeping
     # ============================================================================
     def add_manager_to_views(self):
-        pass
+        """Makes sure that the views have access to the ViewsManager."""
+        open_views = self.views()
+        for view in open_views.values():
+            view.views_manager = self
+
+    # =================================================================
+    # keeping track of the views
+    # =================================================================
+    def close_view(self, view: View):
+        """Close the gui window, and remove the view from the list of 'open' views.
+
+        Parameters:
+            view: The view to close and remove."""
+        view.close()
+        self._remove_view(view)
+        del self._views[view.id]
+        return self
+
+    def _remove_view(self, view: View):
+        # NOTE: Why is this function necessary? Why does the key-value pair
+        # need to be deleted twice?
+        del self._views[view.id]
+
+    def destroy_all(self):
+        """Closes all open views."""
+        open_views = self.views()
+
+        for view in open_views.values():
+            self.close_view(view)
+        self.remove_all_undoes()
+        self.remove_all_redoes()
+
+    def is_open(self, id: int, type):
+        """Checks if the View corresponding to the button pressed by the user is open.
+
+        Parameters:
+            id: The ID of the view that you want to check on.
+            type: The type of view that you want to check.
+
+        Returns:
+            The View object if the View is open, False otherwise."""
+        open_views: dict = self.views()
+        for view in open_views.values():
+            if view.type == type:
+                if view.schedulable.id == id:
+                    return view
+
+        return False
+
+    def views(self):
+        """Get the Views of this ViewsManager object."""
+        return self._views
+
 
