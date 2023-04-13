@@ -1,5 +1,6 @@
 import os.path
 from functools import partial
+from tkinter.ttk import Notebook
 from typing import Callable
 
 from Pmw.Pmw_2_1_1.lib.PmwScrolledFrame import ScrolledFrame
@@ -143,6 +144,44 @@ class SchedulerTk(MainPageBaseTk):
                 all_scheduables.by_type(type),
                 btn_callback
             )
+
+    tbox3 = None
+    tbox = None
+    tbox2 = None
+
+    overview_notebook = None
+    overview_pages: dict = {}
+
+    def draw_overview(self, default_page: str, course_text, teacher_text):
+        """Writes the text overview of the schedule to the appropriate GUI object.
+
+        Parameters:
+            default_page: name of notebook tab to draw on.
+            course_text: Text describing all the courses.
+            teacher_text: Text describing all the teachers' workloads."""
+        f = self.pages[default_page.lower()]
+
+        if not SchedulerTk.overview_notebook:
+            SchedulerTk.overview_notebook = Notebook(f)
+            SchedulerTk.overview_notebook.pack(expand=True, fill=BOTH)
+
+            # NOTE: tkinter notebooks behave somewhat differently from PerlTk ones. They don't
+            # create child Frames when the add() method is called; a child Frame must be created
+            # first, and THEN it can be added to the Notebook using .add().
+            course2 = Frame(SchedulerTk.overview_notebook)
+
+            # Not entirely sure if this will work, just assigning the Frame itself to the
+            # dictionary. In the original Perl,
+            SchedulerTk.overview_notebook.add(course2, text="by Course")
+            SchedulerTk.overview_pages['course2'] = course2
+
+            teacher2 = Frame(SchedulerTk.overview_notebook)
+            SchedulerTk.overview_notebook.add(teacher2, text="by Teacher")
+            SchedulerTk.overview_pages['teacher2'] = teacher2
+        _actions_course(course_text)
+        _actions_teacher(teacher_text)
+
+        pass
 
     def choose_existing_file(self, curr_dir, file_types):
         pass
