@@ -2,9 +2,13 @@ import os.path
 from functools import partial
 from typing import Callable
 
+from Pmw.Pmw_2_1_1.lib.PmwScrolledFrame import ScrolledFrame
+
 from .MainPageBaseTk import MainPageBaseTk
 from ..Tk import FindImages
 from tkinter import *
+
+from ..UsefulClasses.AllScheduables import AllScheduables
 
 # ============================================================================
 # Package variables
@@ -97,10 +101,51 @@ class SchedulerTk(MainPageBaseTk):
         # TODO: Determine if this is ViewsManager, or ViewsManagerTk.
         views_manager.destroy_all()
         super().update_for_new_schedule_and_show_page(default_page_id)
+
     # endregion
+
+    frame: Frame = None
+
+    def draw_view_choices(self, default_tab: str, all_scheduables: AllScheduables,
+                          btn_callback: Callable = lambda: None):
+        """The ViewsManager can create schedule views for all teachers/labs etc.
+
+        The allowable views depend on the schedules, so this function needs to be called whenever the schedule changes.
+
+        Draws the buttons to access any of the available views.
+
+        Parameters:
+            default_tab: Name of notebook tab to draw on.
+            all_scheduables: A list of schedulable objects (teachers/labs/etc.)
+            btn_callback: A callback function called whenever the ViewsManager is asked to create a view."""
+        f = self.pages[default_tab.lower()]
+
+        views_manager.gui.reset_button_refs()
+
+        # global frame
+        if SchedulerTk.frame:
+            SchedulerTk.frame.destroy()
+
+        SchedulerTk.frame = Frame(f)
+        SchedulerTk.frame.pack(expand=1, fill=BOTH)
+
+        for type in all_scheduables.valid_types():
+            view_choices_frame = LabelFrame(
+                SchedulerTk.frame,
+                text=all_scheduables.by_type(type).title)
+            view_choices_frame.pack(expand=1, fill=BOTH)
+
+            view_choices_scrolled_frame = ScrolledFrame(view_choices_frame)
+            view_choices_scrolled_frame.pack(expand=1, fill=BOTH)
+
+            views_manager.gui.create_buttons_for_frame(
+                view_choices_scrolled_frame,
+                all_scheduables.by_type(type),
+                btn_callback
+            )
+
     def choose_existing_file(self, curr_dir, file_types):
         pass
 
     def choose_file(self, curr_dir, file_types):
         pass
-
