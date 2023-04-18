@@ -253,6 +253,10 @@ def open_schedule():
             ScheduleSelector(parent=gui.mw, db=db, scenario=scenario[0], callback=get_schedule)
             gui.show_info("SCHEDULE SELECTED", f"Successfully selected a Schedule: {schedule}")
 
+            # If the schedule was successfully read, then
+            views_manager.schedule = schedule
+            _schedule_file_changed(None)
+
     elif PROVIDER == "mysql":
         # Otherwise, open the login window. NOTE: Come back to this later.
         pass
@@ -271,7 +275,7 @@ def _schedule_file_changed(file):
         write_ini()
 
     gui.update_for_new_schedule_and_show_page(
-        pages_lookup['Schedules'].name
+        pages_lookup['Schedules'].id
     )
 
 
