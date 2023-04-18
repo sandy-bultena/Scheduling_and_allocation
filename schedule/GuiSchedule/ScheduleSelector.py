@@ -2,7 +2,10 @@ import tkinter
 from tkinter import Tk, Toplevel, Frame, ttk
 from typing import Callable
 
-from pony.orm import Database
+from pony.orm import Database, db_session, flush
+
+from ..Schedule.ScheduleWrapper import scenarios
+from ..Schedule.database import PonyDatabaseConnection
 
 
 class ScheduleSelector:
@@ -47,10 +50,21 @@ class ScheduleSelector:
         listbox = tkinter.Listbox(self.frame, listvariable=sched_var)
         listbox.grid(row=1, column=0, columnspan=2)
 
+    @db_session
     def _get_schedules_for_scenario(self):
         """Retrieves all Schedules belonging to the passed Scenario."""
+        # scheds = []
+        # scens = scenarios()
+        # this_scen = filter(lambda x: x.id == self.scenario.id, scens)
+        # scheds.extend([s.schedules for s in this_scen])
+        # scheds.extend(self.scenario.schedules)
+        # self.sched_list = sorted(scheds, key=lambda s: s.id)
+        # for sched in self.sched_list:
+        #     self.sched_dict[str(sched)] = sched
         scheds = []
-        scheds.extend(self.scenario.schedules)
+        db_scen = PonyDatabaseConnection.Scenario[self.scenario.id]
+        flush()
+        scheds.extend(db_scen.schedules)
         self.sched_list = sorted(scheds, key=lambda s: s.id)
         for sched in self.sched_list:
             self.sched_dict[str(sched)] = sched

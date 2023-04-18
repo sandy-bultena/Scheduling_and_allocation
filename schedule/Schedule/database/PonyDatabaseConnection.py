@@ -95,7 +95,7 @@ class Schedule(db.Entity):
     unavailable_times = Set('LabUnavailableTime')
 
     def __str__(self):
-        return f"{self.id} {self.semester} {self.scenario_id.year}: {self.description}"
+        return f"{self.id} {self.scenario_id.semester}: {self.description}"
 
 
 class Section(db.Entity):
