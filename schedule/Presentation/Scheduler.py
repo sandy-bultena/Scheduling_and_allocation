@@ -1,8 +1,12 @@
 import pony.orm
+from pony.orm import Database
 
 from .ViewsManager import ViewsManager
 from ..GUI.SchedulerTk import SchedulerTk
+from ..GuiSchedule.ScenarioSelector import ScenarioSelector
 from ..Schedule.Schedule import Schedule
+from ..Schedule.database.PonyDatabaseConnection import define_database
+from ..Schedule.database.db_constants import PROVIDER, DB_NAME, CREATE_DB
 from ..UsefulClasses.NoteBookPageInfo import NoteBookPageInfo
 from .globals import *
 
@@ -198,6 +202,19 @@ def new_schedule():
 # ==================================================================
 def open_schedule():
     # This is another one that will have to change.
+
+    # For the moment, we'll connect to the database. In the future, this will need to be decoupled.
+    db: Database
+    # Are we opening a local SQLite database, or connecting to a remote MySQL one?
+    if PROVIDER == "sqlite":
+        # If it's SQLite, connect to the database.
+        db = define_database(provider=PROVIDER, filename=DB_NAME, create_db=CREATE_DB)
+
+        # Open a ScenarioSelector window.
+        ScenarioSelector(gui.mw, db)
+    elif PROVIDER == "mysql":
+        # Otherwise, connect to the remote MySQL database. NOTE: Come back to this later.
+        pass
     pass
 
 
@@ -212,6 +229,11 @@ def _schedule_file_changed(file):
         current_schedule_file = file
         current_directory = file
         write_ini()
+
+
+    gui.update_for_new_schedule_and_show_page(
+        pages_lookup['Schedules'].name
+    )
 
 
 # ==================================================================

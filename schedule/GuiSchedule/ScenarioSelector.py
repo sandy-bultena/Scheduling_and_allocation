@@ -4,8 +4,8 @@ from pony.orm import Database, db_session, flush
 
 from Schedule.database import PonyDatabaseConnection as PonyDatabaseConnection
 
-from GuiSchedule.AddScenarioWindow import AddScenarioWindow
-from Schedule.ScheduleWrapper import scenarios
+from .AddScenarioWindow import AddScenarioWindow
+from ..Schedule.ScheduleWrapper import scenarios
 
 
 class ScenarioSelector:
