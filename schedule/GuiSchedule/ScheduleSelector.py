@@ -1,9 +1,11 @@
 import tkinter
+from functools import partial
 from tkinter import Tk, Toplevel, Frame, ttk
 from typing import Callable
 
 from pony.orm import Database, db_session, flush
 
+from ..Schedule.Schedule import Schedule
 from ..Schedule.ScheduleWrapper import scenarios
 from ..Schedule.database import PonyDatabaseConnection
 
@@ -47,20 +49,16 @@ class ScheduleSelector:
             .grid(row=0, column=0, columnspan=2)
         self._get_schedules_for_scenario()
         sched_var = tkinter.StringVar(value=self.sched_list)
-        listbox = tkinter.Listbox(self.frame, listvariable=sched_var)
-        listbox.grid(row=1, column=0, columnspan=2)
+        self.listbox = tkinter.Listbox(self.frame, listvariable=sched_var)
+        self.listbox.grid(row=1, column=0, columnspan=2)
+        ttk.Button(self.frame, text="New", command=self.add_new_schedule).grid(row=2, column=0)
+        ttk.Button(self.frame, text="Open", command=partial(
+            self.callback, self.open_schedule) if self.callback
+            else self.open_schedule).grid(row=2, column=1)
 
     @db_session
     def _get_schedules_for_scenario(self):
         """Retrieves all Schedules belonging to the passed Scenario."""
-        # scheds = []
-        # scens = scenarios()
-        # this_scen = filter(lambda x: x.id == self.scenario.id, scens)
-        # scheds.extend([s.schedules for s in this_scen])
-        # scheds.extend(self.scenario.schedules)
-        # self.sched_list = sorted(scheds, key=lambda s: s.id)
-        # for sched in self.sched_list:
-        #     self.sched_dict[str(sched)] = sched
         scheds = []
         db_scen = PonyDatabaseConnection.Scenario[self.scenario.id]
         flush()
@@ -68,3 +66,28 @@ class ScheduleSelector:
         self.sched_list = sorted(scheds, key=lambda s: s.id)
         for sched in self.sched_list:
             self.sched_dict[str(sched)] = sched
+
+    def add_new_schedule(self):
+        pass
+
+    def open_schedule(self):
+        # Get the selected index from the listbox.
+        indices = self.listbox.curselection()
+        if len(indices) != 1:
+            # Print an error message stating that the user needs to select exactly 1 schedule.
+            pass
+
+        # Get the db Schedule corresponding to this index.
+        index = indices[0]
+        db_sched = self.sched_list[index]
+
+        # Create a model Schedule object from the db_schedule.
+        sched = Schedule.read_DB(db_sched.id)
+
+        # Release the Window, destroy it, and quit its loop.
+        self.window.grab_release()
+        self.window.destroy()
+        self.window.quit()
+
+        # Return the selected Schedule object.
+        return sched

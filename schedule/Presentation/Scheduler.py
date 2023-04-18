@@ -245,7 +245,13 @@ def open_schedule():
         else:
             global schedule
 
-            ScheduleSelector(parent=gui.mw, db=db, scenario=scenario[0])
+            def get_schedule(func):
+                global schedule
+                schedule = func()
+                print(f"Retrieved the following object from function: {schedule}")
+
+            ScheduleSelector(parent=gui.mw, db=db, scenario=scenario[0], callback=get_schedule)
+            gui.show_info("SCHEDULE SELECTED", f"Successfully selected a Schedule: {schedule}")
 
     elif PROVIDER == "mysql":
         # Otherwise, open the login window. NOTE: Come back to this later.
