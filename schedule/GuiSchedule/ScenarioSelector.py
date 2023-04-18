@@ -14,7 +14,7 @@ class ScenarioSelector:
     Scenarios are retrieved from the database. If no scenarios exist, the selector gives the user
     the functionality to create new ones. """
 
-    def __init__(self, parent: Tk, db: Database, two : bool = False, callback = None):
+    def __init__(self, parent: Tk, db: Database, two: bool = False, callback=None):
         self.parent = parent
         self.db = db
         self.two = two
@@ -23,7 +23,7 @@ class ScenarioSelector:
         self.scen_list = []
         self.window = self._setup_window(parent)
         self.frame = self._setup_frame()
-        self.boxes : list[StringVar] = []
+        self.boxes: list[StringVar] = []
         self._setup_interface()
         self.window.grab_set()
         self.window.mainloop()
@@ -43,19 +43,20 @@ class ScenarioSelector:
         ttk.Label(self.frame, text="Select a scenario:").grid(row=0, column=0, columnspan=2)
         self._setup_scenario_picker(0)
         self._setup_scenario_picker(1)
-        ttk.Button(self.frame, text="New", command=self.add_new_scenario)\
+        ttk.Button(self.frame, text="New", command=self.add_new_scenario) \
             .grid(row=2, column=0)
-        ttk.Button(self.frame, text="Open", command=self.callback)\
+        ttk.Button(self.frame, text="Open", command=self.callback if self.callback
+                   else self.open_scenario) \
             .grid(row=2, column=1)
-        #self.window.protocol("WM_DELETE_WINDOW", self.parent.destroy)
-    
-    def _setup_scenario_picker(self, col = 0):
+        # self.window.protocol("WM_DELETE_WINDOW", self.parent.destroy)
+
+    def _setup_scenario_picker(self, col=0):
         if not self.two and col > 0:
             return
         elif self.two:
-            grid_args = { 'row': 1, 'column': col }
+            grid_args = {'row': 1, 'column': col}
         else:
-            grid_args = { 'row': 1, 'column': 0, 'columnspan': 2 }
+            grid_args = {'row': 1, 'column': 0, 'columnspan': 2}
 
         self._get_all_scenarios()
         scenario_var = StringVar(value=self.scen_list)
@@ -64,11 +65,11 @@ class ScenarioSelector:
         self.boxes.append(scenario_var)
 
     @db_session
-    def _get_all_scenarios(self, force = False):
+    def _get_all_scenarios(self, force=False):
         """Retrieves all scenario records from the database, storing them within this
         ScenarioSelector object."""
         if force or not self.scen_list:
-            self.scen_list = sorted(scenarios(ignore_schedules = True), key = lambda a: a.id)
+            self.scen_list = sorted(scenarios(ignore_schedules=True), key=lambda a: a.id)
         for scen in self.scen_list:
             self.scen_dict[str(scen)] = scen
 
@@ -83,6 +84,7 @@ class ScenarioSelector:
         self.window.update()
 
     def open_scenario(self):
+        # self.boxes[0].get() produces a string in this case. Not useful for our purposes.
         scenarios = self.boxes[0].get()
         pass
 
@@ -93,4 +95,4 @@ class ScenarioSelector:
             scenarios.append(self.scen_list[self.scen_dict[b.get()]])
         # somehow doesn't think any parameter is being passed through?
         self.results = scenarios
-        #self.parent.destroy()
+        # self.parent.destroy()

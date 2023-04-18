@@ -226,9 +226,7 @@ def open_schedule():
     if PROVIDER == "sqlite":
         global scenario
         # Open a ScenarioSelector window.
-        ScenarioSelector(parent=gui.mw, db=db, two=False, callback=partial(
-            get_scenario, scenario
-        ))
+        ScenarioSelector(parent=gui.mw, db=db)
     elif PROVIDER == "mysql":
         # Otherwise, open the login window. NOTE: Come back to this later.
         pass
