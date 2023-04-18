@@ -53,7 +53,7 @@ required_pages: list[NoteBookPageInfo]
 #     NoteBookPageInfo("Streams", update_edit_streams)
 # ]
 
-pages_lookup: dict[str, NoteBookPageInfo] #= dict([(p.name, p) for p in required_pages])
+pages_lookup: dict[str, NoteBookPageInfo]  # = dict([(p.name, p) for p in required_pages])
 
 
 # ==================================================================
@@ -225,12 +225,21 @@ def open_schedule():
     # Are we opening a local SQLite database, or connecting to a remote MySQL one?
     if PROVIDER == "sqlite":
         global scenario
+
+        def get_scenario(func):
+            scenario: Scenario
+            scenario = func()
+            print(f"In the callback, the scenario is {scenario}.")
+            # NOTE: Debugging shows that the value of scenario is being updated in here, but not in Scheduler.
+            return scenario
+
         # Open a ScenarioSelector window.
-        ScenarioSelector(parent=gui.mw, db=db)
+        ScenarioSelector(parent=gui.mw, db=db, two=False, callback=partial(get_scenario, scenario))
+        print(f"The scenario is {scenario}")
+
     elif PROVIDER == "mysql":
         # Otherwise, open the login window. NOTE: Come back to this later.
         pass
-    pass
 
 
 # ==================================================================
@@ -244,7 +253,6 @@ def _schedule_file_changed(file):
         current_schedule_file = file
         current_directory = file
         write_ini()
-
 
     gui.update_for_new_schedule_and_show_page(
         pages_lookup['Schedules'].name
@@ -399,5 +407,3 @@ def exit_schedule():
         elif answer == "Cancel":
             return
     write_ini()
-
-

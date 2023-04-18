@@ -1,3 +1,4 @@
+from functools import partial
 from tkinter import Tk, Frame, ttk, Toplevel, StringVar, Listbox
 
 from pony.orm import Database, db_session, flush
@@ -46,7 +47,7 @@ class ScenarioSelector:
         self._setup_scenario_picker(1)
         ttk.Button(self.frame, text="New", command=self.add_new_scenario) \
             .grid(row=2, column=0)
-        ttk.Button(self.frame, text="Open", command=self.callback if self.callback
+        ttk.Button(self.frame, text="Open", command=partial(self.callback, self.open_scenario) if self.callback
                    else self.open_scenario) \
             .grid(row=2, column=1)
         # self.window.protocol("WM_DELETE_WINDOW", self.parent.destroy)
@@ -87,15 +88,21 @@ class ScenarioSelector:
 
     def open_scenario(self):
         # self.boxes[0].get() produces a string in this case. Not useful for our purposes.
+
+        # Get the selected index or indices.
         selected_indices = []
         for l in self.listboxes:
             selected_indices.extend(l.curselection())
+
+        # Get the scenario(s) corresponding to that index or those indices.
         selected_scenarios = []
         for i in selected_indices:
             selected_scenarios.append(self.scen_list[i])
 
+        # TODO: Return them somehow. Close the window as well.
+        self.window.grab_release()
         self.window.destroy()
-        pass
+        return selected_scenarios
 
     def button_pressed(self):
         call = self.callback
