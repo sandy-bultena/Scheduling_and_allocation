@@ -24,6 +24,7 @@ class ScenarioSelector:
         self.window = self._setup_window(parent)
         self.frame = self._setup_frame()
         self.boxes: list[StringVar] = []
+        self.listboxes: list[Listbox] = []
         self._setup_interface()
         self.window.grab_set()
         self.window.mainloop()
@@ -63,6 +64,7 @@ class ScenarioSelector:
         listbox = Listbox(self.frame, listvariable=scenario_var, exportselection=False)
         listbox.grid(**grid_args)
         self.boxes.append(scenario_var)
+        self.listboxes.append(listbox)
 
     @db_session
     def _get_all_scenarios(self, force=False):
@@ -85,7 +87,14 @@ class ScenarioSelector:
 
     def open_scenario(self):
         # self.boxes[0].get() produces a string in this case. Not useful for our purposes.
-        scenarios = self.boxes[0].get()
+        selected_indices = []
+        for l in self.listboxes:
+            selected_indices.extend(l.curselection())
+        selected_scenarios = []
+        for i in selected_indices:
+            selected_scenarios.append(self.scen_list[i])
+
+        self.window.destroy()
         pass
 
     def button_pressed(self):
