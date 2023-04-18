@@ -227,15 +227,16 @@ def open_schedule():
         global scenario
 
         def get_scenario(func):
-            scenario: Scenario
+            global scenario
             scenario = func()
             print(f"In the callback, the scenario is {scenario}.")
-            # NOTE: Debugging shows that the value of scenario is being updated in here, but not in Scheduler.
-            return scenario
 
         # Open a ScenarioSelector window.
-        ScenarioSelector(parent=gui.mw, db=db, two=False, callback=partial(get_scenario, scenario))
+        ScenarioSelector(parent=gui.mw, db=db, two=False, callback=get_scenario)
+        # NOTE: The lines of code below don't run until the main window of the app is closed.
+        # We'll need to pass in something else to be the ScenarioSelector's parent.
         print(f"The scenario is {scenario}")
+        gui.show_info("Scenario", f"The selected scenario is {scenario}.")
 
     elif PROVIDER == "mysql":
         # Otherwise, open the login window. NOTE: Come back to this later.
