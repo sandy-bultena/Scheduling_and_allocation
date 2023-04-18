@@ -34,6 +34,7 @@ global gui
 gui: SchedulerTk
 global views_manager
 views_manager: ViewsManager
+db: Database = None
 
 # ==================================================================
 # required Notebook pages
@@ -204,16 +205,22 @@ def open_schedule():
     # This is another one that will have to change.
 
     # For the moment, we'll connect to the database. In the future, this will need to be decoupled.
-    db: Database
+    global db
+
+    if not db:
+        if PROVIDER == "sqlite":
+            # If it's SQLite, connect to the database.
+            db = define_database(provider=PROVIDER, filename=DB_NAME, create_db=CREATE_DB)
+        elif PROVIDER == "mysql":
+            # Otherwise, connect to the remote MySQL database. NOTE: Come back to this later.
+            pass
+
     # Are we opening a local SQLite database, or connecting to a remote MySQL one?
     if PROVIDER == "sqlite":
-        # If it's SQLite, connect to the database.
-        db = define_database(provider=PROVIDER, filename=DB_NAME, create_db=CREATE_DB)
-
         # Open a ScenarioSelector window.
         ScenarioSelector(gui.mw, db)
     elif PROVIDER == "mysql":
-        # Otherwise, connect to the remote MySQL database. NOTE: Come back to this later.
+        # Otherwise, open the login window. NOTE: Come back to this later.
         pass
     pass
 
