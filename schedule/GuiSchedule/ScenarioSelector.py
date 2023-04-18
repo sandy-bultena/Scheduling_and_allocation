@@ -101,7 +101,11 @@ class ScenarioSelector:
 
         # TODO: Return them somehow. Close the window as well.
         self.window.grab_release()
+        # Calling the quit() method stops the window's mainloop from executing.
+        # Discovered this fact here:
+        # https://stackoverflow.com/questions/29363363/destroying-toplevel-window-doesnt-let-the-application-come-out-of-the-main-loop#:~:text=destroy%20does%20not%20exit%20the%20mainloop%2C%20it%20only,well%20as%20root1.destroy%20%28%29%20on%20clicking%20the%20button.
         self.window.destroy()
+        self.window.quit()
         return selected_scenarios
 
     def button_pressed(self):
