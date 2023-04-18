@@ -99,7 +99,6 @@ class ScenarioSelector:
         for i in selected_indices:
             selected_scenarios.append(self.scen_list[i])
 
-        # TODO: Return them somehow. Close the window as well.
         self.window.grab_release()
         # Calling the quit() method stops the window's mainloop from executing.
         # Discovered this fact here:

@@ -6,6 +6,7 @@ from pony.orm import Database
 from .ViewsManager import ViewsManager
 from ..GUI.SchedulerTk import SchedulerTk
 from ..GuiSchedule.ScenarioSelector import ScenarioSelector
+from ..GuiSchedule.ScheduleSelector import ScheduleSelector
 from ..Schedule.Schedule import Schedule
 from ..Schedule.database.PonyDatabaseConnection import define_database, Scenario
 from ..Schedule.database.db_constants import PROVIDER, DB_NAME, CREATE_DB
@@ -237,6 +238,14 @@ def open_schedule():
         # We'll need to pass in something else to be the ScenarioSelector's parent.
         print(f"The scenario is {scenario}")
         gui.show_info("Scenario", f"The selected scenario is {scenario}.")
+
+        if not scenario or len(scenario) != 1 or scenario[0] is None:
+            gui.show_error("INVALID SELECTION", "Incorrect number of Scenarios picked. "
+                                                "Please select 1.")
+        else:
+            global schedule
+
+            ScheduleSelector(parent=gui.mw, db=db, scenario=scenario[0])
 
     elif PROVIDER == "mysql":
         # Otherwise, open the login window. NOTE: Come back to this later.
