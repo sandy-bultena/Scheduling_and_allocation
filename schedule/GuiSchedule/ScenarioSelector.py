@@ -83,6 +83,7 @@ class ScenarioSelector:
         self.window.update()
 
     def open_scenario(self):
+        scenarios = self.boxes[0].get()
         pass
 
     def button_pressed(self):

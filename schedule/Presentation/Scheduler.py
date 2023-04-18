@@ -1,3 +1,5 @@
+from functools import partial
+
 import pony.orm
 from pony.orm import Database
 
@@ -5,7 +7,7 @@ from .ViewsManager import ViewsManager
 from ..GUI.SchedulerTk import SchedulerTk
 from ..GuiSchedule.ScenarioSelector import ScenarioSelector
 from ..Schedule.Schedule import Schedule
-from ..Schedule.database.PonyDatabaseConnection import define_database
+from ..Schedule.database.PonyDatabaseConnection import define_database, Scenario
 from ..Schedule.database.db_constants import PROVIDER, DB_NAME, CREATE_DB
 from ..UsefulClasses.NoteBookPageInfo import NoteBookPageInfo
 from .globals import *
@@ -35,6 +37,7 @@ gui: SchedulerTk
 global views_manager
 views_manager: ViewsManager
 db: Database = None
+scenario: Scenario = None
 
 # ==================================================================
 # required Notebook pages
@@ -215,10 +218,17 @@ def open_schedule():
             # Otherwise, connect to the remote MySQL database. NOTE: Come back to this later.
             pass
 
+    def get_scenario(current_scen, selected_scen):
+        current_scen = selected_scen
+        return current_scen
+
     # Are we opening a local SQLite database, or connecting to a remote MySQL one?
     if PROVIDER == "sqlite":
+        global scenario
         # Open a ScenarioSelector window.
-        ScenarioSelector(gui.mw, db)
+        ScenarioSelector(parent=gui.mw, db=db, two=False, callback=partial(
+            get_scenario, scenario
+        ))
     elif PROVIDER == "mysql":
         # Otherwise, open the login window. NOTE: Come back to this later.
         pass

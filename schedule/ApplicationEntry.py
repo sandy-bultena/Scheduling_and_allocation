@@ -7,10 +7,10 @@ import mysql.connector
 import pony.orm
 from pony.orm import Database, db_session, commit, select, flush
 
-import Schedule.database.PonyDatabaseConnection as PonyDatabaseConnection
-from GuiSchedule.GuiHelpers import display_error_message
-from GuiSchedule.LoginWindow import LoginWindow
-from GuiSchedule.GuiHelpers import check_num
+import schedule.Schedule.database.PonyDatabaseConnection as PonyDatabaseConnection
+from schedule.GuiSchedule.GuiHelpers import display_error_message
+from schedule.GuiSchedule.LoginWindow import LoginWindow
+from schedule.GuiSchedule.GuiHelpers import check_num
 
 
 # TODO: Fix import issues regarding this class.
