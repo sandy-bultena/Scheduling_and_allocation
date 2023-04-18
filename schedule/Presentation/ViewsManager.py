@@ -22,7 +22,7 @@ class ViewsManager:
     # =================================================================
     # new
     # =================================================================
-    def __int__(self, gui_main, dirty_flag_ptr, schedule: Schedule):
+    def __init__(self, gui_main, dirty_flag_ptr, schedule: Schedule):
         """Creates a ViewsManager object.
 
         Parameters:
