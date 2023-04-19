@@ -97,8 +97,9 @@ class ViewsManagerTk:
             btn = Button(frame, text=name, command=partial(
                 command_func, self, name, type
             ))
-            btn.grid(row=row, column=col, sticky=NSEW,
-                     ipadx=30, ipady=10)
+            # btn.grid(row=row, column=col, sticky=NSEW,
+            #          ipadx=30, ipady=10)
+            btn.pack(ipadx=30, ipady=10)
 
             # Pass the button reference to the event handler # NOTE: ?
             # TODO: Figure this out. Not even sure that this is necessary.
