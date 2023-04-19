@@ -205,6 +205,7 @@ class View:
 
         self.blocks = blocks
         schedule.calculate_conflicts()
+        # TODO: Resume bug-hunting from here.
         self.update_for_conflicts(self.type)
 
         # ---------------------------------------------------------------
@@ -567,7 +568,7 @@ class View:
 
         # remove the schedulable object that is associated with this view.
         named_schedulable_objects = [o for o in schedulables_by_type.named_scheduable_objs
-                                     if o.id != self.schedulable.id]
+                                     if o.object.id != self.schedulable.id]
 
         return named_schedulable_objects
 

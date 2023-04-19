@@ -4,6 +4,7 @@ from tkinter import Canvas
 
 from schedule.PerlLib import Colour
 from schedule.Schedule.Block import Block
+from schedule.Schedule.ScheduleEnums import ViewType
 
 """SYNOPSIS
     
@@ -94,7 +95,14 @@ sky_blue = "#b3e6ff"
 blue = Colour.add(sky_blue, sky_blue)
 teal = Colour.add(sky_blue, lime_green)
 
-colours: dict[str, str] = {'lab': "#cdefab", 'teacher': "#abcdef", 'stream': teal}
+colours: dict[str, str] = {
+    'lab': "#cdefab",
+    ViewType.Lab: "#cdefab",
+    'teacher': "#abcdef",
+    ViewType.Teacher: "#abcdef",
+    'stream': teal,
+    ViewType.Stream: teal
+}
 
 
 # =================================================================
@@ -200,11 +208,11 @@ def get_block_text(block: Block, scale: float = 1, type="teacher"):
     block_sec = f"({block.section.number})" if block.section else ""
     block_section_name = block.section.title if block.section else ""
     labs = block.labs()
-    block_lab = ",".join(labs)
+    block_lab = ",".join(str(l) for l in labs)
     block_duration = block.duration
     block_start_time = block.start_number
     streams = block.section.streams if block.section else ()
-    block_streams = ",".join(streams)
+    block_streams = ",".join(str(s) for s in streams)
 
     # If teacher name is too long, split into multiple lines.
     teachers = block.teachers()
