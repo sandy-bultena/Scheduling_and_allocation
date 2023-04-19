@@ -119,7 +119,6 @@ def pre_process_stuff():
 
     # Create the view manager (which shows all the schedule views, etc.)
     global views_manager, schedule
-    # TODO: Implement ViewsManager class.
     views_manager = ViewsManager(gui, is_data_dirty(), schedule)
     gui.set_views_manager(views_manager)
 

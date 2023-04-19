@@ -21,6 +21,7 @@ class ViewTk(ViewBaseTk):
     # ============================================================================
     # Global variables
     # ============================================================================
+    global select_colour
     select_colour = "royalblue"
 
     # ============================================================================
@@ -226,7 +227,7 @@ class ViewTk(ViewBaseTk):
     def _selecting_assigned_blocks(cn: Canvas, x2, y2, x1, y1,
                                    selected_assigned_blocks: list[AssignBlockTk],
                                    assign_blocks_day: list[AssignBlockTk],
-                                   undef):
+                                   undef=None):
         """Called when the mouse is moving, and in the process of selecting AssignBlocks.
 
         Parameters:
@@ -247,7 +248,6 @@ class ViewTk(ViewBaseTk):
         for blk in assign_blocks_day:
             blk.unfill()
         for blk in selected_assigned_blocks:
-            # TODO: select_colour() is not defined. Figure this out.
             blk.set_colour(select_colour)
 
         # rebind Motion
@@ -274,6 +274,8 @@ class ViewTk(ViewBaseTk):
         something_to_do = selected_assigned_blocks
         if not something_to_do or len(something_to_do) == 0:
             return
+        # TODO: #2: Callback function takes two arguments but is getting three. Figure out why.
+        # Callback is View._cb_assign_blocks().
         selected_assign_block_completed_cb(self.view, selected_assigned_blocks)
 
     # ============================================================================

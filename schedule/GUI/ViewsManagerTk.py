@@ -101,7 +101,6 @@ class ViewsManagerTk:
             command = [command_func, self, name, type]
 
             # Create the button on the frame.
-            # TODO: Program crashes here when trying to add a button to a scrolled(Frame) because the frame's children are already managed by pack().
             btn = Button(subframe, text=name, command=partial(
                 command_func, self, named_schedulable_obj.object, type
             ))
@@ -112,7 +111,6 @@ class ViewsManagerTk:
             frame.update_scrollbars()
 
             # Pass the button reference to the event handler # NOTE: ?
-            # TODO: Figure this out. Not even sure that this is necessary.
             command.append(btn)
 
             # add it to the dict of button references.

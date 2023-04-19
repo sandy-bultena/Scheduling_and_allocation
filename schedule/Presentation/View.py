@@ -328,7 +328,7 @@ class View:
         (day, start, duration) = AssignBlockTk.get_day_start_duration(chosen_blocks)
 
         # Create the menu to select the block to assign to the timeslot.
-        # TODO: Implement AssignToResource module.
+        # TODO: Finish implementing AssignToResource module.
         AssignToResource(self.gui.mw, self.schedule, day, start, duration, self.schedulable)
 
         # Redraw.
@@ -561,7 +561,7 @@ class View:
         Returns:
             Array of named objects, with the object being a Teacher/Lab/Stream."""
         # Get all schedulables.
-        all_schedulables = AllScheduables(self.schedule)  # TODO: Implement this class.
+        all_schedulables = AllScheduables(self.schedule)
 
         # Get only the schedulables that match the type of this view.
         schedulables_by_type = all_schedulables.by_type(type)
