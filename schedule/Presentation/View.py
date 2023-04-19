@@ -237,7 +237,6 @@ class View:
 
             # double click opens companion views.
             self.gui.bind_double_click(self, guiblock, self._cb_open_companion_view)
-            # TODO: RESUME FROM HERE
 
     # =================================================================
     # update

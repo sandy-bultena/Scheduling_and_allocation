@@ -79,9 +79,9 @@ class ViewsManagerTk:
         schedulables = schedulables_by_type.named_scheduable_objs
         type = schedulables_by_type.type
 
-        subframe = Frame(frame)
-        subframe.pack(anchor='center', expand=True)
-        frame.update_scrollbars()
+        subframe = frame.Subwidget('Frame')
+        # subframe.pack(anchor='center', expand=True)
+        # frame.update_scrollbars()
 
         row = 0
         col = 0

@@ -207,7 +207,7 @@ class ViewBaseTk:
         Parameters:
             guiblock: The guiblock that will be coloured.
             type: The type of schedulable object that this guiblock is attached to (Teacher/Lab/Stream)"""
-        conflict = Conflict.most_severe(guiblock.block.is_conflicted, type)
+        conflict = Conflict.most_severe(guiblock.block.is_conflicted(), type)
 
         # If the block is unmovable, then grey it out, and do not change its colour even if
         # there is a conflict.
