@@ -7,7 +7,7 @@ from ..Schedule.Block import Block
 from ..Schedule.Conflict import Conflict
 from ..Schedule.Lab import Lab
 from ..Schedule.Schedule import Schedule
-from ..Schedule.ScheduleEnums import ConflictType
+from ..Schedule.ScheduleEnums import ConflictType, ViewType
 from ..Schedule.Stream import Stream
 from ..Schedule.Teacher import Teacher
 from ..Schedule.Undo import Undo
@@ -521,7 +521,7 @@ class View:
         type = self.type
 
         # Don't do this for 'stream' types.
-        if type == "stream":
+        if type == "stream" or type == ViewType.Stream:
             return
 
         # Loop through each half hour time slot, and create and draw AssignBlock for each.
