@@ -12,11 +12,17 @@ from ..Schedule.Teacher import Teacher
 # globals
 # ===================================================================
 global course
+course: Course
 global section
+section: Section
 global block
+block: Block
 global teacher
+teacher: Teacher
 global lab
+lab: Lab
 global gui
+gui: AssignToResourceTk
 
 
 class AssignToResource:
@@ -31,7 +37,7 @@ class AssignToResource:
     # =================================================================
     # Class/Global Variables
     # =================================================================
-    global schedule
+    schedule: Schedule
     global mw
     global Type
     Day_name = {
@@ -100,21 +106,20 @@ class AssignToResource:
         # setup event handlers
         # ------------------------------------
         global gui
-        gui: AssignToResourceTk
 
         # ------------------------------------
         # setup event handlers
         # ------------------------------------
         gui.cb_course_selected(AssignToResource._cb_course_selected)
-        gui.cb_section_selected(_cb_section_selected)
-        gui.cb_block_selected(_cb_block_selected)
-        gui.cb_teacher_selected(_cb_teacher_selected)
-        gui.cb_lab_selected(_cb_lab_selected)
+        gui.cb_section_selected(AssignToResource._cb_section_selected)
+        gui.cb_block_selected(AssignToResource._cb_block_selected)
+        gui.cb_teacher_selected(AssignToResource._cb_teacher_selected)
+        gui.cb_lab_selected(AssignToResource._cb_lab_selected)
 
-        gui.cb_add_new_section(_cb_add_new_section)
-        gui.cb_add_new_block(_cb_add_new_block)
-        gui.cb_add_new_teacher(_cb_add_new_teacher)
-        gui.cb_add_new_lab(_cb_add_new_lab)
+        gui.cb_add_new_section(AssignToResource._cb_add_new_section)
+        gui.cb_add_new_block(AssignToResource._cb_add_new_block)
+        gui.cb_add_new_teacher(AssignToResource._cb_add_new_teacher)
+        gui.cb_add_new_lab(AssignToResource._cb_add_new_lab)
 
         # ------------------------------------
         # get lists of resources
@@ -122,21 +127,20 @@ class AssignToResource:
 
         # labs
         lab_names = {}
-        global schedule
-        schedule: Schedule
-        for lab in schedule.labs():
-            lab_names[lab.id] = str(lab)
+        sched = AssignToResource.schedule
+        for l in sched.labs():
+            lab_names[l.id] = str(l)
         gui.set_lab_choices(lab_names)
 
         # teachers
         teacher_names = {}
-        for teacher in schedule.teachers():
-            teacher_names[teacher.id] = str(teacher)
+        for t in sched.teachers():
+            teacher_names[t.id] = str(t)
         gui.set_teacher_choices(teacher_names)
 
         # courses
         course_names = {}
-        for course in schedule.courses():
+        for course in sched.courses():
             course_names[course.id] = course.description
         gui.set_course_choices(course_names)
 
@@ -152,7 +156,6 @@ class AssignToResource:
             # check if a Block is defined.
             global block
             if block:
-                block: Block
                 # If it is, assign all properties to the Block.
                 global Day, Start, Duration, lab, teacher
                 block.day = Day
@@ -175,14 +178,12 @@ class AssignToResource:
     @staticmethod
     def _cb_course_selected(id: int):
         global course, schedule
-        schedule: Schedule
-        course: Course = Course.get(id)
+        course = Course.get(id)
 
         # since we have a new course, we need to nullify the sections and blocks.
         global section, block, gui
         section = None
         block = None
-        gui: AssignToResourceTk
         gui.clear_sections_and_blocks()
         gui.enable_new_section_button()
 
@@ -198,12 +199,10 @@ class AssignToResource:
     def _cb_section_selected(id: int):
         # Get section id & save to the global Section variable.
         global section, course
-        course: Course
         section = course.get_section_by_id(id)
 
         # Since we have a new section, we need to nullify the blocks.
         global gui
-        gui: AssignToResourceTk
         gui.clear_blocks()
 
         # what blocks are available for this course/section?
@@ -229,7 +228,6 @@ class AssignToResource:
     @staticmethod
     def _cb_block_selected(id: int):
         global block, section
-        section: Section
         block = section.get_block_by_id(id)
 
     # ----------------------------------------------------------------------------
@@ -238,7 +236,7 @@ class AssignToResource:
     @staticmethod
     def _cb_lab_selected(id: int):
         global lab
-        lab: Lab = Lab.get(id)
+        lab = Lab.get(id)
 
     # ----------------------------------------------------------------------------
     # teacher was selected

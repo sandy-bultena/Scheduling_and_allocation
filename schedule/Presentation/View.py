@@ -1,5 +1,6 @@
 from tkinter import Tk
 
+from .AssignToResource import AssignToResource
 from ..Export import DrawView
 from ..GUI.GuiBlockTk import GuiBlockTk
 from ..GUI.ViewTk import ViewTk
@@ -328,7 +329,7 @@ class View:
 
         # Create the menu to select the block to assign to the timeslot.
         # TODO: Implement AssignToResource module.
-        # AssignToResource(self.gui.mw, self.schedule, day, start, duration, self.schedulable)
+        AssignToResource(self.gui.mw, self.schedule, day, start, duration, self.schedulable)
 
         # Redraw.
         self.redraw()

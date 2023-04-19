@@ -12,6 +12,7 @@ if TYPE_CHECKING:
 
 global mw
 global clicked_block
+clicked_block = 0
 global select_colour
 global selected_assign_block_completed_cb
 
@@ -145,29 +146,35 @@ class ViewTk(ViewBaseTk):
 
         # BIND MOUSE 1 to the setup of AssignBlock selection, then calls a function to bind the
         # mouse movement.
-        def dummy(cn, x, y):
+        def dummy(canvas, x, y, undef):
+            # Undef is an extra parameter
+
             # Not the ideal way to do this, but I couldn't figure out a way to imitate what Sandy
             # was doing in the Perl code.
+            global clicked_block
+            curr_x = x()
+            curr_y = y()
             if clicked_block: return  # allow another event to take control
 
             # if mouse is not on an assignable block, bail out
-            ass_block = AssignBlockTk.find(x, y, assignable_blocks)
+            ass_block: AssignBlockTk = AssignBlockTk.find(curr_x, curr_y, assignable_blocks)
             if not ass_block:
                 return
 
             # get day of assignable block that was clicked.
-            day = ass_block.day()
+            day = ass_block.day
 
             # set mouse_motion binding
-            self._prepare_to_select_assign_blocks(cn, day, x, y, assignable_blocks)
+            self._prepare_to_select_assign_blocks(canvas, day, curr_x, curr_y, assignable_blocks)
 
         cn.bind(
             '<Button-1>', partial(
-                dummy, cn, self.mw.winfo_pointerx(), self.mw.winfo_pointery()
+                dummy, cn, self.mw.winfo_pointerx, self.mw.winfo_pointery
             )
         )
 
-    def _prepare_to_select_assign_blocks(self, cn: Canvas, day, x1, y1, assignable_blocks):
+    def _prepare_to_select_assign_blocks(self, cn: Canvas, day, x1, y1,
+                                         assignable_blocks: list[AssignBlockTk]):
         """Binds mouse movement for selecting AssignBlocks.
 
         Binds mouse release for processing selected AssignBlocks.
@@ -185,12 +192,13 @@ class ViewTk(ViewBaseTk):
         selected_assigned_blocks = []
 
         # Get a list of all the AssignBlocks associated with a given day.
-        assign_blocks_day = [b.day for b in assignable_blocks if b.day == day]
+        assign_blocks_day = [b for b in assignable_blocks if b.day == day]
 
         # Binds motion to a motion sub to handle the selection of multiple time slots when moving
         # mouse.
         cn.bind('<Motion>', partial(
             self._selecting_assigned_blocks,
+            cn,
             self.mw.winfo_pointerx(),
             self.mw.winfo_pointery(),
             x1,
@@ -200,7 +208,7 @@ class ViewTk(ViewBaseTk):
         ))
 
         # Binds the release of Mouse 1 to process the selection of AssignBlocks.
-        def dummy(cn: Canvas, x, y1, y2, selected_assigned_blocks):
+        def dummy(cn: Canvas, x, y1, y2, selected_assigned_blocks, undef):
             # Unbind everything.
             cn.bind('<Motion>', "")
             cn.bind('<ButtonRelease-1>', "")
@@ -211,13 +219,14 @@ class ViewTk(ViewBaseTk):
             self._selectedAssignBlocks(cn, selected_assigned_blocks)
 
         cn.bind('<ButtonRelease-1>', partial(
-            dummy, x1, y1, self.mw.winfo_pointery(), selected_assigned_blocks
+            dummy, cn, x1, y1, self.mw.winfo_pointery(), selected_assigned_blocks
         ))
 
     @staticmethod
     def _selecting_assigned_blocks(cn: Canvas, x2, y2, x1, y1,
                                    selected_assigned_blocks: list[AssignBlockTk],
-                                   assign_blocks_day: list[AssignBlockTk]):
+                                   assign_blocks_day: list[AssignBlockTk],
+                                   undef):
         """Called when the mouse is moving, and in the process of selecting AssignBlocks.
 
         Parameters:
@@ -232,12 +241,13 @@ class ViewTk(ViewBaseTk):
         cn.bind('<Motion>', "")
 
         # get the AssignBlocks currently under the selection window
-        selected_assigned_blocks = AssignBlockTk.in_range(x1, y1, x2, y2, assign_blocks_day)
+        selected_assigned_blocks.extend(AssignBlockTk.in_range(x1, y1, x2, y2, assign_blocks_day))
 
         # colour the selection blue
         for blk in assign_blocks_day:
             blk.unfill()
         for blk in selected_assigned_blocks:
+            # TODO: select_colour() is not defined. Figure this out.
             blk.set_colour(select_colour)
 
         # rebind Motion
