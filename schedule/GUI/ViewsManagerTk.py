@@ -103,7 +103,7 @@ class ViewsManagerTk:
             # Create the button on the frame.
             # TODO: Program crashes here when trying to add a button to a scrolled(Frame) because the frame's children are already managed by pack().
             btn = Button(subframe, text=name, command=partial(
-                command_func, self, name, type
+                command_func, self, named_schedulable_obj.object, type
             ))
             btn.grid(row=row, column=col, sticky=NSEW,
                      ipadx=30, ipady=10)
