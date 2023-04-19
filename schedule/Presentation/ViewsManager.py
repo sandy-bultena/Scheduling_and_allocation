@@ -369,7 +369,7 @@ class ViewsManager:
         first parameter.
         Returns:
             The new callback function."""
-        def dummy():
+        def dummy(*args):
             self.create_new_view(*args)
         return dummy
 

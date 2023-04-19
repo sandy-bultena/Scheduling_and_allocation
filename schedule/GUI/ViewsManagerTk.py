@@ -55,6 +55,10 @@ class ViewsManagerTk:
         btn = button_pts.get(obj)
 
         # Set button colour to conflict colour if there is a conflict.
+        if not hasattr(FontsAndColoursTk, "colours"):
+            # Call this just in case FontsAndColoursTk hasn't been initialized yet. Avoids crashes.
+            FontsAndColoursTk(self.mw)
+
         colour = FontsAndColoursTk.colours['ButtonBackground']
         if view_conflict:
             colour = Conflict.colours()[view_conflict] or 'red'
@@ -75,6 +79,10 @@ class ViewsManagerTk:
         schedulables = schedulables_by_type.named_scheduable_objs
         type = schedulables_by_type.type
 
+        subframe = Frame(frame)
+        subframe.pack(anchor='center', expand=True)
+        frame.update_scrollbars()
+
         row = 0
         col = 0
 
@@ -94,12 +102,14 @@ class ViewsManagerTk:
 
             # Create the button on the frame.
             # TODO: Program crashes here when trying to add a button to a scrolled(Frame) because the frame's children are already managed by pack().
-            btn = Button(frame, text=name, command=partial(
+            btn = Button(subframe, text=name, command=partial(
                 command_func, self, name, type
             ))
-            # btn.grid(row=row, column=col, sticky=NSEW,
-            #          ipadx=30, ipady=10)
-            btn.pack(ipadx=30, ipady=10)
+            btn.grid(row=row, column=col, sticky=NSEW,
+                     ipadx=30, ipady=10)
+            # btn.pack(anchor='center', ipadx=30, ipady=10)
+
+            frame.update_scrollbars()
 
             # Pass the button reference to the event handler # NOTE: ?
             # TODO: Figure this out. Not even sure that this is necessary.
