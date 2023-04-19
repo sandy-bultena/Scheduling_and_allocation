@@ -335,7 +335,7 @@ def update_choices_of_schedulable_views():
     global views_manager, gui
     btn_callback = views_manager.get_create_new_view_callback
     all_view_choices = views_manager.get_all_scheduables()
-    page_name = pages_lookup['Schedules'].name
+    page_name = pages_lookup['Schedules'].id
     gui.draw_view_choices(page_name, all_view_choices, btn_callback)
 
     views_manager.determine_button_colours()

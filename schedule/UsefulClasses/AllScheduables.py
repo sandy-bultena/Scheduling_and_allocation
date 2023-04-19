@@ -44,7 +44,7 @@ class AllScheduables:
             return self.streams
 
     def valid_types(self):
-        return 'teacher', 'stream', 'lab'
+        return ViewType.Teacher, ViewType.Lab, ViewType.Stream
 
     def valid_view_type(self, type: ViewType):
         # NOTE: This function doesn't seem to be used at all in the Perl code.
