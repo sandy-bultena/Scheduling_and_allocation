@@ -93,7 +93,7 @@ class ViewsManagerTk:
             command = [command_func, self, name, type]
 
             # Create the button on the frame.
-            # TODO: Program crashes here because ScrolledFrame has no tk object. Consider replacing w/ a scrolled(frame).
+            # TODO: Program crashes here when trying to add a button to a scrolled(Frame) because the frame's children are already managed by pack().
             btn = Button(frame, text=name, command=partial(
                 command_func, self, name, type
             ))

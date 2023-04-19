@@ -140,7 +140,8 @@ class SchedulerTk(MainPageBaseTk):
             view_choices_frame.pack(expand=1, fill=BOTH)
 
             # TODO: Change this from a PMW ScrolledFrame to a scrolled(frame). ScrolledFrame makes the code crash because it lacks a tk attribute.
-            view_choices_scrolled_frame = ScrolledFrame(view_choices_frame)
+            view_choices_scrolled_frame = Scrolled(view_choices_frame, 'Frame', scrollbars="osoe")
+            # view_choices_scrolled_frame = ScrolledFrame(view_choices_frame)
             view_choices_scrolled_frame.pack(expand=1, fill=BOTH)
 
             views_manager.gui.create_buttons_for_frame(
