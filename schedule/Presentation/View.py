@@ -314,7 +314,8 @@ class View:
         # Update status bar.
         self._set_status_undo_info()
 
-    def _cb_assign_blocks(self, chosen_blocks: list):
+    @staticmethod
+    def _cb_assign_blocks(self, chosen_blocks: list, undef=None):
         """Give the option of assigning these blocks to a resource (add to course, assign block to
         teacher/lab/stream).
 
