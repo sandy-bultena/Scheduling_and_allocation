@@ -4,6 +4,7 @@ from ..Schedule.Block import Block
 from ..Schedule.Course import Course
 from ..Schedule.Lab import Lab
 from ..Schedule.Schedule import Schedule
+from ..Schedule.ScheduleEnums import ViewType
 from ..Schedule.Section import Section
 from ..Schedule.Stream import Stream
 from ..Schedule.Teacher import Teacher
@@ -72,19 +73,20 @@ class AssignToResource:
 
         global Type
         Type = schedule.get_view_type_of_object(schedulable)
-        if Type == Lab:
+        if Type == ViewType.Lab:
             global lab
             lab = schedulable
-        elif Type == Teacher:
+        elif Type == ViewType.Teacher:
             global teacher
             teacher = schedulable
-        elif Type == Stream or Type is None:
+        elif Type == ViewType.Stream or Type is None:
             return
 
         # ------------------------------------
         # Create Dialog Box
         # ------------------------------------
-        title = "Assign Block to " + Type
+        # ViewType is not a string, so concatenating it with a + fails.
+        title = f"Assign Block to {Type}"
         block_text = f"{AssignToResource.Day_name[day]} at " \
                      f"{_hours_to_string(start)} for {duration} hour(s)"
 
