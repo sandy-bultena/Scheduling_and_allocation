@@ -68,7 +68,8 @@ class AssignToResourceTk:
 
         # set fonts TODO: Implement the FontsAndColoursTk class.
         global fonts
-        fonts = FontsAndColoursTk.Fonts
+        # FontsAndColoursTk.
+        fonts = FontsAndColoursTk.fonts
         global big_font
         big_font = fonts['bigbold']
         global bold_font
@@ -94,16 +95,22 @@ class AssignToResourceTk:
                       buttons=["Ok", "Cancel"])
         self._frame = db_2
         global OKAY
-        OKAY = db_2.component("Ok")
+        # Access the Dialog's ButtonBox component megawidget to get access to the actual buttons.
+        # https://pmw.sourceforge.net/doc/howtouse.html
+        # https://pmw.sourceforge.net/doc/Dialog.html
+        # https://pmw.sourceforge.net/doc/ButtonBox.html
+        ok_index = db_2.component('buttonbox').index("Ok")
+        OKAY = db_2.component('buttonbox').button(ok_index)
         OKAY.configure(state=DISABLED)
         OKAY.configure(width=10)
-        cancel = db_2.component("Cancel")
+        cancel_index = db_2.component('buttonbox').index("Cancel")
+        cancel = db_2.component('buttonbox').button(cancel_index)
         cancel.configure(width=10)
         # TODO: FIGURE THE ABOVE STUFF OUT. NOTE: This may or may not work.
         # -----------------------------------------------
         # description of selected block
         # -----------------------------------------------
-        self._new_block(block_text)
+        self._new_block = block_text
 
         # -----------------------------------------------
         # create labels

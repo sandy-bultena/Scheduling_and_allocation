@@ -9,7 +9,7 @@ from tkinter.font import Font
 
 class FontsAndColoursTk:
     colours : dict[str, str]
-    font : dict[str, Font]
+    fonts : dict[str, Font]
 
     def __init__(self, mw : root):
         FontsAndColoursTk.setup(mw)
