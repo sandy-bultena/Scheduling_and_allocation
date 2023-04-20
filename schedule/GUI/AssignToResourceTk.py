@@ -11,12 +11,11 @@ REQUIRED EVENT HANDLERS:
 * cb_add_new_block(block_description)
 * cb_add_new_teacher(firstname, lastname)
 * cb_add_new_lab(lab_name, lab_number)"""
-import tkinter.messagebox
-import tkinter.ttk
 from functools import partial
 from tkinter import *
-from tkinter import messagebox
+
 from Pmw.Pmw_2_1_1.lib.PmwComboBoxDialog import ComboBoxDialog
+from Pmw.Pmw_2_1_1.lib.PmwScrolledListBox import ScrolledListBox
 from Pmw.Pmw_2_1_1.lib.PmwDialog import Dialog
 
 from schedule.GUI.FontsAndColoursTk import FontsAndColoursTk
@@ -274,7 +273,7 @@ class AssignToResourceTk:
             self.cb_section_selected(id)
 
         self._tk_section_jbe = ComboBoxDialog(db)
-        scrolled_list = self._tk_section_jbe.component("scrolledlist")
+        scrolled_list: ScrolledListBox = self._tk_section_jbe.component("scrolledlist")
         scrolled_list.setlist(self._tb_section)
         scrolled_list.configure(selectioncommand=partial(
             browse_cmd, self
@@ -314,7 +313,7 @@ class AssignToResourceTk:
             self.cb_block_selected(id)
 
         self._tk_block_jbe = ComboBoxDialog(db)
-        scrolled_list = self._tk_block_jbe.component("scrolledlist")
+        scrolled_list: ScrolledListBox = self._tk_block_jbe.component("scrolledlist")
         scrolled_list.setlist(self._tb_block)
         scrolled_list.component('listbox').configure(width=12)
         scrolled_list.configure(selectioncommand=partial(
@@ -360,7 +359,7 @@ class AssignToResourceTk:
             self.cb_teacher_selected(id)
 
         self._tk_teacher_jbe = ComboBoxDialog(db)
-        scrolled_list = self._tk_teacher_jbe.component("scrolledlist")
+        scrolled_list: ScrolledListBox = self._tk_teacher_jbe.component("scrolledlist")
         scrolled_list.setlist(self._tb_teacher)
         scrolled_list.component('listbox').configure(width=20)
         scrolled_list.configure(selectioncommand=partial(
@@ -405,7 +404,7 @@ class AssignToResourceTk:
             self.cb_lab_selected(id)
 
         self._tk_lab_jbe = ComboBoxDialog(db)
-        scrolled_list = self._tk_lab_jbe.component("scrolledlist")
+        scrolled_list: ScrolledListBox = self._tk_lab_jbe.component("scrolledlist")
         scrolled_list.setlist(self._tb_lab)
         scrolled_list.component("listbox").configure(width=20)
         scrolled_list.component("listbox").configure(state="disabled")
@@ -494,7 +493,9 @@ class AssignToResourceTk:
         Label(db, text='').grid(sticky='nsew')
         self._lbl_course_info.grid(padx=2, sticky='nsew')
         self._lbl_course.grid(padx=2, sticky='nsew')
-        self._tk_course_jbe.grid(padx=2, sticky='nsew')
+        # For some reason, ComboBoxDialog.grid won't accept these arguments.
+        # self._tk_course_jbe.grid(padx=2, sticky='nsew')
+        self._tk_course_jbe.grid()
 
         # -------------------------------------------------------
         # section
@@ -678,8 +679,6 @@ class AssignToResourceTk:
             # Create a pointer (not sure if necessary).
             # pointer_name = name + "_ptr"
             # make_prop(pointer_name, default)
-        # TODO: Finish this method, or find an alternative.
-        pass
 
     @staticmethod
     def _get_id(hash_ptr: dict, name):
