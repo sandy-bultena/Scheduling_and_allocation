@@ -74,6 +74,9 @@ class AssignToResourceTk:
         big_font = fonts['bigbold']
         global bold_font
         bold_font = fonts['bold']
+        # Adding various attributes, because I am too lazy to implement the blasted
+        # function to automatically generate everything.
+        self.__setup()
 
     # ============================================================================
     # draw
@@ -89,7 +92,7 @@ class AssignToResourceTk:
         # create dialog box
         # -----------------------------------------------
         # NOTE: tkinter doesn't have a direct analog to Perl/Tk's DialogBox. Must get creative.
-        db = messagebox.askokcancel(title="Assign Block")
+        # db = messagebox.askokcancel(title="Assign Block")
         db_2 = Dialog(frame,
                       title="Assign Block",
                       buttons=["Ok", "Cancel"])
@@ -120,11 +123,11 @@ class AssignToResourceTk:
         # -----------------------------------------------
         # course / section / block widgets
         # -----------------------------------------------
-        self._setup_course_widgets()
-        self._setup_section_widgets()
-        self._setup_block_widgets()
-        self._setup_teacher_widgets()
-        self._setup_lab_widgets()
+        # self._setup_course_widgets()
+        # self._setup_section_widgets()
+        # self._setup_block_widgets()
+        # self._setup_teacher_widgets()
+        # self._setup_lab_widgets()
 
         # -----------------------------------------------
         # layout
@@ -180,7 +183,7 @@ class AssignToResourceTk:
         OKAY.configure(state=NORMAL)
 
     def set_lab(self, lab_name):
-        self._tb_lab=lab_name
+        self._tb_lab = lab_name
         self._new_lab_name = ""
         self._new_lab_number = ""
 
@@ -231,7 +234,7 @@ class AssignToResourceTk:
     # course
     # ============================================================================
     def _setup_course_widgets(self):
-        db = self._frame
+        db: Frame = self._frame.component('dialogchildsite')
 
         # self._tk_course_jbe(
         #     # Pmw equivalent of JBrowseEntry seems to be this, at least at first glance.
@@ -239,7 +242,7 @@ class AssignToResourceTk:
         #              )
         # )
         def browse_cmd(self):
-            id = _get_id(self.list_courses, self._tb_course)
+            id = AssignToResourceTk._get_id(self.list_courses, self._tb_course)
             self.cb_course_selected(id)  # TODO: Figure out if this partial works.
 
         # Pmw equivalent of JBrowseEntry seems to be this, at least at first glance.
@@ -259,7 +262,7 @@ class AssignToResourceTk:
         db = self._frame
 
         def browse_cmd(self):
-            id = _get_id(self.list_sections, self._tb_section)
+            id = AssignToResourceTk._get_id(self.list_sections, self._tb_section)
             self.cb_section_selected(id)
 
         self._tk_section_jbe = ComboBoxDialog(db,
@@ -293,7 +296,7 @@ class AssignToResourceTk:
         db = self._frame
 
         def browse_cmd(self):
-            id = _get_id(self.list_blocks, self._tb_block)
+            id = AssignToResourceTk._get_id(self.list_blocks, self._tb_block)
             self.cb_block_selected(id)
 
         self._tk_block_jbe = ComboBoxDialog(db,
@@ -331,7 +334,7 @@ class AssignToResourceTk:
         db = self._frame
 
         def browse_cmd(self):
-            id = _get_id(self.list_teachers, self._tb_teacher)
+            id = AssignToResourceTk._get_id(self.list_teachers, self._tb_teacher)
             self.cb_teacher_selected(id)
 
         self._tk_teacher_jbe = ComboBoxDialog(
@@ -368,7 +371,7 @@ class AssignToResourceTk:
         db = self._frame
 
         def browse_cmd(self):
-            id = _get_id(self.list_labs, self._tb_lab)
+            id = AssignToResourceTk._get_id(self.list_labs, self._tb_lab)
             self.cb_lab_selected(id)
 
         self._tk_lab_jbe = ComboBoxDialog(
@@ -438,7 +441,7 @@ class AssignToResourceTk:
         self._lbl_lab_info = AssignToResourceTk._label(db, "Lab (optional)", opts)
 
     def _layout(self):
-        db = self._frame
+        db = self._frame.component('dialogchildsite')
 
         # -------------------------------------------------------
         # title
@@ -528,21 +531,22 @@ class AssignToResourceTk:
         # ------------------------------------------------------------------------
         # Entry or Text Box variable bindings
         # ------------------------------------------------------------------------
-        AssignToResourceTk._create_setters_and_getters(
+        self._create_setters_and_getters(
             category='list',
             properties=["courses", "sections", "blocks", "teachers", "labs"],
             default={}
         )
 
-        AssignToResourceTk._create_setters_and_getters(
+        self._create_setters_and_getters(
             category="_tb",
             properties=["course", "section", "block", "teacher", "lab"],
             default=""
         )
 
-        AssignToResourceTk._create_setters_and_getters(
+        self._create_setters_and_getters(
             category="_new",
-            properties=["section, teacher_fname", "teacher_lname", "lab_number", "lab_name", "block"],
+            properties=["section, teacher_fname", "teacher_lname", "lab_number", "lab_name",
+                        "block"],
             default=""
         )
 
@@ -560,10 +564,11 @@ class AssignToResourceTk:
             "add_new_teacher",
             "add_new_lab"
         ]
+
         def default_cb():
             return
 
-        AssignToResourceTk._create_setters_and_getters(
+        self._create_setters_and_getters(
             category="cb",
             properties=callbacks,
             default=default_cb
@@ -577,7 +582,7 @@ class AssignToResourceTk:
                   "create_teacher", "create_lab", "create_block"
                   ]
 
-        AssignToResourceTk._create_setters_and_getters(
+        self._create_setters_and_getters(
             category="_lbl",
             properties=labels,
             default=None
@@ -587,11 +592,12 @@ class AssignToResourceTk:
         # Defining widget getters and setters
         # ------------------------------------------------------------------------
         widgets = [
-            "course_jbe", "section_jbe", "teacher+jbe", "lab_jbe", "block_jbe",
-            "section_entry", "fname_entry", "lname_entry", "block_entry", "lab_descr_entry", "lab_num_entry",
+            "course_jbe", "section_jbe", "teacher_jbe", "lab_jbe", "block_jbe",
+            "section_entry", "fname_entry", "lname_entry", "block_entry", "lab_descr_entry",
+            "lab_num_entry",
             "section_new_btn", "teacher_new_btn", "block_new_btn", "lab_new_btn"
         ]
-        AssignToResourceTk._create_setters_and_getters(
+        self._create_setters_and_getters(
             category="_tk",
             properties=widgets,
             default=None
@@ -603,18 +609,37 @@ class AssignToResourceTk:
     # 1) cat_property
     # 2) cat_property_ptr
     # ============================================================================
-    @staticmethod
-    def _create_setters_and_getters(*, category, properties: list, default):
+    def _create_setters_and_getters(self, *, category: str, properties: list[str], default):
+        """Generates a series of instance attributes with a common naming scheme and
+        a common default value.
+        
+        Parameters:
+            category: Common prefix of the names of the attributes to be created.
+            properties: List of names for attributes of this type. Format is {category}_{properties}
+            default: Common default value for these properties."""
+        # NOTE: This was originally a static method in the Perl code, called when this module is
+        # imported. I have chosen to make it an instance method because there's no easy way to
+        # call a class method before the class is defined in a Python module, and because it's
+        # not Pythonic to have getters and setters for every single attribute when there's no
+        # validation involved.
+
         cat = category
         props = properties
 
         def make_prop(name: str, default):
-            def name(self):
-                return eval(f"{self}.{name}") or default
+            # def name(self):
+            #     return eval(f"{self}.{name}") or default
+            # exec(f"{self}.{name} = {default}")
+            setattr(self, name, default)
 
         for prop in props:
             #  Create a simple getter and setter.
             name = f"{cat}_{prop}"
+            make_prop(name, default)
+
+            # Create a pointer (not sure if necessary).
+            # pointer_name = name + "_ptr"
+            # make_prop(pointer_name, default)
         # TODO: Finish this method, or find an alternative.
         pass
 
@@ -626,6 +651,3 @@ class AssignToResourceTk:
         # https://stackoverflow.com/questions/483666/reverse-invert-a-dictionary-mapping
         inverted_hash = {v: k for k, v in hash_ptr}
         return inverted_hash[name]
-
-
-
