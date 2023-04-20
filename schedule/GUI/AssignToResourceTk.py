@@ -410,7 +410,7 @@ class AssignToResourceTk:
         # Dictionary of options to pass to _label.
         opts = {}
 
-        db = self._frame
+        db = self._frame.component('dialogchildsite')
 
         global big_font
         self._lbl_title = AssignToResourceTk._label(db, main_title, {'font': big_font})
