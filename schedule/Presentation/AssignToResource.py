@@ -300,3 +300,27 @@ class AssignToResource:
         gui.set_section(str(section))
         AssignToResource._cb_section_selected(section.id)
 
+    # ----------------------------------------------------------------------------
+    # add_new_block
+    # ----------------------------------------------------------------------------
+    @staticmethod
+    def _cb_add_new_block(name: str):
+        global course, section
+        if not course or not section:
+            return  # NOTE: Verify whether this will work, or if extra validation is needed.
+
+        global block, Day, Start, Duration
+        block = Block(Day, Start, _hours_to_string(Duration), number=section.get_new_number())
+        section.add_block(block)
+        # NOTE: In the original code, the newly-created block was added to the section first,
+        # and then its day, start, and duration properties were set. We can't do it that way
+        # based on how Block was coded, however.
+
+        blocks_arr = section.blocks
+        blocks_dict = {}
+        for i in blocks_arr:
+            blocks_dict[i.id] = i.description
+        global gui
+        gui.set_block_choices(blocks_dict)
+        # TODO: Verify whether the called function can accept actual blocks or just strings.
+        gui.set_block(block)
