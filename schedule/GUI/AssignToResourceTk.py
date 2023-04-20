@@ -273,18 +273,24 @@ class AssignToResourceTk:
             id = AssignToResourceTk._get_id(self.list_sections, self._tb_section)
             self.cb_section_selected(id)
 
-        self._tk_section_jbe = ComboBoxDialog(db,
-                                              scrolledlist_items=self._tb_section,
-                                              selectioncommand=partial(
-                                                  browse_cmd, self
-                                              ))
+        self._tk_section_jbe = ComboBoxDialog(db)
+        scrolled_list = self._tk_section_jbe.component("scrolledlist")
+        scrolled_list.setlist(self._tb_section)
+        scrolled_list.configure(selectioncommand=partial(
+            browse_cmd, self
+        ))
+        # self._tk_section_jbe = ComboBoxDialog(db,
+        #                                       scrolledlist_items=self._tb_section,
+        #                                       selectioncommand=partial(
+        #                                           browse_cmd, self
+        #                                       ))
 
         sec_drop_entry: Entry = self._tk_section_jbe.component("entry")
         sec_drop_entry.configure(disabledbackground="white")
         sec_drop_entry.configure(disabledforeground="black")
 
         self._tk_section_entry = Entry(db,
-                                       textvariable=self._new_section)
+                                       textvariable=StringVar(value=self._new_section))
 
         def add_new_section(self):
             self.cb_add_new_section(self._new_section)
@@ -301,7 +307,7 @@ class AssignToResourceTk:
     # block
     # ============================================================================
     def _setup_block_widgets(self):
-        db = self._frame
+        db = self._frame.component('dialogchildsite')
 
         def browse_cmd(self):
             id = AssignToResourceTk._get_id(self.list_blocks, self._tb_block)
@@ -553,7 +559,7 @@ class AssignToResourceTk:
 
         self._create_setters_and_getters(
             category="_new",
-            properties=["section, teacher_fname", "teacher_lname", "lab_number", "lab_name",
+            properties=["section", "teacher_fname", "teacher_lname", "lab_number", "lab_name",
                         "block"],
             default=""
         )
