@@ -88,7 +88,7 @@ class AssignToResource:
         # ViewType is not a string, so concatenating it with a + fails.
         title = f"Assign Block to {Type}"
         block_text = f"{AssignToResource.Day_name[day]} at " \
-                     f"{_hours_to_string(start)} for {duration} hour(s)"
+                     f"{AssignToResource._hours_to_string(start)} for {duration} hour(s)"
 
         global gui
         gui = AssignToResourceTk(Type)  # TODO: Implement this class.
@@ -161,7 +161,7 @@ class AssignToResource:
                 # If it is, assign all properties to the Block.
                 global Day, Start, Duration, lab, teacher
                 block.day = Day
-                block.start = _hours_to_string(Start)
+                block.start = AssignToResource._hours_to_string(Start)
                 block.duration = Duration
                 if lab:
                     block.assign_lab(lab)
@@ -310,7 +310,7 @@ class AssignToResource:
             return  # NOTE: Verify whether this will work, or if extra validation is needed.
 
         global block, Day, Start, Duration
-        block = Block(Day, Start, _hours_to_string(Duration), number=section.get_new_number())
+        block = Block(Day, Start, AssignToResource._hours_to_string(Duration), number=section.get_new_number())
         section.add_block(block)
         # NOTE: In the original code, the newly-created block was added to the section first,
         # and then its day, start, and duration properties were set. We can't do it that way
@@ -392,3 +392,13 @@ class AssignToResource:
 
         gui.set_teacher_choices(teacher_names)
         gui.set_teacher(str(teacher))
+
+    # ----------------------------------------------------------------------------
+    # _hours_to_string: 8.5 -> 8:30
+    # ----------------------------------------------------------------------------
+    @staticmethod
+    def _hours_to_string(time: float):
+        hour_string = f"{int(time)}:"
+        minutes_string = "00" if time == int(time) else "30"
+        return hour_string + minutes_string
+
