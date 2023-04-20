@@ -123,11 +123,11 @@ class AssignToResourceTk:
         # -----------------------------------------------
         # course / section / block widgets
         # -----------------------------------------------
-        # self._setup_course_widgets()
-        # self._setup_section_widgets()
-        # self._setup_block_widgets()
-        # self._setup_teacher_widgets()
-        # self._setup_lab_widgets()
+        self._setup_course_widgets()
+        self._setup_section_widgets()
+        self._setup_block_widgets()
+        self._setup_teacher_widgets()
+        self._setup_lab_widgets()
 
         # -----------------------------------------------
         # layout
@@ -140,7 +140,7 @@ class AssignToResourceTk:
         sections = {}
         self.list_sections = sections
         self.set_section_choices()
-        self._tk_section_new_btn_configure(state=DISABLED)
+        self._tk_section_new_btn.configure(state=DISABLED)
 
         self.clear_blocks()
         global OKAY
@@ -173,11 +173,11 @@ class AssignToResourceTk:
         self._new_teacher_fname = ""
 
     def set_section(self, section_name):
-        self._tb_section(section_name)
+        self._tb_section = section_name
         self._new_section = ""
 
     def set_block(self, block_name):
-        self._tb_block(block_name)
+        self._tb_block = block_name
         self._new_block = ""
         global OKAY
         OKAY.configure(state=NORMAL)
@@ -201,14 +201,14 @@ class AssignToResourceTk:
         global OKAY
         OKAY.configure(state=DISABLED)
 
-    def set_section_choices(self, sections):
+    def set_section_choices(self, sections=None):
         self.list_sections.update(sections)
         self._tk_section_jbe.configure(choices=self.list_sections)
         self.enable_new_section_button()
         global OKAY
         OKAY.configure(state=DISABLED)
 
-    def set_block_choices(self, blocks):
+    def set_block_choices(self, blocks=None):
         self.list_blocks.update(blocks)
         self._tk_block_jbe.configure(choices=self.list_blocks)
         self.enable_new_block_button()
@@ -246,11 +246,19 @@ class AssignToResourceTk:
             self.cb_course_selected(id)  # TODO: Figure out if this partial works.
 
         # Pmw equivalent of JBrowseEntry seems to be this, at least at first glance.
-        self._tk_course_jbe = ComboBoxDialog(db,
-                                             scrolledlist_items=self._tb_course_ptr,
-                                             selectioncommand=partial(
-                                                 browse_cmd, self))
 
+        # NOTE: Unlike the JBrowseEntry, Pmw.ComboBoxDialog() doesn't accept arguments applicable
+        # to its child megawidgets. Must create the ComboBoxEntry first, and THEN configure the
+        # options of its child listbox.
+        self._tk_course_jbe = ComboBoxDialog(db)
+        # self._tk_course_jbe = ComboBoxDialog(db,
+        #                                      items=self._tb_course,
+        #                                      selectioncommand=partial(
+        #                                          browse_cmd, self))
+        self._tk_course_jbe.component("scrolledlist").setlist(self._tb_course)
+        self._tk_course_jbe.component("scrolledlist").configure(selectioncommand=partial(
+            browse_cmd, self
+        ))
         course_drop_entry = self._tk_course_jbe.component("entry")
         course_drop_entry.configure(disabledbackground="white")
         course_drop_entry.configure(disabledforeground="black")
@@ -259,14 +267,14 @@ class AssignToResourceTk:
     # section
     # ============================================================================
     def _setup_section_widgets(self):
-        db = self._frame
+        db = self._frame.component('dialogchildsite')
 
         def browse_cmd(self):
             id = AssignToResourceTk._get_id(self.list_sections, self._tb_section)
             self.cb_section_selected(id)
 
         self._tk_section_jbe = ComboBoxDialog(db,
-                                              scrolledlist_items=self._tb_section_ptr,
+                                              scrolledlist_items=self._tb_section,
                                               selectioncommand=partial(
                                                   browse_cmd, self
                                               ))
@@ -276,7 +284,7 @@ class AssignToResourceTk:
         sec_drop_entry.configure(disabledforeground="black")
 
         self._tk_section_entry = Entry(db,
-                                       textvariable=self._new_section_ptr)
+                                       textvariable=self._new_section)
 
         def add_new_section(self):
             self.cb_add_new_section(self._new_section)
@@ -300,7 +308,7 @@ class AssignToResourceTk:
             self.cb_block_selected(id)
 
         self._tk_block_jbe = ComboBoxDialog(db,
-                                            scrolledlist_items=self._tb_block_ptr,
+                                            scrolledlist_items=self._tb_block,
                                             width=20,
                                             selectioncommand=partial(
                                                 browse_cmd, self
@@ -311,7 +319,7 @@ class AssignToResourceTk:
         block_drop_entry.configure(disabledforeground="black")
 
         self._tk_block_entry = Entry(db,
-                                     textvariable=self._new_block_ptr,
+                                     textvariable=self._new_block,
                                      state=DISABLED,
                                      disabledbackground='white')
 
@@ -339,7 +347,7 @@ class AssignToResourceTk:
 
         self._tk_teacher_jbe = ComboBoxDialog(
             db,
-            scrolledlist_items=self._tb_teacher_ptr,
+            scrolledlist_items=self._tb_teacher,
             width=20,
             selectioncommand=partial(
                 browse_cmd, self
@@ -350,8 +358,8 @@ class AssignToResourceTk:
         teacher_drop_entry.configure(disabledbackground="white")
         teacher_drop_entry.configure(disabledforeground="black")
 
-        self._tk_fname_entry = Entry(db, textvariable=self._new_teacher_fname_ptr)
-        self._tk_lname_entry = Entry(db, textvariable=self._new_teacher_lname_ptr)
+        self._tk_fname_entry = Entry(db, textvariable=self._new_teacher_fname)
+        self._tk_lname_entry = Entry(db, textvariable=self._new_teacher_lname)
 
         def new_teacher_clicked(self):
             self.cb_add_new_teacher(self._new_teacher_fname, self._new_teacher_lname)
@@ -376,7 +384,7 @@ class AssignToResourceTk:
 
         self._tk_lab_jbe = ComboBoxDialog(
             db,
-            scrolledlist_items=self._tb_lab_ptr,
+            scrolledlist_items=self._tb_lab,
             state='readonly',
             width=20,
             selectioncommand=partial(
