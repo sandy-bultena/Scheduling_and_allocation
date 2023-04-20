@@ -158,7 +158,7 @@ class AssignToResourceTk:
         self._tk_block_new_btn.configure(state=NORMAL)
 
     def set_teacher(self, teacher_name: str):
-        self._tb_teacher(teacher_name)
+        self._tb_teacher = teacher_name
         self._new_teacher_lname = ""
         self._new_teacher_fname = ""
 

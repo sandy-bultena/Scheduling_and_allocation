@@ -358,3 +358,37 @@ class AssignToResource:
             lab_names[l.id] = str(l)
         gui.set_lab_choices(lab_names)
         gui.set_lab(str(lab))
+
+    # ----------------------------------------------------------------------------
+    # add new teacher
+    # ----------------------------------------------------------------------------
+    @staticmethod
+    def _cb_add_new_teacher(first_name: str = "", last_name: str = ""):
+        my_teach: Teacher
+
+        # Check if a first and last name have been entered, Otherwise return.
+        if not first_name or not last_name:
+            return
+
+        # See if a teacher by that name already exists.
+        my_teach = Teacher.get_by_name(first_name, last_name)
+
+        global gui, teacher
+
+        if my_teach:
+            # Return if the teacher already exists. (Again, why bother asking them if the answer
+            # doesn't matter?)
+            question = gui.yes_no("Create new Teacher",
+                                  "Teacher already exists\nI won't let you do anything, ok?")
+            teacher = None
+            return
+
+        # If no teacher by that name exists, create a new one.
+        teacher = Teacher(firstname=first_name, lastname=last_name)
+
+        teacher_names = {}
+        for teach in AssignToResource.schedule.teachers():
+            teacher_names[teach.id] = str(teach)
+
+        gui.set_teacher_choices(teacher_names)
+        gui.set_teacher(str(teacher))
