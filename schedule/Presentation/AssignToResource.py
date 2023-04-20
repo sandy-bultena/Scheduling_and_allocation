@@ -324,3 +324,37 @@ class AssignToResource:
         gui.set_block_choices(blocks_dict)
         # TODO: Verify whether the called function can accept actual blocks or just strings.
         gui.set_block(block)
+
+    # ----------------------------------------------------------------------------
+    # add_new_lab
+    # ----------------------------------------------------------------------------
+    @staticmethod
+    def _cb_add_new_lab(lab_name: str, lab_number: str = None):
+        if not lab_number:
+            return
+
+        # See if a lab which already has that number exists.
+        lab_new = Lab.get_by_number(lab_number)  # TODO: Use ScheduleWrapper instead?
+
+        global gui, lab
+
+        if lab_new:
+            question = gui.yes_no("Create new Lab",
+                                  "Lab already exists\nI won't let you do anything, okay?")
+            # Regardless of the user's answer, return. (Why bother with a yes_no, then?)
+            lab = None
+            return
+
+        lab = Lab(number=lab_number, descr=lab_name)
+
+        # Add the created Lab to this schedule.
+        # NOTE: In the original Perl code, we could directly assign Labs to Schedules.
+        # We can't do that anymore, so we need a workaround.
+        for c in AssignToResource.schedule.courses():
+            c.assign_lab(lab)
+
+        lab_names = {}
+        for l in AssignToResource.schedule.labs():
+            lab_names[l.id] = str(l)
+        gui.set_lab_choices(lab_names)
+        gui.set_lab(str(lab))

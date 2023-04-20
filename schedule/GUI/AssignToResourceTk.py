@@ -173,7 +173,7 @@ class AssignToResourceTk:
         OKAY.configure(state=NORMAL)
 
     def set_lab(self, lab_name):
-        self._tb_lab(lab_name)
+        self._tb_lab=lab_name
         self._new_lab_name = ""
         self._new_lab_number = ""
 
