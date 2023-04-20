@@ -91,7 +91,7 @@ class AssignToResource:
                      f"{_hours_to_string(start)} for {duration} hour(s)"
 
         global gui
-        gui = AssignToResourceTk(Type) # TODO: Implement this class.
+        gui = AssignToResourceTk(Type)  # TODO: Implement this class.
         gui.draw(mw, title, block_text)
 
         # ------------------------------------
@@ -253,5 +253,50 @@ class AssignToResource:
     # ----------------------------------------------------------------------------
     @staticmethod
     def _cb_add_new_section(name: str):
-        #TODO: Resume from here tomorrow.
-        pass
+        global course, gui, section
+        if not course:
+            return  # NOTE: This will probably fail.
+
+        # Check to see if a section by that name exists.
+        sections_arr = course.get_section_by_name(name)
+        section_new: Section
+
+        # --------------------------------------------------------------------
+        # Do sections with this name already exist?
+        # --------------------------------------------------------------------
+        if len(sections_arr) > 0:
+            answer = gui.yes_no(
+                "Section already exists",
+                f"{len(sections_arr)} section(s) by this name already exist!\n"
+                f"Do you still want to create this new section?\n\n"
+                f"The name of the section will be set to something unique."
+            )
+
+            # If not, set the section to the first instance of the section with the section name.
+            if answer.lower() == 'no':
+                section = sections_arr[0]
+                AssignToResource._cb_section_selected(section.id)
+                gui.set_section(str(section))
+                return
+
+        # --------------------------------------------------------------------
+        # create new section
+        # --------------------------------------------------------------------
+        section = Section(number=course.get_new_number(), hours=0, name=name)
+        course.add_section(section)
+
+        # --------------------------------------------------------------------
+        # add the new section to the drop-down list, and make it the
+        # selected section
+        # --------------------------------------------------------------------
+        # add to drop-down menu choices
+        sections_dict = {}
+        sections_arr = course.sections()
+        for i in sections_arr:
+            sections_dict[i.id] = str(i)
+
+        gui.set_section_choices(sections_dict)
+
+        gui.set_section(str(section))
+        AssignToResource._cb_section_selected(section.id)
+
