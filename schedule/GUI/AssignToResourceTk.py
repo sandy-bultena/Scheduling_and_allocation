@@ -313,19 +313,27 @@ class AssignToResourceTk:
             id = AssignToResourceTk._get_id(self.list_blocks, self._tb_block)
             self.cb_block_selected(id)
 
-        self._tk_block_jbe = ComboBoxDialog(db,
-                                            scrolledlist_items=self._tb_block,
-                                            width=20,
-                                            selectioncommand=partial(
-                                                browse_cmd, self
-                                            ))
+        self._tk_block_jbe = ComboBoxDialog(db)
+        scrolled_list = self._tk_block_jbe.component("scrolledlist")
+        scrolled_list.setlist(self._tb_block)
+        scrolled_list.component('listbox').configure(width=12)
+        scrolled_list.configure(selectioncommand=partial(
+            browse_cmd, self
+        ))
+
+        # self._tk_block_jbe = ComboBoxDialog(db,
+        #                                     scrolledlist_items=self._tb_block,
+        #                                     width=20,
+        #                                     selectioncommand=partial(
+        #                                         browse_cmd, self
+        #                                     ))
 
         block_drop_entry: Entry = self._tk_block_jbe.component("entry")
         block_drop_entry.configure(disabledbackground="white")
         block_drop_entry.configure(disabledforeground="black")
 
         self._tk_block_entry = Entry(db,
-                                     textvariable=self._new_block,
+                                     textvariable=StringVar(value=self._new_block),
                                      state=DISABLED,
                                      disabledbackground='white')
 
