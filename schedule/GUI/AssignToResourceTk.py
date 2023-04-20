@@ -353,27 +353,35 @@ class AssignToResourceTk:
     # teachers
     # ============================================================================
     def _setup_teacher_widgets(self):
-        db = self._frame
+        db = self._frame.component('dialogchildsite')
 
         def browse_cmd(self):
             id = AssignToResourceTk._get_id(self.list_teachers, self._tb_teacher)
             self.cb_teacher_selected(id)
 
-        self._tk_teacher_jbe = ComboBoxDialog(
-            db,
-            scrolledlist_items=self._tb_teacher,
-            width=20,
-            selectioncommand=partial(
-                browse_cmd, self
-            )
-        )
+        self._tk_teacher_jbe = ComboBoxDialog(db)
+        scrolled_list = self._tk_teacher_jbe.component("scrolledlist")
+        scrolled_list.setlist(self._tb_teacher)
+        scrolled_list.component('listbox').configure(width=20)
+        scrolled_list.configure(selectioncommand=partial(
+            browse_cmd, self
+        ))
+
+        # self._tk_teacher_jbe = ComboBoxDialog(
+        #     db,
+        #     scrolledlist_items=self._tb_teacher,
+        #     width=20,
+        #     selectioncommand=partial(
+        #         browse_cmd, self
+        #     )
+        # )
 
         teacher_drop_entry: Entry = self._tk_teacher_jbe.component("entry")
         teacher_drop_entry.configure(disabledbackground="white")
         teacher_drop_entry.configure(disabledforeground="black")
 
-        self._tk_fname_entry = Entry(db, textvariable=self._new_teacher_fname)
-        self._tk_lname_entry = Entry(db, textvariable=self._new_teacher_lname)
+        self._tk_fname_entry = Entry(db, textvariable=StringVar(value=self._new_teacher_fname))
+        self._tk_lname_entry = Entry(db, textvariable=StringVar(value=self._new_teacher_lname))
 
         def new_teacher_clicked(self):
             self.cb_add_new_teacher(self._new_teacher_fname, self._new_teacher_lname)
@@ -390,28 +398,36 @@ class AssignToResourceTk:
     # Lab
     # ======================================================
     def _setup_lab_widgets(self):
-        db = self._frame
+        db = self._frame.component('dialogchildsite')
 
         def browse_cmd(self):
             id = AssignToResourceTk._get_id(self.list_labs, self._tb_lab)
             self.cb_lab_selected(id)
 
-        self._tk_lab_jbe = ComboBoxDialog(
-            db,
-            scrolledlist_items=self._tb_lab,
-            state='readonly',
-            width=20,
-            selectioncommand=partial(
-                browse_cmd, self
-            )
-        )
+        self._tk_lab_jbe = ComboBoxDialog(db)
+        scrolled_list = self._tk_lab_jbe.component("scrolledlist")
+        scrolled_list.setlist(self._tb_lab)
+        scrolled_list.component("listbox").configure(width=20)
+        scrolled_list.component("listbox").configure(state="disabled")
+        scrolled_list.configure(selectioncommand=partial(
+            browse_cmd, self
+        ))
+        # self._tk_lab_jbe = ComboBoxDialog(
+        #     db,
+        #     scrolledlist_items=self._tb_lab,
+        #     state='readonly',
+        #     width=20,
+        #     selectioncommand=partial(
+        #         browse_cmd, self
+        #     )
+        # )
 
         lab_drop_entry: Entry = self._tk_lab_jbe.component("entry")
         lab_drop_entry.configure(disabledbackground="white")
         lab_drop_entry.configure(disabledforeground="black")
 
-        self._tk_lab_num_entry = Entry(db, textvariable=self._new_lab_number_ptr)
-        self._tk_lab_descr_entry = Entry(db, textvariable=self._new_lab_name_ptr)
+        self._tk_lab_num_entry = Entry(db, textvariable=StringVar(value=self._new_lab_number))
+        self._tk_lab_descr_entry = Entry(db, textvariable=StringVar(value=self._new_lab_name))
 
         def new_lab_clicked(self):
             self.cb_add_new_lab(self._new_lab_name, self._new_lab_number)
