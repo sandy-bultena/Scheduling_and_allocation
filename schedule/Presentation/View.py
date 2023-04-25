@@ -398,7 +398,7 @@ class View:
         self.views_manager.set_dirty()
         self.views_manager.redraw_all_views()
 
-    def _cb_guiblock_is_moving(self, guiblock: GuiBlockTk):
+    def _cb_guiblock_is_moving(self, guiblock: GuiBlockTk, event=None):
         """Need to update all Views.
 
         Handles Event: A guiblock is being dragged about by the user.
