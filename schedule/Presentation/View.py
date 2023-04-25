@@ -252,7 +252,7 @@ class View:
         if hasattr(self, '_gui_blocks'):
             for guiblock in self.gui_blocks.values():
                 # Race condition, no need to update the current moving block.
-                if guiblock.is_controlled():
+                if guiblock.is_controlled:
                     continue
 
                 # GuiBlock's block is the same as the moving block?
@@ -412,7 +412,7 @@ class View:
 
         # Is current block conflicting?
         self.schedule.calculate_conflicts()
-        self.gui.colour_block(guiblock)
+        self.gui.colour_block(guiblock, self.type)
 
     def _cb_open_companion_view(self, guiblock: GuiBlockTk):
         """Based on the type of this view, will open another view which has this Block.
