@@ -421,7 +421,9 @@ class ViewBaseTk:
         (day, time, duration) = DrawView.coords_to_day_time_duration(x, y, y, scl)
         # Originally, the day_number property had a setter, and day could accept numbers or strings.
         # However, we disallowed that. So the day value must be converted to a string/WeekDay.
-        guiblock.block.day = WeekDayNumber[day]
+        # NOTE: WeekDayNumber won't work because "day" is an integer, not a string.
+        # Need something else.
+        guiblock.block.day = WeekDayNumber.days_by_number()[day]
         # Similarly, Block's start_number is no longer a property and doesn't affect the start
         # property. Thus, a bit more work is required here than in the Perl version.
         time_string = self._get_time_string_from_number(float(time))

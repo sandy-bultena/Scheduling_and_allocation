@@ -51,6 +51,18 @@ class WeekDayNumber(ExtendedEnum):
     sat = 6
     sun = 7
 
+    @classmethod
+    def days_by_number(cls):
+        return {
+            1: "mon",
+            2: "tue",
+            3: "wed",
+            4: "thu",
+            5: "fri",
+            6: "sat",
+            7: "sun"
+        }
+
 
 class SemesterType(ExtendedEnum):
     fall = 1
