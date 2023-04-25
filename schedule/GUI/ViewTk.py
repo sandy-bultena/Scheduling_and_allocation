@@ -153,8 +153,8 @@ class ViewTk(ViewBaseTk):
             # Not the ideal way to do this, but I couldn't figure out a way to imitate what Sandy
             # was doing in the Perl code.
             global clicked_block
-            curr_x = x()
-            curr_y = y()
+            curr_x = undef.x
+            curr_y = undef.y
             if clicked_block: return  # allow another event to take control
 
             # if mouse is not on an assignable block, bail out
@@ -209,7 +209,7 @@ class ViewTk(ViewBaseTk):
         ))
 
         # Binds the release of Mouse 1 to process the selection of AssignBlocks.
-        def dummy(cn: Canvas, x, y1, y2, selected_assigned_blocks, undef):
+        def dummy(cn: Canvas, x, y1, y2, selected_assigned_blocks, undef: Event):
             # Unbind everything.
             cn.bind('<Motion>', "")
             cn.bind('<ButtonRelease-1>', "")
@@ -227,7 +227,7 @@ class ViewTk(ViewBaseTk):
     def _selecting_assigned_blocks(cn: Canvas, x2, y2, x1, y1,
                                    selected_assigned_blocks: list[AssignBlockTk],
                                    assign_blocks_day: list[AssignBlockTk],
-                                   undef=None):
+                                   event=None):
         """Called when the mouse is moving, and in the process of selecting AssignBlocks.
 
         Parameters:
@@ -253,8 +253,8 @@ class ViewTk(ViewBaseTk):
         # rebind Motion
         cn.bind('<Motion>', partial(
             ViewTk._selecting_assigned_blocks,
-            mw.winfo_pointerx(),
-            mw.winfo_pointery(),
+            event.x,
+            event.y,
             x1, y1, selected_assigned_blocks, assign_blocks_day
         ))
 
@@ -305,23 +305,25 @@ class ViewTk(ViewBaseTk):
         group_of_canvas_objs = guiblock.group
 
         self.canvas.tag_bind(
-            group_of_canvas_objs,
+            "movable",
             "<1>",
             partial(
-                self._select_guiblock_to_move, guiblock, self, view,
+                ViewTk._select_guiblock_to_move, guiblock, self, view,
                 self.mw.winfo_pointerx(), self.mw.winfo_pointery()
             )
         )
 
-    def _select_guiblock_to_move(self, guiblock: GuiBlockTk, view, x_start, y_start):
+    @staticmethod
+    def _select_guiblock_to_move(guiblock: GuiBlockTk, self, view, x_start, y_start, event: Event):
         """Set up for drag and drop of GuiBlock. Binds motion and button release events to GuiBlock.
 
         Parameters:
             guiblock: GuiBlock that we want to move.
+            self: This ViewTk object.
             view: The View object that setup these functions.
             x_start: X position of mouse when mouse was clicked.
             y_start: Y position of mouse when mouse was clicked."""
-
+        self: ViewTk
         (starting_x, starting_y) = self.canvas.coords(guiblock.rectangle)
 
         # We are processing a click on a GuiBlock, so tell the click event for the canvas to not
