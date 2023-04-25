@@ -431,6 +431,7 @@ class ViewBaseTk:
 
     @staticmethod
     def _get_time_string_from_number(time) -> str:
+        # TODO: On 04/26/2023, Find a way to fix the minutes so it stops triggering Block.start's warning and setting of an automatic value.
         remainder = time % 1
         hour = time - remainder
         minutes = remainder * 60
