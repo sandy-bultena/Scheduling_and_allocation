@@ -12,7 +12,8 @@ if TYPE_CHECKING:
 
 global mw
 global clicked_block
-clicked_block = 0
+clicked_block: bool
+clicked_block = False
 global select_colour
 global selected_assign_block_completed_cb
 
@@ -335,7 +336,7 @@ class ViewTk(ViewBaseTk):
         # We are processing a click on a GuiBlock, so tell the click event for the canvas to not
         # do anything.
         global clicked_block
-        clicked_block = 1
+        clicked_block = True
 
         # This block is being controlled by the mouse.
         guiblock.is_controlled = True
@@ -452,7 +453,7 @@ class ViewTk(ViewBaseTk):
 
         # If is ok now to process a click on the canvas.
         global clicked_block
-        clicked_block = 0  # TODO: Make this a boolean.
+        clicked_block = False
 
         # unbind the motion on the gui_block.
         self.canvas.bind("<Motion>", "")
@@ -492,7 +493,7 @@ class ViewTk(ViewBaseTk):
         # Get the actual canvas objects that make up this object.
         group_of_canvas_objs = guiblock.group
         self.canvas.tag_bind(
-            group_of_canvas_objs,
+            group_of_canvas_objs, # TODO: Replace this with a proper tag. A tuple of integers won't work.
             "<Double-1>",
             partial(
                 self._was_double_clicked,
