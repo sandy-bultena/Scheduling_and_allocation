@@ -67,3 +67,13 @@ cpanm --Force Tk         # must force install Tk
 cpan Text::CSV
 cpan PDF::API2
 ```
+
+## Alternative Installation
+
+The above instructions assume that the software is being installed from the source on a clean machine, with no pre-existing Perl. It can alternatively be installed using a portable version of Strawberry Perl, with the required Perl packages already installed. In this context, the user works with a zipped folder containing Strawberry Perl portable, the application code, and a pair of batch scripts (one for each of the tools).
+
+### INSTALLATION
+To install the scheduler and allocation manager software on another computer, copy the folder containing these instructions onto a USB drive. Then copy it from the drive onto the computer you want to use it on.
+
+### USE
+To run the AllocationManager, double-click on the icon. To run the SchedulerManager, double-click on the icon. 
