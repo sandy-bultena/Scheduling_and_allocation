@@ -48,6 +48,9 @@ class ViewsManager:
         """Returns the unique ID for this ViewsManager object."""
         return self._id
 
+    def set_dirty(self):
+        self.dirty_flag = True
+
     # =================================================================
     # Undo and redo
     # =================================================================

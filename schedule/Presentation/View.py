@@ -484,6 +484,7 @@ class View:
             # Update the status bar.
             self._set_status_undo_info()
 
+    @staticmethod
     def cb_update_after_moving_block(self, block: Block):
         """Update all views, calculate conflicts and set button colours, and set the dirty flag.
 
@@ -491,6 +492,7 @@ class View:
         everything.
         Parameters:
             block: The block that has been modified by moving a GuiBlock around."""
+        self: View
         # update all the views that have the block just moved to its new position. NOTE: ???
         views_manager = self.views_manager
         views_manager.update_all_views(block)
