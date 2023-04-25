@@ -353,7 +353,7 @@ def draw_block(canvas: Canvas, block, scl: dict, type,
     # --------------------------------------------------------------------
     # Create a rectangle.
     rectangle = canvas.create_rectangle(coords, fill=colour, outline=colour,
-                                        tags=("rectangle", "members"))
+                                        tags=("rectangle", "members", "movable"))
     if block_tag:
         canvas.addtag_withtag(f"rectangle_block_{block_tag}", "rectangle")
 
@@ -364,11 +364,11 @@ def draw_block(canvas: Canvas, block, scl: dict, type,
     for i in range(0, edge - 1):
         lines.append(
             canvas.create_line(x2 - i, y1 + i, x2 - i, y2 - i, x1 + i, y2 - i, fill=dark[i],
-                               tags="lines")
+                               tags=("lines", "movable"))
         )
         lines.append(
             canvas.create_line(
-                x2 - i, y1 + i, x1 + i, y1 + i, x1 + i, y2 - i, fill=light[i], tags="lines"
+                x2 - i, y1 + i, x1 + i, y1 + i, x1 + i, y2 - i, fill=light[i], tags=("lines", "movable")
             )
         )
     if block_tag:
@@ -377,7 +377,7 @@ def draw_block(canvas: Canvas, block, scl: dict, type,
     # set text
     text = canvas.create_text(
         (x1 + x2) / 2, (y1 + y2) / 2, text=block_text, fill=text_colour,
-        tags=("text", "members")
+        tags=("text", "members", "movable")
     )
 
     if block_tag:
