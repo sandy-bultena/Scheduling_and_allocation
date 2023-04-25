@@ -324,7 +324,13 @@ class ViewTk(ViewBaseTk):
             x_start: X position of mouse when mouse was clicked.
             y_start: Y position of mouse when mouse was clicked."""
         self: ViewTk
-        starting_x, starting_y, dummy_x, dummy_y = self.canvas.coords(guiblock.rectangle)
+
+        x_start = event.x
+        y_start = event.y
+        # Note: Unlike in Perl, Python will not allow you to unpack less variables than
+        # what a function returns. We must use discards to get rid of the unneeded x2
+        # and y2 values.
+        starting_x, starting_y, _, _ = self.canvas.coords(guiblock.rectangle)
 
         # We are processing a click on a GuiBlock, so tell the click event for the canvas to not
         # do anything.
@@ -376,6 +382,8 @@ class ViewTk(ViewBaseTk):
             starting_x: current mouse position.
             starting_y: current mouse position."""
 
+        x_mouse = event.x
+        y_mouse = event.y
         # Temporarily disable motion while we process stuff (keeps execution cycles down)
         self.canvas.bind("<Motion>", "")
 
@@ -387,7 +395,7 @@ class ViewTk(ViewBaseTk):
         desired_y = y_mouse - y_start + starting_y
 
         # current x/y coordinates of the rectangle
-        (cur_x_pos, cur_y_pos, dummy_x, dummy_y) = self.canvas.coords(guiblock.rectangle)
+        (cur_x_pos, cur_y_pos, _, _) = self.canvas.coords(guiblock.rectangle)
 
         # check for valid move.
         if cur_x_pos and cur_y_pos:
@@ -402,7 +410,7 @@ class ViewTk(ViewBaseTk):
             # set the block's new coordinates (time/day).
             self._set_block_coords(guiblock, cur_x_pos, cur_y_pos)
 
-            self._moving_cb(view, guiblock)
+            self._moving_cb(view, guiblock) # TODO: Fix View._cb_guiblock_is_moving().
 
         # ------------------------------------------------------------------------
         # rebind to the mouse movements

@@ -409,7 +409,7 @@ def coords_to_day_time_duration(x, y, y2, scl: dict):
         y: y1 position (determines start).
         y2: y2 position (determines duration).
         scl: Scaling info [dictionary]."""
-    day = x / scl['xscl'] - scl['xoff'] - scl['xorg']
+    day = x / scl['xscl'] - scl['xoff'] + 1 - scl['xorg']
     time = y / scl['yscl'] - scl['yoff'] + earliest_time - scl['yorg']
     duration = (y2 + 1 - y) / scl['yscl']
 
