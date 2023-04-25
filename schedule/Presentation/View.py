@@ -398,7 +398,7 @@ class View:
         self.views_manager.set_dirty()
         self.views_manager.redraw_all_views()
 
-    def _cb_guiblock_is_moving(self, guiblock: GuiBlockTk, event=None):
+    def _cb_guiblock_is_moving(self, guiblock: GuiBlockTk):
         """Need to update all Views.
 
         Handles Event: A guiblock is being dragged about by the user.
@@ -455,6 +455,7 @@ class View:
                     self.views_manager.create_view_containing_block(teachers, 'lab',
                                                                     self.schedulable)
 
+    @staticmethod
     def _cb_guiblock_has_stopped_moving(self, guiblock: GuiBlockTk):
         """Ensures that the GuiBlock is snapped to an appropriate location (i.e., start/end times
         must be on the hour or half-hour).
@@ -465,8 +466,9 @@ class View:
 
         Parameters:
             guiblock: GuiBlock that has been moved."""
+        self: View
         undo = Undo(guiblock.block.id, guiblock.block.start, guiblock.block.day,
-                    self.schedulable, "Day/Time")
+                    self.schedulable, "Day/Time", self.schedulable)
 
         # Set guiblock's to new time and day.
         self._snap_gui_block(guiblock)

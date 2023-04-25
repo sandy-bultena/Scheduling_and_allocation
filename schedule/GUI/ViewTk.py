@@ -410,7 +410,7 @@ class ViewTk(ViewBaseTk):
             # set the block's new coordinates (time/day).
             self._set_block_coords(guiblock, cur_x_pos, cur_y_pos)
 
-            self._moving_cb(view, guiblock) # TODO: Fix View._cb_guiblock_is_moving().
+            self._moving_cb(guiblock) # TODO: Decide whether to make View._cb_guiblock_is_moving() static.
 
         # ------------------------------------------------------------------------
         # rebind to the mouse movements
@@ -420,7 +420,7 @@ class ViewTk(ViewBaseTk):
         # (2) do NOT rebind the motion even handler
 
         if not guiblock.is_controlled:
-            self._gui_block_has_stopped_moving(view, guiblock)
+            self._gui_block_has_stopped_moving(view, guiblock, event)
         # else - rebind the motion event handler
         else:
             self.canvas.bind(
@@ -468,14 +468,14 @@ class ViewTk(ViewBaseTk):
         coords = self.get_time_coords(block.day_number, block.start_number, block.duration)
 
         # Current x/y coordinates of the rectangle.
-        (cur_x_pos, cur_y_pos) = self.canvas.coords(guiblock.rectangle)
+        (cur_x_pos, cur_y_pos, _, _) = self.canvas.coords(guiblock.rectangle)
 
         # Move the GuiBlock to new position.
         self.canvas.move(guiblock.group, coords[0] - cur_x_pos, coords[1] - cur_y_pos)
         self._refresh_gui()
 
         # Update everything that needs to be updated once the block data is finalized.
-        self._update_after_cb(view, block)
+        self._update_after_cb(view, block) # TODO: Fix this next. View.cb_update_after_moving_block().
 
     # ============================================================================
     # Double clicking guiblock
