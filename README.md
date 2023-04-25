@@ -77,3 +77,11 @@ To install the scheduler and allocation manager software on another computer, co
 
 ### USE
 To run the AllocationManager, double-click on the icon. To run the SchedulerManager, double-click on the icon. 
+
+
+#### Python Packages needed
+The following packages must be installed to run the Python version of the software:
+
+- python-dotenv
+- pony
+- Pmw
