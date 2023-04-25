@@ -44,3 +44,7 @@ def gui_block_has_stopped_moving(canvas, tag, event):
     canvas.tag_bind(MOVABLE_TAG_NAME, "<Button-1>", lambda e: select_gui_block_to_move(canvas, e))
     canvas.bind("<Motion>", "")
     canvas.bind("<ButtonRelease-1>", "")
+
+
+if __name__ == "__main__":
+    main()

@@ -306,7 +306,7 @@ class ViewTk(ViewBaseTk):
         group_of_canvas_objs = guiblock.group
 
         self.canvas.tag_bind(
-            "movable",
+            guiblock.group_tag,
             "<1>",
             partial(
                 ViewTk._select_guiblock_to_move, guiblock, self, view,
@@ -405,7 +405,7 @@ class ViewTk(ViewBaseTk):
             delta_y = desired_y - cur_y_pos
 
             # Move the GuiBlock
-            self.canvas.move(guiblock.group, delta_x, delta_y)
+            self.canvas.move(guiblock.group_tag, delta_x, delta_y)
             self._refresh_gui()
 
             # set the block's new coordinates (time/day).
@@ -491,7 +491,7 @@ class ViewTk(ViewBaseTk):
         """
 
         # Get the actual canvas objects that make up this object.
-        group_of_canvas_objs = guiblock.group
+        group_of_canvas_objs = guiblock.group_tag
         self.canvas.tag_bind(
             group_of_canvas_objs, # TODO: Replace this with a proper tag. A tuple of integers won't work.
             "<Double-1>",
