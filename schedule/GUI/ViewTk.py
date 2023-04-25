@@ -324,7 +324,7 @@ class ViewTk(ViewBaseTk):
             x_start: X position of mouse when mouse was clicked.
             y_start: Y position of mouse when mouse was clicked."""
         self: ViewTk
-        (starting_x, starting_y) = self.canvas.coords(guiblock.rectangle)
+        starting_x, starting_y, dummy_x, dummy_y = self.canvas.coords(guiblock.rectangle)
 
         # We are processing a click on a GuiBlock, so tell the click event for the canvas to not
         # do anything.
@@ -364,7 +364,7 @@ class ViewTk(ViewBaseTk):
         )
 
     def _gui_block_is_moving(self, guiblock: GuiBlockTk, view, x_start, y_start, x_mouse, y_mouse,
-                             starting_x, starting_y):
+                             starting_x, starting_y, event: Event):
         """The GuiBlock is moving... need to update stuff as it is being moved.
 
         Invokes moving_cb callback (defined in set_bindings_for_dragging_guiblocks).
@@ -387,7 +387,7 @@ class ViewTk(ViewBaseTk):
         desired_y = y_mouse - y_start + starting_y
 
         # current x/y coordinates of the rectangle
-        (cur_x_pos, cur_y_pos) = self.canvas.coords(guiblock.rectangle)
+        (cur_x_pos, cur_y_pos, dummy_x, dummy_y) = self.canvas.coords(guiblock.rectangle)
 
         # check for valid move.
         if cur_x_pos and cur_y_pos:
@@ -397,7 +397,7 @@ class ViewTk(ViewBaseTk):
 
             # Move the GuiBlock
             self.canvas.move(guiblock.group, delta_x, delta_y)
-            self._refresh_gui
+            self._refresh_gui()
 
             # set the block's new coordinates (time/day).
             self._set_block_coords(guiblock, cur_x_pos, cur_y_pos)
@@ -430,7 +430,7 @@ class ViewTk(ViewBaseTk):
                 )
             )
 
-    def _gui_block_has_stopped_moving(self, view, guiblock: GuiBlockTk):
+    def _gui_block_has_stopped_moving(self, view, guiblock: GuiBlockTk, event: Event):
         """Moves the GuiBlock to the cursor's current position on the View and updates the Block's
         time in the Schedule.
 
