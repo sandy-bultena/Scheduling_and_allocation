@@ -7,10 +7,10 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .GuiBlockTk import GuiBlockTk
-from ..Schedule.Block import Block
-from ..Schedule.Conflict import Conflict
-from ..Schedule.ScheduleEnums import ViewType, WeekDayNumber
-from ..Export import DrawView
+from Schedule.Block import Block
+from Schedule.Conflict import Conflict
+from Schedule.ScheduleEnums import ViewType, WeekDayNumber
+from Export import DrawView
 
 
 class ViewBaseTk:
