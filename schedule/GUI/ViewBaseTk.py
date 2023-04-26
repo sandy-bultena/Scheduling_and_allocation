@@ -139,7 +139,6 @@ class ViewBaseTk:
         # if there is a popup menu defined, make sure you can make it
         # go away by clicking the toplevel (as opposed to the menu)
         # ---------------------------------------------------------------
-        # TODO: Verify that this works. NOTE: It does not.
         if hasattr(self, '__popup'):
             tl.bind('<1>', partial(self._unpostmenu))
             tl.bind('<2>', partial(self._unpostmenu))
@@ -424,16 +423,10 @@ class ViewBaseTk:
         # NOTE: WeekDayNumber won't work because "day" is an integer, not a string.
         # Need something else.
         guiblock.block.day = WeekDayNumber.days_by_number()[int(day)]
-        # Similarly, Block's start_number is no longer a property and doesn't affect the start
-        # property. Thus, a bit more work is required here than in the Perl version.
-        # NOTE: I've realized that start_number didn't affect anything in the Perl code either.
-        # TODO: Resume here after debug, Evan.
-        # time_string = self._get_time_string_from_number(float(time))
         guiblock.block.start_number = time # This will avoid triggering start's validation.
 
     @staticmethod
     def _get_time_string_from_number(time) -> str:
-        # TODO: On 04/26/2023, Find a way to fix the minutes so it stops triggering Block.start's warning and setting of an automatic value.
         remainder = time % 1
         hour = time - remainder
         minutes = remainder * 60

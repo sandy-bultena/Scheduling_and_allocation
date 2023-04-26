@@ -275,7 +275,6 @@ class ViewTk(ViewBaseTk):
         something_to_do = selected_assigned_blocks
         if not something_to_do or len(something_to_do) == 0:
             return
-        # TODO: #2: Callback function takes two arguments but is getting three. Figure out why.
         # Callback is View._cb_assign_blocks().
         selected_assign_block_completed_cb(self.view, selected_assigned_blocks)
 
@@ -493,7 +492,7 @@ class ViewTk(ViewBaseTk):
         # Get the actual canvas objects that make up this object.
         group_of_canvas_objs = guiblock.group_tag
         self.canvas.tag_bind(
-            group_of_canvas_objs, # TODO: Replace this with a proper tag. A tuple of integers won't work.
+            group_of_canvas_objs,
             "<Double-1>",
             partial(
                 self._was_double_clicked,

@@ -65,7 +65,7 @@ class AssignToResourceTk:
         global Type
         Type = type
 
-        # set fonts TODO: Implement the FontsAndColoursTk class.
+        # set fonts
         global fonts
         # FontsAndColoursTk.
         fonts = FontsAndColoursTk.fonts
