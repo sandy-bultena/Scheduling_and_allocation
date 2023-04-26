@@ -365,7 +365,7 @@ class ViewBaseTk:
 
     def _refresh_gui(self):
         """Forces the graphics to update."""
-        self.mw.update()
+        self.mw.update_idletasks()
 
     def _create_status_bar(self):
         """Status bar at the bottom of each View to show current movement type."""
