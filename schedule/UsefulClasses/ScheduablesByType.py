@@ -1,5 +1,5 @@
 from .NamedObjects import NamedObject
-from ..Schedule.ScheduleEnums import ViewType
+from Schedule.ScheduleEnums import ViewType
 
 
 class ScheduablesByType:

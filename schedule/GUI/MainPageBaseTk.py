@@ -3,13 +3,14 @@ from os import path
 sys.path.append(path.dirname(path.dirname(__file__)))
 
 from tkinter.ttk import Notebook
-from tkinter import Tk as root, Label, Menu, StringVar, PhotoImage, Frame
+from tkinter import Tk as root, Label, Menu, StringVar, PhotoImage, Frame, BooleanVar
 from tkinter.messagebox import showerror, showinfo, askyesnocancel
 
 from GUI.FontsAndColoursTk import FontsAndColoursTk
 from Tk import FindImages
 from Tk.ToolBar import ToolBar
 from Presentation import globals
+import dirty
 from functools import partial
 from PerlLib import Colour
 from UsefulClasses.NoteBookPageInfo import NoteBookPageInfo
@@ -28,8 +29,9 @@ class MainPageBaseTk:
 
     def bind_dirty_flag(self):
         """Watches the dirty_flag, and reacts accordingly when it changes"""
-        globals.init_dirty_flag()
-        globals.dirty_flag.trace_add('write', partial(
+        dirty.init_dirty_flag()
+        globals.init_dirty_flag(dirty.set_, dirty.unset, dirty.check)
+        dirty.dirty_flag.trace_add('write', partial(
             lambda dft, *_: dft.set("NOT SAVED" if globals.is_data_dirty() else ""),
             self.dirty_flag_text))
     
@@ -55,7 +57,7 @@ class MainPageBaseTk:
         self.fonts = FontsAndColoursTk.fonts
         self.colours = FontsAndColoursTk.colours
     
-    def create_menu_and_toolbars(self, buttons : list[str], actions : dict[dict[str, ]], menu_details : list[dict]):
+    def create_menu_and_toolbars(self, buttons : list[str], actions : dict[str, dict[str, ]], menu_details : list[dict]):
         def _generate_menu(menu_details :list[dict], parent : Menu):
             for o in menu_details:
                 menubar = Menu(parent, tearoff = o.get('tearoff', 0))
@@ -216,7 +218,7 @@ class MainPageBaseTk:
     def get_notebook_page(self, page_id : int) -> NoteBookPageInfo:
         return self.pages[page_id]
     
-    def update_for_new_schedule_and_show_page(self, default_page_id : int):
+    def update_for_new_schedule_and_show_page(self, default_page_id: int = 0):
         """Reset the GUI when a new schedule is read. default_page_id must be the integer ID of a TOP-LEVEL notebook tab"""
         if hasattr(self, 'notebook') and self.notebook:
             already_shown = self.notebook.index(self.notebook.select()) == default_page_id

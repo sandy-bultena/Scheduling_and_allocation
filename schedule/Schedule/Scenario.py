@@ -1,5 +1,7 @@
 from __future__ import annotations
 from .Schedule import Schedule
+from pony.orm import *
+from database import PonyDatabaseConnection as db
 
 class Scenario():
     def __init__(self, id, name : str = "", semester : str = "", status : str = "", description : str = "", schedules : set[Schedule] = None):

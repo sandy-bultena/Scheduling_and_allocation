@@ -1,7 +1,7 @@
 """A half hour time block used to select time slots on a view."""
 from tkinter import Canvas
 
-from ..PerlLib import Colour
+from PerlLib import Colour
 
 
 class AssignBlockTk:

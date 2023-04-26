@@ -1,16 +1,16 @@
 """Initializes an SQLite database file containing test data for the whole application."""
 from pony.orm import db_session, commit
 
-from schedule.Schedule.Block import Block
-from schedule.Schedule.Course import Course
-from schedule.Schedule.Lab import Lab
-from schedule.Schedule.LabUnavailableTime import LabUnavailableTime
-from schedule.Schedule.Schedule import Schedule
-from schedule.Schedule.Section import Section
-from schedule.Schedule.Stream import Stream
-from schedule.Schedule.Teacher import Teacher
-from schedule.Schedule.database import PonyDatabaseConnection
-from schedule.Schedule.database.db_constants import *
+from Schedule.Block import Block
+from Schedule.Course import Course
+from Schedule.Lab import Lab
+from Schedule.LabUnavailableTime import LabUnavailableTime
+from Schedule.Schedule import Schedule
+from Schedule.Section import Section
+from Schedule.Stream import Stream
+from Schedule.Teacher import Teacher
+from Schedule.database import PonyDatabaseConnection
+from Schedule.database.db_constants import *
 
 """
 SYNOPSIS:

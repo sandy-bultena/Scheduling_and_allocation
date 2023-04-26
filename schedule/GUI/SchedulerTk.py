@@ -6,11 +6,11 @@ from typing import Callable
 from Pmw.Pmw_2_1_1.lib.PmwScrolledFrame import ScrolledFrame
 
 from .MainPageBaseTk import MainPageBaseTk
-from ..Tk import FindImages
+from Tk import FindImages
 from tkinter import *
 
-from ..Tk.scrolled import Scrolled
-from ..UsefulClasses.AllScheduables import AllScheduables
+from Tk.scrolled import Scrolled
+from UsefulClasses.AllScheduables import AllScheduables
 
 # ============================================================================
 # Package variables

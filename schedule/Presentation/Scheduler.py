@@ -4,13 +4,13 @@ import pony.orm
 from pony.orm import Database
 
 from .ViewsManager import ViewsManager
-from ..GUI.SchedulerTk import SchedulerTk
-from ..GuiSchedule.ScenarioSelector import ScenarioSelector
-from ..GuiSchedule.ScheduleSelector import ScheduleSelector
-from ..Schedule.Schedule import Schedule
-from ..Schedule.database.PonyDatabaseConnection import define_database, Scenario
-from ..Schedule.database.db_constants import PROVIDER, DB_NAME, CREATE_DB
-from ..UsefulClasses.NoteBookPageInfo import NoteBookPageInfo
+from GUI.SchedulerTk import SchedulerTk
+from GuiSchedule.ScenarioSelector import ScenarioSelector
+from GuiSchedule.ScheduleSelector import ScheduleSelector
+from Schedule.Schedule import Schedule
+from Schedule.database.PonyDatabaseConnection import define_database, Scenario
+from Schedule.database.db_constants import PROVIDER, DB_NAME, CREATE_DB
+from UsefulClasses.NoteBookPageInfo import NoteBookPageInfo
 from .globals import *
 
 """
@@ -236,9 +236,8 @@ def open_schedule():
         print(f"The scenario is {scenario}")
         gui.show_info("Scenario", f"The selected scenario is {scenario}.")
 
-        if not scenario or len(scenario) != 1 or scenario[0] is None:
-            gui.show_error("INVALID SELECTION", "Incorrect number of Scenarios picked. "
-                                                "Please select 1.")
+        if not scenario:
+            gui.show_error("INVALID SELECTION", "Incorrect number of Scenarios picked. Please select 1.")
         else:
             global schedule
 
@@ -247,7 +246,7 @@ def open_schedule():
                 schedule = func()
                 print(f"Retrieved the following object from function: {schedule}")
 
-            ScheduleSelector(parent=gui.mw, db=db, scenario=scenario[0], callback=get_schedule)
+            ScheduleSelector(parent=gui.mw, db=db, scenario=scenario, callback=get_schedule)
             gui.show_info("SCHEDULE SELECTED", f"Successfully selected a Schedule: {schedule}")
 
             # If the schedule was successfully read, then

@@ -1,19 +1,19 @@
 from tkinter import Tk
 
 from .AssignToResource import AssignToResource
-from ..Export import DrawView
-from ..GUI.GuiBlockTk import GuiBlockTk
-from ..GUI.ViewTk import ViewTk
-from ..Schedule.Block import Block
-from ..Schedule.Conflict import Conflict
-from ..Schedule.Lab import Lab
-from ..Schedule.Schedule import Schedule
-from ..Schedule.ScheduleEnums import ConflictType, ViewType
-from ..Schedule.Stream import Stream
-from ..Schedule.Teacher import Teacher
-from ..Schedule.Undo import Undo
-from ..PerlLib import Colour
-from ..UsefulClasses.AllScheduables import AllScheduables
+from Export import DrawView
+from GUI.GuiBlockTk import GuiBlockTk
+from GUI.ViewTk import ViewTk
+from Schedule.Block import Block
+from Schedule.Conflict import Conflict
+from Schedule.Lab import Lab
+from Schedule.Schedule import Schedule
+from Schedule.ScheduleEnums import ConflictType, ViewType
+from Schedule.Stream import Stream
+from Schedule.Teacher import Teacher
+from Schedule.Undo import Undo
+from PerlLib import Colour
+from UsefulClasses.AllScheduables import AllScheduables
 
 
 class View:

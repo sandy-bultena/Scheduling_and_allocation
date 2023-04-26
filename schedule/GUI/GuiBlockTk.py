@@ -1,7 +1,7 @@
 from .ViewTk import ViewTk
-from ..Export import DrawView
-from ..PerlLib import Colour
-from ..Schedule.Block import Block
+from Export import DrawView
+from PerlLib import Colour
+from Schedule.Block import Block
 
 
 class GuiBlockTk:
