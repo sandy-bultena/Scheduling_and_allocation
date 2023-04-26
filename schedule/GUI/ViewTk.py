@@ -389,7 +389,7 @@ class ViewTk(ViewBaseTk):
         self.canvas.bind("<Motion>", "")
 
         # raise the block.
-        guiblock.gui_view.canvas.lift(guiblock.group)
+        guiblock.gui_view.canvas.lift(guiblock.group_tag)
 
         # Where Block needs to go
         desired_x = x_mouse - x_start + starting_x
@@ -472,7 +472,7 @@ class ViewTk(ViewBaseTk):
         (cur_x_pos, cur_y_pos, _, _) = self.canvas.coords(guiblock.rectangle)
 
         # Move the GuiBlock to new position.
-        self.canvas.move(guiblock.group, coords[0] - cur_x_pos, coords[1] - cur_y_pos)
+        self.canvas.move(guiblock.group_tag, coords[0] - cur_x_pos, coords[1] - cur_y_pos)
         self._refresh_gui()
 
         # Update everything that needs to be updated once the block data is finalized.

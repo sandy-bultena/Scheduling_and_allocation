@@ -426,8 +426,10 @@ class ViewBaseTk:
         guiblock.block.day = WeekDayNumber.days_by_number()[int(day)]
         # Similarly, Block's start_number is no longer a property and doesn't affect the start
         # property. Thus, a bit more work is required here than in the Perl version.
-        time_string = self._get_time_string_from_number(float(time))
-        guiblock.block.start = time_string
+        # NOTE: I've realized that start_number didn't affect anything in the Perl code either.
+        # TODO: Resume here after debug, Evan.
+        # time_string = self._get_time_string_from_number(float(time))
+        guiblock.block.start_number = time # This will avoid triggering start's validation.
 
     @staticmethod
     def _get_time_string_from_number(time) -> str:

@@ -587,9 +587,9 @@ class View:
             self.views_manager.determine_button_colours()
 
     def _set_status_undo_info(self):
-        View.undo_number = f"{len(self.views_manager.undoes)} undoes left"
+        View.undo_number = f"{len(self.views_manager.undoes())} undoes left"
 
-        View.redo_number = f"{len(self.views_manager.redoes)} redoes left"
+        View.redo_number = f"{len(self.views_manager.redoes())} redoes left"
 
     def _snap_gui_block(self, guiblock: GuiBlockTk):
         """Takes the GuiBlock and forces it to be located on the nearest day and 1/2 boundary.
