@@ -18,7 +18,7 @@ from Pmw.Pmw_2_1_1.lib.PmwComboBoxDialog import ComboBoxDialog
 from Pmw.Pmw_2_1_1.lib.PmwScrolledListBox import ScrolledListBox
 from Pmw.Pmw_2_1_1.lib.PmwDialog import Dialog
 
-from schedule.GUI.FontsAndColoursTk import FontsAndColoursTk
+from GUI.FontsAndColoursTk import FontsAndColoursTk
 
 # ============================================================================
 # globals

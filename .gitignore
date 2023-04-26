@@ -48,3 +48,6 @@ __pycache__/
 
 # Private information (in production anyways)
 .env
+
+# SQLite Databases
+*.sqlite

@@ -19,7 +19,11 @@ class ScheduleWrapper():
         self.schedules : dict[str, Schedule.Schedule] = dict() # key representing the schedule's semester, ie fall or winter (for allocation manager)
         # if it's not already done, populate the local top-level model classes
         if len(Course.list()) + len(Lab.list()) + len(Stream.list()) + len(Teacher.list()) == 0:
-            ScheduleWrapper.read_DB()
+            try:
+                ScheduleWrapper.read_DB()
+            # DB probably isn't connected yet, just pass
+            except ERDiagramError:
+                pass
     
     def load_schedule(self, sid : int, semester : str):
         """ Load a schedule with a given id, marked as a given semester.
@@ -80,8 +84,8 @@ class ScheduleWrapper():
         # update all labs
         for l in Lab.list(): l.save()
 
+
 @db_session
-@staticmethod
 def scenarios(ignore_schedules : bool = False) -> tuple[Scenario]:
     """ Gets all scenarios from the database.
     # Important Note:
@@ -93,9 +97,16 @@ def scenarios(ignore_schedules : bool = False) -> tuple[Scenario]:
         sc = Scenario(scen.id, scen.name, scen.semester, scen.status, scen.description)
         scens.add(sc)
         if not ignore_schedules:
-            sched : db.Schedule
-            for sched in select(sd for sd in db.Schedule if sd.scenario_id == scen):
-                schedule = Schedule(sched.id, sched.official, sched.scenario_id, sched.description)
-                sc.schedules.add(schedule)
+            scens.update(refresh_scenario_schedules(sc))
     
     return tuple(scens)
+
+@db_session
+def refresh_scenario_schedules(scen: Scenario):
+    schedules = set()
+    scenario = db.Scenario.get(id=scen.id)
+    sched: db.Schedule
+    for sched in select(sd for sd in db.Schedule if sd.scenario_id == scenario):
+        schedule = Schedule(sched.id, sched.official, sched.scenario_id, sched.description)
+        schedules.add(schedule)
+    return schedules

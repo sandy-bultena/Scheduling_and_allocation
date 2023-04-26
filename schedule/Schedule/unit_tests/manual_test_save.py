@@ -11,7 +11,6 @@ import sys
 
 # https://stackoverflow.com/a/28154841 Solution #2
 if not __package__:
-    print('e')
     from pathlib import Path
     file = Path(__file__).resolve()
     parent, top = file.parent, file.parents[3]
@@ -22,18 +21,17 @@ if not __package__:
     except ValueError: # Already removed
         pass
 
-    import schedule.Schedule.unit_tests
     __package__ = "schedule.Schedule.unit_tests"
 
-from pony.orm import *
-from .db_constants import *
-from ..Schedule import Schedule
+from ..Schedule import Schedule as mSchedule
 from .test_Schedule import populate_db
-from ..database.PonyDatabaseConnection import define_database, Schedule as dbSchedule, Scenario as dbScenario
+from ..database.PonyDatabaseConnection import Schedule as dbSchedule, Scenario as dbScenario
+from ..database.generic_db import *
 
-db : Database
-s : dbSchedule
-sched : Schedule
+db: Database
+s: dbSchedule
+sched: mSchedule
+
 
 @db_session
 def init():
@@ -42,20 +40,21 @@ def init():
     flush()
     s = dbSchedule(official=False, scenario_id=sc.id)
 
+
 if __name__ == "__main__":
-    db = define_database(host=HOST, passwd=PASSWD, db=DB_NAME, provider=PROVIDER, user=USERNAME)
-    db.drop_all_tables(with_all_data = True)
+    db = create_db()
+    db.drop_all_tables(with_all_data=True)
     db.create_tables()
 
     init()
     populate_db(s.id)
 
-    sched = Schedule.read_DB(1)
+    sched = mSchedule.read_DB(1)
 
     db.disconnect()
     db.provider = db.schema = None
-    db = define_database(host=HOST, passwd=PASSWD, db=DB_NAME + "_2", provider=PROVIDER, user=USERNAME)
-    db.drop_all_tables(with_all_data = True)
+    db = create_db(DB_NAME + "_2")
+    db.drop_all_tables(with_all_data=True)
     db.create_tables()
 
     sched.write_DB()

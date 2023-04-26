@@ -36,7 +36,7 @@ from .db_constants import *
 db = Database()
 
 # Turn on debug mode, so we can see the SQL statements.
-set_sql_debug(True)
+set_sql_debug(False)
 
 
 # Create all the Entity classes.
@@ -182,7 +182,7 @@ def define_database(**db_params):
         cursor.execute(f"CREATE DATABASE IF NOT EXISTS {db_params['db']}")
         cursor.close()
         conn.close()
-    set_sql_debug(True)  # Optional; prints Pony's SQL statements to the console.
+    set_sql_debug(False)  # Optional; prints Pony's SQL statements to the console.
     db.bind(**db_params)
     map_entities(db)
     return db
