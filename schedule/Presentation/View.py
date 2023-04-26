@@ -258,6 +258,7 @@ class View:
                 # GuiBlock's block is the same as the moving block?
                 if guiblock.block.id == block.id:
                     self.gui.move_block(guiblock)
+                    self.gui.canvas.update_idletasks()
 
     def update_for_conflicts(self, type):
         """Determines conflict status for all GuiBlocks on this view and colours them

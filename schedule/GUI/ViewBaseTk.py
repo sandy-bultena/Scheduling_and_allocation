@@ -200,6 +200,10 @@ class ViewBaseTk:
         # move guiblock to new position
         guiblock.gui_view.canvas.move(guiblock.group, coords[0] - cur_x_pos, coords[1] - cur_y_pos)
 
+        if not guiblock.is_controlled:
+            self._refresh_gui()
+            self.canvas.update_idletasks()
+
     def colour_block(self, guiblock: GuiBlockTk, type: ViewType):
         """Colours the block according to conflicts.
 

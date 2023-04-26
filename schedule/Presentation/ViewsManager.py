@@ -354,18 +354,18 @@ class ViewsManager:
             undef: Set None as the first parameter, since this is an unnecessary parameter due to it being a callback function(?)
             scheduable_obj: An object that can have a schedule (teacher/lab/stream).
             type: Type of view to show (teacher/lab/stream)."""
-        open: View | False = self.is_open(scheduable_obj.id, type)
+        open_view: View | False = self.is_open(scheduable_obj.id, type)
 
-        if not open:
+        if not open_view:
             view = View(self, self.gui.mw, self.schedule, scheduable_obj)
             self.add_view(view)
             self.add_manager_to_views()
         else:
             # NOTE: Someone left this to-do in the Perl code:
             # TODO: Should have a View method for this instead of View->gui.
-            open: View
-            open.gui._toplevel.lift()
-            open.gui._toplevel.focus()
+            open_view: View
+            open_view.gui._toplevel.lift()
+            open_view.gui._toplevel.focus()
 
     def get_create_new_view_callback(self, *args):
         """Creates a callback function from create_new_view that includes this object as the

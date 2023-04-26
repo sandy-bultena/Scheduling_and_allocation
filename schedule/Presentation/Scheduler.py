@@ -233,8 +233,6 @@ def open_schedule():
 
         # Open a ScenarioSelector window.
         ScenarioSelector(parent=gui.mw, db=db, two=False, callback=get_scenario)
-        # NOTE: The lines of code below don't run until the main window of the app is closed.
-        # We'll need to pass in something else to be the ScenarioSelector's parent.
         print(f"The scenario is {scenario}")
         gui.show_info("Scenario", f"The selected scenario is {scenario}.")
 
