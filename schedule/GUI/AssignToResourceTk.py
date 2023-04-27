@@ -11,12 +11,15 @@ REQUIRED EVENT HANDLERS:
 * cb_add_new_block(block_description)
 * cb_add_new_teacher(firstname, lastname)
 * cb_add_new_lab(lab_name, lab_number)"""
+import tkinter.ttk
 from functools import partial
 from tkinter import *
 
 from Pmw.Pmw_2_1_1.lib.PmwComboBoxDialog import ComboBoxDialog
 from Pmw.Pmw_2_1_1.lib.PmwScrolledListBox import ScrolledListBox
 from Pmw.Pmw_2_1_1.lib.PmwDialog import Dialog
+
+import Pmw
 
 from GUI.FontsAndColoursTk import FontsAndColoursTk
 
@@ -249,18 +252,22 @@ class AssignToResourceTk:
         # NOTE: Unlike the JBrowseEntry, Pmw.ComboBoxDialog() doesn't accept arguments applicable
         # to its child megawidgets. Must create the ComboBoxEntry first, and THEN configure the
         # options of its child listbox.
-        self._tk_course_jbe = ComboBoxDialog(db)
+        self._tk_course_jbe = tkinter.ttk.Combobox(db, textvariable=self._tb_course, state=DISABLED)
+        self._tk_course_jbe.bind('<<ComboboxSelected>>', partial(
+            browse_cmd, self
+        ))
         # self._tk_course_jbe = ComboBoxDialog(db,
         #                                      items=self._tb_course,
         #                                      selectioncommand=partial(
         #                                          browse_cmd, self))
-        self._tk_course_jbe.component("scrolledlist").setlist(self._tb_course)
-        self._tk_course_jbe.component("scrolledlist").configure(selectioncommand=partial(
-            browse_cmd, self
-        ))
-        course_drop_entry = self._tk_course_jbe.component("entry")
-        course_drop_entry.configure(disabledbackground="white")
-        course_drop_entry.configure(disabledforeground="black")
+        # self._tk_course_jbe.component("scrolledlist").setlist(self._tb_course)
+        # self._tk_course_jbe.component("scrolledlist").configure(selectioncommand=partial(
+        #     browse_cmd, self
+        # ))
+        # TODO: Find an equivalent to assign these values to.
+        # course_drop_entry = self._tk_course_jbe.component("entry")
+        # course_drop_entry.configure(disabledbackground="white")
+        # course_drop_entry.configure(disabledforeground="black")
 
     # ============================================================================
     # section
@@ -484,26 +491,29 @@ class AssignToResourceTk:
         # title
         # -------------------------------------------------------
         # NOTE: the "-", "-", "-" in the Perl code indicates relative placement: each "-" increases
-        # the columnspan to the left. Tkinter has no equivalent to this.
-        self._lbl_title.grid(padx=2, sticky='nsew')
+        # the columnspan to the left. Tkinter has no equivalent to this, so I am using explicit
+        # rows and columns.
+        self._lbl_title.grid(row=0, column=0, padx=2, sticky='nsew', columnspan=3)
 
         # -------------------------------------------------------
         # course
         # -------------------------------------------------------
-        Label(db, text='').grid(sticky='nsew')
-        self._lbl_course_info.grid(padx=2, sticky='nsew')
-        self._lbl_course.grid(padx=2, sticky='nsew')
+        Label(db, text='').grid(row=1, sticky='nsew')
+        self._lbl_course_info.grid(row=2, padx=2, sticky='nsew')
+        self._lbl_course.grid(row=3, padx=2, sticky='nsew')
         # For some reason, ComboBoxDialog.grid won't accept these arguments.
         # self._tk_course_jbe.grid(padx=2, sticky='nsew')
-        self._tk_course_jbe.grid()
+        # It also won't accept arguments for "row" and "column", either.
+        self._tk_course_jbe.grid(row=4, columnspan=3, padx=2, sticky=NSEW)
 
         # -------------------------------------------------------
         # section
         # -------------------------------------------------------
-        self._lbl_section.grid(self._lbl_create_section, padx=2, sticky='nsew')
-        self._tk_section_jbe.grid(self._tk_section_entry, "-", self._tk_section_new_btn,
-                                  padx=2,
-                                  sticky='nsew')
+        self._lbl_section.grid(row=5, padx=2, sticky='nsew')
+        self._lbl_create_section.grid(row=5, padx=2, column=1, sticky='nsew')
+        self._tk_section_jbe.grid()
+        self._tk_section_entry.grid(row=6, column=1, padx=2, sticky='nsew')
+        self._tk_section_new_btn.grid(row=6, column=2, padx=2, sticky='nsew')
 
         # -------------------------------------------------------
         # block

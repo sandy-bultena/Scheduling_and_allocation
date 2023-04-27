@@ -1,13 +1,13 @@
 """Create or assign Time Blocks to various resources."""
-from GUI.AssignToResourceTk import AssignToResourceTk
-from Schedule.Block import Block
-from Schedule.Course import Course
-from Schedule.Lab import Lab
-from Schedule.Schedule import Schedule
-from Schedule.ScheduleEnums import ViewType
-from Schedule.Section import Section
-from Schedule.Stream import Stream
-from Schedule.Teacher import Teacher
+from ..GUI.AssignToResourceTk import AssignToResourceTk
+from ..Schedule.Block import Block
+from ..Schedule.Course import Course
+from ..Schedule.Lab import Lab
+from ..Schedule.Schedule import Schedule
+from ..Schedule.ScheduleEnums import ViewType
+from ..Schedule.Section import Section
+from ..Schedule.Stream import Stream
+from ..Schedule.Teacher import Teacher
 
 # ===================================================================
 # globals
@@ -86,7 +86,7 @@ class AssignToResource:
         # Create Dialog Box
         # ------------------------------------
         # ViewType is not a string, so concatenating it with a + fails.
-        title = f"Assign Block to {Type}"
+        title = f"Assign Block to {Type.name}"
         block_text = f"{AssignToResource.Day_name[day]} at " \
                      f"{AssignToResource._hours_to_string(start)} for {duration} hour(s)"
 
