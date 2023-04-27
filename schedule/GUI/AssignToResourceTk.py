@@ -151,8 +151,10 @@ class AssignToResourceTk:
         OKAY.configure(state='disabled')
 
         # Updating the dropdown with the new options.
-        self._tk_section_jbe.configure(choices=self.list_sections)
-        self._tk_block_jbe.configure(choices=self.list_sections)
+        # NOTE: Is this even necessary? They've already been modified in the method calls above.
+        # I'm commenting them out for now.
+        # self._tk_section_jbe.configure(choices=self.list_sections)
+        # self._tk_block_jbe.configure(choices=self.list_sections)
 
     def clear_blocks(self):
         """Reset the choices for blocks to empty lists, etc."""
