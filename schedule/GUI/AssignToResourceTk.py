@@ -364,26 +364,22 @@ class AssignToResourceTk:
             id = AssignToResourceTk._get_id(self.list_teachers, self._tb_teacher)
             self.cb_teacher_selected(id)
 
-        self._tk_teacher_jbe = ComboBoxDialog(db)
-        scrolled_list: ScrolledListBox = self._tk_teacher_jbe.component("scrolledlist")
-        scrolled_list.setlist(self._tb_teacher)
-        scrolled_list.component('listbox').configure(width=20)
-        scrolled_list.configure(selectioncommand=partial(
+        self._tk_teacher_jbe = tkinter.ttk.Combobox(db, textvariable=self._tb_teacher, width=20)
+        self._tk_teacher_jbe.bind('<<ComboboxSelected>>', partial(
             browse_cmd, self
         ))
 
-        # self._tk_teacher_jbe = ComboBoxDialog(
-        #     db,
-        #     scrolledlist_items=self._tb_teacher,
-        #     width=20,
-        #     selectioncommand=partial(
-        #         browse_cmd, self
-        #     )
-        # )
-
-        teacher_drop_entry: Entry = self._tk_teacher_jbe.component("entry")
-        teacher_drop_entry.configure(disabledbackground="white")
-        teacher_drop_entry.configure(disabledforeground="black")
+        # self._tk_teacher_jbe = ComboBoxDialog(db)
+        # scrolled_list: ScrolledListBox = self._tk_teacher_jbe.component("scrolledlist")
+        # scrolled_list.setlist(self._tb_teacher)
+        # scrolled_list.component('listbox').configure(width=20)
+        # scrolled_list.configure(selectioncommand=partial(
+        #     browse_cmd, self
+        # ))
+        #
+        # teacher_drop_entry: Entry = self._tk_teacher_jbe.component("entry")
+        # teacher_drop_entry.configure(disabledbackground="white")
+        # teacher_drop_entry.configure(disabledforeground="black")
 
         self._tk_fname_entry = Entry(db, textvariable=StringVar(value=self._new_teacher_fname))
         self._tk_lname_entry = Entry(db, textvariable=StringVar(value=self._new_teacher_lname))
@@ -532,23 +528,15 @@ class AssignToResourceTk:
         # -------------------------------------------------------
         global Type
         if Type != "teacher":
-            Label(db, text='').grid("-", padx=2, sticky='nsew')
-            self._lbl_teacher_info.grid(
-                "-", "-", "-", padx=2, sticky='nsew'
-            )
-            self._lbl_teacher.grid(
-                self._lbl_create_teacher,
-                "-", "-",
-                padx=2,
-                sticky='nsew'
-            )
-            self._tk_teacher_jbe.grid(
-                self._tk_fname_entry, self._tk_lname_entry,
-                self._tk_teacher_new_btn,
-                sticky='nsew',
-                padx=2
-            )
-            Label(db, text='').grid("-", "-", "-", padx=2, sticky='nsew')
+            Label(db, text='').grid(row=9, column=0, padx=2, sticky=NSEW)
+            self._lbl_teacher_info.grid(row=10, column=0, padx=2, sticky=NSEW)
+            self._lbl_teacher.grid(row=11, column=0, padx=2, sticky=NSEW)
+            self._lbl_create_teacher.grid(row=11, column=1, columnspan=2, padx=2, sticky=NSEW)
+            self._tk_teacher_jbe.grid(row=12, column=0, padx=2, sticky=NSEW)
+            self._tk_fname_entry.grid(row=12, column=1, padx=2, sticky=NSEW)
+            self._tk_lname_entry.grid(row=12, column=2, padx=2, sticky=NSEW)
+            self._tk_teacher_new_btn.grid(row=12, column=3, padx=2, sticky=NSEW)
+            Label(db, text='').grid(row=13, padx=2, sticky=NSEW)
 
         # -------------------------------------------------------
         # lab
