@@ -252,7 +252,9 @@ class AssignToResourceTk:
         # NOTE: Unlike the JBrowseEntry, Pmw.ComboBoxDialog() doesn't accept arguments applicable
         # to its child megawidgets. Must create the ComboBoxEntry first, and THEN configure the
         # options of its child listbox.
-        self._tk_course_jbe = tkinter.ttk.Combobox(db, textvariable=self._tb_course, state=DISABLED)
+        self._tk_course_jbe = tkinter.ttk.Combobox(db,
+                                                   textvariable=self._tb_course,
+                                                   state='readonly')
         self._tk_course_jbe.bind('<<ComboboxSelected>>', partial(
             browse_cmd, self
         ))
@@ -279,21 +281,20 @@ class AssignToResourceTk:
             id = AssignToResourceTk._get_id(self.list_sections, self._tb_section)
             self.cb_section_selected(id)
 
-        self._tk_section_jbe = ComboBoxDialog(db)
-        scrolled_list: ScrolledListBox = self._tk_section_jbe.component("scrolledlist")
-        scrolled_list.setlist(self._tb_section)
-        scrolled_list.configure(selectioncommand=partial(
+        self._tk_section_jbe = tkinter.ttk.Combobox(db, textvariable=self._tb_section,
+                                                    state='readonly')
+        self._tk_section_jbe.bind('<<ComboboxSelected>>', partial(
             browse_cmd, self
         ))
-        # self._tk_section_jbe = ComboBoxDialog(db,
-        #                                       scrolledlist_items=self._tb_section,
-        #                                       selectioncommand=partial(
-        #                                           browse_cmd, self
-        #                                       ))
+        # scrolled_list: ScrolledListBox = self._tk_section_jbe.component("scrolledlist")
+        # scrolled_list.setlist(self._tb_section)
+        # scrolled_list.configure(selectioncommand=partial(
+        #     browse_cmd, self
+        # ))
 
-        sec_drop_entry: Entry = self._tk_section_jbe.component("entry")
-        sec_drop_entry.configure(disabledbackground="white")
-        sec_drop_entry.configure(disabledforeground="black")
+        # sec_drop_entry: Entry = self._tk_section_jbe.component("entry")
+        # sec_drop_entry.configure(disabledbackground="white")
+        # sec_drop_entry.configure(disabledforeground="black")
 
         self._tk_section_entry = Entry(db,
                                        textvariable=StringVar(value=self._new_section))
@@ -319,24 +320,22 @@ class AssignToResourceTk:
             id = AssignToResourceTk._get_id(self.list_blocks, self._tb_block)
             self.cb_block_selected(id)
 
-        self._tk_block_jbe = ComboBoxDialog(db)
-        scrolled_list: ScrolledListBox = self._tk_block_jbe.component("scrolledlist")
-        scrolled_list.setlist(self._tb_block)
-        scrolled_list.component('listbox').configure(width=12)
-        scrolled_list.configure(selectioncommand=partial(
+        # self._tk_block_jbe = ComboBoxDialog(db)
+        self._tk_block_jbe = tkinter.ttk.Combobox(db, textvariable=self._tb_block, width=12,
+                                                  state='readonly')
+        self._tk_block_jbe.bind('<<ComboboxSelected>>', partial(
             browse_cmd, self
         ))
+        # scrolled_list: ScrolledListBox = self._tk_block_jbe.component("scrolledlist")
+        # scrolled_list.setlist(self._tb_block)
+        # scrolled_list.component('listbox').configure(width=12)
+        # scrolled_list.configure(selectioncommand=partial(
+        #     browse_cmd, self
+        # ))
 
-        # self._tk_block_jbe = ComboBoxDialog(db,
-        #                                     scrolledlist_items=self._tb_block,
-        #                                     width=20,
-        #                                     selectioncommand=partial(
-        #                                         browse_cmd, self
-        #                                     ))
-
-        block_drop_entry: Entry = self._tk_block_jbe.component("entry")
-        block_drop_entry.configure(disabledbackground="white")
-        block_drop_entry.configure(disabledforeground="black")
+        # block_drop_entry: Entry = self._tk_block_jbe.component("entry")
+        # block_drop_entry.configure(disabledbackground="white")
+        # block_drop_entry.configure(disabledforeground="black")
 
         self._tk_block_entry = Entry(db,
                                      textvariable=StringVar(value=self._new_block),
@@ -509,22 +508,24 @@ class AssignToResourceTk:
         # -------------------------------------------------------
         # section
         # -------------------------------------------------------
-        self._lbl_section.grid(row=5, padx=2, sticky='nsew')
-        self._lbl_create_section.grid(row=5, padx=2, column=1, sticky='nsew')
-        self._tk_section_jbe.grid()
-        self._tk_section_entry.grid(row=6, column=1, padx=2, sticky='nsew')
-        self._tk_section_new_btn.grid(row=6, column=2, padx=2, sticky='nsew')
+        self._lbl_section.grid(row=5, padx=2, sticky=NSEW)
+        self._lbl_create_section.grid(row=5, padx=2, column=1, sticky=NSEW)
+        self._tk_section_jbe.grid(row=6, column=0, padx=2, sticky=NSEW)
+        self._tk_section_entry.grid(row=6, column=1, padx=2, sticky=NSEW)
+        self._tk_section_new_btn.grid(row=6, column=2, padx=2, sticky=NSEW)
 
         # -------------------------------------------------------
         # block
         # -------------------------------------------------------
-        self._lbl_block.grid(self._lbl_create_block,
-                             "-", "-",
+        self._lbl_block.grid(row=7, column=0,
                              padx=2,
-                             sticky='nsew')
-        self._tk_block_jbe.grid(self._tk_block_entry, "-", self._tk_block_new_btn,
+                             sticky=NSEW)
+        self._lbl_create_block.grid(row=7, column=1, padx=2, sticky=NSEW)
+        self._tk_block_jbe.grid(row=8, column=0,
                                 padx=2,
-                                sticky='nsew')
+                                sticky=NSEW)
+        self._tk_block_entry.grid(row=8, column=1, padx=2, sticky=NSEW)
+        self._tk_block_new_btn.grid(row=8, column=2, padx=2, sticky=NSEW)
 
         # -------------------------------------------------------
         # teacher
