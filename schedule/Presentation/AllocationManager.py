@@ -334,6 +334,9 @@ def _save_schedule(save_as : int):
 # ==================================================================
 # draw_allocation
 # ==================================================================
+allocation_de: object
+
+
 def draw_allocation(*_):
     pass
 

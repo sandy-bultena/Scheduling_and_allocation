@@ -10,7 +10,7 @@ from GUI.FontsAndColoursTk import FontsAndColoursTk
 from Tk import FindImages
 from Tk.ToolBar import ToolBar
 from Presentation import globals
-import dirty
+from GUI import dirty
 from functools import partial
 from PerlLib import Colour
 from UsefulClasses.NoteBookPageInfo import NoteBookPageInfo
