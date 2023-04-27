@@ -55,24 +55,25 @@ class AssignToResource:
     # ===================================================================
     # Constructor
     # ===================================================================
-    def __init__(self, mw, schedule: Schedule, day: int, start, duration, schedulable):
+    def __init__(self, mw, sched: Schedule, day: int, start, duration, schedulable):
         """Creates and manages a gui that will allow the user to assign a block to various
         resources.
 
         Parameters:
             mw: The main GUI window.
-            schedule: Schedule object.
+            sched: Schedule object.
             day: new Block information
             start: new Block information
             duration: new Block information
             schedulable: Teacher or Lab (nothing will happen if this is a Stream object)."""
         global Day, Start, Duration
+        AssignToResource.schedule = sched
         Day = day
         Start = start
         Duration = duration
 
         global Type
-        Type = schedule.get_view_type_of_object(schedulable)
+        Type = sched.get_view_type_of_object(schedulable)
         if Type == ViewType.Lab:
             global lab
             lab = schedulable
@@ -97,13 +98,14 @@ class AssignToResource:
         # ------------------------------------
         # open dialog
         # ------------------------------------
-        if schedule:
+        if sched:
             AssignToResource._open_dialog()
 
     # ============================================================================
     # OpenDialog
     # ============================================================================
-    def _open_dialog(self):
+    @staticmethod
+    def _open_dialog():
         # ------------------------------------
         # setup event handlers
         # ------------------------------------
@@ -112,16 +114,16 @@ class AssignToResource:
         # ------------------------------------
         # setup event handlers
         # ------------------------------------
-        gui.cb_course_selected(AssignToResource._cb_course_selected)
-        gui.cb_section_selected(AssignToResource._cb_section_selected)
-        gui.cb_block_selected(AssignToResource._cb_block_selected)
-        gui.cb_teacher_selected(AssignToResource._cb_teacher_selected)
-        gui.cb_lab_selected(AssignToResource._cb_lab_selected)
+        gui.cb_course_selected = AssignToResource._cb_course_selected
+        gui.cb_section_selected = AssignToResource._cb_section_selected
+        gui.cb_block_selected = AssignToResource._cb_block_selected
+        gui.cb_teacher_selected = AssignToResource._cb_teacher_selected
+        gui.cb_lab_selected = AssignToResource._cb_lab_selected
 
-        gui.cb_add_new_section(AssignToResource._cb_add_new_section)
-        gui.cb_add_new_block(AssignToResource._cb_add_new_block)
-        gui.cb_add_new_teacher(AssignToResource._cb_add_new_teacher)
-        gui.cb_add_new_lab(AssignToResource._cb_add_new_lab)
+        gui.cb_add_new_section = AssignToResource._cb_add_new_section
+        gui.cb_add_new_block = AssignToResource._cb_add_new_block
+        gui.cb_add_new_teacher = AssignToResource._cb_add_new_teacher
+        gui.cb_add_new_lab = AssignToResource._cb_add_new_lab
 
         # ------------------------------------
         # get lists of resources

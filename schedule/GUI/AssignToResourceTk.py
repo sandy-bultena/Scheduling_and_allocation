@@ -192,29 +192,29 @@ class AssignToResourceTk:
         self._new_lab_number = ""
 
     def set_lab_choices(self, labs: dict[int, str]):
-        self.list_labs.update(labs)
-        self._tk_lab_jbe.configure(choices=self.list_labs)
+        self.list_labs = labs
+        self._tk_lab_jbe.configure(textvariable=self.list_labs)
 
     def set_teacher_choices(self, teachers: dict[int, str]):
-        self.list_teachers.update(teachers)
-        self._tk_teacher_jbe.configure(choices=self.list_teachers)
+        self.list_teachers = teachers
+        self._tk_teacher_jbe.configure(textvariable=self.list_teachers)
 
     def set_course_choices(self, courses: dict[int, str]):
-        self.list_courses.update(courses)
-        self._tk_course_jbe.configure(choices=self.list_courses)
+        self.list_courses = courses
+        self._tk_course_jbe.configure(textvariable=self.list_courses)
         global OKAY
         OKAY.configure(state=DISABLED)
 
     def set_section_choices(self, sections=None):
-        self.list_sections.update(sections)
-        self._tk_section_jbe.configure(choices=self.list_sections)
+        self.list_sections = sections
+        self._tk_section_jbe.configure(textvariable=self.list_sections)
         self.enable_new_section_button()
         global OKAY
         OKAY.configure(state=DISABLED)
 
     def set_block_choices(self, blocks=None):
-        self.list_blocks.update(blocks)
-        self._tk_block_jbe.configure(choices=self.list_blocks)
+        self.list_blocks = blocks
+        self._tk_block_jbe.configure(textvariable=self.list_blocks)
         self.enable_new_block_button()
         global OKAY
         OKAY.configure(state=DISABLED)
@@ -558,7 +558,7 @@ class AssignToResourceTk:
         # Entry or Text Box variable bindings
         # ------------------------------------------------------------------------
         self._create_setters_and_getters(
-            category='list',
+            category="list",
             properties=["courses", "sections", "blocks", "teachers", "labs"],
             default={}
         )
