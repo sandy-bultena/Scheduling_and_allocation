@@ -143,7 +143,7 @@ class AssignToResourceTk:
         self._tb_section = ""
         sections = {}
         self.list_sections = sections
-        self.set_section_choices()
+        self.set_section_choices(sections)
         self._tk_section_new_btn.configure(state=DISABLED)
 
         self.clear_blocks()
@@ -159,7 +159,7 @@ class AssignToResourceTk:
         self._tb_block = ""
         blocks = {}
         self.list_blocks = blocks
-        self.set_block_choices()
+        self.set_block_choices(blocks)
         self._tk_block_new_btn.configure(state=DISABLED)
 
         global OKAY
@@ -193,34 +193,38 @@ class AssignToResourceTk:
 
     def set_lab_choices(self, labs: dict[int, str]):
         self.list_labs = labs
-        self._tk_lab_jbe.configure(textvariable=self.list_labs)
+        # self._tk_lab_jbe.configure(textvariable=StringVar(value=self.list_labs))
+        self._tk_lab_jbe['values'] = list(self.list_labs.values())
 
     def set_teacher_choices(self, teachers: dict[int, str]):
         self.list_teachers = teachers
-        self._tk_teacher_jbe.configure(textvariable=self.list_teachers)
+        # self._tk_teacher_jbe.configure(textvariable=StringVar(value=self.list_teachers))
+        self._tk_teacher_jbe['values'] = list(self.list_teachers.values())
 
     def set_course_choices(self, courses: dict[int, str]):
         self.list_courses = courses
-        self._tk_course_jbe.configure(textvariable=self.list_courses)
+        # self._tk_course_jbe.configure(textvariable=StringVar(value=self.list_courses))
+        self._tk_course_jbe['values'] = list(self.list_courses.values())
         global OKAY
         OKAY.configure(state=DISABLED)
 
-    def set_section_choices(self, sections=None):
+    def set_section_choices(self, sections: dict[int, str]):
         self.list_sections = sections
-        self._tk_section_jbe.configure(textvariable=self.list_sections)
+        # self._tk_section_jbe.configure(textvariable=StringVar(value=self.list_sections))
+        self._tk_section_jbe['values'] = list(self.list_sections.values())
         self.enable_new_section_button()
         global OKAY
         OKAY.configure(state=DISABLED)
 
-    def set_block_choices(self, blocks=None):
+    def set_block_choices(self, blocks: dict[int, str]):
         self.list_blocks = blocks
-        self._tk_block_jbe.configure(textvariable=self.list_blocks)
+        self._tk_block_jbe.configure(textvariable=StringVar(value=self.list_blocks))
         self.enable_new_block_button()
         global OKAY
         OKAY.configure(state=DISABLED)
 
     def show(self):
-        return self._frame.show()
+        return self._frame.activate()
 
     def yes_no(self, title, question):
         """Displays a yes/no dialog.
@@ -245,8 +249,8 @@ class AssignToResourceTk:
         #     ComboBoxDialog(db,
         #              )
         # )
-        def browse_cmd(self):
-            id = AssignToResourceTk._get_id(self.list_courses, self._tb_course)
+        def browse_cmd(self, event):
+            id = AssignToResourceTk._get_id(self.list_courses, self._tk_course_jbe.get())
             self.cb_course_selected(id)  # TODO: Figure out if this partial works.
 
         # Pmw equivalent of JBrowseEntry seems to be this, at least at first glance.
@@ -328,16 +332,6 @@ class AssignToResourceTk:
         self._tk_block_jbe.bind('<<ComboboxSelected>>', partial(
             browse_cmd, self
         ))
-        # scrolled_list: ScrolledListBox = self._tk_block_jbe.component("scrolledlist")
-        # scrolled_list.setlist(self._tb_block)
-        # scrolled_list.component('listbox').configure(width=12)
-        # scrolled_list.configure(selectioncommand=partial(
-        #     browse_cmd, self
-        # ))
-
-        # block_drop_entry: Entry = self._tk_block_jbe.component("entry")
-        # block_drop_entry.configure(disabledbackground="white")
-        # block_drop_entry.configure(disabledforeground="black")
 
         self._tk_block_entry = Entry(db,
                                      textvariable=StringVar(value=self._new_block),
@@ -371,18 +365,6 @@ class AssignToResourceTk:
             browse_cmd, self
         ))
 
-        # self._tk_teacher_jbe = ComboBoxDialog(db)
-        # scrolled_list: ScrolledListBox = self._tk_teacher_jbe.component("scrolledlist")
-        # scrolled_list.setlist(self._tb_teacher)
-        # scrolled_list.component('listbox').configure(width=20)
-        # scrolled_list.configure(selectioncommand=partial(
-        #     browse_cmd, self
-        # ))
-        #
-        # teacher_drop_entry: Entry = self._tk_teacher_jbe.component("entry")
-        # teacher_drop_entry.configure(disabledbackground="white")
-        # teacher_drop_entry.configure(disabledforeground="black")
-
         self._tk_fname_entry = Entry(db, textvariable=StringVar(value=self._new_teacher_fname))
         self._tk_lname_entry = Entry(db, textvariable=StringVar(value=self._new_teacher_lname))
 
@@ -411,19 +393,6 @@ class AssignToResourceTk:
         self._tk_lab_jbe.bind('<<ComboboxSelected>>', partial(
             browse_cmd, self
         ))
-
-        # self._tk_lab_jbe = ComboBoxDialog(db)
-        # scrolled_list: ScrolledListBox = self._tk_lab_jbe.component("scrolledlist")
-        # scrolled_list.setlist(self._tb_lab)
-        # scrolled_list.component("listbox").configure(width=20)
-        # scrolled_list.component("listbox").configure(state="disabled")
-        # scrolled_list.configure(selectioncommand=partial(
-        #     browse_cmd, self
-        # ))
-        #
-        # lab_drop_entry: Entry = self._tk_lab_jbe.component("entry")
-        # lab_drop_entry.configure(disabledbackground="white")
-        # lab_drop_entry.configure(disabledforeground="black")
 
         self._tk_lab_num_entry = Entry(db, textvariable=StringVar(value=self._new_lab_number))
         self._tk_lab_descr_entry = Entry(db, textvariable=StringVar(value=self._new_lab_name))
@@ -673,5 +642,5 @@ class AssignToResourceTk:
         # return my_ref[name]
         # More Pythonic way of doing this, taken from here.
         # https://stackoverflow.com/questions/483666/reverse-invert-a-dictionary-mapping
-        inverted_hash = {v: k for k, v in hash_ptr}
+        inverted_hash = {v: k for k, v in hash_ptr.items()}
         return inverted_hash[name]

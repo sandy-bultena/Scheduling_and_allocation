@@ -151,7 +151,7 @@ class AssignToResource:
         # ------------------------------------
         # Show dialog
         # ------------------------------------
-        answer = gui.show() or "Cancel"
+        answer = gui.show()  # or "Cancel"
 
         # ------------------------------------
         # assign block to resource
