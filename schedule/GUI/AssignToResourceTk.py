@@ -407,27 +407,23 @@ class AssignToResourceTk:
             id = AssignToResourceTk._get_id(self.list_labs, self._tb_lab)
             self.cb_lab_selected(id)
 
-        self._tk_lab_jbe = ComboBoxDialog(db)
-        scrolled_list: ScrolledListBox = self._tk_lab_jbe.component("scrolledlist")
-        scrolled_list.setlist(self._tb_lab)
-        scrolled_list.component("listbox").configure(width=20)
-        scrolled_list.component("listbox").configure(state="disabled")
-        scrolled_list.configure(selectioncommand=partial(
+        self._tk_lab_jbe = tkinter.ttk.Combobox(db, width=20, state='readonly')
+        self._tk_lab_jbe.bind('<<ComboboxSelected>>', partial(
             browse_cmd, self
         ))
-        # self._tk_lab_jbe = ComboBoxDialog(
-        #     db,
-        #     scrolledlist_items=self._tb_lab,
-        #     state='readonly',
-        #     width=20,
-        #     selectioncommand=partial(
-        #         browse_cmd, self
-        #     )
-        # )
 
-        lab_drop_entry: Entry = self._tk_lab_jbe.component("entry")
-        lab_drop_entry.configure(disabledbackground="white")
-        lab_drop_entry.configure(disabledforeground="black")
+        # self._tk_lab_jbe = ComboBoxDialog(db)
+        # scrolled_list: ScrolledListBox = self._tk_lab_jbe.component("scrolledlist")
+        # scrolled_list.setlist(self._tb_lab)
+        # scrolled_list.component("listbox").configure(width=20)
+        # scrolled_list.component("listbox").configure(state="disabled")
+        # scrolled_list.configure(selectioncommand=partial(
+        #     browse_cmd, self
+        # ))
+        #
+        # lab_drop_entry: Entry = self._tk_lab_jbe.component("entry")
+        # lab_drop_entry.configure(disabledbackground="white")
+        # lab_drop_entry.configure(disabledforeground="black")
 
         self._tk_lab_num_entry = Entry(db, textvariable=StringVar(value=self._new_lab_number))
         self._tk_lab_descr_entry = Entry(db, textvariable=StringVar(value=self._new_lab_name))
@@ -543,26 +539,16 @@ class AssignToResourceTk:
         # -------------------------------------------------------
         # lab
         # -------------------------------------------------------
-        if Type != 'lab':
-            Label(db, text='').grid("-", "-", "-", padx=2, sticky='nsew')
-            self._lbl_lab_info.grid(
-                "-", "-", "-",
-                padx=2,
-                sticky='nsew'
-            )
-            self._lbl_lab.grid(
-                self._lbl_create_lab,
-                "-", "-",
-                padx=2,
-                sticky='nsew'
-            )
-            self._tk_lab_jbe.grid(
-                self._tk_lab_num_entry, self._tk_lab_descr_entry,
-                self._tk_lab_new_btn,
-                sticky='nsew',
-                padx=2
-            )
-            Label(db, text='').grid("-", "-", "-", padx=2, sticky='nsew')
+        if Type != 'lab' and Type != ViewType.Lab:
+            Label(db, text='').grid(row=9, padx=2, sticky=NSEW)
+            self._lbl_lab_info.grid(row=10, column=0, padx=2, sticky=NSEW)
+            self._lbl_lab.grid(row=11, column=0, padx=2, sticky=NSEW)
+            self._lbl_create_lab.grid(row=11, column=1, padx=2, sticky=NSEW)
+            self._tk_lab_jbe.grid(row=12, column=0, sticky=NSEW, padx=2)
+            self._tk_lab_num_entry.grid(row=12, column=1, padx=2, sticky=NSEW)
+            self._tk_lab_descr_entry.grid(row=12, column=2, padx=2, sticky=NSEW)
+            self._tk_lab_new_btn.grid(row=12, column=3, padx=2, sticky=NSEW)
+            Label(db, text='').grid(row=13, padx=2, sticky=NSEW)
 
     # ============================================================================
     # setup getters and setters
