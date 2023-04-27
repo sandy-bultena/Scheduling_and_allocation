@@ -21,7 +21,8 @@ from Pmw.Pmw_2_1_1.lib.PmwDialog import Dialog
 
 import Pmw
 
-from GUI.FontsAndColoursTk import FontsAndColoursTk
+from .FontsAndColoursTk import FontsAndColoursTk
+from ..Schedule.ScheduleEnums import ViewType
 
 # ============================================================================
 # globals
@@ -31,6 +32,7 @@ global big_font
 global bold_font
 global OKAY
 global Type
+Type: ViewType | str
 
 global __setup
 
@@ -53,7 +55,7 @@ class AssignToResourceTk:
     # ============================================================================
     # constructor
     # ============================================================================
-    def __init__(self, type):
+    def __init__(self, type: ViewType | str):
         """
         Create an instance of AssignToResourceTk object, but does NOT draw the
         dialog box at this point. This allows the calling function to set up the
@@ -527,7 +529,7 @@ class AssignToResourceTk:
         # teacher
         # -------------------------------------------------------
         global Type
-        if Type != "teacher":
+        if Type != "teacher" and Type != ViewType.Teacher:
             Label(db, text='').grid(row=9, column=0, padx=2, sticky=NSEW)
             self._lbl_teacher_info.grid(row=10, column=0, padx=2, sticky=NSEW)
             self._lbl_teacher.grid(row=11, column=0, padx=2, sticky=NSEW)
