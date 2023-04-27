@@ -3,10 +3,10 @@ from tkinter import Tk, Frame, ttk, Toplevel, StringVar, Listbox
 
 from pony.orm import Database, db_session, flush
 
-from Schedule.database import PonyDatabaseConnection as PonyDatabaseConnection
+from ..Schedule.database import PonyDatabaseConnection as PonyDatabaseConnection
 
 from .AddScenarioWindow import AddScenarioWindow
-from Schedule.ScheduleWrapper import scenarios
+from ..Schedule.ScheduleWrapper import scenarios
 
 
 class ScenarioSelector:

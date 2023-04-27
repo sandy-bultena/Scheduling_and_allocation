@@ -1,6 +1,6 @@
 from .ScheduablesByType import ScheduablesByType
-from Schedule.Schedule import Schedule
-from Schedule.ScheduleEnums import ViewType
+from ..Schedule.Schedule import Schedule
+from ..Schedule.ScheduleEnums import ViewType
 
 
 class AllScheduables:

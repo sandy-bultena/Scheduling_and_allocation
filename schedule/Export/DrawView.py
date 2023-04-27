@@ -2,9 +2,9 @@
 import re
 from tkinter import Canvas
 
-from PerlLib import Colour
-from Schedule.Block import Block
-from Schedule.ScheduleEnums import ViewType
+from ..PerlLib import Colour
+from ..Schedule.Block import Block
+from ..Schedule.ScheduleEnums import ViewType
 
 """SYNOPSIS
     

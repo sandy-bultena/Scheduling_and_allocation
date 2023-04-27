@@ -1,10 +1,10 @@
 from functools import partial
 from tkinter import *
 
-from GUI.FontsAndColoursTk import FontsAndColoursTk
-from PerlLib import Colour
-from Schedule.Conflict import Conflict
-from UsefulClasses.ScheduablesByType import ScheduablesByType
+from ..GUI.FontsAndColoursTk import FontsAndColoursTk
+from ..PerlLib import Colour
+from ..Schedule.Conflict import Conflict
+from ..UsefulClasses.ScheduablesByType import ScheduablesByType
 
 
 class ViewsManagerTk:

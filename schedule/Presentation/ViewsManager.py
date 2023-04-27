@@ -1,11 +1,11 @@
 """ViewsManager - Manage all of the views (presentations of schedules)"""
 from .View import View
-from GUI.ViewsManagerTk import ViewsManagerTk
-from Schedule.Block import Block
-from Schedule.Conflict import Conflict
-from Schedule.Schedule import Schedule
-from Schedule.Undo import Undo
-from UsefulClasses.AllScheduables import AllScheduables
+from ..GUI.ViewsManagerTk import ViewsManagerTk
+from ..Schedule.Block import Block
+from ..Schedule.Conflict import Conflict
+from ..Schedule.Schedule import Schedule
+from ..Schedule.Undo import Undo
+from ..UsefulClasses.AllScheduables import AllScheduables
 
 
 class ViewsManager:

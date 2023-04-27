@@ -5,10 +5,10 @@ from typing import Callable
 
 from pony.orm import Database, db_session, flush
 
-from Schedule.Schedule import Schedule
-from Schedule.ScheduleWrapper import refresh_scenario_schedules
+from ..Schedule.Schedule import Schedule
+from ..Schedule.ScheduleWrapper import refresh_scenario_schedules
 from .AddScheduleWindow import AddScheduleWindow
-from Schedule.database import PonyDatabaseConnection
+from ..Schedule.database import PonyDatabaseConnection
 
 
 class ScheduleSelector:
