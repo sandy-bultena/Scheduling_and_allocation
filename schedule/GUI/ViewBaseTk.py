@@ -198,7 +198,8 @@ class ViewBaseTk:
         guiblock.gui_view.canvas.lift(guiblock.group_tag)
 
         # move guiblock to new position
-        guiblock.gui_view.canvas.move(guiblock.group_tag, coords[0] - cur_x_pos, coords[1] - cur_y_pos)
+        guiblock.gui_view.canvas.move(guiblock.group_tag, coords[0] - cur_x_pos,
+                                      coords[1] - cur_y_pos)
 
     def colour_block(self, guiblock: GuiBlockTk, type: ViewType):
         """Colours the block according to conflicts.
@@ -418,24 +419,9 @@ class ViewBaseTk:
             return
 
         (day, time, duration) = DrawView.coords_to_day_time_duration(x, y, y, scl)
-        # Originally, the day_number property had a setter, and day could accept numbers or strings.
-        # However, we disallowed that. So the day value must be converted to a string/WeekDay.
-        # NOTE: WeekDayNumber won't work because "day" is an integer, not a string.
-        # Need something else.
-        guiblock.block.day = WeekDayNumber.days_by_number()[int(day)]
-        guiblock.block.start_number = time # This will avoid triggering start's validation.
 
-    @staticmethod
-    def _get_time_string_from_number(time) -> str:
-        remainder = time % 1
-        hour = time - remainder
-        minutes = remainder * 60
-        time_parts = [str(int(hour)), str(int(minutes))]
-        if time_parts[1] == "0":
-            time_parts[1] = "00"
-        time_string = ":".join(time_parts)
-        return time_string
-        pass
+        guiblock.block._TimeSlot__day_number = day
+        guiblock.block.start_number = time
 
 
 # =================================================================
