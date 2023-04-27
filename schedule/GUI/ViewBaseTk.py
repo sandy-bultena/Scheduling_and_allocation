@@ -195,14 +195,10 @@ class ViewBaseTk:
         (cur_x_pos, cur_y_pos, _, _) = guiblock.gui_view.canvas.coords(guiblock.rectangle)
 
         # bring the guiblock to the front, passes over others.
-        guiblock.gui_view.canvas.lift(guiblock.group)
+        guiblock.gui_view.canvas.lift(guiblock.group_tag)
 
         # move guiblock to new position
-        guiblock.gui_view.canvas.move(guiblock.group, coords[0] - cur_x_pos, coords[1] - cur_y_pos)
-
-        if not guiblock.is_controlled:
-            self._refresh_gui()
-            self.canvas.update_idletasks()
+        guiblock.gui_view.canvas.move(guiblock.group_tag, coords[0] - cur_x_pos, coords[1] - cur_y_pos)
 
     def colour_block(self, guiblock: GuiBlockTk, type: ViewType):
         """Colours the block according to conflicts.
