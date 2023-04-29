@@ -6,6 +6,51 @@ from ..Presentation.MenuItem import MenuItem, MenuType, ToolbarItem
 from ..Tk import FindImages
 from ..Tk.ToolBar import ToolBar
 
+"""
+Example::
+
+    from tkinter import *
+    from schedule.Presentation.MenuItem import MenuItem, MenuType, ToolbarItem
+    from schedule.GUI.MenuAndToolBarTk import make_toolbar, generate_menu
+
+    mw = Tk()
+
+    (buttons, toolbar_info, menu_details) = define_inputs()
+
+    menu_bar = Menu(mw)
+    generate_menu(mw, menu_details, menu_bar)
+    mw.configure(menu=menu_bar)
+
+    toolbar = make_toolbar(mw, buttons, toolbar_info)
+    toolbar.pack(side='top', expand=0, fill='x')
+
+    mw.mainloop()
+
+    def define_inputs():
+        menu = list()
+    
+        file_menu = MenuItem(name='file', menu_type=MenuType.Cascade, label='File')
+        file_menu.add_child(MenuItem(name='new', menu_type=MenuType.Command, label='New', accelerator='Ctrl-n',
+                                     command=lambda *_: print("'File/New' selected")))
+        file_menu.add_child(MenuItem(name='open', menu_type=MenuType.Command, label='Open', accelerator='Ctrl-o',
+                                     command=lambda *_: print("'File/Open' selected")))
+        file_menu.add_child(MenuItem(name='save', menu_type=MenuType.Command, label='Save', accelerator='Ctrl-s',
+                                     underline=0,
+                                     command=lambda *_: print("'File/Save' selected")))
+
+        toolbar_info = dict()
+        toolbar_info['new'] = ToolbarItem(command=MenuItem.all_menu_items['new'].command, hint='New Schedule File')
+        toolbar_info['open'] = ToolbarItem(command=MenuItem.all_menu_items['open'].command, hint='Open Schedule File')
+        toolbar_info['save'] = ToolbarItem(command=MenuItem.all_menu_items['save'].command, hint='Save Schedule File')
+        toolbar_order = ['new', 'open', '', 'save']
+    
+        menu.append(file_menu)
+        menu.append(print_menu)
+    
+        return toolbar_order, toolbar_info, menu
+    
+"""
+
 
 def generate_menu(mw, menu_details: list[MenuItem], parent: Menu):
     """Create a gui menu bar based off of the menu_details"""
@@ -15,7 +60,7 @@ def generate_menu(mw, menu_details: list[MenuItem], parent: Menu):
         # Cascading menu
         if menu_item.menu_type == MenuType.Cascade:
             new_menu = Menu(parent, tearoff=menu_item.tearoff)
-            generate_menu(mw,menu_item.children, new_menu)
+            generate_menu(mw, menu_item.children, new_menu)
             parent.add_cascade(label=menu_item.label, menu=new_menu)
 
         # simple separator
@@ -40,9 +85,11 @@ def generate_menu(mw, menu_details: list[MenuItem], parent: Menu):
 
 
 def make_toolbar(mw, button_names: list[str], actions: dict[str:ToolbarItem],
-                 colours: dict[str:str] = dict()) -> ToolBar:
+                 colours: dict[str:str] = None) -> ToolBar:
     """Create a toolbar described by the actions"""
     image_dir = FindImages.get_image_dir()
+    if colours is None:
+        colours = dict()
     bg_colour = colours['WorkspaceColour'] if 'WorkspaceColour' in colours else mw.cget('background')
     ab_colour = colours['ActiveBackground'] if 'ActiveBackground' in colours else "#89abcd"
     toolbar = ToolBar(mw, buttonbg=bg_colour, hoverbg=ab_colour)
