@@ -1,7 +1,7 @@
 """A half hour time block used to select time slots on a view."""
 from tkinter import Canvas
 
-from ..PerlLib import Colour
+from PerlLib import Colour
 
 
 class AssignBlockTk:
@@ -95,7 +95,7 @@ class AssignBlockTk:
         if not assigned_blocks:
             return
 
-        found: list[AssignBlockTk] = [b for b in assigned_blocks if b._at_canvas_coords(x, y)]
+        found: list[AssignBlockTk] = [b for b in assigned_blocks if b.at_canvas_coords(x, y)]
         return found[0] if len(found) > 0 else None
 
     # =================================================================

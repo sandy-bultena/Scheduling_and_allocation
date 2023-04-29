@@ -1,45 +1,47 @@
 """Entry point for the GUI Allocation Management Tool"""
 
-import sys
-from os import path
-sys.path.append(path.dirname(path.dirname(__file__)))
-
 import json
 from Schedule.ScheduleWrapper import ScheduleWrapper
 from Schedule.Schedule import Schedule
-#import EditCourses
+# import EditCourses
 from Presentation import NumStudents
-#import EditAllocation
-#from GUI import AllocationManagerTk
+# import EditAllocation
+from GUI.AllocationManagerTk import AllocationManagerTk
 from PerlLib import Colours
-#from Presentation import DataEntry
-#from UsefulClasses import NoteBookPageInfo
+# from Presentation import DataEntry
+from UsefulClasses.NoteBookPageInfo import NoteBookPageInfo
+import Presentation.globals as gl
+
+from Schedule.database.generic_db import REQUIRES_LOGIN, create_db
+
+from functools import partial
 
 from Schedule.Scenario import Scenario
 
 semesters = ['fall', 'winter']
-#schedules = ScheduleWrapper()
+schedules = ScheduleWrapper()
 
 dirty = False
-# $gui
+gui: AllocationManagerTk
 
-# @Required_pages
-# %Pages_lookup
+required_pages: list = []
+pages_lookup: dict[str, NoteBookPageInfo] = {}
 
 preferences = dict()
 
-user_base_dir : str = None
+user_base_dir: str = None
 
-scenario : list[Scenario]
+scenarios: dict[str, Scenario] = {}
 
-def main(scens : list[Scenario]):
-    global scenario
-    scenario = scens
-    # gui = AllocationManagerTk.new()
+
+def main():
+    global gui
+    gui = AllocationManagerTk()
     get_user_preferences()
     create_main_window()
-    #pre_process_stuff()
-    #Gui.start_event_loop()
+    pre_process_stuff()
+    gui.start_event_loop()
+
 
 # ==================================================================
 # user preferences saved in ini file (JSON format)
@@ -50,26 +52,38 @@ def get_user_preferences():
     import os
     O = platform.system().lower()
 
-    if 'darwin' in O: user_base_dir = os.environ("HOME") # Mac OS linux
-    elif 'windows' in O: user_base_dir = os.environ("USERPROFILE")
-    else: user_base_dir = os.environ("HOME")
+    if 'darwin' in O:
+        user_base_dir = os.environ["HOME"] # Mac OS linux
+    elif 'windows' in O:
+        user_base_dir = os.environ["USERPROFILE"]
+    else:
+        user_base_dir = os.environ["HOME"]
 
     read_ini()
+
 
 # ==================================================================
 # read_ini
 # ==================================================================
 def read_ini():
+    from os import path
+
     global preferences, current_directory
     if user_base_dir and path.isfile(f"{user_base_dir}/.allocation"):
         # Perl ver used YAML, but that requires an extra package we're no longer using
         # going to use JSON instead, which is built-in
 
         f = open(f"{user_base_dir}/.allocation", 'r')
-        preferences = json.load(f.read())
-        f.close()
+        try:
+            preferences = json.loads(f.read())
+        # JSON failed, probably invalid. just ignore it
+        except json.JSONDecodeError:
+            pass
+        finally:
+            f.close()
         current_directory = preferences['current_dir']\
             if ('current_dir' in preferences and preferences['current_dir']) else user_base_dir
+
 
 # ==================================================================
 # write_ini
@@ -79,8 +93,7 @@ def write_ini():
     f = open(f"{user_base_dir}/.allocation", "w")
 
     # write JSON data
-    data = json.dump(preferences)
-    f.write(data)
+    json.dump(preferences, f)
 
     # finish up
     f.close()
@@ -90,8 +103,10 @@ def write_ini():
 # create_main_window
 # ==================================================================
 def create_main_window():
-    #Gui.create_main_window()
-    pass
+    gui.create_main_window()
+    toolbar_buttons, button_properties, menu = menu_info()
+    gui.create_menu_and_toolbars(toolbar_buttons, button_properties, menu)
+    gui.create_front_page(preferences, semesters, _open_schedule, get_schedule)
 
 
 # ==================================================================
@@ -100,42 +115,239 @@ def create_main_window():
 def menu_info():
     """Define what goes in the menu and toolbar"""
     # button names
-    buttons = ['new_fall', 'new_winter', 'open_fall', 'open_winter', 'save']
+    buttons = ['open_fall', 'open_winter', 'save']  # ,'new_fall', 'new_winter']
 
     # actions associated w/ the menu items
     actions = {
-        'new_fall': {
-            'cb': [new_schedules, 'fall'],
-            'hn': 'Create new Fall schedule'
-        },
-        'new_winter': {
-            'cb': [new_schedules, 'winter'],
-            'hn': 'Create new Winter schedule'
-        },
+        # no longer necessary? new schedules are made directly in the open menu now
+        # 'new_fall': {
+        #    'cb': partial(new_schedules, 'fall'),
+        #    'hn': 'Create new Fall schedule'
+        # },
+        # 'new_winter': {
+        #    'cb': partial(new_schedules, 'winter'),
+        #    'hn': 'Create new Winter schedule'
+        # },
         'open_fall': {
-            'cb': [_open_schedule, 'fall'],
-            'hn': 'Open Fall schedule'
+            'code': partial(get_schedule, 'fall'),
+            'hint': 'Open Fall schedule'
         },
         'open_winter': {
-            'cb': [_open_schedule, 'winter'],
-            'hn': 'Open Winter schedule'
+            'code': partial(get_schedule, 'winter'),
+            'hint': 'Open Winter schedule'
         },
         'save': {
-            'cb': None,#save_schedule,
-            'hn': 'Save Schedules'
+            'code': save_schedule,
+            'hint': 'Save Schedules'
         }
     }
 
+    # menu structure
+    menu = [
+        {
+            'itemType': 'cascade',
+            'label': 'File',
+            'tearoff': 0,
+            'menuitems': [
+                # no longer necessary? new schedules are made directly in the open menu now
+                # (using pound, so it isn't read as a string in the list)
+                # {
+                #    'itemType': 'command',
+                #    'label': 'New Fall',
+                #    'accelerator': 'Ctrl-n',
+                #    'command': actions['new_fall']['cb']
+                # },
+                # {
+                #    'itemType': 'command',
+                #    'label': 'New Winter',
+                #    'accelerator': 'Ctrl-n',
+                #    'command': actions['new_winter']['cb']
+                # },
+                {
+                    'itemType': 'command',
+                    'label': 'Open Fall',
+                    'accelerator': 'Ctrl-o',
+                    'command': actions['open_fall']['code']
+                },
+                {
+                    'itemType': 'command',
+                    'label': 'Open Winter',
+                    'accelerator': 'Ctrl-o',
+                    'command': actions['open_winter']['code']
+                },
+                {
+                    'itemType': 'command',
+                    'label': 'Save',
+                    'underline': 0,
+                    'accelerator': 'Ctrl-s',
+                    'command': actions['save']['code']
+                },
+                {
+                    'itemType': 'command',
+                    'label': 'Save As',
+                    'command': save_as_schedule
+                },
+                {
+                    'itemType': 'command',
+                    'label': 'Exit',
+                    'underline': 0,
+                    'accelerator': 'Ctrl-e',
+                    'command': exit_schedule
+                },
+            ]
+        }
+    ]
+
+    return buttons, actions, menu
+
+
 # ==================================================================
-# new_schedules
+# new_schedules; does this need to be implemented? probably not
 # ==================================================================
 def new_schedules(semester):
-    #schedules[semester] = Schedule(None, "", "Pending", scenario.id)
+    # schedules[semester] = Schedule(None, "", "Pending", scenario.id)
     dirty = True
-    #front_page_done()
+    # front_page_done()
+
+
+# ==================================================================
+# _open_schedule
+# ==================================================================
+def get_schedule(semester: str):
+    from GuiSchedule.ScenarioSelector import ScenarioSelector
+    from GuiSchedule.ScheduleSelector import ScheduleSelector
+    # Based on Scheduler.open_schedule
+
+    db = create_db()
+
+    global scenarios, schedules
+
+    for sem in semesters:
+        if sem not in scenarios:
+            scenarios[sem] = None
+
+    def _get_scenario(func):
+        global scenarios
+        scenarios[semester] = func()
+
+    if REQUIRES_LOGIN:
+        pass  # TODO: Implement this
+    else:
+        # Open a ScenarioSelector window
+        ScenarioSelector(parent=gui.mw, db=db, callback=_get_scenario)
+
+        if scenarios[semester]:
+            def _get_schedule(func):
+                global schedules
+                schedules.schedules[semester] = func()
+
+            ScheduleSelector(parent=gui.mw, db=db, scenario=scenarios[semester], callback=_get_schedule)
+
+            if schedules.schedules[semester]:
+                return schedules.schedules[semester]
+
 
 # ==================================================================
 # _open_schedule
 # ==================================================================
 def _open_schedule():
+    for semester in semesters:
+        if semester not in schedules.schedules or not schedules.schedules[semester]: return
+    front_page_done()
+
+
+def front_page_done():
+    gui.update_for_new_schedule_and_show_page()
+    gl.unset_dirty_flag()
+
+
+def pre_process_stuff():
+    gui.bind_dirty_flag()
+    define_notebook_pages()
+    gui.define_notebook_tabs(required_pages)
+    gui.define_exit_callback(exit_schedule)
+
+
+def define_notebook_pages():
+    global required_pages
+    required_pages = [
+        NoteBookPageInfo("Allocation", draw_allocation),
+        NoteBookPageInfo("Student Numbers", draw_student_numbers)
+    ]
+
+    # one page for each semester
+    sub_notebook = {}
+    for semester in semesters:
+        label = semester.capitalize()
+        sub_notebook[semester] = []
+
+        def tab_pressed(sem, *_):
+            update_edit_courses(sem)
+            update_edit_teachers(sem)
+
+        required_pages.append(NoteBookPageInfo(label, partial(tab_pressed, semester), sub_notebook[semester]))
+
+    # Semester Courses and Teachers
+    for semester in semesters:
+        label = semester.capitalize()
+        sub_notebook[semester].append(
+            (c := NoteBookPageInfo(f"{label} Courses", partial(update_edit_courses, semester))))
+        sub_notebook[semester].append(
+            (t := NoteBookPageInfo(f"{label} Teachers", partial(update_edit_teachers, semester)))
+        )
+
+        pages_lookup[f"{label} Courses"] = c
+        pages_lookup[f"{label} Teachers"] = t
+
+
+def exit_schedule():
+    if gl.is_data_dirty():
+        answer = gui.question("Save Schedule", "Do you want to save your changes?")
+        if answer.lower() == 'yes':
+            save_schedule()
+        elif answer.lower() == 'cancel':
+            return
+
+    write_ini()
+    # Perl ver called Tk::exit() here, but it's already being called in MainPageBaseTk
+
+
+def save_schedule():
+    _save_schedule(0)
+
+
+def save_as_schedule():
+    _save_schedule(1)
+
+
+def _save_schedule(save_as : int):
+    for semester in semesters:
+        if semester not in schedules.schedules:
+            gui.show_error('Save Schedule', f'Missing allocation file for {semester}')
+            return
+
+    # a bunch of saving stuff here
+    # uses the YAML file saving, so outdated; needs to be updated eventually
+    # will need to use autosave anyway
+
+
+# ==================================================================
+# draw_allocation
+# ==================================================================
+allocation_de: object
+
+
+def draw_allocation(*_):
+    pass
+
+
+def draw_student_numbers(*_):
+    pass
+
+
+def update_edit_courses(*_):
+    pass
+
+
+def update_edit_teachers(*_):
     pass

@@ -2,8 +2,9 @@
 import re
 from tkinter import Canvas
 
-from schedule.PerlLib import Colour
-from schedule.Schedule.Block import Block
+from ..PerlLib import Colour
+from ..Schedule.Block import Block
+from ..Schedule.ScheduleEnums import ViewType
 
 """SYNOPSIS
     
@@ -94,7 +95,14 @@ sky_blue = "#b3e6ff"
 blue = Colour.add(sky_blue, sky_blue)
 teal = Colour.add(sky_blue, lime_green)
 
-colours: dict[str, str] = {'lab': "#cdefab", 'teacher': "#abcdef", 'stream': teal}
+colours: dict[str, str] = {
+    'lab': "#cdefab",
+    ViewType.Lab: "#cdefab",
+    'teacher': "#abcdef",
+    ViewType.Teacher: "#abcdef",
+    'stream': teal,
+    ViewType.Stream: teal
+}
 
 
 # =================================================================
@@ -200,11 +208,11 @@ def get_block_text(block: Block, scale: float = 1, type="teacher"):
     block_sec = f"({block.section.number})" if block.section else ""
     block_section_name = block.section.title if block.section else ""
     labs = block.labs()
-    block_lab = ",".join(labs)
+    block_lab = ",".join(str(l) for l in labs)
     block_duration = block.duration
     block_start_time = block.start_number
     streams = block.section.streams if block.section else ()
-    block_streams = ",".join(streams)
+    block_streams = ",".join(str(s) for s in streams)
 
     # If teacher name is too long, split into multiple lines.
     teachers = block.teachers()
@@ -235,7 +243,7 @@ def get_block_text(block: Block, scale: float = 1, type="teacher"):
         block_teacher = ""
 
         # Don't add teachers if this is a teacher view.
-        if type != "teacher":
+        if type != "teacher" and type != ViewType.Teacher:
             for t in teachers:
                 block_teacher = block_teacher + ", ".join(map(t.firstname[0:1], t.lastname[0:1]))
 
@@ -249,7 +257,7 @@ def get_block_text(block: Block, scale: float = 1, type="teacher"):
         # labs/resources (scale < .75)
         # -----------------------------------------------------------
         block_lab = ""
-        if type != "lab":
+        if type != "lab" and type != ViewType.Lab:
             block_lab = ", ".join(map(lambda l: l.number, labs))
 
             # add ellipsis to end of lab string as necessary
@@ -265,7 +273,7 @@ def get_block_text(block: Block, scale: float = 1, type="teacher"):
 
         # only add stream/text if no teachers or labs,
         # or GuiBlock can fit all info (i.e. duration of 2 hours or more)
-        if type != "stream" or block_duration >= 2:
+        if (type != "stream" and type != ViewType.Stream) or block_duration >= 2:
             block_streams = ", ".join(map(lambda s: s.number, streams))
 
             # add ellipsis to end of stream as necessary.
@@ -279,11 +287,11 @@ def get_block_text(block: Block, scale: float = 1, type="teacher"):
     # --------------------------------------------------------------------
 
     block_text = f"{block_num}\n{block_section_name}\n"
-    if type != "teacher" and block_teacher:
+    if (type != "teacher" and type != ViewType.Teacher) and block_teacher:
         block_text += f"{block_teacher}\n"
-    if type != "lab" and block_lab:
+    if (type != "lab" and type != ViewType.Lab) and block_lab:
         block_text += f"{block_lab}\n"
-    if type != "stream" and block_streams:
+    if (type != "stream" and type != ViewType.Stream) and block_streams:
         block_text += f"{block_streams}\n"
     block_text = block_text.rstrip()
 
@@ -345,9 +353,9 @@ def draw_block(canvas: Canvas, block, scl: dict, type,
     # --------------------------------------------------------------------
     # Create a rectangle.
     rectangle = canvas.create_rectangle(coords, fill=colour, outline=colour,
-                                        tags=("rectangle", "members"))
+                                        tags=("rectangle", "members", "movable"))
     if block_tag:
-        canvas.addtag_withtag(f"rectangle_block_{block_tag}", "rectangle")
+        canvas.addtag_withtag(f"block_{block_tag}", "rectangle")
 
     # shade edges of guiblock rectangle
     lines = []
@@ -356,24 +364,24 @@ def draw_block(canvas: Canvas, block, scl: dict, type,
     for i in range(0, edge - 1):
         lines.append(
             canvas.create_line(x2 - i, y1 + i, x2 - i, y2 - i, x1 + i, y2 - i, fill=dark[i],
-                               tags="lines")
+                               tags=("lines", "movable"))
         )
         lines.append(
             canvas.create_line(
-                x2 - i, y1 + i, x1 + i, y1 + i, x1 + i, y2 - i, fill=light[i], tags="lines"
+                x2 - i, y1 + i, x1 + i, y1 + i, x1 + i, y2 - i, fill=light[i], tags=("lines", "movable")
             )
         )
     if block_tag:
-        canvas.addtag_withtag(f"lines_block_{block_tag}", "lines")
+        canvas.addtag_withtag(f"block_{block_tag}", "lines")
 
     # set text
     text = canvas.create_text(
         (x1 + x2) / 2, (y1 + y2) / 2, text=block_text, fill=text_colour,
-        tags=("text", "members")
+        tags=("text", "members", "movable")
     )
 
     if block_tag:
-        canvas.addtag_withtag(f"text_block_{block_tag}", "text")
+        canvas.addtag_withtag(f"block_{block_tag}", "text")
 
     # group rectangle and text to create a guiblock,
     # so that they both move as one on UI
@@ -401,7 +409,7 @@ def coords_to_day_time_duration(x, y, y2, scl: dict):
         y: y1 position (determines start).
         y2: y2 position (determines duration).
         scl: Scaling info [dictionary]."""
-    day = x / scl['xscl'] - scl['xoff'] - scl['xorg']
+    day = x / scl['xscl'] - scl['xoff'] + 1 - scl['xorg']
     time = y / scl['yscl'] - scl['yoff'] + earliest_time - scl['yorg']
     duration = (y2 + 1 - y) / scl['yscl']
 

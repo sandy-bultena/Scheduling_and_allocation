@@ -12,6 +12,7 @@ from ..Schedule.database.PonyDatabaseConnection import define_database, Scenario
 from ..Schedule.database.db_constants import PROVIDER, DB_NAME, CREATE_DB
 from ..UsefulClasses.NoteBookPageInfo import NoteBookPageInfo
 from .globals import *
+from ..GUI import dirty
 
 """
 # ==================================================================
@@ -119,8 +120,7 @@ def pre_process_stuff():
 
     # Create the view manager (which shows all the schedule views, etc.)
     global views_manager, schedule
-    # TODO: Implement ViewsManager class.
-    views_manager = ViewsManager(gui, is_data_dirty(), schedule)
+    views_manager = ViewsManager(gui, dirty.check(), schedule)
     gui.set_views_manager(views_manager)
 
 
@@ -233,15 +233,12 @@ def open_schedule():
             print(f"In the callback, the scenario is {scenario}.")
 
         # Open a ScenarioSelector window.
-        ScenarioSelector(parent=gui.mw, db=db, two=False, callback=get_scenario)
-        # NOTE: The lines of code below don't run until the main window of the app is closed.
-        # We'll need to pass in something else to be the ScenarioSelector's parent.
+        ScenarioSelector(parent=gui.mw, db=db, callback=get_scenario)
         print(f"The scenario is {scenario}")
         gui.show_info("Scenario", f"The selected scenario is {scenario}.")
 
-        if not scenario or len(scenario) != 1 or scenario[0] is None:
-            gui.show_error("INVALID SELECTION", "Incorrect number of Scenarios picked. "
-                                                "Please select 1.")
+        if not scenario:
+            gui.show_error("INVALID SELECTION", "Incorrect number of Scenarios picked. Please select 1.")
         else:
             global schedule
 
@@ -250,7 +247,7 @@ def open_schedule():
                 schedule = func()
                 print(f"Retrieved the following object from function: {schedule}")
 
-            ScheduleSelector(parent=gui.mw, db=db, scenario=scenario[0], callback=get_schedule)
+            ScheduleSelector(parent=gui.mw, db=db, scenario=scenario, callback=get_schedule)
             gui.show_info("SCHEDULE SELECTED", f"Successfully selected a Schedule: {schedule}")
 
             # If the schedule was successfully read, then
@@ -333,9 +330,9 @@ def save_as_csv():
 # ==================================================================
 def update_choices_of_schedulable_views():
     global views_manager, gui
-    btn_callback = views_manager.get_create_new_view_callback
+    btn_callback = views_manager.get_create_new_view_callback()
     all_view_choices = views_manager.get_all_scheduables()
-    page_name = pages_lookup['Schedules'].name
+    page_name = pages_lookup['Schedules'].id
     gui.draw_view_choices(page_name, all_view_choices, btn_callback)
 
     views_manager.determine_button_colours()
@@ -420,7 +417,7 @@ def print_views(print_type, type):
 # ==================================================================
 def exit_schedule():
     global gui
-    if is_data_dirty():
+    if dirty.check():
         answer = gui.question("Save Schedule", "Do you want to save changes?")
         if answer == "Yes":
             save_schedule()

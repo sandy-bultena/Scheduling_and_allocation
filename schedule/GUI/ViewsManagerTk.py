@@ -1,10 +1,10 @@
 from functools import partial
 from tkinter import *
 
-from schedule.GUI.FontsAndColoursTk import FontsAndColoursTk
-from schedule.PerlLib import Colour
-from schedule.Schedule.Conflict import Conflict
-from schedule.UsefulClasses.ScheduablesByType import ScheduablesByType
+from ..GUI.FontsAndColoursTk import FontsAndColoursTk
+from ..PerlLib import Colour
+from ..Schedule.Conflict import Conflict
+from ..UsefulClasses.ScheduablesByType import ScheduablesByType
 
 
 class ViewsManagerTk:
@@ -55,6 +55,10 @@ class ViewsManagerTk:
         btn = button_pts.get(obj)
 
         # Set button colour to conflict colour if there is a conflict.
+        if not hasattr(FontsAndColoursTk, "colours"):
+            # Call this just in case FontsAndColoursTk hasn't been initialized yet. Avoids crashes.
+            FontsAndColoursTk(self.mw)
+
         colour = FontsAndColoursTk.colours['ButtonBackground']
         if view_conflict:
             colour = Conflict.colours()[view_conflict] or 'red'
@@ -75,6 +79,10 @@ class ViewsManagerTk:
         schedulables = schedulables_by_type.named_scheduable_objs
         type = schedulables_by_type.type
 
+        subframe = frame.Subwidget('Frame')
+        # subframe.pack(anchor='center', expand=True)
+        # frame.update_scrollbars()
+
         row = 0
         col = 0
 
@@ -93,14 +101,16 @@ class ViewsManagerTk:
             command = [command_func, self, name, type]
 
             # Create the button on the frame.
-            btn = Button(frame, text=name, command=partial(
-                command_func, self, name, type
+            btn = Button(subframe, text=name, command=partial(
+                command_func, self, named_schedulable_obj.object, type
             ))
             btn.grid(row=row, column=col, sticky=NSEW,
                      ipadx=30, ipady=10)
+            # btn.pack(anchor='center', ipadx=30, ipady=10)
+
+            frame.update_scrollbars()
 
             # Pass the button reference to the event handler # NOTE: ?
-            # TODO: Figure this out. Not even sure that this is necessary.
             command.append(btn)
 
             # add it to the dict of button references.

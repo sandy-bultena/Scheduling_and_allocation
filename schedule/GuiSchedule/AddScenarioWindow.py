@@ -8,13 +8,14 @@ from Schedule.database import PonyDatabaseConnection as PonyDatabaseConnection
 
 
 class AddScenarioWindow:
-    def __init__(self, parent: Toplevel, db: Database):
+    def __init__(self, parent: Toplevel, db: Database, callback):
         self.parent = parent
         self.db = db
         self.check_num_wrapper = (self.parent.register(check_num), '%P')
         self.window = self._setup_window(parent)
         self.frame = self._setup_frame()
         self._setup_interface()
+        self.callback = callback
         self.window.grab_set()
         self.window.mainloop()
 
@@ -54,6 +55,8 @@ class AddScenarioWindow:
                                                        semester=semester)
             commit()
             messagebox.showinfo("Success", "Successfully added this scenario to the database.")
-            self.window.destroy()  # TODO: Figure out why the list isn't updating.
+            self.callback(True)
+            self.window.destroy()
+            self.window.quit()
         except mysql.connector.DatabaseError as err:
             return

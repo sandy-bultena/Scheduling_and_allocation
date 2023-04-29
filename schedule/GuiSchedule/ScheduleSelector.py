@@ -6,7 +6,8 @@ from typing import Callable
 from pony.orm import Database, db_session, flush
 
 from ..Schedule.Schedule import Schedule
-from ..Schedule.ScheduleWrapper import scenarios
+from ..Schedule.ScheduleWrapper import refresh_scenario_schedules
+from .AddScheduleWindow import AddScheduleWindow
 from ..Schedule.database import PonyDatabaseConnection
 
 
@@ -24,6 +25,7 @@ class ScheduleSelector:
         self.callback = callback
         self.sched_dict = {}
         self.sched_list = []
+        self.sched_var: tkinter.StringVar = tkinter.StringVar()
         self.window: Toplevel = self._setup_window(parent)
         self.frame: Frame = self._setup_frame()
         self._setup_interface()
@@ -48,27 +50,27 @@ class ScheduleSelector:
         ttk.Label(self.frame, text=f"Select a schedule from Scenario {self.scenario.name}:")\
             .grid(row=0, column=0, columnspan=2)
         self._get_schedules_for_scenario()
-        sched_var = tkinter.StringVar(value=self.sched_list)
-        self.listbox = tkinter.Listbox(self.frame, listvariable=sched_var)
+        self.listbox = tkinter.Listbox(self.frame, listvariable=self.sched_var)
         self.listbox.grid(row=1, column=0, columnspan=2)
         ttk.Button(self.frame, text="New", command=self.add_new_schedule).grid(row=2, column=0)
         ttk.Button(self.frame, text="Open", command=partial(
             self.callback, self.open_schedule) if self.callback
             else self.open_schedule).grid(row=2, column=1)
 
-    @db_session
-    def _get_schedules_for_scenario(self):
+    def _get_schedules_for_scenario(self, force=False):
         """Retrieves all Schedules belonging to the passed Scenario."""
-        scheds = []
-        db_scen = PonyDatabaseConnection.Scenario[self.scenario.id]
-        flush()
-        scheds.extend(db_scen.schedules)
-        self.sched_list = sorted(scheds, key=lambda s: s.id)
+        if force or not self.sched_list:
+            self.sched_list = sorted(refresh_scenario_schedules(self.scenario), key=lambda a: a.id)
         for sched in self.sched_list:
             self.sched_dict[str(sched)] = sched
 
+        self.sched_var.set(self.sched_list)
+
     def add_new_schedule(self):
-        pass
+        """Opens a window in which the user can add a new schedule to the database by filling out
+        a form."""
+        AddScheduleWindow(self.window, self.db, self.scenario, self._get_schedules_for_scenario)
+        self.window.update()
 
     def open_schedule(self):
         # Get the selected index from the listbox.

@@ -11,13 +11,18 @@ REQUIRED EVENT HANDLERS:
 * cb_add_new_block(block_description)
 * cb_add_new_teacher(firstname, lastname)
 * cb_add_new_lab(lab_name, lab_number)"""
-import tkinter.messagebox
 import tkinter.ttk
 from functools import partial
 from tkinter import *
-from tkinter import messagebox
+
 from Pmw.Pmw_2_1_1.lib.PmwComboBoxDialog import ComboBoxDialog
+from Pmw.Pmw_2_1_1.lib.PmwScrolledListBox import ScrolledListBox
 from Pmw.Pmw_2_1_1.lib.PmwDialog import Dialog
+
+import Pmw
+
+from .FontsAndColoursTk import FontsAndColoursTk
+from ..Schedule.ScheduleEnums import ViewType
 
 # ============================================================================
 # globals
@@ -27,6 +32,7 @@ global big_font
 global bold_font
 global OKAY
 global Type
+Type: ViewType | str
 
 global __setup
 
@@ -49,7 +55,7 @@ class AssignToResourceTk:
     # ============================================================================
     # constructor
     # ============================================================================
-    def __init__(self, type):
+    def __init__(self, type: ViewType | str):
         """
         Create an instance of AssignToResourceTk object, but does NOT draw the
         dialog box at this point. This allows the calling function to set up the
@@ -64,13 +70,17 @@ class AssignToResourceTk:
         global Type
         Type = type
 
-        # set fonts TODO: Implement the FontsAndColoursTk class.
+        # set fonts
         global fonts
-        fonts = FontsAndColoursTk.Fonts
+        # FontsAndColoursTk.
+        fonts = FontsAndColoursTk.fonts
         global big_font
         big_font = fonts['bigbold']
         global bold_font
         bold_font = fonts['bold']
+        # Adding various attributes, because I am too lazy to implement the blasted
+        # function to automatically generate everything.
+        self.__setup()
 
     # ============================================================================
     # draw
@@ -86,22 +96,28 @@ class AssignToResourceTk:
         # create dialog box
         # -----------------------------------------------
         # NOTE: tkinter doesn't have a direct analog to Perl/Tk's DialogBox. Must get creative.
-        db = messagebox.askokcancel(title="Assign Block")
+        # db = messagebox.askokcancel(title="Assign Block")
         db_2 = Dialog(frame,
                       title="Assign Block",
                       buttons=["Ok", "Cancel"])
         self._frame = db_2
         global OKAY
-        OKAY = db_2.component("Ok")
+        # Access the Dialog's ButtonBox component megawidget to get access to the actual buttons.
+        # https://pmw.sourceforge.net/doc/howtouse.html
+        # https://pmw.sourceforge.net/doc/Dialog.html
+        # https://pmw.sourceforge.net/doc/ButtonBox.html
+        ok_index = db_2.component('buttonbox').index("Ok")
+        OKAY = db_2.component('buttonbox').button(ok_index)
         OKAY.configure(state=DISABLED)
         OKAY.configure(width=10)
-        cancel = db_2.component("Cancel")
+        cancel_index = db_2.component('buttonbox').index("Cancel")
+        cancel = db_2.component('buttonbox').button(cancel_index)
         cancel.configure(width=10)
         # TODO: FIGURE THE ABOVE STUFF OUT. NOTE: This may or may not work.
         # -----------------------------------------------
         # description of selected block
         # -----------------------------------------------
-        self._new_block(block_text)
+        self._new_block = block_text
 
         # -----------------------------------------------
         # create labels
@@ -127,8 +143,8 @@ class AssignToResourceTk:
         self._tb_section = ""
         sections = {}
         self.list_sections = sections
-        self.set_section_choices()
-        self._tk_section_new_btn_configure(state=DISABLED)
+        self.set_section_choices(sections)
+        self._tk_section_new_btn.configure(state=DISABLED)
 
         self.clear_blocks()
         global OKAY
@@ -143,7 +159,7 @@ class AssignToResourceTk:
         self._tb_block = ""
         blocks = {}
         self.list_blocks = blocks
-        self.set_block_choices()
+        self.set_block_choices(blocks)
         self._tk_block_new_btn.configure(state=DISABLED)
 
         global OKAY
@@ -156,55 +172,59 @@ class AssignToResourceTk:
         self._tk_block_new_btn.configure(state=NORMAL)
 
     def set_teacher(self, teacher_name: str):
-        self._tb_teacher(teacher_name)
+        self._tb_teacher = teacher_name
         self._new_teacher_lname = ""
         self._new_teacher_fname = ""
 
     def set_section(self, section_name):
-        self._tb_section(section_name)
+        self._tb_section = section_name
         self._new_section = ""
 
     def set_block(self, block_name):
-        self._tb_block(block_name)
+        self._tb_block = block_name
         self._new_block = ""
         global OKAY
         OKAY.configure(state=NORMAL)
 
     def set_lab(self, lab_name):
-        self._tb_lab(lab_name)
+        self._tb_lab = lab_name
         self._new_lab_name = ""
         self._new_lab_number = ""
 
     def set_lab_choices(self, labs: dict[int, str]):
-        self.list_labs.update(labs)
-        self._tk_lab_jbe.configure(choices=self.list_labs)
+        self.list_labs = labs
+        # self._tk_lab_jbe.configure(textvariable=StringVar(value=self.list_labs))
+        self._tk_lab_jbe['values'] = list(self.list_labs.values())
 
     def set_teacher_choices(self, teachers: dict[int, str]):
-        self.list_teachers.update(teachers)
-        self._tk_teacher_jbe.configure(choices=self.list_teachers)
+        self.list_teachers = teachers
+        # self._tk_teacher_jbe.configure(textvariable=StringVar(value=self.list_teachers))
+        self._tk_teacher_jbe['values'] = list(self.list_teachers.values())
 
     def set_course_choices(self, courses: dict[int, str]):
-        self.list_courses.update(courses)
-        self._tk_course_jbe.configure(choices=self.list_courses)
+        self.list_courses = courses
+        # self._tk_course_jbe.configure(textvariable=StringVar(value=self.list_courses))
+        self._tk_course_jbe['values'] = list(self.list_courses.values())
         global OKAY
         OKAY.configure(state=DISABLED)
 
-    def set_section_choices(self, sections):
-        self.list_sections.update(sections)
-        self._tk_section_jbe.configure(choices=self.list_sections)
+    def set_section_choices(self, sections: dict[int, str]):
+        self.list_sections = sections
+        # self._tk_section_jbe.configure(textvariable=StringVar(value=self.list_sections))
+        self._tk_section_jbe['values'] = list(self.list_sections.values())
         self.enable_new_section_button()
         global OKAY
         OKAY.configure(state=DISABLED)
 
-    def set_block_choices(self, blocks):
-        self.list_blocks.update(blocks)
-        self._tk_block_jbe.configure(choices=self.list_blocks)
+    def set_block_choices(self, blocks: dict[int, str]):
+        self.list_blocks = blocks
+        self._tk_block_jbe.configure(textvariable=StringVar(value=self.list_blocks))
         self.enable_new_block_button()
         global OKAY
         OKAY.configure(state=DISABLED)
 
     def show(self):
-        return self._frame.show()
+        return self._frame.activate()
 
     def yes_no(self, title, question):
         """Displays a yes/no dialog.
@@ -222,49 +242,68 @@ class AssignToResourceTk:
     # course
     # ============================================================================
     def _setup_course_widgets(self):
-        db = self._frame
+        db: Frame = self._frame.component('dialogchildsite')
 
         # self._tk_course_jbe(
         #     # Pmw equivalent of JBrowseEntry seems to be this, at least at first glance.
         #     ComboBoxDialog(db,
         #              )
         # )
-        def browse_cmd(self):
-            id = _get_id(self.list_courses, self._tb_course)
+        def browse_cmd(self, event):
+            id = AssignToResourceTk._get_id(self.list_courses, self._tk_course_jbe.get())
             self.cb_course_selected(id)  # TODO: Figure out if this partial works.
 
         # Pmw equivalent of JBrowseEntry seems to be this, at least at first glance.
-        self._tk_course_jbe = ComboBoxDialog(db,
-                                             scrolledlist_items=self._tb_course_ptr,
-                                             selectioncommand=partial(
-                                                 browse_cmd, self))
 
-        course_drop_entry = self._tk_course_jbe.component("entry")
-        course_drop_entry.configure(disabledbackground="white")
-        course_drop_entry.configure(disabledforeground="black")
+        # NOTE: Unlike the JBrowseEntry, Pmw.ComboBoxDialog() doesn't accept arguments applicable
+        # to its child megawidgets. Must create the ComboBoxEntry first, and THEN configure the
+        # options of its child listbox.
+        self._tk_course_jbe = tkinter.ttk.Combobox(db,
+                                                   textvariable=self._tb_course,
+                                                   state='readonly')
+        self._tk_course_jbe.bind('<<ComboboxSelected>>', partial(
+            browse_cmd, self
+        ))
+        # self._tk_course_jbe = ComboBoxDialog(db,
+        #                                      items=self._tb_course,
+        #                                      selectioncommand=partial(
+        #                                          browse_cmd, self))
+        # self._tk_course_jbe.component("scrolledlist").setlist(self._tb_course)
+        # self._tk_course_jbe.component("scrolledlist").configure(selectioncommand=partial(
+        #     browse_cmd, self
+        # ))
+        # TODO: Find an equivalent to assign these values to.
+        # course_drop_entry = self._tk_course_jbe.component("entry")
+        # course_drop_entry.configure(disabledbackground="white")
+        # course_drop_entry.configure(disabledforeground="black")
 
     # ============================================================================
     # section
     # ============================================================================
     def _setup_section_widgets(self):
-        db = self._frame
+        db = self._frame.component('dialogchildsite')
 
         def browse_cmd(self):
-            id = _get_id(self.list_sections, self._tb_section)
+            id = AssignToResourceTk._get_id(self.list_sections, self._tb_section)
             self.cb_section_selected(id)
 
-        self._tk_section_jbe = ComboBoxDialog(db,
-                                              scrolledlist_items=self._tb_section_ptr,
-                                              selectioncommand=partial(
-                                                  browse_cmd, self
-                                              ))
+        self._tk_section_jbe = tkinter.ttk.Combobox(db, textvariable=self._tb_section,
+                                                    state='readonly')
+        self._tk_section_jbe.bind('<<ComboboxSelected>>', partial(
+            browse_cmd, self
+        ))
+        # scrolled_list: ScrolledListBox = self._tk_section_jbe.component("scrolledlist")
+        # scrolled_list.setlist(self._tb_section)
+        # scrolled_list.configure(selectioncommand=partial(
+        #     browse_cmd, self
+        # ))
 
-        sec_drop_entry: Entry = self._tk_section_jbe.component("entry")
-        sec_drop_entry.configure(disabledbackground="white")
-        sec_drop_entry.configure(disabledforeground="black")
+        # sec_drop_entry: Entry = self._tk_section_jbe.component("entry")
+        # sec_drop_entry.configure(disabledbackground="white")
+        # sec_drop_entry.configure(disabledforeground="black")
 
         self._tk_section_entry = Entry(db,
-                                       textvariable=self._new_section_ptr)
+                                       textvariable=StringVar(value=self._new_section))
 
         def add_new_section(self):
             self.cb_add_new_section(self._new_section)
@@ -281,25 +320,21 @@ class AssignToResourceTk:
     # block
     # ============================================================================
     def _setup_block_widgets(self):
-        db = self._frame
+        db = self._frame.component('dialogchildsite')
 
         def browse_cmd(self):
-            id = _get_id(self.list_blocks, self._tb_block)
+            id = AssignToResourceTk._get_id(self.list_blocks, self._tb_block)
             self.cb_block_selected(id)
 
-        self._tk_block_jbe = ComboBoxDialog(db,
-                                            scrolledlist_items=self._tb_block_ptr,
-                                            width=20,
-                                            selectioncommand=partial(
-                                                browse_cmd, self
-                                            ))
-
-        block_drop_entry: Entry = self._tk_block_jbe.component("entry")
-        block_drop_entry.configure(disabledbackground="white")
-        block_drop_entry.configure(disabledforeground="black")
+        # self._tk_block_jbe = ComboBoxDialog(db)
+        self._tk_block_jbe = tkinter.ttk.Combobox(db, textvariable=self._tb_block, width=12,
+                                                  state='readonly')
+        self._tk_block_jbe.bind('<<ComboboxSelected>>', partial(
+            browse_cmd, self
+        ))
 
         self._tk_block_entry = Entry(db,
-                                     textvariable=self._new_block_ptr,
+                                     textvariable=StringVar(value=self._new_block),
                                      state=DISABLED,
                                      disabledbackground='white')
 
@@ -319,27 +354,19 @@ class AssignToResourceTk:
     # teachers
     # ============================================================================
     def _setup_teacher_widgets(self):
-        db = self._frame
+        db = self._frame.component('dialogchildsite')
 
         def browse_cmd(self):
-            id = _get_id(self.list_teachers, self._tb_teacher)
+            id = AssignToResourceTk._get_id(self.list_teachers, self._tb_teacher)
             self.cb_teacher_selected(id)
 
-        self._tk_teacher_jbe = ComboBoxDialog(
-            db,
-            scrolledlist_items=self._tb_teacher_ptr,
-            width=20,
-            selectioncommand=partial(
-                browse_cmd, self
-            )
-        )
+        self._tk_teacher_jbe = tkinter.ttk.Combobox(db, textvariable=self._tb_teacher, width=20)
+        self._tk_teacher_jbe.bind('<<ComboboxSelected>>', partial(
+            browse_cmd, self
+        ))
 
-        teacher_drop_entry: Entry = self._tk_teacher_jbe.component("entry")
-        teacher_drop_entry.configure(disabledbackground="white")
-        teacher_drop_entry.configure(disabledforeground="black")
-
-        self._tk_fname_entry = Entry(db, textvariable=self._new_teacher_fname_ptr)
-        self._tk_lname_entry = Entry(db, textvariable=self._new_teacher_lname_ptr)
+        self._tk_fname_entry = Entry(db, textvariable=StringVar(value=self._new_teacher_fname))
+        self._tk_lname_entry = Entry(db, textvariable=StringVar(value=self._new_teacher_lname))
 
         def new_teacher_clicked(self):
             self.cb_add_new_teacher(self._new_teacher_fname, self._new_teacher_lname)
@@ -356,28 +383,19 @@ class AssignToResourceTk:
     # Lab
     # ======================================================
     def _setup_lab_widgets(self):
-        db = self._frame
+        db = self._frame.component('dialogchildsite')
 
         def browse_cmd(self):
-            id = _get_id(self.list_labs, self._tb_lab)
+            id = AssignToResourceTk._get_id(self.list_labs, self._tb_lab)
             self.cb_lab_selected(id)
 
-        self._tk_lab_jbe = ComboBoxDialog(
-            db,
-            scrolledlist_items=self._tb_lab_ptr,
-            state='readonly',
-            width=20,
-            selectioncommand=partial(
-                browse_cmd, self
-            )
-        )
+        self._tk_lab_jbe = tkinter.ttk.Combobox(db, width=20, state='readonly')
+        self._tk_lab_jbe.bind('<<ComboboxSelected>>', partial(
+            browse_cmd, self
+        ))
 
-        lab_drop_entry: Entry = self._tk_lab_jbe.component("entry")
-        lab_drop_entry.configure(disabledbackground="white")
-        lab_drop_entry.configure(disabledforeground="black")
-
-        self._tk_lab_num_entry = Entry(db, textvariable=self._new_lab_number_ptr)
-        self._tk_lab_descr_entry = Entry(db, textvariable=self._new_lab_name_ptr)
+        self._tk_lab_num_entry = Entry(db, textvariable=StringVar(value=self._new_lab_number))
+        self._tk_lab_descr_entry = Entry(db, textvariable=StringVar(value=self._new_lab_name))
 
         def new_lab_clicked(self):
             self.cb_add_new_lab(self._new_lab_name, self._new_lab_number)
@@ -401,7 +419,7 @@ class AssignToResourceTk:
         # Dictionary of options to pass to _label.
         opts = {}
 
-        db = self._frame
+        db = self._frame.component('dialogchildsite')
 
         global big_font
         self._lbl_title = AssignToResourceTk._label(db, main_title, {'font': big_font})
@@ -429,88 +447,77 @@ class AssignToResourceTk:
         self._lbl_lab_info = AssignToResourceTk._label(db, "Lab (optional)", opts)
 
     def _layout(self):
-        db = self._frame
+        db = self._frame.component('dialogchildsite')
 
         # -------------------------------------------------------
         # title
         # -------------------------------------------------------
         # NOTE: the "-", "-", "-" in the Perl code indicates relative placement: each "-" increases
-        # the columnspan to the left. Tkinter has no equivalent to this.
-        self._lbl_title.grid(padx=2, sticky='nsew')
+        # the columnspan to the left. Tkinter has no equivalent to this, so I am using explicit
+        # rows and columns.
+        self._lbl_title.grid(row=0, column=0, padx=2, sticky='nsew', columnspan=3)
 
         # -------------------------------------------------------
         # course
         # -------------------------------------------------------
-        Label(db, text='').grid(sticky='nsew')
-        self._lbl_course_info.grid(padx=2, sticky='nsew')
-        self._lbl_course.grid(padx=2, sticky='nsew')
-        self._tk_course_jbe.grid(padx=2, sticky='nsew')
+        Label(db, text='').grid(row=1, sticky='nsew')
+        self._lbl_course_info.grid(row=2, padx=2, sticky='nsew')
+        self._lbl_course.grid(row=3, padx=2, sticky='nsew')
+        # For some reason, ComboBoxDialog.grid won't accept these arguments.
+        # self._tk_course_jbe.grid(padx=2, sticky='nsew')
+        # It also won't accept arguments for "row" and "column", either.
+        self._tk_course_jbe.grid(row=4, columnspan=3, padx=2, sticky=NSEW)
 
         # -------------------------------------------------------
         # section
         # -------------------------------------------------------
-        self._lbl_section.grid(self._lbl_create_section, padx=2, sticky='nsew')
-        self._tk_section_jbe.grid(self._tk_section_entry, "-", self._tk_section_new_btn,
-                                  padx=2,
-                                  sticky='nsew')
+        self._lbl_section.grid(row=5, padx=2, sticky=NSEW)
+        self._lbl_create_section.grid(row=5, padx=2, column=1, sticky=NSEW)
+        self._tk_section_jbe.grid(row=6, column=0, padx=2, sticky=NSEW)
+        self._tk_section_entry.grid(row=6, column=1, padx=2, sticky=NSEW)
+        self._tk_section_new_btn.grid(row=6, column=2, padx=2, sticky=NSEW)
 
         # -------------------------------------------------------
         # block
         # -------------------------------------------------------
-        self._lbl_block.grid(self._lbl_create_block,
-                             "-", "-",
+        self._lbl_block.grid(row=7, column=0,
                              padx=2,
-                             sticky='nsew')
-        self._tk_block_jbe.grid(self._tk_block_entry, "-", self._tk_block_new_btn,
+                             sticky=NSEW)
+        self._lbl_create_block.grid(row=7, column=1, padx=2, sticky=NSEW)
+        self._tk_block_jbe.grid(row=8, column=0,
                                 padx=2,
-                                sticky='nsew')
+                                sticky=NSEW)
+        self._tk_block_entry.grid(row=8, column=1, padx=2, sticky=NSEW)
+        self._tk_block_new_btn.grid(row=8, column=2, padx=2, sticky=NSEW)
 
         # -------------------------------------------------------
         # teacher
         # -------------------------------------------------------
         global Type
-        if Type != "teacher":
-            Label(db, text='').grid("-", padx=2, sticky='nsew')
-            self._lbl_teacher_info.grid(
-                "-", "-", "-", padx=2, sticky='nsew'
-            )
-            self._lbl_teacher.grid(
-                self._lbl_create_teacher,
-                "-", "-",
-                padx=2,
-                sticky='nsew'
-            )
-            self._tk_teacher_jbe.grid(
-                self._tk_fname_entry, self._tk_lname_entry,
-                self._tk_teacher_new_btn,
-                sticky='nsew',
-                padx=2
-            )
-            Label(db, text='').grid("-", "-", "-", padx=2, sticky='nsew')
+        if Type != "teacher" and Type != ViewType.Teacher:
+            Label(db, text='').grid(row=9, column=0, padx=2, sticky=NSEW)
+            self._lbl_teacher_info.grid(row=10, column=0, padx=2, sticky=NSEW)
+            self._lbl_teacher.grid(row=11, column=0, padx=2, sticky=NSEW)
+            self._lbl_create_teacher.grid(row=11, column=1, columnspan=2, padx=2, sticky=NSEW)
+            self._tk_teacher_jbe.grid(row=12, column=0, padx=2, sticky=NSEW)
+            self._tk_fname_entry.grid(row=12, column=1, padx=2, sticky=NSEW)
+            self._tk_lname_entry.grid(row=12, column=2, padx=2, sticky=NSEW)
+            self._tk_teacher_new_btn.grid(row=12, column=3, padx=2, sticky=NSEW)
+            Label(db, text='').grid(row=13, padx=2, sticky=NSEW)
 
         # -------------------------------------------------------
         # lab
         # -------------------------------------------------------
-        if Type != 'lab':
-            Label(db, text='').grid("-", "-", "-", padx=2, sticky='nsew')
-            self._lbl_lab_info.grid(
-                "-", "-", "-",
-                padx=2,
-                sticky='nsew'
-            )
-            self._lbl_lab.grid(
-                self._lbl_create_lab,
-                "-", "-",
-                padx=2,
-                sticky='nsew'
-            )
-            self._tk_lab_jbe.grid(
-                self._tk_lab_num_entry, self._tk_lab_descr_entry,
-                self._tk_lab_new_btn,
-                sticky='nsew',
-                padx=2
-            )
-            Label(db, text='').grid("-", "-", "-", padx=2, sticky='nsew')
+        if Type != 'lab' and Type != ViewType.Lab:
+            Label(db, text='').grid(row=9, padx=2, sticky=NSEW)
+            self._lbl_lab_info.grid(row=10, column=0, padx=2, sticky=NSEW)
+            self._lbl_lab.grid(row=11, column=0, padx=2, sticky=NSEW)
+            self._lbl_create_lab.grid(row=11, column=1, padx=2, sticky=NSEW)
+            self._tk_lab_jbe.grid(row=12, column=0, sticky=NSEW, padx=2)
+            self._tk_lab_num_entry.grid(row=12, column=1, padx=2, sticky=NSEW)
+            self._tk_lab_descr_entry.grid(row=12, column=2, padx=2, sticky=NSEW)
+            self._tk_lab_new_btn.grid(row=12, column=3, padx=2, sticky=NSEW)
+            Label(db, text='').grid(row=13, padx=2, sticky=NSEW)
 
     # ============================================================================
     # setup getters and setters
@@ -519,21 +526,22 @@ class AssignToResourceTk:
         # ------------------------------------------------------------------------
         # Entry or Text Box variable bindings
         # ------------------------------------------------------------------------
-        AssignToResourceTk._create_setters_and_getters(
-            category='list',
+        self._create_setters_and_getters(
+            category="list",
             properties=["courses", "sections", "blocks", "teachers", "labs"],
             default={}
         )
 
-        AssignToResourceTk._create_setters_and_getters(
+        self._create_setters_and_getters(
             category="_tb",
             properties=["course", "section", "block", "teacher", "lab"],
             default=""
         )
 
-        AssignToResourceTk._create_setters_and_getters(
+        self._create_setters_and_getters(
             category="_new",
-            properties=["section, teacher_fname", "teacher_lname", "lab_number", "lab_name", "block"],
+            properties=["section", "teacher_fname", "teacher_lname", "lab_number", "lab_name",
+                        "block"],
             default=""
         )
 
@@ -551,10 +559,11 @@ class AssignToResourceTk:
             "add_new_teacher",
             "add_new_lab"
         ]
+
         def default_cb():
             return
 
-        AssignToResourceTk._create_setters_and_getters(
+        self._create_setters_and_getters(
             category="cb",
             properties=callbacks,
             default=default_cb
@@ -568,7 +577,7 @@ class AssignToResourceTk:
                   "create_teacher", "create_lab", "create_block"
                   ]
 
-        AssignToResourceTk._create_setters_and_getters(
+        self._create_setters_and_getters(
             category="_lbl",
             properties=labels,
             default=None
@@ -578,11 +587,12 @@ class AssignToResourceTk:
         # Defining widget getters and setters
         # ------------------------------------------------------------------------
         widgets = [
-            "course_jbe", "section_jbe", "teacher+jbe", "lab_jbe", "block_jbe",
-            "section_entry", "fname_entry", "lname_entry", "block_entry", "lab_descr_entry", "lab_num_entry",
+            "course_jbe", "section_jbe", "teacher_jbe", "lab_jbe", "block_jbe",
+            "section_entry", "fname_entry", "lname_entry", "block_entry", "lab_descr_entry",
+            "lab_num_entry",
             "section_new_btn", "teacher_new_btn", "block_new_btn", "lab_new_btn"
         ]
-        AssignToResourceTk._create_setters_and_getters(
+        self._create_setters_and_getters(
             category="_tk",
             properties=widgets,
             default=None
@@ -594,20 +604,37 @@ class AssignToResourceTk:
     # 1) cat_property
     # 2) cat_property_ptr
     # ============================================================================
-    @staticmethod
-    def _create_setters_and_getters(*, category, properties: list, default):
+    def _create_setters_and_getters(self, *, category: str, properties: list[str], default):
+        """Generates a series of instance attributes with a common naming scheme and
+        a common default value.
+        
+        Parameters:
+            category: Common prefix of the names of the attributes to be created.
+            properties: List of names for attributes of this type. Format is {category}_{properties}
+            default: Common default value for these properties."""
+        # NOTE: This was originally a static method in the Perl code, called when this module is
+        # imported. I have chosen to make it an instance method because there's no easy way to
+        # call a class method before the class is defined in a Python module, and because it's
+        # not Pythonic to have getters and setters for every single attribute when there's no
+        # validation involved.
+
         cat = category
         props = properties
 
         def make_prop(name: str, default):
-            def name(self):
-                return eval(f"{self}.{name}") or default
+            # def name(self):
+            #     return eval(f"{self}.{name}") or default
+            # exec(f"{self}.{name} = {default}")
+            setattr(self, name, default)
 
         for prop in props:
             #  Create a simple getter and setter.
             name = f"{cat}_{prop}"
-        # TODO: Finish this method, or find an alternative.
-        pass
+            make_prop(name, default)
+
+            # Create a pointer (not sure if necessary).
+            # pointer_name = name + "_ptr"
+            # make_prop(pointer_name, default)
 
     @staticmethod
     def _get_id(hash_ptr: dict, name):
@@ -615,8 +642,5 @@ class AssignToResourceTk:
         # return my_ref[name]
         # More Pythonic way of doing this, taken from here.
         # https://stackoverflow.com/questions/483666/reverse-invert-a-dictionary-mapping
-        inverted_hash = {v: k for k, v in hash_ptr}
+        inverted_hash = {v: k for k, v in hash_ptr.items()}
         return inverted_hash[name]
-
-
-

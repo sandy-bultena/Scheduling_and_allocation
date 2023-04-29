@@ -59,6 +59,7 @@ class GuiBlockTk:
         self.colour = colour
         self.text = text
         self.group = group
+        self.group_tag = f"block_{self._id}"
         self.is_controlled = False
 
     # =================================================================

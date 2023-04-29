@@ -1,5 +1,6 @@
 from tkinter import Tk
 
+from .AssignToResource import AssignToResource
 from ..Export import DrawView
 from ..GUI.GuiBlockTk import GuiBlockTk
 from ..GUI.ViewTk import ViewTk
@@ -7,7 +8,7 @@ from ..Schedule.Block import Block
 from ..Schedule.Conflict import Conflict
 from ..Schedule.Lab import Lab
 from ..Schedule.Schedule import Schedule
-from ..Schedule.ScheduleEnums import ConflictType
+from ..Schedule.ScheduleEnums import ConflictType, ViewType
 from ..Schedule.Stream import Stream
 from ..Schedule.Teacher import Teacher
 from ..Schedule.Undo import Undo
@@ -205,6 +206,7 @@ class View:
 
         self.blocks = blocks
         schedule.calculate_conflicts()
+        # TODO: Resume bug-hunting from here.
         self.update_for_conflicts(self.type)
 
         # ---------------------------------------------------------------
@@ -236,7 +238,6 @@ class View:
 
             # double click opens companion views.
             self.gui.bind_double_click(self, guiblock, self._cb_open_companion_view)
-            # TODO: RESUME FROM HERE
 
     # =================================================================
     # update
@@ -251,12 +252,13 @@ class View:
         if hasattr(self, '_gui_blocks'):
             for guiblock in self.gui_blocks.values():
                 # Race condition, no need to update the current moving block.
-                if guiblock.is_controlled():
+                if guiblock.is_controlled:
                     continue
 
                 # GuiBlock's block is the same as the moving block?
                 if guiblock.block.id == block.id:
                     self.gui.move_block(guiblock)
+                    self.gui.canvas.update_idletasks()
 
     def update_for_conflicts(self, type):
         """Determines conflict status for all GuiBlocks on this view and colours them
@@ -313,7 +315,8 @@ class View:
         # Update status bar.
         self._set_status_undo_info()
 
-    def _cb_assign_blocks(self, chosen_blocks: list):
+    @staticmethod
+    def _cb_assign_blocks(self, chosen_blocks: list, undef=None):
         """Give the option of assigning these blocks to a resource (add to course, assign block to
         teacher/lab/stream).
 
@@ -327,8 +330,8 @@ class View:
         (day, start, duration) = AssignBlockTk.get_day_start_duration(chosen_blocks)
 
         # Create the menu to select the block to assign to the timeslot.
-        # TODO: Implement AssignToResource module.
-        # AssignToResource(self.gui.mw, self.schedule, day, start, duration, self.schedulable)
+        # TODO: Finish implementing AssignToResource module.
+        AssignToResource(self.gui.mw, self.schedule, day, start, duration, self.schedulable)
 
         # Redraw.
         self.redraw()
@@ -410,7 +413,7 @@ class View:
 
         # Is current block conflicting?
         self.schedule.calculate_conflicts()
-        self.gui.colour_block(guiblock)
+        self.gui.colour_block(guiblock, self.type)
 
     def _cb_open_companion_view(self, guiblock: GuiBlockTk):
         """Based on the type of this view, will open another view which has this Block.
@@ -453,6 +456,7 @@ class View:
                     self.views_manager.create_view_containing_block(teachers, 'lab',
                                                                     self.schedulable)
 
+    @staticmethod
     def _cb_guiblock_has_stopped_moving(self, guiblock: GuiBlockTk):
         """Ensures that the GuiBlock is snapped to an appropriate location (i.e., start/end times
         must be on the hour or half-hour).
@@ -463,8 +467,9 @@ class View:
 
         Parameters:
             guiblock: GuiBlock that has been moved."""
+        self: View
         undo = Undo(guiblock.block.id, guiblock.block.start, guiblock.block.day,
-                    self.schedulable, "Day/Time")
+                    self.schedulable, "Day/Time", self.schedulable)
 
         # Set guiblock's to new time and day.
         self._snap_gui_block(guiblock)
@@ -480,6 +485,7 @@ class View:
             # Update the status bar.
             self._set_status_undo_info()
 
+    @staticmethod
     def cb_update_after_moving_block(self, block: Block):
         """Update all views, calculate conflicts and set button colours, and set the dirty flag.
 
@@ -487,6 +493,7 @@ class View:
         everything.
         Parameters:
             block: The block that has been modified by moving a GuiBlock around."""
+        self: View
         # update all the views that have the block just moved to its new position. NOTE: ???
         views_manager = self.views_manager
         views_manager.update_all_views(block)
@@ -521,7 +528,7 @@ class View:
         type = self.type
 
         # Don't do this for 'stream' types.
-        if type == "stream":
+        if type == "stream" or type == ViewType.Stream:
             return
 
         # Loop through each half hour time slot, and create and draw AssignBlock for each.
@@ -560,14 +567,14 @@ class View:
         Returns:
             Array of named objects, with the object being a Teacher/Lab/Stream."""
         # Get all schedulables.
-        all_schedulables = AllScheduables(self.schedule)  # TODO: Implement this class.
+        all_schedulables = AllScheduables(self.schedule)
 
         # Get only the schedulables that match the type of this view.
         schedulables_by_type = all_schedulables.by_type(type)
 
         # remove the schedulable object that is associated with this view.
         named_schedulable_objects = [o for o in schedulables_by_type.named_scheduable_objs
-                                     if o.id != self.schedulable.id]
+                                     if o.object.id != self.schedulable.id]
 
         return named_schedulable_objects
 
@@ -581,9 +588,9 @@ class View:
             self.views_manager.determine_button_colours()
 
     def _set_status_undo_info(self):
-        View.undo_number = f"{len(self.views_manager.undoes)} undoes left"
+        View.undo_number = f"{len(self.views_manager.undoes())} undoes left"
 
-        View.redo_number = f"{len(self.views_manager.redoes)} redoes left"
+        View.redo_number = f"{len(self.views_manager.redoes())} redoes left"
 
     def _snap_gui_block(self, guiblock: GuiBlockTk):
         """Takes the GuiBlock and forces it to be located on the nearest day and 1/2 boundary.

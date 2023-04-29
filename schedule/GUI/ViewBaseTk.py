@@ -139,7 +139,6 @@ class ViewBaseTk:
         # if there is a popup menu defined, make sure you can make it
         # go away by clicking the toplevel (as opposed to the menu)
         # ---------------------------------------------------------------
-        # TODO: Verify that this works. NOTE: It does not.
         if hasattr(self, '__popup'):
             tl.bind('<1>', partial(self._unpostmenu))
             tl.bind('<2>', partial(self._unpostmenu))
@@ -193,13 +192,14 @@ class ViewBaseTk:
         coords = self.get_time_coords(block.day_number, block.start_number, block.duration)
 
         # Get the current x/y of the guiblock.
-        (cur_x_pos, cur_y_pos) = guiblock.gui_view.canvas.coords(guiblock.rectangle)
+        (cur_x_pos, cur_y_pos, _, _) = guiblock.gui_view.canvas.coords(guiblock.rectangle)
 
         # bring the guiblock to the front, passes over others.
-        guiblock.gui_view.canvas.lift(guiblock.group) # Commented out for now because the interpreter thinks I'm trying to raise an exception.
+        guiblock.gui_view.canvas.lift(guiblock.group_tag)
 
         # move guiblock to new position
-        guiblock.gui_view.canvas.move(guiblock.group, coords[0] - cur_x_pos, coords[1] - cur_y_pos)
+        guiblock.gui_view.canvas.move(guiblock.group_tag, coords[0] - cur_x_pos,
+                                      coords[1] - cur_y_pos)
 
     def colour_block(self, guiblock: GuiBlockTk, type: ViewType):
         """Colours the block according to conflicts.
@@ -207,7 +207,7 @@ class ViewBaseTk:
         Parameters:
             guiblock: The guiblock that will be coloured.
             type: The type of schedulable object that this guiblock is attached to (Teacher/Lab/Stream)"""
-        conflict = Conflict.most_severe(guiblock.block.is_conflicted, type)
+        conflict = Conflict.most_severe(guiblock.block.is_conflicted(), type)
 
         # If the block is unmovable, then grey it out, and do not change its colour even if
         # there is a conflict.
@@ -365,7 +365,7 @@ class ViewBaseTk:
 
     def _refresh_gui(self):
         """Forces the graphics to update."""
-        self.mw.update()
+        self.mw.update_idletasks()
 
     def _create_status_bar(self):
         """Status bar at the bottom of each View to show current movement type."""
@@ -419,25 +419,9 @@ class ViewBaseTk:
             return
 
         (day, time, duration) = DrawView.coords_to_day_time_duration(x, y, y, scl)
-        # Originally, the day_number property had a setter, and day could accept numbers or strings.
-        # However, we disallowed that. So the day value must be converted to a string/WeekDay.
-        guiblock.block.day = WeekDayNumber[day]
-        # Similarly, Block's start_number is no longer a property and doesn't affect the start
-        # property. Thus, a bit more work is required here than in the Perl version.
-        time_string = self._get_time_string_from_number(float(time))
-        guiblock.block.start = time_string
 
-    @staticmethod
-    def _get_time_string_from_number(time) -> str:
-        remainder = time % 1
-        hour = time - remainder
-        minutes = remainder * 60
-        time_parts = [str(int(hour)), str(int(minutes))]
-        if time_parts[1] == "0":
-            time_parts[1] = "00"
-        time_string = ":".join(time_parts)
-        return time_string
-        pass
+        guiblock.block._TimeSlot__day_number = day
+        guiblock.block.start_number = time
 
 
 # =================================================================

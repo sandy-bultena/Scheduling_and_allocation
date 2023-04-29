@@ -13,7 +13,6 @@ from schedule.GuiSchedule.LoginWindow import LoginWindow
 from schedule.GuiSchedule.GuiHelpers import check_num
 
 
-# TODO: Fix import issues regarding this class.
 import Schedule.Schedule as ModelSchedule
 
 
@@ -26,7 +25,6 @@ def _open_schedule(listbox: Listbox, schedule_dict: dict[str, PonyDatabaseConnec
         return
     key = listbox.get(indexes[0])
     db_schedule: PonyDatabaseConnection.Schedule = schedule_dict[key]
-    # TODO: Come back to this once the import issues with Schedule have been solved.
     flush()
     db_id = db_schedule.id
     real_schedule: ModelSchedule.Schedule = ModelSchedule.Schedule.read_DB(db_id)

@@ -54,10 +54,13 @@ class Schedule:
         self.sections = SectionList()
         self._id = id if id else Schedule.__create_entity(self)
 
+    def __str__(self):
+        return f"{self.id}: {self.descr}"
+
     @db_session
     @staticmethod
     def __create_entity(instance: Schedule):
-        entity_sched = db.Schedule(official = instance.official, description = instance.descr, scenario_id = db.Scenario.get(instance.scenario_id))
+        entity_sched = db.Schedule(official = instance.official, description = instance.descr, scenario_id = db.Scenario.get(id=instance.scenario_id))
         commit()
         return entity_sched.get_pk()
     
