@@ -1,12 +1,13 @@
+from __future__ import annotations
+
 from tkinter import *
 import tkinter as tk
 from typing import Any
-from os import path
-import sys
 from functools import partial
+import os
 
-sys.path.append(path.dirname(path.dirname(__file__)))
-from Tk.scrolled import Scrolled
+from ..Tk.scrolled import Scrolled
+from ..Tk.FindImages import get_image_dir
 
 
 # =================================================================================================
@@ -401,7 +402,7 @@ Example::
     # ====================================================================================
     # are all columns disabled?
     # ====================================================================================
-    def __are_all_columns_disabled(self) -> BooleanVar:
+    def __are_all_columns_disabled(self) -> bool:
         disabled_columns = self.cget("disabled")
         if not disabled_columns:
             return False
@@ -453,7 +454,7 @@ Example::
             grid_row = grid_row - 1
             grid_col = self.number_of_columns
 
-        # if we have exceed the number of rows, create a new empty row
+        # if we have exceeded the number of rows, create a new empty row
         if grid_row > self.number_of_rows:
             self.add_empty_row()
             self.__scrolled_frame.update_scrollbars()
@@ -586,7 +587,7 @@ Example::
     # ===================================================================
     # get widget in row/col
     # ===================================================================
-    def __get_widget_in_row_col(self, r, c) -> Entry:
+    def __get_widget_in_row_col(self, r, c) -> Entry | None:
         """get the widget in the row/col"""
         w = self.frame.grid_slaves(r, c)
         if w:
@@ -619,8 +620,8 @@ Example::
         # ---------------------------------------------------------------
         # define the 'delete' image
         # ---------------------------------------------------------------
-        image_dir = path.dirname(path.dirname(__file__)) + "/Tk/Images"
-        self.delete_photo = PhotoImage(format='gif', file=image_dir + "/ex.gif")
+        image_dir = get_image_dir()
+        self.delete_photo = PhotoImage(format='gif', file=os.path.join(image_dir, "ex.gif"))
 
         # ---------------------------------------------------------------
         # configure this table entry & draw
