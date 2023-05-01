@@ -1,6 +1,7 @@
 from __future__ import annotations
 from tkinter import *
 import tkinter as tk
+from tkinter import ttk
 from functools import partial
 
 import sys
@@ -153,11 +154,12 @@ example::
         # ----------------------------------------------------------------------------------------
         _tk_widget_type = None
         try:
-            import tkinter
-            _tk_widget_type = getattr(tkinter, widget_type)
+            _tk_widget_type = getattr(tk, widget_type)
         except AttributeError as e:
-            eprint(str(e))
-
+            try:
+                _tk_widget_type = getattr(ttk, widget_type)
+            except AttributeError as e:
+                eprint(e)
         # ----------------------------------------------------------------------------------------
         # bail out if user is trying to create 2 scrollbars in the same orientation
         # ----------------------------------------------------------------------------------------
