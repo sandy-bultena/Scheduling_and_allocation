@@ -326,8 +326,9 @@ class AssignToResourceTk:
     def _setup_block_widgets(self):
         db = self._frame.component('dialogchildsite')
 
-        def browse_cmd(self):
-            id = AssignToResourceTk._get_id(self.list_blocks, self._tb_block)
+        def browse_cmd(self, event):
+            self: AssignToResourceTk
+            id = AssignToResourceTk._get_id(self.list_blocks, self._tk_block_jbe.get())
             self.cb_block_selected(id)
 
         # self._tk_block_jbe = ComboBoxDialog(db)
@@ -360,8 +361,9 @@ class AssignToResourceTk:
     def _setup_teacher_widgets(self):
         db = self._frame.component('dialogchildsite')
 
-        def browse_cmd(self):
-            id = AssignToResourceTk._get_id(self.list_teachers, self._tb_teacher)
+        def browse_cmd(self, event):
+            self: AssignToResourceTk
+            id = AssignToResourceTk._get_id(self.list_teachers, self._tk_teacher_jbe.get())
             self.cb_teacher_selected(id)
 
         self._tk_teacher_jbe = tkinter.ttk.Combobox(db, textvariable=self._tb_teacher, width=20)
@@ -389,8 +391,9 @@ class AssignToResourceTk:
     def _setup_lab_widgets(self):
         db = self._frame.component('dialogchildsite')
 
-        def browse_cmd(self):
-            id = AssignToResourceTk._get_id(self.list_labs, self._tb_lab)
+        def browse_cmd(self, event):
+            self: AssignToResourceTk
+            id = AssignToResourceTk._get_id(self.list_labs, self._tk_lab_jbe.get())
             self.cb_lab_selected(id)
 
         self._tk_lab_jbe = tkinter.ttk.Combobox(db, width=20, state='readonly')

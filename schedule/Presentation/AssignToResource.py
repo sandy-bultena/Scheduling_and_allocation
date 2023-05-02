@@ -162,7 +162,7 @@ class AssignToResource:
             if block:
                 # If it is, assign all properties to the Block.
                 global Day, Start, Duration, lab, teacher
-                block.day = Day
+                block.day = WeekDayNumber.days_by_number()[Day]
                 block.start = AssignToResource._hours_to_string(Start)
                 block.duration = Duration
                 if lab:
@@ -312,7 +312,6 @@ class AssignToResource:
             return  # NOTE: Verify whether this will work, or if extra validation is needed.
 
         global block, Day, Start, Duration
-        # TODO: Block is not accepting a number for Day. Fix this.
         block = Block(WeekDayNumber.days_by_number()[Day], AssignToResource._hours_to_string(Start),
                       Duration, number=section.get_new_number())
         section.add_block(block)
