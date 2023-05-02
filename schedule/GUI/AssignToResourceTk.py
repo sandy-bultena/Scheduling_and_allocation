@@ -310,7 +310,8 @@ class AssignToResourceTk:
                                        textvariable=StringVar(value=self._new_section))
 
         def add_new_section(self):
-            self.cb_add_new_section(self._new_section)
+            self: AssignToResourceTk
+            self.cb_add_new_section(self._tk_section_entry.get())
 
         self._tk_section_new_btn = Button(db,
                                           text="Create",

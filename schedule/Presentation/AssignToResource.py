@@ -284,7 +284,8 @@ class AssignToResource:
         # --------------------------------------------------------------------
         # create new section
         # --------------------------------------------------------------------
-        section = Section(number=course.get_new_number(), hours=0, name=name)
+        section = Section(number=str(course.get_new_number(1)), hours=0.5, name=name, course=course,
+                          schedule_id=AssignToResource.schedule.id)
         course.add_section(section)
 
         # --------------------------------------------------------------------
