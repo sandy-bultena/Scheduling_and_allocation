@@ -235,7 +235,7 @@ def open_schedule():
         # Open a ScenarioSelector window.
         ScenarioSelector(parent=gui.mw, db=db, callback=get_scenario)
         print(f"The scenario is {scenario}")
-        gui.show_info("Scenario", f"The selected scenario is {scenario}.")
+        # gui.show_info("Scenario", f"The selected scenario is {scenario}.")
 
         if not scenario:
             gui.show_error("INVALID SELECTION", "Incorrect number of Scenarios picked. Please select 1.")
@@ -248,7 +248,7 @@ def open_schedule():
                 print(f"Retrieved the following object from function: {schedule}")
 
             ScheduleSelector(parent=gui.mw, db=db, scenario=scenario, callback=get_schedule)
-            gui.show_info("SCHEDULE SELECTED", f"Successfully selected a Schedule: {schedule}")
+            # gui.show_info("SCHEDULE SELECTED", f"Successfully selected a Schedule: {schedule}")
 
             # If the schedule was successfully read, then
             views_manager.schedule = schedule
