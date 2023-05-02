@@ -4,7 +4,7 @@ from ..Schedule.Block import Block
 from ..Schedule.Course import Course
 from ..Schedule.Lab import Lab
 from ..Schedule.Schedule import Schedule
-from ..Schedule.ScheduleEnums import ViewType
+from ..Schedule.ScheduleEnums import ViewType, WeekDayNumber
 from ..Schedule.Section import Section
 from ..Schedule.Stream import Stream
 from ..Schedule.Teacher import Teacher
@@ -313,7 +313,8 @@ class AssignToResource:
 
         global block, Day, Start, Duration
         # TODO: Block is not accepting a number for Day. Fix this.
-        block = Block(Day, Start, AssignToResource._hours_to_string(Duration), number=section.get_new_number())
+        block = Block(WeekDayNumber.days_by_number()[Day], AssignToResource._hours_to_string(Start),
+                      Duration, number=section.get_new_number())
         section.add_block(block)
         # NOTE: In the original code, the newly-created block was added to the section first,
         # and then its day, start, and duration properties were set. We can't do it that way
