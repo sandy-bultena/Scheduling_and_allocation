@@ -1,6 +1,8 @@
 import re, platform
 import os
+
 dir_path = os.path.dirname(os.path.realpath(__file__))
+from schedule.Presentation import globals
 
 
 def get_image_dir():
@@ -9,9 +11,8 @@ def get_image_dir():
 
 
 def get_logo():
-    return os.path.join(globals.bin_dir, "..", 'ScheduleLogo.gif')
+    return os.path.join(globals.bin_dir, 'ScheduleLogo.gif')
 
 
 def get_allocation_logo():
     return os.path.join(globals.bin_dir, "..", 'AllocationLogo.gif')
-
