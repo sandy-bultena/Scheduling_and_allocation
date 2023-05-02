@@ -217,7 +217,7 @@ class AssignToResource:
         # Set the default teacher for this course/section if this AssignToResource type is
         # NOT a teacher.
         global Type
-        if Type == 'teacher':
+        if Type == 'teacher' or Type == ViewType.Teacher:
             return
 
         teachers = section.teachers
@@ -312,6 +312,7 @@ class AssignToResource:
             return  # NOTE: Verify whether this will work, or if extra validation is needed.
 
         global block, Day, Start, Duration
+        # TODO: Block is not accepting a number for Day. Fix this.
         block = Block(Day, Start, AssignToResource._hours_to_string(Duration), number=section.get_new_number())
         section.add_block(block)
         # NOTE: In the original code, the newly-created block was added to the section first,

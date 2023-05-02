@@ -220,7 +220,8 @@ class AssignToResourceTk:
 
     def set_block_choices(self, blocks: dict[int, str]):
         self.list_blocks = blocks
-        self._tk_block_jbe.configure(textvariable=StringVar(value=self.list_blocks))
+        # self._tk_block_jbe.configure(textvariable=StringVar(value=self.list_blocks))
+        self._tk_block_jbe['values'] = list(self.list_blocks.values())
         self.enable_new_block_button()
         global OKAY
         OKAY.configure(state=DISABLED)
@@ -285,8 +286,9 @@ class AssignToResourceTk:
     def _setup_section_widgets(self):
         db = self._frame.component('dialogchildsite')
 
-        def browse_cmd(self):
-            id = AssignToResourceTk._get_id(self.list_sections, self._tb_section)
+        def browse_cmd(self, event):
+            self: AssignToResourceTk
+            id = AssignToResourceTk._get_id(self.list_sections, self._tk_section_jbe.get())
             self.cb_section_selected(id)
 
         self._tk_section_jbe = tkinter.ttk.Combobox(db, textvariable=self._tb_section,
