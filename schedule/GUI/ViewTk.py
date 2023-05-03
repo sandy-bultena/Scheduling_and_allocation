@@ -243,7 +243,7 @@ class ViewTk(ViewBaseTk):
         cn.bind('<Motion>', "")
 
         # get the AssignBlocks currently under the selection window
-        selected_assigned_blocks.extend(AssignBlockTk.in_range(x1, y1, x2, y2, assign_blocks_day))
+        selected_assigned_blocks.extend(AssignBlockTk.in_range(x1, y1, event.x, event.y, assign_blocks_day))
 
         # colour the selection blue
         for blk in assign_blocks_day:
@@ -254,6 +254,7 @@ class ViewTk(ViewBaseTk):
         # rebind Motion
         cn.bind('<Motion>', partial(
             ViewTk._selecting_assigned_blocks,
+            cn,
             event.x,
             event.y,
             x1, y1, selected_assigned_blocks, assign_blocks_day
