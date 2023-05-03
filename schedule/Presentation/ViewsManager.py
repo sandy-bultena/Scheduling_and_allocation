@@ -4,6 +4,7 @@ from ..GUI.ViewsManagerTk import ViewsManagerTk
 from ..Schedule.Block import Block
 from ..Schedule.Conflict import Conflict
 from ..Schedule.Schedule import Schedule
+from ..Schedule.ScheduleEnums import ConflictType
 from ..Schedule.Undo import Undo
 from ..UsefulClasses.AllScheduables import AllScheduables
 
@@ -305,11 +306,21 @@ class ViewsManager:
                 blocks = self.schedule.get_blocks_for_obj(scheduable_obj)
 
                 # What is this view's conflict? Start with 0.
-                view_conflict = 0
+                view_conflict: ConflictType | int = 0
 
                 # for every block...
                 for block in blocks:
-                    view_conflict = Conflict.most_severe(view_conflict | block.is_conflicted(),
+                    # NOTE: ConflictTypes cannot be compared with integers.
+                    # If Conflict.most_severe() returns a ConflictType object,
+                    # use its value instead.
+                    if isinstance(view_conflict, ConflictType):
+                        view_conflict = view_conflict.value
+                    # NOTE: Conflict.most_severe() may return None if no conflicts were found. In
+                    # such a case, change view_conflict to 0, as NoneType can't be compared with
+                    # integers either.
+                    if view_conflict is None:
+                        view_conflict = 0
+                    view_conflict = Conflict.most_severe(view_conflict | block.conflicted,
                                                          type)
                     if view_conflict == Conflict._sorted_conflicts[0]:
                         break

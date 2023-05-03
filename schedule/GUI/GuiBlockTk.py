@@ -30,9 +30,9 @@ class GuiBlockTk:
         gui_objs = DrawView.draw_block(canvas, block, gui_view.get_scale_info(), type, colour,
                                        block_tag=GuiBlockTk.Max_id + 1)
 
-        lines = gui_objs['lines']
-        text = gui_objs['text']
-        rectangle = gui_objs['rectangle']
+        lines: list[int] = gui_objs['lines']
+        text: int = gui_objs['text']
+        rectangle: int = gui_objs['rectangle']
         coords = gui_objs['coords']
         colour = gui_objs['colour']
 
@@ -44,9 +44,10 @@ class GuiBlockTk:
         # NOTE: I think Sandy said something about a tkinter Group function. However, this seems
         # to come from a different package altogether based on the email she showed me.
         group = (
-            canvas.find_withtag(f"rectangle_block_{GuiBlockTk.Max_id + 1}"),
-            canvas.find_withtag(f"text_block_{GuiBlockTk.Max_id + 1}"),
-            canvas.find_withtag(f"lines_block_{GuiBlockTk.Max_id + 1}")
+            # canvas.find_withtag(f"rectangle_block_{GuiBlockTk.Max_id + 1}"),
+            # canvas.find_withtag(f"text_block_{GuiBlockTk.Max_id + 1}"),
+            # canvas.find_withtag(f"lines_block_{GuiBlockTk.Max_id + 1}")
+            rectangle, text, lines
         )
 
         # Create the object.

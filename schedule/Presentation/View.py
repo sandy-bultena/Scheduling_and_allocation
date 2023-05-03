@@ -278,8 +278,7 @@ class View:
             # Colour block by conflict only if it is movable.
             if guiblock.block.movable:
                 # Create conflict number for the entire View.
-                # TODO: This may need to change. Must look at Conflict class.
-                view_conflict = view_conflict | guiblock.block.is_conflicted()
+                view_conflict = view_conflict | guiblock.block.conflicted
 
         return view_conflict
 
