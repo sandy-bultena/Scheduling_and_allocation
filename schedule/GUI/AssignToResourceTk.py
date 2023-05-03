@@ -253,7 +253,7 @@ class AssignToResourceTk:
         # )
         def browse_cmd(self, event):
             id = AssignToResourceTk._get_id(self.list_courses, self._tk_course_jbe.get())
-            self.cb_course_selected(id)  # TODO: Figure out if this partial works.
+            self.cb_course_selected(id)
 
         # Pmw equivalent of JBrowseEntry seems to be this, at least at first glance.
 

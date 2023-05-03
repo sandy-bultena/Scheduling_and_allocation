@@ -206,7 +206,6 @@ class View:
 
         self.blocks = blocks
         schedule.calculate_conflicts()
-        # TODO: Resume bug-hunting from here.
         self.update_for_conflicts(self.type)
 
         # ---------------------------------------------------------------
@@ -329,7 +328,6 @@ class View:
         (day, start, duration) = AssignBlockTk.get_day_start_duration(chosen_blocks)
 
         # Create the menu to select the block to assign to the timeslot.
-        # TODO: Finish implementing AssignToResource module.
         AssignToResource(self.gui.mw, self.schedule, day, start, duration, self.schedulable)
 
         # Redraw.

@@ -92,7 +92,7 @@ class AssignToResource:
                      f"{AssignToResource._hours_to_string(start)} for {duration} hour(s)"
 
         global gui
-        gui = AssignToResourceTk(Type)  # TODO: Implement this class.
+        gui = AssignToResourceTk(Type)
         gui.draw(mw, title, block_text)
 
         # ------------------------------------
