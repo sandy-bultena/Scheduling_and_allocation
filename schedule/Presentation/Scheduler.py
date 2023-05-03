@@ -30,6 +30,7 @@ from ..GUI import dirty
 # NOTE: Some of these class variables are probably unnecessary now.
 user_base_dir = None
 preferences = {}
+schedule: Schedule
 schedule = None
 current_schedule_file = ""
 current_directory = ""
@@ -238,7 +239,8 @@ def open_schedule():
         # gui.show_info("Scenario", f"The selected scenario is {scenario}.")
 
         if not scenario:
-            gui.show_error("INVALID SELECTION", "Incorrect number of Scenarios picked. Please select 1.")
+            gui.show_error("INVALID SELECTION",
+                           "Incorrect number of Scenarios picked. Please select 1.")
         else:
             global schedule
 
@@ -279,7 +281,7 @@ def _schedule_file_changed(file):
 # ==================================================================
 # save (as) schedule
 # ==================================================================
-def save_schedule():
+def save_schedule(event=None):
     _save_schedule(False)
 
 
@@ -298,10 +300,14 @@ def _save_schedule(save_as: bool):
     file: str
     global current_schedule_file
     if save_as or not current_schedule_file:
-        file = gui.choose_file()
-        # NOTE: This probably doesn't need to be implemented anymore.
-        if not file:
-            return
+        # NOTE: This probably doesn't need to be implemented anymore. If we're going to switch
+        # back to shared YAML files, on the other hand, this should not be deleted.
+
+        # For now, I'm commenting it out.
+        # file = gui.choose_file()
+        # if not file:
+        #     return
+        pass
     else:
         file = current_schedule_file
 

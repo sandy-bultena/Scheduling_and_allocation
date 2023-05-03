@@ -133,4 +133,4 @@ def button_enter(b : Button, hbg, mw, image = None, *_):
 def button_leave(b : Button, bg, mw, image = None, *_):
     b.configure(relief = 'flat')
     b.configure(activebackground = bg)
-    mw.update()
+    mw.update_idletasks()
