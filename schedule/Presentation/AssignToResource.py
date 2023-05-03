@@ -6,7 +6,6 @@ from ..Schedule.Lab import Lab
 from ..Schedule.Schedule import Schedule
 from ..Schedule.ScheduleEnums import ViewType, WeekDayNumber
 from ..Schedule.Section import Section
-from ..Schedule.Stream import Stream
 from ..Schedule.Teacher import Teacher
 
 # ===================================================================
@@ -370,7 +369,7 @@ class AssignToResource:
     def _cb_add_new_teacher(first_name: str = "", last_name: str = ""):
         my_teach: Teacher
 
-        # Check if a first and last name have been entered, Otherwise return.
+        # Check if a first and last name have been entered, otherwise return.
         if not first_name or not last_name:
             return
 

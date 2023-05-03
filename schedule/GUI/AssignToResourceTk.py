@@ -15,11 +15,7 @@ import tkinter.ttk
 from functools import partial
 from tkinter import *
 
-from Pmw.Pmw_2_1_1.lib.PmwComboBoxDialog import ComboBoxDialog
-from Pmw.Pmw_2_1_1.lib.PmwScrolledListBox import ScrolledListBox
 from Pmw.Pmw_2_1_1.lib.PmwDialog import Dialog
-
-import Pmw
 
 from .FontsAndColoursTk import FontsAndColoursTk
 from ..Schedule.ScheduleEnums import ViewType
@@ -72,14 +68,14 @@ class AssignToResourceTk:
 
         # set fonts
         global fonts
-        # FontsAndColoursTk.
         fonts = FontsAndColoursTk.fonts
         global big_font
         big_font = fonts['bigbold']
         global bold_font
         bold_font = fonts['bold']
-        # Adding various attributes, because I am too lazy to implement the blasted
-        # function to automatically generate everything.
+
+        # Set up the many, many, MANY attributes that this object will use to keep track of its
+        # various GUI elements and widgets.
         self.__setup()
 
     # ============================================================================
@@ -246,11 +242,6 @@ class AssignToResourceTk:
     def _setup_course_widgets(self):
         db: Frame = self._frame.component('dialogchildsite')
 
-        # self._tk_course_jbe(
-        #     # Pmw equivalent of JBrowseEntry seems to be this, at least at first glance.
-        #     ComboBoxDialog(db,
-        #              )
-        # )
         def browse_cmd(self, event):
             id = AssignToResourceTk._get_id(self.list_courses, self._tk_course_jbe.get())
             self.cb_course_selected(id)
@@ -331,7 +322,6 @@ class AssignToResourceTk:
             id = AssignToResourceTk._get_id(self.list_blocks, self._tk_block_jbe.get())
             self.cb_block_selected(id)
 
-        # self._tk_block_jbe = ComboBoxDialog(db)
         self._tk_block_jbe = tkinter.ttk.Combobox(db, textvariable=self._tb_block, width=12,
                                                   state='readonly')
         self._tk_block_jbe.bind('<<ComboboxSelected>>', partial(
@@ -460,6 +450,7 @@ class AssignToResourceTk:
         # -------------------------------------------------------
         # title
         # -------------------------------------------------------
+
         # NOTE: the "-", "-", "-" in the Perl code indicates relative placement: each "-" increases
         # the columnspan to the left. Tkinter has no equivalent to this, so I am using explicit
         # rows and columns.
@@ -471,6 +462,7 @@ class AssignToResourceTk:
         Label(db, text='').grid(row=1, sticky='nsew')
         self._lbl_course_info.grid(row=2, padx=2, sticky='nsew')
         self._lbl_course.grid(row=3, padx=2, sticky='nsew')
+
         # For some reason, ComboBoxDialog.grid won't accept these arguments.
         # self._tk_course_jbe.grid(padx=2, sticky='nsew')
         # It also won't accept arguments for "row" and "column", either.
@@ -630,9 +622,6 @@ class AssignToResourceTk:
         props = properties
 
         def make_prop(name: str, default):
-            # def name(self):
-            #     return eval(f"{self}.{name}") or default
-            # exec(f"{self}.{name} = {default}")
             setattr(self, name, default)
 
         for prop in props:
