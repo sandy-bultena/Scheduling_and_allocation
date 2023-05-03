@@ -76,7 +76,7 @@ class Section:
 
         self.__id = id if id else Section.__create_entity(self, schedule_id, course)
         Section.__instances[self.__id] = self
-        
+
         course.add_section(self)
 
     @db_session

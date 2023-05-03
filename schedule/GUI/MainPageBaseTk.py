@@ -177,7 +177,7 @@ class MainPageBaseTk:
         
         def create_notebook(parent : Notebook, events : dict, pages : dict[int, Frame], tabs : list[NoteBookPageInfo], id_prefix : str = "", ):
             for info in tabs:
-                info.panel = Frame(self.mw, **info.frame_args)
+                info.panel = info.frame_type(self.mw, **info.frame_args)
                 parent.add(info.panel, text = info.name)
                 i = parent.index(info.panel)
                 events[i] = info.handler
@@ -219,7 +219,7 @@ class MainPageBaseTk:
     def define_notebook_tabs(self, notebook_tabs : list[NoteBookPageInfo]):
         self.required_notebook_tabs = notebook_tabs
     
-    def get_notebook_page(self, page_id : int) -> NoteBookPageInfo:
+    def get_notebook_page(self, page_id : int):
         return self.pages[page_id]
     
     def update_for_new_schedule_and_show_page(self, default_page_id: int = 0):
