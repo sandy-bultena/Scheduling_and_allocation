@@ -376,7 +376,8 @@ class AssignToResourceTk:
         self._tk_lname_entry = Entry(db, textvariable=StringVar(value=self._new_teacher_lname))
 
         def new_teacher_clicked(self):
-            self.cb_add_new_teacher(self._new_teacher_fname, self._new_teacher_lname)
+            self: AssignToResourceTk
+            self.cb_add_new_teacher(self._tk_fname_entry.get(), self._tk_lname_entry.get())
 
         self._tk_teacher_new_btn = Button(
             db,
