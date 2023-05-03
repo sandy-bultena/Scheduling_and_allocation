@@ -463,7 +463,7 @@ class AssignToResourceTk:
         # NOTE: the "-", "-", "-" in the Perl code indicates relative placement: each "-" increases
         # the columnspan to the left. Tkinter has no equivalent to this, so I am using explicit
         # rows and columns.
-        self._lbl_title.grid(row=0, column=0, padx=2, sticky='nsew', columnspan=3)
+        self._lbl_title.grid(row=0, column=0, padx=2, sticky='nsew', columnspan=4)
 
         # -------------------------------------------------------
         # course
@@ -474,7 +474,7 @@ class AssignToResourceTk:
         # For some reason, ComboBoxDialog.grid won't accept these arguments.
         # self._tk_course_jbe.grid(padx=2, sticky='nsew')
         # It also won't accept arguments for "row" and "column", either.
-        self._tk_course_jbe.grid(row=4, columnspan=3, padx=2, sticky=NSEW)
+        self._tk_course_jbe.grid(row=4, columnspan=4, padx=2, sticky=NSEW)
 
         # -------------------------------------------------------
         # section
@@ -482,8 +482,8 @@ class AssignToResourceTk:
         self._lbl_section.grid(row=5, padx=2, sticky=NSEW)
         self._lbl_create_section.grid(row=5, padx=2, column=1, sticky=NSEW)
         self._tk_section_jbe.grid(row=6, column=0, padx=2, sticky=NSEW)
-        self._tk_section_entry.grid(row=6, column=1, padx=2, sticky=NSEW)
-        self._tk_section_new_btn.grid(row=6, column=2, padx=2, sticky=NSEW)
+        self._tk_section_entry.grid(row=6, column=1, columnspan=2, padx=2, sticky=NSEW)
+        self._tk_section_new_btn.grid(row=6, column=3, padx=2, sticky=NSEW)
 
         # -------------------------------------------------------
         # block
@@ -495,8 +495,8 @@ class AssignToResourceTk:
         self._tk_block_jbe.grid(row=8, column=0,
                                 padx=2,
                                 sticky=NSEW)
-        self._tk_block_entry.grid(row=8, column=1, padx=2, sticky=NSEW)
-        self._tk_block_new_btn.grid(row=8, column=2, padx=2, sticky=NSEW)
+        self._tk_block_entry.grid(row=8, column=1, columnspan=2, padx=2, sticky=NSEW)
+        self._tk_block_new_btn.grid(row=8, column=3, padx=2, sticky=NSEW)
 
         # -------------------------------------------------------
         # teacher
@@ -520,7 +520,7 @@ class AssignToResourceTk:
             Label(db, text='').grid(row=9, padx=2, sticky=NSEW)
             self._lbl_lab_info.grid(row=10, column=0, padx=2, sticky=NSEW)
             self._lbl_lab.grid(row=11, column=0, padx=2, sticky=NSEW)
-            self._lbl_create_lab.grid(row=11, column=1, padx=2, sticky=NSEW)
+            self._lbl_create_lab.grid(row=11, column=1, columnspan=3, padx=2, sticky=NSEW)
             self._tk_lab_jbe.grid(row=12, column=0, sticky=NSEW, padx=2)
             self._tk_lab_num_entry.grid(row=12, column=1, padx=2, sticky=NSEW)
             self._tk_lab_descr_entry.grid(row=12, column=2, padx=2, sticky=NSEW)
