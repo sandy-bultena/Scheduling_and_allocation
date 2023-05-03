@@ -113,7 +113,6 @@ class AssignToResourceTk:
         cancel_index = db_2.component('buttonbox').index("Cancel")
         cancel = db_2.component('buttonbox').button(cancel_index)
         cancel.configure(width=10)
-        # TODO: FIGURE THE ABOVE STUFF OUT. NOTE: This may or may not work.
         # -----------------------------------------------
         # description of selected block
         # -----------------------------------------------

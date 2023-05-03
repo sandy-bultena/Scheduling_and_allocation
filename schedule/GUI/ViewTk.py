@@ -201,8 +201,8 @@ class ViewTk(ViewBaseTk):
         cn.bind('<Motion>', partial(
             self._selecting_assigned_blocks,
             cn,
-            self.mw.winfo_pointerx(),
-            self.mw.winfo_pointery(),
+            None,
+            None,
             x1,
             y1,
             selected_assigned_blocks,
@@ -242,8 +242,21 @@ class ViewTk(ViewBaseTk):
         # Temporarily unbind motion
         cn.bind('<Motion>', "")
 
+        # This function may have been called in a place where x and y coordinates could not be
+        # directly obtained. In such a case, assign the event's x & y coordinates to x2 and y2.
+        if x2 is None:
+            x2 = event.x
+        if y2 is None:
+            y2 = event.y
+
         # get the AssignBlocks currently under the selection window
-        selected_assigned_blocks.extend(AssignBlockTk.in_range(x1, y1, event.x, event.y, assign_blocks_day))
+
+        # NOTE: To ensure that the selected_assigned_blocks list makes it to the callback
+        # function which opens the AssignToResource window, we clear it each time and then extend
+        # it. Otherwise, we're creating a different list each time this specific function is
+        # called, and then nothing gets sent to the callback.
+        selected_assigned_blocks.clear()
+        selected_assigned_blocks.extend(AssignBlockTk.in_range(x1, y1, x2, y2, assign_blocks_day))
 
         # colour the selection blue
         for blk in assign_blocks_day:
