@@ -1,5 +1,8 @@
 import sys
 from os import path
+
+import Pmw
+
 sys.path.append(path.dirname(path.dirname(__file__)))
 
 from tkinter.ttk import Notebook
@@ -42,6 +45,7 @@ class MainPageBaseTk:
     def create_main_window(self, title = 'Main Window'):
         # create main window and frames
         mw = self.mw = root()
+        Pmw.initialise(mw)
         mw.title(title)
         self.frame = Frame(mw, height = MAIN_FRAME_HEIGHT).pack(side = 'left')
         mw.geometry(f"{WELCOME_HEIGHT}x{WELCOME_WIDTH}")
