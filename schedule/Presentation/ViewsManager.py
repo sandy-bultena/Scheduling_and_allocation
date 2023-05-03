@@ -78,10 +78,10 @@ class ViewsManager:
         action = None
         if type == 'undo':
             undoes: list = self.undoes()
-            action = undoes.pop()
+            action = undoes.pop() if undoes else None
         else:
             redoes: list = self.redoes()
-            action = redoes.pop()
+            action = redoes.pop() if redoes else None
 
         if not action:
             return
@@ -172,10 +172,14 @@ class ViewsManager:
         return self
 
     def remove_last_undo(self):
-        self._undoes.pop()
+        # NOTE: In Perl, popping an empty list just returns undef.
+        # In Python, trying to pop an empty list throws an IndexError.
+        if self._undoes:
+            self._undoes.pop()
 
     def remove_last_redo(self):
-        self._redoes.pop()
+        if self._redoes:
+            self._redoes.pop()
 
     def remove_all_undoes(self):
         """Removes all Undoes associated with this ViewsManager object.

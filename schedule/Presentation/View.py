@@ -165,7 +165,7 @@ class View:
         # ---------------------------------------------------------------
         # undo/redo
         # ---------------------------------------------------------------
-        self.gui.setup_undo_redo(View.undo_number, View.redo_number, self._cb_undo_redo)
+        self.gui.setup_undo_redo(View.undo_number, View.redo_number, View._cb_undo_redo)
 
         # ---------------------------------------------------------------
         # refresh drawing - redrawing creates the guiblocks
@@ -300,11 +300,13 @@ class View:
         views_manager = self.views_manager
         views_manager.close_view(self)
 
+    @staticmethod
     def _cb_undo_redo(self, type: str):
         """Lets the views_manager manage the undo/redo action.
 
         Parameters:
             type: string, either 'undo' or 'redo'."""
+        self: View
         self.views_manager.undo(type)
 
         # Set colour for all buttons on main window, "Schedules" tab.
