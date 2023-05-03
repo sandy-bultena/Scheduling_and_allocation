@@ -355,7 +355,7 @@ def draw_block(canvas: Canvas, block, scl: dict, type,
     rectangle = canvas.create_rectangle(coords, fill=colour, outline=colour,
                                         tags=("rectangle", "members", "movable"))
     if block_tag:
-        canvas.addtag_withtag(f"block_{block_tag}", "rectangle")
+        canvas.addtag_withtag(f"block_{block_tag}", rectangle)
 
     # shade edges of guiblock rectangle
     lines = []
@@ -372,7 +372,8 @@ def draw_block(canvas: Canvas, block, scl: dict, type,
             )
         )
     if block_tag:
-        canvas.addtag_withtag(f"block_{block_tag}", "lines")
+        for line in lines:
+            canvas.addtag_withtag(f"block_{block_tag}", line)
 
     # set text
     text = canvas.create_text(
@@ -381,7 +382,7 @@ def draw_block(canvas: Canvas, block, scl: dict, type,
     )
 
     if block_tag:
-        canvas.addtag_withtag(f"block_{block_tag}", "text")
+        canvas.addtag_withtag(f"block_{block_tag}", text)
 
     # group rectangle and text to create a guiblock,
     # so that they both move as one on UI
