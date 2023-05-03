@@ -79,9 +79,39 @@ To install the scheduler and allocation manager software on another computer, co
 To run the AllocationManager, double-click on the icon. To run the SchedulerManager, double-click on the icon. 
 
 
-#### Python Packages needed
-The following packages must be installed to run the Python version of the software:
+## Python Installation
+The Python version of the software requires the installation of multiple packages to run. These packages include, but are not limited to:
+- [python-dotenv](https://pypi.org/project/python-dotenv/) (for retrieving environment variables from a .env file)
+- [pony](https://pypi.org/project/pony/) (for object-relational mapping and database access)
+- [Pmw](https://pypi.org/project/Pmw/) (for creating special tk megawidgets in certain views and windows)
 
-- python-dotenv
-- pony
-- Pmw
+A full list of the required packages can be found in the file "[requirements.txt](requirements.txt)".
+
+### Setup a Virtual Environment (Optional)
+To avoid system pollution and dependency management issues, you should consider setting up a virtual environment (or venv) for the project before you install the packages below. To do so, follow these instructions:
+
+1. Navigate to the root folder of the project.
+2. In the terminal, type `python -m venv [name_of_venv]` to create your virtual environment.
+3. Activate the virual environment by navigating to its folder and running an "activate" file from one of its child directories.
+
+The specific directory and file will vary based on your operating system and command-line interface.
+
+For PowerShell:
+
+`[name_of_venv]\Scripts\activate.ps1`
+
+For other Windows CLIs:
+
+`[name_of_venv]\Scripts\activate.bat`
+
+For Linux and Mac:
+
+`source [name_of_venv]/bin/activate`
+
+To exit your virtual environment once you are done, type `deactivate`.
+
+### Installing the Packages
+
+To install all necessary Python packages, type this command in the terminal:
+
+`pip install -r requirements.txt`
