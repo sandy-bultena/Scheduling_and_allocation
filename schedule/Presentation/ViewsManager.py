@@ -1,3 +1,4 @@
+# IN PROGRESS
 """ViewsManager - Manage all of the views (presentations of schedules)"""
 from .View import View
 from ..GUI.ViewsManagerTk import ViewsManagerTk
