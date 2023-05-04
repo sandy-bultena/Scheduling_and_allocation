@@ -334,7 +334,7 @@ class ViewsManager:
     # =================================================================
     # callbacks used by View objects
     # =================================================================
-    def create_view_containing_block(self, schedulable_objs, type, ob: Block):
+    def create_view_containing_block(self, schedulable_objs, type, ob: Block = None):
         """Used as a callback function for View objects.
 
         Find a scheduable object(s) in the given list. If the given block object is also part of
@@ -350,6 +350,7 @@ class ViewsManager:
         # TODO: Clarify what the hell this is doing, once we are working on the View.pm file
         # I'm beginning to see why.
 
+        # TODO: Adjust these to make use of ViewTypes instead of/in addition to strings.
         if type == 'teacher':
             type = 'lab'
         else:
@@ -387,9 +388,12 @@ class ViewsManager:
         first parameter.
         Returns:
             The new callback function."""
+
         def dummy(*args):
             self.create_new_view(*args)
+
         return dummy
+
 
 # =================================================================
 # footer

@@ -414,6 +414,7 @@ class View:
         self.schedule.calculate_conflicts()
         self.gui.colour_block(guiblock, self.type)
 
+    @staticmethod
     def _cb_open_companion_view(self, guiblock: GuiBlockTk):
         """Based on the type of this view, will open another view which has this Block.
 
@@ -424,6 +425,7 @@ class View:
 
         Parameters:
             guiblock: The GuiBlock that was double-clicked."""
+        self: View
         type = self.type
 
         # NOTE: Sandy, or someone else, prefaced this in the original code with "TODO: WTF?"
@@ -432,7 +434,7 @@ class View:
         # in lab or stream, open teacher schedules
         # no teacher schedules, then open other lab schedules
         # ---------------------------------------------------------------
-        if type == "lab" or type == "stream":
+        if (type == "lab" or type == ViewType.Lab) or (type == "stream" or type == ViewType.Stream):
             teachers = guiblock.block.teachers()
             if len(teachers) > 0:
                 self.views_manager.create_view_containing_block(teachers, self.type)
@@ -445,7 +447,7 @@ class View:
         # in teacher schedule, open lab schedules
         # no lab schedules, then open other teacher schedules
         # ---------------------------------------------------------------
-        elif type == "teacher":
+        elif type == "teacher" or type == ViewType.Teacher:
             labs = guiblock.block.labs()
             if len(labs) > 0:
                 self.views_manager.create_view_containing_block(labs, self.type)

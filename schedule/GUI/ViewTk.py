@@ -516,12 +516,13 @@ class ViewTk(ViewBaseTk):
             )
         )
 
-    def _was_double_clicked(self, view, guiblock: GuiBlockTk, callback: Callable):
+    def _was_double_clicked(self, view, guiblock: GuiBlockTk, callback: Callable, event=None):
         """Invokes callback defined in bind_double_click.
 
         Parameters:
             view: View object.
-            guiblock: GuiBlock that was double-clicked."""
+            guiblock: GuiBlock that was double-clicked.
+            event: Tk event which triggered this callback. Leave this blank."""
         callback(view, guiblock)
 
 
