@@ -1,22 +1,25 @@
 """Entry point for the GUI Allocation Management Tool"""
 
+# TODO: Currently crashes when opening the same schedule twice, including when selecting a schedule
+# then re-opening the same semester selector and selecting that schedule again,
+# due to Schedule.Course.Course.add_sections not adding the same section twice
+# based on ID rather than object instance.
+
 import json
 from Schedule.ScheduleWrapper import ScheduleWrapper
 from Schedule.Schedule import Schedule
 # import EditCourses
 from Presentation import NumStudents
-# import EditAllocation
+from .EditAllocation import EditAllocation
 from GUI.AllocationManagerTk import AllocationManagerTk
 from PerlLib import Colours
 # from Presentation import DataEntry
 from UsefulClasses.NoteBookPageInfo import NoteBookPageInfo
 import Presentation.globals as gl
-
 from Schedule.database.generic_db import REQUIRES_LOGIN, create_db
-
 from functools import partial
-
 from Schedule.Scenario import Scenario
+from Tk.scrolled import Scrolled
 
 semesters = ['fall', 'winter']
 schedules = ScheduleWrapper()
@@ -271,7 +274,11 @@ def pre_process_stuff():
 def define_notebook_pages():
     global required_pages
     required_pages = [
-        NoteBookPageInfo("Allocation", draw_allocation),
+        NoteBookPageInfo("Allocation",
+                         event_handler=draw_allocation().__next__,
+                         frame_type=Scrolled, frame_args={
+                            'widget_type': 'Frame'
+                            }),
         NoteBookPageInfo("Student Numbers", draw_student_numbers)
     ]
 
@@ -298,6 +305,9 @@ def define_notebook_pages():
 
         pages_lookup[f"{label} Courses"] = c
         pages_lookup[f"{label} Teachers"] = t
+
+    for page in required_pages:
+        pages_lookup[page.name] = page
 
 
 def exit_schedule():
@@ -334,11 +344,20 @@ def _save_schedule(save_as : int):
 # ==================================================================
 # draw_allocation
 # ==================================================================
+# TODO: Implement below functions
+# Use generators to yield the same object; if de doesn't exist then create it, otherwise yield de
 allocation_de: object
 
 
 def draw_allocation(*_):
-    pass
+    f = gui.get_notebook_page(pages_lookup["Allocation"].id).widget
+    de: EditAllocation = None
+    while True:
+        if de is None:
+            de = EditAllocation(f, schedules.schedules)
+        else:
+            de.draw(schedules.schedules)
+        yield de
 
 
 def draw_student_numbers(*_):

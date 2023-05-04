@@ -1,6 +1,6 @@
 """Calculate the CI for a given teacher"""
-
-from CIConstants import *
+from __future__ import annotations
+from .CIConstants import *
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -131,4 +131,4 @@ class CICalc():
         # ------------------------------------------------------------------------
         # all done
         # ------------------------------------------------------------------------
-        return CI_release + CI_hours + CI_preps + CI_student
+        return float(CI_release) + float(CI_hours) + float(CI_preps) + float(CI_student)
