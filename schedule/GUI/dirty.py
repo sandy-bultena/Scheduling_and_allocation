@@ -1,3 +1,4 @@
+# COMPLETED
 """Contains the dirty flag"""
 from tkinter import BooleanVar
 
