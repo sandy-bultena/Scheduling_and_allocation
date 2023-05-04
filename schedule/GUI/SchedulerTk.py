@@ -134,6 +134,7 @@ class SchedulerTk(MainPageBaseTk):
         SchedulerTk.frame = Frame(f)
         SchedulerTk.frame.pack(expand=1, fill=BOTH)
 
+        # TODO: View choice frames have positioning issues due to Scrolled's use of pack. Buttons are not centered.
         for type in all_scheduables.valid_types():
             view_choices_frame = LabelFrame(
                 SchedulerTk.frame,
