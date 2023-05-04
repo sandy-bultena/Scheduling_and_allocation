@@ -1,3 +1,4 @@
+# COMPLETED
 """Gui companion to AssignToResource object.
 
 REQUIRED EVENT HANDLERS:
