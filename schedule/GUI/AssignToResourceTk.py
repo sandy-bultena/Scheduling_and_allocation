@@ -92,12 +92,13 @@ class AssignToResourceTk:
         # create dialog box
         # -----------------------------------------------
         # NOTE: tkinter doesn't have a direct analog to Perl/Tk's DialogBox. Must get creative.
-        # db = messagebox.askokcancel(title="Assign Block")
+        # Using a Pmw Dialog instead.
         db_2 = Dialog(frame,
                       title="Assign Block",
                       buttons=["Ok", "Cancel"])
         self._frame = db_2
         global OKAY
+
         # Access the Dialog's ButtonBox component megawidget to get access to the actual buttons.
         # https://pmw.sourceforge.net/doc/howtouse.html
         # https://pmw.sourceforge.net/doc/Dialog.html
@@ -109,6 +110,7 @@ class AssignToResourceTk:
         cancel_index = db_2.component('buttonbox').index("Cancel")
         cancel = db_2.component('buttonbox').button(cancel_index)
         cancel.configure(width=10)
+
         # -----------------------------------------------
         # description of selected block
         # -----------------------------------------------

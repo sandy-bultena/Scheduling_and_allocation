@@ -34,7 +34,6 @@ class View:
     # =================================================================
     # getters/setters
     # =================================================================
-    # TODO: Decide which of these to keep, beyond id and gui_blocks.
     @property
     def schedule(self) -> Schedule:
         """Get/Set the schedule object."""

@@ -67,6 +67,7 @@ def main():
     gui = SchedulerTk()
 
     global required_pages, pages_lookup
+    # TODO: Apart from update_choices_of_schedulable_views, none of these methods have been implemented yet. Please do so.
     required_pages = [
         NoteBookPageInfo("Schedules", update_choices_of_schedulable_views),
         NoteBookPageInfo("Overview", update_overview),
@@ -430,3 +431,9 @@ def exit_schedule():
         elif answer == "Cancel":
             return
     write_ini()
+
+"""
+Rewritten for Python by Evan Laverdiere
+
+All Rights Reserved.
+"""

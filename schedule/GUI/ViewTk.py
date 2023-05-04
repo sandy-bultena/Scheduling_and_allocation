@@ -489,7 +489,7 @@ class ViewTk(ViewBaseTk):
         self._refresh_gui()
 
         # Update everything that needs to be updated once the block data is finalized.
-        self._update_after_cb(view, block) # TODO: Fix this next. View.cb_update_after_moving_block().
+        self._update_after_cb(view, block)
 
     # ============================================================================
     # Double clicking guiblock

@@ -4,7 +4,7 @@ from ..GUI.ViewsManagerTk import ViewsManagerTk
 from ..Schedule.Block import Block
 from ..Schedule.Conflict import Conflict
 from ..Schedule.Schedule import Schedule
-from ..Schedule.ScheduleEnums import ConflictType
+from ..Schedule.ScheduleEnums import ConflictType, ViewType
 from ..Schedule.Undo import Undo
 from ..UsefulClasses.AllScheduables import AllScheduables
 
@@ -350,11 +350,10 @@ class ViewsManager:
         # TODO: Clarify what the hell this is doing, once we are working on the View.pm file
         # I'm beginning to see why.
 
-        # TODO: Adjust these to make use of ViewTypes instead of/in addition to strings.
-        if type == 'teacher':
-            type = 'lab'
+        if type == 'teacher' or type == ViewType.Teacher:
+            type = ViewType.Lab
         else:
-            type = 'teacher'
+            type = ViewType.Teacher
 
         for scheduable_obj in schedulable_objs:
             if not (obj_id and obj_id == scheduable_obj.id):

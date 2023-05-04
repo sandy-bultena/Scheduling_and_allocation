@@ -143,10 +143,10 @@ class SchedulerTk(MainPageBaseTk):
             # view_choices_scrolled_frame = ScrolledFrame(view_choices_frame)
             view_choices_scrolled_frame.pack(expand=1, fill=BOTH)
 
-            # NOTE: Program crashes inside this function call because view_choices_scrolled_frame
-            # already has children managed by pack, while the function is trying to add buttons
-            # managed by grid to view_choices_scrolled_frame. Tcl doesn't like it when children of
-            # the same parent use different geometry managers.
+            # NOTE: Program was crashing inside this function call because
+            # view_choices_scrolled_frame already has children managed by pack, while the
+            # function is trying to add buttons managed by grid to view_choices_scrolled_frame.
+            # Tcl doesn't like it when children of the same parent use different geometry managers.
             views_manager.gui.create_buttons_for_frame(
                 view_choices_scrolled_frame,
                 all_scheduables.by_type(type),
