@@ -1,3 +1,4 @@
+# COMPLETED
 from functools import partial
 from tkinter import *
 
