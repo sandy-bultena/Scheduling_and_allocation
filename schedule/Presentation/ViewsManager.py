@@ -334,7 +334,7 @@ class ViewsManager:
     # =================================================================
     # callbacks used by View objects
     # =================================================================
-    def create_view_containing_block(self, schedulable_objs, type, ob: Block = None):
+    def create_view_containing_block(self, schedulable_objs, type: ViewType | str, ob: Block = None):
         """Used as a callback function for View objects.
 
         Find a scheduable object(s) in the given list. If the given block object is also part of
