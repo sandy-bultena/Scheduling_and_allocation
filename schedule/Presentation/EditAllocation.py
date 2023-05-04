@@ -1,3 +1,4 @@
+# COMPLETED
 from __future__ import annotations
 from GUI.EditAllocationTk import EditAllocationTk
 from CICalculator.CICalc import CICalc
