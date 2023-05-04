@@ -273,13 +273,12 @@ def pre_process_stuff():
 
 
 def define_notebook_pages():
+    from tkinter import LabelFrame  # BAD, tkinter in presentation
     global required_pages
     required_pages = [
         NoteBookPageInfo("Allocation",
                          event_handler=draw_allocation().__next__,
-                         frame_type=Scrolled, frame_args={
-                            'widget_type': 'Frame'
-                            }),
+                         frame_type=LabelFrame),
         NoteBookPageInfo("Student Numbers", draw_student_numbers)
     ]
 
@@ -345,13 +344,11 @@ def _save_schedule(save_as : int):
 # ==================================================================
 # draw_allocation
 # ==================================================================
-# TODO: Implement below functions
+# TODO: Finish implementing below functions
 # Use generators to yield the same object; if de doesn't exist then create it, otherwise yield de
-allocation_de: object
-
 
 def draw_allocation(*_):
-    f = gui.get_notebook_page(pages_lookup["Allocation"].id).widget
+    f = gui.get_notebook_page(pages_lookup["Allocation"].id)
     de: EditAllocation = None
     while True:
         if de is None:

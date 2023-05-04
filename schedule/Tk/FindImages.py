@@ -15,4 +15,4 @@ def get_logo():
 
 
 def get_allocation_logo():
-    return os.path.join(globals.bin_dir, "..", 'AllocationLogo.gif')
+    return os.path.join(globals.bin_dir, 'AllocationLogo.gif')

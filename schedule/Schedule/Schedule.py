@@ -208,7 +208,7 @@ class Schedule:
     # teachers
     # --------------------------------------------------------
     def teachers(self) -> tuple[Teacher]:
-        """Returns a tuple of all the Teacher objects"""
+        """Returns a tuple of all the Teacher objects in this Schedule"""
         teachers : list[Teacher] = []
         s : Section
         for s in self.sections:
@@ -222,7 +222,7 @@ class Schedule:
     # blocks
     # --------------------------------------------------------
     def blocks(self) -> tuple[Block]:
-        """ Returns a tuple of all the schedule's Block objects """
+        """ Returns a tuple of all the schedule's Block objects in this Schedule"""
         b : list[Block] = []
         s : Section
         for s in self.sections: b.extend(s.blocks)
@@ -232,7 +232,7 @@ class Schedule:
     # streams
     # --------------------------------------------------------
     def streams(self) -> tuple[Stream]:
-        """Returns a tuple of all the Stream objects"""
+        """Returns a tuple of all the Stream objects in this Schedule"""
         streams : list[Stream] = []
         s : Section
         for s in self.sections:
@@ -244,7 +244,7 @@ class Schedule:
     # courses
     # --------------------------------------------------------
     def courses(self) -> tuple[Course]:
-        """Returns a tuple of all the Course objects"""
+        """Returns a tuple of all the Course objects in this Schedule"""
         courses : set[Course] = set()
         s : Section
         for s in self.sections:
@@ -256,7 +256,7 @@ class Schedule:
     # labs
     # --------------------------------------------------------
     def labs(self) -> tuple[Lab]:
-        """Returns a tuple of all the Lab objects"""
+        """Returns a tuple of all the Lab objects in this Schedule"""
         labs : list[Lab] = []
         s : Section
         for s in self.sections:

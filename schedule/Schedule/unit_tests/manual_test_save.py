@@ -30,15 +30,17 @@ from ..database.generic_db import *
 
 db: Database
 s: dbSchedule
+s2: dbSchedule
 sched: mSchedule
 
 
 @db_session
 def init():
-    global s
+    global s, s2
     sc = dbScenario()
     flush()
     s = dbSchedule(official=False, scenario_id=sc.id)
+    s2 = dbSchedule(official=False, scenario_id=sc.id)
 
 
 if __name__ == "__main__":
@@ -48,13 +50,15 @@ if __name__ == "__main__":
 
     init()
     populate_db(s.id)
+    populate_db(s2.id)
 
-    sched = mSchedule.read_DB(1)
+    if False:
+        sched = mSchedule.read_DB(1)
 
-    db.disconnect()
-    db.provider = db.schema = None
-    db = create_db(DB_NAME + "_2")
-    db.drop_all_tables(with_all_data=True)
-    db.create_tables()
+        db.disconnect()
+        db.provider = db.schema = None
+        db = create_db(DB_NAME + "_2")
+        db.drop_all_tables(with_all_data=True)
+        db.create_tables()
 
-    sched.write_DB()
+        sched.write_DB()

@@ -51,6 +51,10 @@ class EditAllocation:
             # courses by semester
             schedule = self.schedules[semester]
             courses = Course.allocation_list()
+            courses = list(filter(
+                lambda a: a in schedule.courses(),
+                courses
+            ))
             self._semester_courses(semester, courses)
 
             # teachers by semester
