@@ -1,3 +1,4 @@
+# COMPLETED
 from tkinter import Tk
 
 from .AssignToResource import AssignToResource
