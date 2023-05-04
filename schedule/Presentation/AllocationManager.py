@@ -1,3 +1,4 @@
+# IN PROGRESS
 """Entry point for the GUI Allocation Management Tool"""
 
 # TODO: Currently crashes when opening the same schedule twice, including when selecting a schedule
