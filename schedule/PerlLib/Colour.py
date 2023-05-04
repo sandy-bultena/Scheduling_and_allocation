@@ -1,3 +1,4 @@
+# COMPLETED
 """
 Allows the user to manipulate colours.
 
