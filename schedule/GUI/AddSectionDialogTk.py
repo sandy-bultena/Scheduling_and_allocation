@@ -1,3 +1,4 @@
+# COMPLETED
 """
 Add sections dialog GUI
 
