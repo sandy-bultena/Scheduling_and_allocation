@@ -1,3 +1,4 @@
+# COMPLETED
 """
 Add blocks dialog GUI
 
