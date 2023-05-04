@@ -219,6 +219,7 @@ def open_schedule():
             db = define_database(provider=PROVIDER, filename=DB_NAME, create_db=CREATE_DB)
         elif PROVIDER == "mysql":
             # Otherwise, connect to the remote MySQL database. NOTE: Come back to this later.
+            # TODO: Implement functionality to connect to the MySQL database.
             pass
 
     def get_scenario(current_scen, selected_scen):
@@ -350,6 +351,7 @@ def update_choices_of_schedulable_views():
 # A text representation of the schedules
 # ==================================================================
 def update_overview():
+    # TODO: IMPLEMENT ME.
     pass
 
 
@@ -358,6 +360,7 @@ def update_overview():
 # - A page where teachers can be added/modified or deleted
 # ==================================================================
 def update_edit_teachers():
+    # TODO: IMPLEMENT ME.
     pass
 
 
@@ -366,6 +369,7 @@ def update_edit_teachers():
 # - A page where streams can be added/modified or deleted
 # ==================================================================
 def update_edit_streams():
+    # TODO: IMPLEMENT ME.
     pass
 
 
@@ -374,6 +378,7 @@ def update_edit_streams():
 # - A page where labs can be added/modified or deleted
 # ==================================================================
 def update_edit_labs():
+    # TODO: IMPLEMENT ME.
     pass
 
 
@@ -382,6 +387,7 @@ def update_edit_labs():
 # - A page where courses can be added/modified or deleted
 # ==================================================================
 def update_edit_courses():
+    # TODO: IMPLEMENT ME.
     pass
 
 
