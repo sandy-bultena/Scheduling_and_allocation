@@ -1,3 +1,4 @@
+# COMPLETED
 """
 Edit section dialog GUI
 
