@@ -1,3 +1,4 @@
+# COMPLETED
 """Create or assign Time Blocks to various resources."""
 from ..GUI.AssignToResourceTk import AssignToResourceTk
 from ..Schedule.Block import Block
