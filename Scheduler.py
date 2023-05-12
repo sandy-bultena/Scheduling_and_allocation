@@ -1,4 +1,4 @@
-from Presentation.Scheduler import Scheduler
+from schedule.Presentation.Scheduler import Scheduler
 
 
 def main():

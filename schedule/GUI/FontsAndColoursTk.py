@@ -3,8 +3,8 @@ import sys
 from os import path
 sys.path.append(path.dirname(path.dirname(__file__)))
 
-from PerlLib import Colours
-from Tk import InitGui
+from ..PerlLib import Colours
+from ..Tk import InitGui
 from tkinter import Tk as root
 from tkinter.font import Font
 

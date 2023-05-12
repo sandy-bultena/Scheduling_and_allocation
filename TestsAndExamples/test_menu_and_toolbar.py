@@ -19,7 +19,7 @@ def main():
     # preparation
     (buttons, toolbar_info, menu_details) = define_inputs()
 
-    menu_bar = Menu(mw,name='apple')
+    menu_bar = Menu(mw)
     generate_menu(mw, menu_details, menu_bar)
     mw.configure(menu=menu_bar)
 

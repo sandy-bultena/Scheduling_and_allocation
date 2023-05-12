@@ -1,5 +1,6 @@
 # COMPLETED
 from __future__ import annotations
+from ..Exceptions import exceptions
 
 """
 Example::
@@ -76,15 +77,24 @@ class MenuItem:
 
     def add_child(self, menu_item: MenuItem):
         """add a new menu item as a sub-child of on existing menu item"""
-        # TODO: Throw an exception if self MenuType is not 'cascade'
+
+        # if self is not a cascade type menu item, then it should not have
+        # children (i.e. non-cascade menu-items should not be parents)
+        if self.menu_type != MenuType.Cascade:
+            msg = f"Menu '{self.name}' is of type '{self.menu_type}' and cannot support children"
+            raise exceptions.SubMenuError(msg)
+
+        # procreate
         self.children.append(menu_item)
 
 
 class ToolbarItem:
-    """data defining at toolbar item, command, hint, image, etc"""
+    """data defining a toolbar item, command, hint, image, etc"""
 
     def __init__(self, command: callable | None = None, hint: str | None = None, image: str | None = None, sc=None):
         self.command = command
         self.hint = hint
         self.image = image
         self.sc = sc
+
+        # TODO, is 'sc' ever used?  'sc' is short for 'short-cut' I think.
