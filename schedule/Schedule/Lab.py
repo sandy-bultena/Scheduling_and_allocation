@@ -1,17 +1,9 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-from . import Block
-
-if TYPE_CHECKING:
-    from . import Schedule
-    from . import LabUnavailableTime
-# import Schedule
+import Block
+import Schedule
+import LabUnavailableTime
 from .ScheduleEnums import WeekDay
-
-from .database.PonyDatabaseConnection import Lab as dbLab, LabUnavailableTime as dbUnavailableTime
-from pony.orm import *
 
 """ SYNOPSIS/EXAMPLE:
 
@@ -21,6 +13,13 @@ from pony.orm import *
     lab = Lab(number = "P322")
     lab.add_unavailable(day = "Mon", start = "3:22", duration = 5)
 """
+
+
+def lab_id_generator(max_id: int = 0):
+    the_id = max_id + 1
+    while True:
+        yield the_id
+        the_id = the_id + 1
 
 
 class Lab:
@@ -35,32 +34,23 @@ class Lab:
         The description of the Lab.
     """
     __instances: dict[int, Lab] = {}
+    lab_id = lab_id_generator()
 
     # -------------------------------------------------------------------
     # new
     # --------------------------------------------------------------------
-
-    def __init__(self, number: str = "100", descr: str = '', *, id: int = None):
+    def __init__(self, number: str = "100", descr: str = '', *, lab_id: int = None):
         """Creates and returns a new Lab object."""
         self.number = number
         self.descr = descr
-        self._unavailable: dict[int, LabUnavailableTime.LabUnavailableTime] = {}
+        self._unavailable: dict[int, LabUnavailableTime.LabUnavailableTime] = dict()
 
-        self.__id = id if id else Lab.__create_entity(self)
+        self.__id = lab_id if lab_id else next(Lab.lab_id)
         Lab.__instances[self.__id] = self
-
-    @db_session
-    @staticmethod
-    def __create_entity(instance: Lab) -> int:
-        entity_lab = dbLab(number=instance.number,
-                           description=instance.descr)
-        commit()
-        return entity_lab.get_pk()
 
     # =================================================================
     # id
     # =================================================================
-
     @property
     def id(self) -> int:
         """Returns the unique ID for this Lab object."""
@@ -79,27 +69,13 @@ class Lab:
 
         - Parameter duration => how long does this class last, in hours
         """
-        # Importing the class here to help avoid circular dependency issues when running the tests.
-        # Not an ideal solution, admittedly.
-        from . import LabUnavailableTime
-        # Create a LabUnavailableTime. (no need to verify day because it's verified in TimeSlot
-        # constructor)
         return self.add_unavailable_slot(
             LabUnavailableTime.LabUnavailableTime(day, start, duration, schedule=schedule))
 
     def add_unavailable_slot(self, slot: LabUnavailableTime.LabUnavailableTime) -> Lab:
         """Adds an existing time slot to this lab's unavailable times."""
         self._unavailable[slot.id] = slot
-        self.__add_entity_unavailable(slot)
         return self
-
-    @db_session
-    def __add_entity_unavailable(self, instance: LabUnavailableTime.LabUnavailableTime):
-        """Links the passed TimeSlot's entity to this Lab's corresponding entity in the database."""
-        entity_lab = dbLab.get(id=self.id)
-        entity_time = dbUnavailableTime.get(id=instance.id)
-        if entity_lab and entity_time:
-            entity_lab.unavailable_slots.add(entity_time)
 
     # =================================================
     # remove_unavailable
@@ -112,17 +88,9 @@ class Lab:
         Returns the modified Lab object.
         """
         if target_id in self._unavailable.keys():
-            self.__delete_unavailable_entity(target_id)
             del self._unavailable[target_id]
 
         return self
-
-    @db_session
-    def __delete_unavailable_entity(self, slot_id: int):
-        """Removes a LabUnavailableTime entity with the passed ID from the database."""
-        entity_time = dbUnavailableTime.get(id=slot_id)
-        if entity_time is not None:
-            entity_time.delete()
 
     # =================================================================
     # get_unavailable
@@ -142,7 +110,6 @@ class Lab:
     # =================================================================
     # unavailable
     # =================================================================
-
     def unavailable(self) -> tuple[LabUnavailableTime.LabUnavailableTime]:
         """Returns all unavailable time slot objects for this lab."""
         return tuple(self._unavailable.values())
@@ -174,9 +141,6 @@ class Lab:
     @staticmethod
     def get_by_number(number: str) -> Lab | None:
         """Returns the Lab which matches this Lab number, if it exists."""
-        if not number:
-            return None
-
         found = [lab for lab in Lab.list() if lab.number == number]
         return found[0] if found else None
 
@@ -186,9 +150,6 @@ class Lab:
     @staticmethod
     def get(lab_id: int) -> Lab | None:
         """Returns the Lab object matching the specified ID, if it exists."""
-        # for lab in Lab.__instances.values():
-        #     if lab.id == lab_id:
-        #         return lab
         if lab_id in Lab.__instances.keys():
             return Lab.__instances[lab_id]
         return None
@@ -224,46 +185,13 @@ class Lab:
 
     def delete(self):
         """Removes this Lab from the Labs object, along with its unavailable TimeSlots."""
+
         # Remove the passed Lab object only if it's actually contained in the list of instances.
         if self in Lab.__instances.values():
-            # Remove any TimeSlots associated with this Lab.
-            for slot in self.unavailable():
-                # if slot.id in Time_slot.TimeSlot._TimeSlot__instances:
-                #     del Time_slot.TimeSlot._TimeSlot__instances[slot.id]
-                slot.delete()
-                del self._unavailable[slot.id]
-
-            # Then remove the Lab entity and its TimeSlot entities from the database.
-            Lab.__delete_entity(self)
-
-            # Finally, remove the Lab itself from the list of instances.
             del Lab.__instances[self.__id]
 
-    @db_session
-    @staticmethod
-    def __delete_entity(instance: Lab):
-        """Removes the Lab's corresponding records from the Lab and TimeSlot tables of the
-        database. """
-        entity_lab = dbLab.get(id=instance.id)
-        if entity_lab is not None:
-            # Cannot get the database to enact a cascade delete of the timeslots when lab is
-            # deleted, so the unavailable timeslots must be deleted manually.
-            for slot in entity_lab.unavailable_slots:
-                slot.delete()
-            entity_lab.delete()
-
-    @db_session
-    def save(self) -> dbLab:
-        """Saves this Lab in the database, updating its corresponding Lab entity."""
-        d_lab: dbLab = dbLab.get(id=self.id)
-        if not d_lab: d_lab = dbLab(number=self.number)
-        d_lab.number = self.number
-        d_lab.description = self.descr
-        # should already be saved (in unavailable_add), but just to be safe
-        # avoids a (likely testing-exlusive) issue where TimeSlots aren't saved; in test case,
-        # this is due to switching databases, which shouldn't happen in practice
-        for s in self.unavailable(): d_lab.unavailable_slots.add(s.save())
-        return d_lab
+    def remove(self):
+        self.delete()
 
     # =================================================================
     # reset
@@ -271,7 +199,7 @@ class Lab:
     @staticmethod
     def reset():
         """Reset the local list of labs"""
-        Lab.__instances = {}
+        Lab.__instances = dict()
 
 
 # =================================================================

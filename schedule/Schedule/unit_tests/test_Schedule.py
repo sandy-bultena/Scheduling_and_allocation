@@ -98,8 +98,8 @@ def test_courses_get():
     sec1 = Section(course=c1, schedule_id=sched.id)
     sec2 = Section(course=c2, schedule_id=sched.id)
     sched.sections.extend([sec1, sec2])
-    assert c1 in sched.courses()
-    assert c2 in sched.courses()
+    assert c1 in sched._courses()
+    assert c2 in sched._courses()
 
 
 def test_labs_get():
@@ -311,7 +311,7 @@ def test_course_remove():
     sched = Schedule(s.id, False, 2, "")
     sched.sections.append(Section("1", course=c1, schedule_id=s.id))
     sched.remove_course(c1)
-    assert c1 not in sched.courses()
+    assert c1 not in sched._courses()
 
 
 def test_teacher_remove():
@@ -670,8 +670,8 @@ def test_read_db():
 
     schedule = Schedule.read_DB(1)
 
-    assert len(schedule.courses()) == 4
-    for i, c in enumerate(sorted(schedule.courses(), key=lambda a: a.id)):
+    assert len(schedule._courses()) == 4
+    for i, c in enumerate(sorted(schedule._courses(), key=lambda a: a.id)):
         assert len(c.sections()) == 1
         assert c.semester == i + 1
 
@@ -772,8 +772,8 @@ def test_write_db(after_write):
     assert new_schedule.scenario_id == schedule.scenario_id
 
     # confirm correct number of courses and data was transferred correctly
-    assert len(schedule.courses()) == 4
-    for i, c in enumerate(sorted(schedule.courses(), key=lambda a: a.id)):
+    assert len(schedule._courses()) == 4
+    for i, c in enumerate(sorted(schedule._courses(), key=lambda a: a.id)):
         assert len(c.sections()) == 1
         assert c.name == f"Course {i+1}"
         assert c.number == f"10{i+1}-NYA"

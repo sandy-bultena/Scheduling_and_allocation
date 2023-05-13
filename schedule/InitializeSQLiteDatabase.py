@@ -70,7 +70,7 @@ def create_course() -> Course:
         db_course = PonyDatabaseConnection.Course.get(id=1)
         commit()
         my_course = Course(db_course.number, db_course.name, db_course.semester,
-                           db_course.allocation, id=db_course.id)
+                           db_course.allocation, course_id=db_course.id)
     return my_course
 
 
@@ -80,7 +80,7 @@ def create_lab() -> Lab:
     else:
         db_lab = PonyDatabaseConnection.Lab.get(id=1)
         commit()
-        my_lab = Lab(db_lab.number, db_lab.description, id=db_lab.id)
+        my_lab = Lab(db_lab.number, db_lab.description, lab_id=db_lab.id)
 
     return my_lab
 
@@ -93,7 +93,7 @@ def create_section(ent_sched: Schedule, ent_course: Course) -> Section:
         db_sect = PonyDatabaseConnection.Section.get(id=1)
         my_sect = Section(number=db_sect.number, hours=db_sect.hours,
                           name=db_sect.name, course=ent_course,
-                          id=db_sect.id)
+                          section_id=db_sect.id)
     return my_sect
 
 
@@ -116,7 +116,7 @@ def create_teacher() -> Teacher:
         my_teach = Teacher("John", "Smith", "Computer Science")
     else:
         db_teach = PonyDatabaseConnection.Teacher.get(id=1)
-        my_teach = Teacher(db_teach.first_name, db_teach.last_name, db_teach.dept, id=db_teach.id)
+        my_teach = Teacher(db_teach.first_name, db_teach.last_name, db_teach.dept, teacher_id=db_teach.id)
     return my_teach
 
 
@@ -128,7 +128,7 @@ def create_stream(sect: Section) -> Stream:
         db_section.streams.add(db_stream)
     else:
         db_stream = PonyDatabaseConnection.Stream.get(id=1)
-        my_stream = Stream(db_stream.number, db_stream.descr, id=db_stream.id)
+        my_stream = Stream(db_stream.number, db_stream.descr, stream_id=db_stream.id)
     commit()
     sect.assign_stream(my_stream)
     return my_stream

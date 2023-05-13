@@ -1,11 +1,9 @@
 from __future__ import annotations
+from .exceptions import InvalidTeacherNameError
+from .Block import Block
+from typing import *
 
-from .database.PonyDatabaseConnection import Teacher as dbTeacher, Schedule_Teacher as dbSchedTeach
-from pony.orm import *
-from . import Block
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from . import Schedule
+# import Schedule
 
 """
 SYNOPSIS
@@ -27,16 +25,23 @@ SYNOPSIS
 """
 
 
-class Teacher:
-    __instances : dict[int, Teacher] = {}
+def teacher_id_generator(max_id: int = 0):
+    the_id = max_id + 1
+    while True:
+        yield the_id
+        the_id = the_id + 1
 
+
+class Teacher:
     """Describes a teacher."""
+    __instances: dict[int, Teacher] = {}
+    teacher_id = teacher_id_generator()
 
     # -------------------------------------------------------------------
     # new
     # --------------------------------------------------------------------
 
-    def __init__(self, firstname: str, lastname: str, dept: str = "", *, id: int = None):
+    def __init__(self, firstname: str, lastname: str, dept: str = "", teacher_id: int = None):
         """Creates a Teacher object.
         
         Parameter **firstname:** str -> first name of the teacher.
@@ -47,21 +52,12 @@ class Teacher:
         self.dept = dept
         self.release = 0
 
-        self.__id = id if id else Teacher.__create_entity(self)
+        self.__id = teacher_id if teacher_id else next(Teacher.teacher_id)
         Teacher.__instances[self.__id] = self
-
-    @db_session
-    @staticmethod
-    def __create_entity(instance: Teacher) -> int:
-        entity_teacher = dbTeacher(first_name=instance.firstname, last_name=instance.lastname,
-                                   dept=instance.dept)
-        commit()
-        return entity_teacher.get_pk()
 
     # =================================================================
     # id
     # =================================================================
-
     @property
     def id(self) -> int:
         """Returns the unique ID for this Teacher."""
@@ -78,7 +74,7 @@ class Teacher:
     @firstname.setter
     def firstname(self, new_name: str):
         if not (new_name and not new_name.isspace()):
-            raise Exception("First name cannot be an empty string")
+            raise InvalidTeacherNameError("First name cannot be an empty string")
 
         self.__firstname = new_name
 
@@ -93,7 +89,7 @@ class Teacher:
     @lastname.setter
     def lastname(self, new_name: str):
         if not (new_name and not new_name.isspace()):
-            raise Exception("Last name cannot be an empty string")
+            raise InvalidTeacherNameError("Last name cannot be an empty string")
         self.__lastname = new_name
 
     # =================================================================
@@ -117,7 +113,7 @@ class Teacher:
     # share_blocks
     # =================================================================
     @staticmethod
-    def share_blocks(block1 : Block.Block, block2 : Block.Block) -> bool:
+    def share_blocks(block1: Block, block2: Block) -> bool:
         """Checks if there are teachers who share these two Blocks."""
         # Count occurrences in both sets to ensure that all values are < 2
         occurrences: dict[int, int] = {}
@@ -167,71 +163,27 @@ class Teacher:
     # remove teacher
     # =================================================================
     def remove(self):
-        """Removes this Teacher from the Teachers object. Its corresponding database record
-        is untouched."""
+        """Removes this Teacher from the Teachers object. """
         if self.id in Teacher.__instances.keys():
             del Teacher.__instances[self.id]
 
     def delete(self):
-        """Removes this Teacher from the Teachers object, along with its corresponding database
-        record."""
-        # First, remove the Teacher object from the application.
+        """Removes this Teacher from the Teachers object. """
         self.remove()
-
-        # Then delete its corresponding record from the database.
-        self.__delete_entity_teacher()
-
-    @db_session
-    def __delete_entity_teacher(self):
-        """Removes the corresponding Teacher record from the database."""
-        d_teacher = dbTeacher.get(id=self.id)
-        if d_teacher is not None:
-            d_teacher.delete()
 
     # =================================================================
     # disjoint
     # =================================================================
     @staticmethod
-    def disjoint(set_1: list[Teacher], rhs: list[Teacher]) -> bool:
+    def disjoint(lhs: List[Teacher], rhs: List[Teacher]) -> bool:
         """Determines if one set of teachers is disjoint with another.
 
         Returns false if even a single Teacher occurs in both sets, or true otherwise."""
-        occurrences = {}
+        set1: set[Teacher] = set(lhs)
+        set2: set[Teacher] = set(rhs)
 
-        # Get all the teachers in the current set.
-        for teacher in set_1:
-            if teacher.id not in occurrences.keys():
-                occurrences[teacher.id] = 0
-            occurrences[teacher.id] += 1
-
-        # Get all the teachers in the provided set.
-        for teacher in rhs:
-            if teacher.id not in occurrences.keys():
-                occurrences[teacher.id] = 0
-            occurrences[teacher.id] += 1
-
-        # A teacher count of 2 means they're in both sets; there is no disjoint.
-        for count in occurrences.values():
-            if count >= 2:
-                return False
-
-        return True
-
-    @db_session
-    def save(self, schedule : Schedule.Schedule | None = None) -> dbTeacher:
-        """Saves the Teacher object to the database."""
-        d_teach : dbTeacher = dbTeacher.get(id=self.id)
-        if not d_teach: d_teach = dbTeacher(first_name=self.firstname, last_name=self.lastname)
-        d_teach.first_name = self.firstname
-        d_teach.last_name = self.lastname
-        d_teach.dept = self.dept
-        # No need to update the Teacher's schedules/sections/blocks sets; those are handled
-        # elsewhere.
-        if schedule:
-            sched_t = dbSchedTeach.get(teacher_id=d_teach, schedule_id=schedule)
-            if not sched_t: sched_t = dbSchedTeach(teacher_id=d_teach, schedule_id=schedule, work_release=self.release)
-            sched_t.work_release = self.release
-        return d_teach
+        intersection: set[Teacher] = set1.intersection(set2)
+        return len(intersection) == 0
 
     # =================================================================
     # reset
@@ -239,7 +191,7 @@ class Teacher:
     @staticmethod
     def reset():
         """Reset the local list of teachers"""
-        Teacher.__instances = {}
+        Teacher.__instances = dict()
 
 
 # =================================================================

@@ -107,10 +107,7 @@ class ConflictType(ExtendedEnum):
 
 
 class ViewType(ExtendedEnum):
-    from . import Teacher
-    from . import Lab
-    from . import Stream
-    lab = Lab
-    teacher = Teacher
-    stream = Stream
-    none = None
+    lab = "Lab"
+    teacher = "Teacher"
+    stream = "Stream"
+    none = "None"

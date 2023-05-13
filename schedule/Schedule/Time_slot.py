@@ -1,15 +1,6 @@
-# IF IMPORTING TIMESLOT AND BLOCK, ALWAYS IMPORT BLOCK FIRST
-# If importing other packages that import Block, import them first or import Block explicitly
 from __future__ import annotations
+from .ScheduleEnums import WeekDay, WeekDayNumber
 import re
-from warnings import warn
-# from ScheduleEnums import WeekDay, WeekDayNumber
-from . import ScheduleEnums
-
-#from database.PonyDatabaseConnection import TimeSlot as dbTimeSlot
-from pony.orm import *
-
-# TODO: Print statements are not good in a gui app.  Maybe we should change them log?
 
 """ SYNOPSIS/EXAMPLE:
 
@@ -32,7 +23,7 @@ class TimeSlot:
     # =================================================================
     # __instances: dict[int, TimeSlot] = {}
     MAX_HOUR_DIV = 2
-    DEFAULT_DAY = ScheduleEnums.WeekDay.Monday.value
+    DEFAULT_DAY = WeekDay.Monday.value
     DEFAULT_START = "8:00"
     DEFAULT_DURATION = 1.5
 
@@ -40,7 +31,7 @@ class TimeSlot:
     # Constructor
     # =================================================================
 
-    def __init__(self, day: (ScheduleEnums.WeekDay | str) = DEFAULT_DAY,
+    def __init__(self, day: WeekDay | str = DEFAULT_DAY,
                  start: str = DEFAULT_START,
                  duration: float = DEFAULT_DURATION,
                  movable: bool = True):
@@ -69,7 +60,7 @@ class TimeSlot:
         # day = TimeSlot.DEFAULT_DAY
         self.__day_number: int = 0
         self.start_number: float = 0
-        self.day = ScheduleEnums.WeekDay.validate(day)
+        self.day = WeekDay.validate(day)
         self.start = start
         self.duration = duration
         self.movable = movable
@@ -93,15 +84,13 @@ class TimeSlot:
     @day.setter
     def day(self, new_day: str):
         try:
-            self.__day = ScheduleEnums.WeekDay.validate(new_day)
-            self.__day_number = ScheduleEnums.WeekDayNumber[self.__day].value
+            self.__day = WeekDay.validate(new_day)
+            self.__day_number = WeekDayNumber[self.__day].value
 
         # bad inputs, default to default_day
         except ValueError:
-            warn(f"<{new_day}>: invalid day specified... setting to {TimeSlot.DEFAULT_DAY}",
-                 UserWarning, stacklevel=2)
             self.__day = TimeSlot.DEFAULT_DAY
-            self.__day_number = ScheduleEnums.WeekDayNumber[TimeSlot.DEFAULT_DAY].value
+            self.__day_number = WeekDayNumber[TimeSlot.DEFAULT_DAY].value
 
     # ====================================
     # start
@@ -114,9 +103,6 @@ class TimeSlot:
     @start.setter
     def start(self, new_value: str):
         if not re.match("^[12]?[0-9]:(00|15|30|45)$", str(new_value)):
-            warn(f"<{new_value}>: invalid start time\nchanged to {TimeSlot.DEFAULT_START}",
-                 UserWarning,
-                 stacklevel=2)
             new_value = TimeSlot.DEFAULT_START
 
         self.__start = new_value
@@ -156,7 +142,6 @@ class TimeSlot:
             new_dur = 8
         # TimeSlots can't have a negative duration.
         if new_dur <= 0:
-            warn(f"<{new_dur}>: invalid duration\nchanged to {TimeSlot.DEFAULT_DURATION}")
             new_dur = TimeSlot.DEFAULT_DURATION
         self.__duration = new_dur
 
@@ -218,13 +203,13 @@ class TimeSlot:
         frac = r_hour - hour
 
         # Create array of allowed fractions.
-        fracs = []
+        fractions = []
         for i in range(TimeSlot.MAX_HOUR_DIV + 1):
-            fracs.append(i / TimeSlot.MAX_HOUR_DIV)
+            fractions.append(i / TimeSlot.MAX_HOUR_DIV)
 
         # Sort according to which one is closest to our fraction. Based on experiments in the
         # terminal, this should works while the max_hour_div is 2.
-        sorted_frac = sorted(fracs, key=lambda x: abs(x - frac))
+        sorted_frac = sorted(fractions, key=lambda x: abs(x - frac))
 
         # add hour fraction to hour.
         hour = hour + sorted_frac[0]
@@ -238,7 +223,7 @@ class TimeSlot:
     # =================================================================
     # snap_to_day
     # =================================================================
-    def snap_to_day(self, *args: int) -> int:
+    def snap_to_day(self, *args: int):
         """
         Takes the start_day and converts it to the nearest day.
 
@@ -246,7 +231,7 @@ class TimeSlot:
 
         """
         day_of_week = self._snap_to_day(*args)
-        self.day = ScheduleEnums.WeekDayNumber(day_of_week).name
+        self.day = WeekDayNumber(day_of_week).name
 
     def _snap_to_day(self, *args: int):
         min_day = args[0] if len(args) >= 1 else 1
@@ -266,7 +251,7 @@ class TimeSlot:
         """
         Tests that the current Time_Slot conflicts with another TimeSlot.
         """
-        # Detect time collisions up to this error factor. Also useful for graphical applications
+        # Detect time collisions up to this error factor. It is also useful for graphical applications
         # that require a small error threshold when moving a block into place.
         delta = 0.05
 
@@ -289,7 +274,7 @@ class TimeSlot:
         pass
 
     @staticmethod
-    def get(id: int) -> TimeSlot:
+    def get(timeslot_id: int) -> TimeSlot:
         # return TimeSlot.__instances.get(id)
         pass
 
@@ -302,7 +287,8 @@ class TimeSlot:
         Returns the corresponding TimeSlot database entity."""
         # Let child classes implement
         # d_slot = dbTimeSlot.get(
-        #     id=self.__id)  # use the __id so it refers to the time slot's ID correctly, not block ID (when relevant)
+        #     id=self.__id)  # use the __id so that it refers to the time slot's ID correctly,
+        #                    # not block ID (when relevant)
         # if not d_slot: d_slot = dbTimeSlot(day=self.day, duration=self.duration, start=self.start)
         # d_slot.day = self.day
         # d_slot.duration = self.duration

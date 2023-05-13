@@ -13,6 +13,7 @@
         # push @undos, Undo->new( $block->id, $block->start, $block->day, $teacher, "Day/Time" );
 """
 
+
 class Undo:
     """ Holds info about a block so that it can be used as an "undo" """
     _max_id = 0
@@ -20,7 +21,7 @@ class Undo:
     # ========================================================
     # CONSTRUCTOR
     # ========================================================
-    def __init__(self, block_id : int, origin_start : str, origin_day : str, origin_obj, move_type : str, new_obj):
+    def __init__(self, block_id: int, origin_start: str, origin_day: str, origin_obj, move_type: str, new_obj):
         """
         Creates an instance of the Undo class.
         - Parameter block_id -> defines the ID of the Block that was moved.
@@ -38,11 +39,11 @@ class Undo:
         self.origin_obj = origin_obj
         self.move_type = move_type
         self.new_obj = new_obj
-    
+
     # ========================================================
     # PROPERTIES
     # ========================================================
-    
+
     # --------------------------------------------------------
     # id
     # --------------------------------------------------------
@@ -50,4 +51,3 @@ class Undo:
     def id(self) -> int:
         """ Gets the unique id for this Undo object. """
         return self._id
-    

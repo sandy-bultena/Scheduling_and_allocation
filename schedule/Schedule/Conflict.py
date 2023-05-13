@@ -1,11 +1,7 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
-import sys
-from os import path
 from .ScheduleEnums import ViewType, ConflictType
-sys.path.append(path.dirname(path.dirname(__file__)))
-if TYPE_CHECKING: from . import Block
-# NOTE: using an enum will impact ViewBase.py when it is coded
+from .Schedule import Schedule
+import Block
 
 """ SYNOPSIS/EXAMPLE:
     from Schedule.Conflict import Conflict
@@ -13,6 +9,7 @@ if TYPE_CHECKING: from . import Block
     blocks = [block1, block2, ...]
     new_conflict = Conflict(type = ConflictType.MINIMUM_DAYS, blocks = blocks)
 """
+
 
 class Conflict:
     """
@@ -23,28 +20,27 @@ class Conflict:
 
     ------
 
-    Instances of this class are automatically saved to a list, which can be iterated over by iterating over the class itself.
+    Instances of this class are automatically saved to a list, which can be iterated over by
+      iterating over the class itself.
     - To remove references to a Conflict object, call the .delete() method on the object
     """
 
-
     _sorted_conflicts = [ConflictType.TIME, ConflictType.LUNCH, ConflictType.MINIMUM_DAYS, ConflictType.AVAILABILITY]
-    __instances = list()
+    __instances: list[Conflict] = list()
 
     # ========================================================
     # CONSTRUCTOR
     # ========================================================
-    def __init__(self, type: ConflictType, blocks: list[Block.Block]):
+    def __init__(self, conflict_type: ConflictType, blocks: tuple[Block.Block]):
         """
         Creates an instance of the Conflict class.
         - Parameter type -> defines the type of conflict.
         - Parameter blocks -> defines the list of blocks involved in the conflict.
         """
-        if not isinstance(type, ConflictType) or not blocks: raise TypeError("Bad inputs")
+        if isinstance(blocks, tuple) or isinstance(blocks, set):
+            blocks = list(blocks)
 
-        if isinstance(blocks, tuple) or isinstance(blocks, set): blocks = list(blocks)
-
-        self.type = type
+        self.type = conflict_type
         self.blocks = blocks.copy()  # if list is changed, the Conflict won't be
         Conflict.__instances.append(self)
 
@@ -65,7 +61,7 @@ class Conflict:
     @staticmethod
     def reset():
         """ Deletes all Conflicts """
-        for c in Conflict.list(): c.delete()
+        Conflict.__instances.clear()
 
     # ========================================================
     # METHODS
@@ -87,17 +83,16 @@ class Conflict:
     # _hash_descriptions
     # --------------------------------------------------------
     @staticmethod
-    def _hash_descriptions() -> dict[ConflictType,str]:
+    def descriptions() -> dict[ConflictType, str]:
         return ConflictType.descriptions()
 
     # --------------------------------------------------------
-    # does the confict number contain the appropriate the specified type
+    # does the conflict number contain the appropriate specified type
     # --------------------------------------------------------
     @staticmethod
-    def is_time(conflict_number:int) -> int:
+    def is_time(conflict_number: int) -> int:
         """does the conflict number include a time conflict?"""
         return conflict_number & ConflictType.TIME.value
-
 
     @staticmethod
     def is_time_lab(conflict_number: int) -> int:
@@ -108,7 +103,6 @@ class Conflict:
     def is_time_teacher(conflict_number: int):
         """does the conflict number include a time - teacher conflict?"""
         return conflict_number & ConflictType.TIME_TEACHER.value
-
 
     @staticmethod
     def is_time_lunch(conflict_number: int) -> int:
@@ -125,7 +119,6 @@ class Conflict:
         """does the conflict number include a minimum days conflict?"""
         return conflict_number & ConflictType.AVAILABILITY.value
 
-
     # --------------------------------------------------------
     # most_severe
     # --------------------------------------------------------
@@ -139,10 +132,14 @@ class Conflict:
         severest = None
         sorted_conflicts = Conflict._sorted_conflicts.copy()
 
-        if view_type:
-            conflict_key = f"time_{view_type._name_}".upper()
-            if conflict_key in ConflictType.__members__: sorted_conflicts.insert(0, ConflictType[conflict_key])
+        # based on the view, get the string version of the enum ConflictType
+        conflict_key = f"time_{view_type.name}".upper()
 
+        # if conflict key is a valid enum for ConflictType, insert this into the sorted conflicts list
+        if conflict_key in ConflictType.__members__:
+            sorted_conflicts.insert(0, ConflictType[conflict_key])
+
+        # look for the first match where the bit in conflict_number matches all the possible conflict types
         for conflict in sorted_conflicts:
             if conflict_number & conflict.value:
                 severest = conflict
@@ -154,9 +151,133 @@ class Conflict:
     # get_description
     # --------------------------------------------------------
     @staticmethod
-    def get_description(type : ConflictType) -> str:
+    def get_description(conflict_type: ConflictType) -> str:
         """ Returns the description of the provided conflict type """
-        return Conflict._hash_descriptions()[type]
+        return Conflict.descriptions()[conflict_type]
+
+    # --------------------------------------------------------
+    # calculate_conflicts
+    # --------------------------------------------------------
+    @staticmethod
+    def calculate_conflicts(schedule: Schedule):
+        """Reviews the schedule, and creates a list of Conflict objects as necessary"""
+
+        def __new_conflict(conflict_type: ConflictType, conflict_blocks: tuple[Block.Block]):
+            Conflict(conflict_type, conflict_blocks)
+            for cb in blocks:
+                cb.conflicted = conflict_type.value
+
+        # reset all blocks conflicted tags
+        for b in schedule.blocks:
+            b.reset_conflicted()
+
+        # ---------------------------------------------------------
+        # check all block pairs to see if there is a time overlap
+        for index, b in enumerate(schedule.blocks):
+            for bb in schedule.blocks[index + 1:]:
+                # if the same block, skip (shouldn't happen)
+                if b == bb:
+                    continue
+
+                # if the blocks overlap in time
+                if b.conflicts_time(bb):
+                    is_conflict = False
+                    # if teachers/labs/streams share these blocks it is a real conflict
+                    # and must be dealt with
+                    if schedule.any_teacher_share_blocks(b, bb):
+                        is_conflict = True
+                        b.conflicted = bb.conflicted = ConflictType.TIME_TEACHER.value
+                    if schedule.any_lab_share_blocks(b, bb):
+                        is_conflict = True
+                        b.conflicted = bb.conflicted = ConflictType.TIME_LAB.value
+                    if schedule.any_stream_share_blocks(b, bb):
+                        is_conflict = True
+                        b.conflicted = bb.conflicted = ConflictType.TIME_STREAM.value
+
+                    # create a conflict object and mark the blocks as conflicting
+                    if is_conflict:
+                        __new_conflict(ConflictType.TIME, (b, bb))
+
+        # ---------------------------------------------------------
+        # check for lunch break conflicts by teacher
+        start_lunch = 11
+        end_lunch = 14
+
+        lunch_periods = list(i / 2 for i in range(start_lunch * 2, end_lunch * 2))
+        for t in schedule.assigned_teachers:
+            # filter to only relevant blocks (that can possibly conflict)
+            relevant_blocks = list(
+                filter(lambda b: b.start_number < end_lunch and b.start_number + b.duration > start_lunch,
+                       schedule.blocks_for_teacher(t)))
+            # collect blocks by day
+            blocks_by_day: dict[int, list[Block.Block]] = {}
+
+            for b in relevant_blocks:
+                if b.day_number not in blocks_by_day:
+                    blocks_by_day[b.day_number] = []
+                blocks_by_day[b.day_number].append(b)
+
+            for blocks in blocks_by_day.values():
+                # don't know how this could occur, but just being careful
+                if not blocks:
+                    continue
+
+                # check for the existence of a lunch break in any of the :30 periods
+                has_lunch = False
+                for start in lunch_periods:
+                    # is this period free?
+                    has_lunch = all(not Conflict._conflict_lunch(b, start) for b in blocks)
+                    if has_lunch:
+                        break
+
+                # if no lunch, create a conflict obj and mark blocks as conflicted
+                if not has_lunch:
+                    __new_conflict(ConflictType.LUNCH, tuple(blocks))
+
+        # ---------------------------------------------------------
+        # check for 4 day schedule or 32 hrs max
+        for t in schedule.assigned_teachers:
+            if t.release:
+                continue
+
+            # collect blocks by day
+
+            blocks_by_day: dict[int, list[Block.Block]] = {}
+            blocks = schedule.blocks_for_teacher(t)
+
+            for b in blocks:
+                if b.day_number not in blocks_by_day:
+                    blocks_by_day[b.day_number] = []
+                blocks_by_day[b.day_number].append(b)
+
+            # if < 4 days, create a conflict and mark the blocks as conflicted
+            if len(blocks_by_day.keys()) < 4 and blocks:
+                __new_conflict(ConflictType.MINIMUM_DAYS, blocks)
+
+            # if they have more than 32 hours worth of classes
+            availability = 0
+            for blocks_in_day in blocks_by_day.values():
+                day_start = min(map(lambda b: b.start_number, blocks_in_day))
+                day_end = max(map(lambda b: b.start_number + b.duration, blocks_in_day))
+                if day_end <= day_start:
+                    continue
+                availability += day_end - day_start - 0.5
+
+            # if over limit, create conflict
+            if availability > 32:
+                __new_conflict(ConflictType.AVAILABILITY, blocks)
+
+    # --------------------------------------------------------
+    # _conflict_lunch
+    # --------------------------------------------------------
+    @staticmethod
+    def _conflict_lunch(block: Block.Block, lunch_start):
+        lunch_end = lunch_start + .5
+        block_end_number = block.start_number + block.duration
+        return (
+                (block.start_number < lunch_end and lunch_start < block_end_number) or
+                (lunch_start < block_end_number and block.start_number < lunch_end)
+        )
 
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
     # Instance Methods
@@ -165,7 +286,7 @@ class Conflict:
     # --------------------------------------------------------
     # add_block
     # --------------------------------------------------------
-    def add_block(self, new_block : Block):
+    def add_block(self, new_block: Block.Block):
         """
         Adds a new affected block to the conflict.
         - Parameter new_block -> the new block to be added.

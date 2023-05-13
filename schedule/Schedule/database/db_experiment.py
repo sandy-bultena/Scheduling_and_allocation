@@ -39,7 +39,7 @@ def model_to_entity(slot: ModelTSlot.TimeSlot):
 @db_session
 def entity_to_model() -> ModelTSlot.TimeSlot:
     """Retrieves an entity TimeSlot from the database and creates a model TimeSlot from it."""
-    e_slot = TimeSlot.get(id=1)
+    e_slot = TimeSlot.get(stream_id=1)
     print(e_slot)
     m_slot = ModelTSlot.TimeSlot(e_slot.day, e_slot.start, float(e_slot.duration), e_slot.movable)
     m_slot._TimeSlot__id = ModelTSlot.TimeSlot._max_id = e_slot.id

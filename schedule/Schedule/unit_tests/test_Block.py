@@ -237,7 +237,7 @@ def test_section_setter_good():
     num = 1
     block = Block(day, start, dur, num)
     course = Course()
-    sect = Section(id=1, course=course)
+    sect = Section(section_id=1, course=course)
     block.section = sect
     assert block.section == sect
 
@@ -826,7 +826,7 @@ def test_string_representation():
     num = 1
     block = Block(day, start, dur, num)
     course = Course()
-    sect = Section("42", 2, "Section 42", id=1, course=course)
+    sect = Section("42", 2, "Section 42", section_id=1, course=course)
     lab1 = Lab("R-101", "Worst place in the world")
     lab2 = Lab("R-102", "Second-worst place in the world")
     block.section = sect
@@ -886,7 +886,7 @@ def test_refresh_number():
     num = 0
     block = Block(day, start, dur, num)
     course = Course()
-    sect = Section("42", id=1, course=course)
+    sect = Section("42", section_id=1, course=course)
     sect.add_block(block)
     block.refresh_number()
     assert block.number == 1

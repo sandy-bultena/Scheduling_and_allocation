@@ -110,8 +110,8 @@ def test_load_schedule():
     sw = ScheduleWrapper()
     schedule = sw.load_schedule(s.id, 'winter')
 
-    assert len(schedule.courses()) == 4
-    for i, c in enumerate(sorted(schedule.courses(), key=lambda a: a.id)):
+    assert len(schedule._courses()) == 4
+    for i, c in enumerate(sorted(schedule._courses(), key=lambda a: a.id)):
         assert len(c.sections()) == 1
         assert c.semester == i + 1
 

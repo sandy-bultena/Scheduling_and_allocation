@@ -95,11 +95,11 @@ class NumStudents:
             # for each course in the semester
             # --------------------------------------------------------------------------------------------------
             courses: list[Course.Course] = sorted(
-                (c for c in schedule.courses() if c.needs_allocation),
+                (c for c in schedule._courses() if c.needs_allocation),
                 key=lambda x: x.description)
             for course in courses:
                 course_data = gui_form.NumStudentsDataCourse(name=course.description)
-                semester.courses.append(course_data)
+                semester._courses.append(course_data)
 
                 # --------------------------------------------------------------------------------------------------
                 # for each section in the course

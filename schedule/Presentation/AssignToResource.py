@@ -144,7 +144,7 @@ class AssignToResource:
 
         # courses
         course_names = {}
-        for course in sched.courses():
+        for course in sched._courses():
             course_names[course.id] = course.description
         gui.set_course_choices(course_names)
 
@@ -354,7 +354,7 @@ class AssignToResource:
         # Add the created Lab to this schedule.
         # NOTE: In the original Perl code, we could directly assign Labs to Schedules.
         # We can't do that anymore, so we need a workaround.
-        for c in AssignToResource.schedule.courses():
+        for c in AssignToResource.schedule._courses():
             c.assign_lab(lab)
 
         lab_names = {}
