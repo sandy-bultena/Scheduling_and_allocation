@@ -4,8 +4,8 @@ sys.path.append(path.dirname(path.dirname(__file__)))
 
 import pytest
 
-from ..Section import Section
-from ..Course import Course
+from schedule.Schedule.Section import Section
+from schedule.Schedule.Course import Course
 from ..SectionList import SectionList
 
 from .db_constants import *

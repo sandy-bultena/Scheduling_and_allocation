@@ -5,9 +5,9 @@ from pony.orm import *
 
 sys.path.append(path.dirname(path.dirname(__file__)))
 
-from ..Schedule import Schedule
+from schedule.Schedule.Schedule import Schedule
 from ..ScheduleWrapper import ScheduleWrapper
-from ..LabUnavailableTime import LabUnavailableTime
+from schedule.Schedule.LabUnavailableTime import LabUnavailableTime
 from ..database.PonyDatabaseConnection import define_database, Scenario as dbScenario, \
     Schedule as dbSchedule, LabUnavailableTime as dbUnavailableTime
 from .db_constants import *

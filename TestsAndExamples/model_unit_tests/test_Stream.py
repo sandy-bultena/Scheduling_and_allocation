@@ -4,10 +4,10 @@ sys.path.append(path.dirname(path.dirname(__file__)))
 import pytest
 from .db_constants import *
 
-from ..Stream import Stream
-from ..Block import Block
-from ..Section import Section
-from ..Course import Course
+from schedule.Schedule.Stream import Stream
+from schedule.Schedule.Block import Block
+from schedule.Schedule.Section import Section
+from schedule.Schedule.Course import Course
 from ..database.PonyDatabaseConnection import define_database, Schedule as dbSchedule, Scenario as dbScenario, Stream as dbStream
 from pony.orm import *
 
@@ -126,7 +126,7 @@ def test_confirm_delete():
     id = s.id
     s.delete()
     assert s not in Stream.list()
-    assert dbStream.get(id = id) is None
+    assert dbStream.get_by_id(id = id) is None
 
 
 @db_session

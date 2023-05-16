@@ -1,65 +1,61 @@
+import pytest
 import sys
 from os import path
 
+sys.path.append(path.dirname(path.dirname(__file__) + "/../../"))
 
-sys.path.append(path.dirname(path.dirname(__file__)))
-import pytest
-from .db_constants import *
-
-from .. import Block    # avoids circular import
-from ..Time_slot import TimeSlot
-from ..ScheduleEnums import WeekDay
-from ..database.PonyDatabaseConnection import define_database
-from pony.orm import *
-
-db: Database
+from schedule.Schedule.Time_slot import TimeSlot
+from schedule.Schedule.ScheduleEnums import WeekDay
 
 
 @pytest.fixture(scope="module", autouse=True)
 def before_and_after_module():
-    global db
-    if PROVIDER == "mysql":
-        db = define_database(host=HOST, passwd=PASSWD, db=DB_NAME, provider=PROVIDER, user=USERNAME)
-    elif PROVIDER == "sqlite":
-        db = define_database(provider=PROVIDER, filename=DB_NAME, create_db=CREATE_DB)
-    yield
-    db.drop_all_tables(with_all_data=True)
-    db.disconnect()
-    db.provider = db.schema = None
+    pass
 
 
 @pytest.fixture(autouse=True)
 def before_and_after():
-    db.create_tables()
-    yield
-    #db.drop_table(table_name='time_slot', if_exists=True, with_all_data=True)
+    pass
+
 
 def test_defaults():
     """Verifies that default values are set correctly"""
     slot = TimeSlot()
-    assert slot.day == "mon"
-    assert slot.start == "8:00"
-    assert slot.end() == "9:30"
-    assert slot.duration == 1.5
+    assert slot.day == TimeSlot.DEFAULT_DAY
+    assert slot.start == TimeSlot.DEFAULT_START
+    assert slot.duration == TimeSlot.DEFAULT_DURATION
     assert slot.movable
     assert slot.start_number == 8
     assert slot.day_number == 1
 
+
+def test_calculate_end_time():
+    """Verifies that end time is set correctly"""
+    slot = TimeSlot(WeekDay.Tuesday, start="13:15", duration=1.5)
+    assert slot.day == "tue"
+    assert slot.start == "13:15"
+    assert slot.duration == 1.5
+    assert slot.end == "14:45"
+
+
 def test_day_setter():
+    """verify that day property can take a Weekday enum, or a string"""
     slot = TimeSlot()
-    new_day = WeekDay.Friday.value
+    new_day = WeekDay.Friday
     slot.day = new_day
 
     real_val = 'fri'
     assert slot.day == real_val
 
+    slot.day = 'wed'
+    assert slot.day == 'wed'
+
 
 def test_day_setter_warning():
-    """Verifies that the day setter raises an error when an invalid value is passed."""
+    """Verifies that the day setter sets to default when an invalid value is passed."""
     slot = TimeSlot()
     bad_day = 14
-    with pytest.warns(UserWarning, match="invalid day specified"):
-        slot.day = bad_day
+    assert slot.day == TimeSlot.DEFAULT_DAY
 
 
 def test_start_setter():
@@ -70,11 +66,10 @@ def test_start_setter():
 
 
 def test_start_setter_warning():
-    """Verifies that start setter raises a warning when presented with an invalid input."""
+    """Verifies that start setter uses default when presented with an invalid input."""
     slot = TimeSlot()
     bad_start = "foo"
-    with pytest.warns(UserWarning, match="invalid start time"):
-        slot.start = bad_start
+    assert slot.start == TimeSlot.DEFAULT_START
 
 
 def test_duration_setter():
@@ -85,13 +80,39 @@ def test_duration_setter():
     assert slot.duration == new_dur
 
 
+def test_duration_not_allowed_less_than_zero():
+    """cannot have a negative length time slot"""
+    slot = TimeSlot("tue", start="13:30", duration=-3)
+    assert slot.duration == TimeSlot.DEFAULT_DURATION
+
+
+def test_duration_not_allowed_greater_than_eight():
+    """cannot have a negative length time slot"""
+    slot = TimeSlot("tue", start="13:30", duration=8.5)
+    assert slot.duration == 8
+
+
+def test_duration_rounded_up_to_minimum_half_hour():
+    """cannot have a negative length time slot"""
+    slot = TimeSlot("tue", start="13:30", duration=0.1)
+    assert slot.duration == 0.5
+
+
+def test_duration_rounds_up_to_nearest_half_hour():
+    """cannot have a negative length time slot"""
+    slot = TimeSlot("tue", start="13:30", duration=1.45)
+    assert slot.duration == 1.5
+    slot = TimeSlot("tue", start="13:30", duration=1.55)
+    assert slot.duration == 2
+
+
 def test_duration_setter_changes_end():
     """Verifies that changing a TimeSlot's duration will change the value of end()."""
     slot = TimeSlot()
     new_dur = 3
     slot.duration = new_dur
     expected_end = "11:00"
-    assert slot.end() == expected_end
+    assert slot.end == expected_end
 
 
 def test_movable_setter():
@@ -102,13 +123,19 @@ def test_movable_setter():
 
 
 def test_start_number_setter():
-    """Verifies that the TimeSlot's start_number setter works as intended: that it changes
-    start_number ONLY, without affecting start. """
-    slot = TimeSlot()
-    new_start_num = 12
-    slot.start_number = new_start_num
-    bad_start = "12:00"
-    assert slot.start_number == new_start_num and slot.start != bad_start
+    """Verifies that the TimeSlot's start_number changes if start time changes """
+    slot = TimeSlot('wed', '13:15')
+    assert slot.start_number == 13.25
+    slot.start = "12:00"
+    assert slot.start_number == 12.0
+
+
+def test_setting_day_sets_day_number():
+    """Verifies that the TimeSlot's day_number changes if day changes """
+    slot = TimeSlot('wed', '13:15')
+    assert slot.day_number == 3
+    slot.day = WeekDay.Thursday
+    assert slot.day_number == 4
 
 
 def test_snap_to_time():

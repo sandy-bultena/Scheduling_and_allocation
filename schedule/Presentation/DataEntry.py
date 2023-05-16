@@ -140,7 +140,7 @@ class DataEntry:
         self.schedule = schedule
 
         # ---------------------------------------------------------------
-        # get objects to process?
+        # get_by_id objects to process?
         # ---------------------------------------------------------------
         objs = schedulable_list_obj.list()
         rows = len(objs)
@@ -249,9 +249,9 @@ class DataEntry:
             # --------------------------------------------------------------------
             if data[DataEntry.id_index] and data[DataEntry.id_index] != '':
                 schedulable_list_obj = self._list_obj
-                o = schedulable_list_obj.get(data[DataEntry.id_index])
+                o = schedulable_list_obj.get_by_id(data[DataEntry.id_index])
 
-                # Loop over each method used to get info about this object.
+                # Loop over each method used to get_by_id info about this object.
                 col = 1
                 for method in self._col_methods:
                     # Set dirty flag if new data is not the same as the currently set property.
@@ -307,7 +307,7 @@ class DataEntry:
         """Save delete requests, to be processed later."""
 
         # Create a queue so we can delete the objects when the new info is saved.
-        obj = self.schedulable_list_obj.get(data[DataEntry.id_index])
+        obj = self.schedulable_list_obj.get_by_id(data[DataEntry.id_index])
         if obj:
             DataEntry.Delete_queue.extend([self.schedulable_list_obj, obj])
 
@@ -318,7 +318,7 @@ class DataEntry:
     # =================================================================
     @property
     def _col_methods(self):
-        """Gets or sets the methods required to get or set the property for each column."""
+        """Gets or sets the methods required to get_by_id or set the property for each column."""
         return self.__col_methods
 
     @_col_methods.setter

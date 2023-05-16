@@ -4,18 +4,18 @@ from os import path
 
 sys.path.append(path.dirname(path.dirname(__file__)))
 
-from ..Course import Course
-from ..Section import Section
-from ..Teacher import Teacher
-from ..Block import Block
-from ..Lab import Lab
-from ..Stream import Stream
+from schedule.Schedule.Course import Course
+from schedule.Schedule.Section import Section
+from schedule.Schedule.Teacher import Teacher
+from schedule.Schedule.Block import Block
+from schedule.Schedule.Lab import Lab
+from schedule.Schedule.Stream import Stream
 
 from ..database.PonyDatabaseConnection import define_database, Course as dbCourse, \
     Section as dbSection, Schedule as dbSchedule, Scenario as dbScenario
 from pony.orm import *
 from .db_constants import *
-from ..ScheduleEnums import SemesterType
+from schedule.Schedule.ScheduleEnums import SemesterType
 
 db: Database
 
@@ -153,7 +153,7 @@ def test_get_section_good():
 
 
 def test_get_section_bad():
-    """Verifies that get_section() doesn't crash the program when trying to get a Section
+    """Verifies that get_section() doesn't crash the program when trying to get_by_id a Section
     that doesn't exist. """
     course = Course(1)
     bad_num = "420"
@@ -743,13 +743,13 @@ def test_new_number_unused_number():
 
 
 def test_get_good():
-    """Verifies that the static get() method works as intended."""
+    """Verifies that the static get_by_id() method works as intended."""
     course = Course(1, "Course 1")
     assert Course.get(1) == course
 
 
 def test_get_bad_id():
-    """Verifies that get() returns None if there's no Course with the passed ID"""
+    """Verifies that get_by_id() returns None if there's no Course with the passed ID"""
     course = Course(1, "Course 1")
     bad_num = 666
     assert Course.get(bad_num) is None

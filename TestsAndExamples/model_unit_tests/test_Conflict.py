@@ -5,9 +5,9 @@ import pytest
 from .db_constants import *
 from ..database.PonyDatabaseConnection import define_database
 from pony.orm import *
-from ..ScheduleEnums import ConflictType, ViewType
+from schedule.Schedule.ScheduleEnums import ConflictType, ViewType
 
-from ..Conflict import Conflict
+from schedule.Schedule.Conflicts import Conflict
 
 conflict_types = Conflict._sorted_conflicts.copy()
 conflict_types.append(ConflictType.TIME_LAB)
@@ -105,7 +105,7 @@ def test_confirm_most_severe_ordered_correctly_teacher():
         assert out == ConflictType.TIME_TEACHER
 
 def test_confirm_get_description_returns_correct_description():
-    """Confirms the get_description method returns the correct type description"""
+    """Confirms the get_description_of method returns the correct type description"""
     for i in conflict_types:
         assert Conflict.get_description(i) == Conflict._hash_descriptions()[i]
     

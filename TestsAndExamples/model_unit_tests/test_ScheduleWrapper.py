@@ -3,14 +3,14 @@ import sys
 from os import path
 sys.path.append(path.dirname(path.dirname(__file__)))
 
-from ..ScheduleEnums import ConflictType
-from ..LabUnavailableTime import LabUnavailableTime
-from ..Block import Block
-from ..Lab import Lab
-from ..Course import Course
-from ..Stream import Stream
-from ..Teacher import Teacher
-from ..Schedule import Schedule
+from schedule.Schedule.ScheduleEnums import ConflictType
+from schedule.Schedule.LabUnavailableTime import LabUnavailableTime
+from schedule.Schedule.Block import Block
+from schedule.Schedule.Lab import Lab
+from schedule.Schedule.Course import Course
+from schedule.Schedule.Stream import Stream
+from schedule.Schedule.Teacher import Teacher
+from schedule.Schedule.Schedule import Schedule
 from ..ScheduleWrapper import ScheduleWrapper, scenarios
 from ..database.PonyDatabaseConnection import define_database, Schedule as dbSchedule,\
     Scenario as dbScenario, Lab as dbLab, Teacher as dbTeacher, Course as dbCourse, Stream as dbStream

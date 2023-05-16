@@ -9,12 +9,12 @@ from ..database.PonyDatabaseConnection import define_database, Schedule as dbSch
     Section as dbSection
 from pony.orm import *
 
-from ..Section import Section
-from ..Course import Course
-from ..Block import Block
-from ..Lab import Lab
-from ..Teacher import Teacher
-from ..Stream import Stream
+from schedule.Schedule.Section import Section
+from schedule.Schedule.Course import Course
+from schedule.Schedule.Block import Block
+from schedule.Schedule.Lab import Lab
+from schedule.Schedule.Teacher import Teacher
+from schedule.Schedule.Stream import Stream
 
 db: Database
 
@@ -172,21 +172,21 @@ def test_delete_deletes_all():
     s.add_block(b1).add_block(b2).add_block(b3)
     s.delete()
     assert s not in Section.list()
-    assert dbSection.get(id=id) is None
+    assert dbSection.get_by_id(id=id) is None
     assert b1 not in Block.list()
     assert b2 not in Block.list()
     assert b3 not in Block.list()
 
 
 def test_is_conflicted_detects_conflicts_correctly():
-    """Checks that the is_conflicted method correctly picks up conflicted blocks"""
+    """Checks that the is_conflicted method correctly picks up conflicted_number blocks"""
     c = Course()
     s = Section(course=c, schedule_id=1)
     b1 = Block('Mon', '13:00', 2, 1)
     b2 = Block('Mon', '13:00', 2, 2)
     b3 = Block('Mon', '13:00', 2, 3)
     s.add_block(b1).add_block(b2).add_block(b3)
-    b1.conflicted = 1
+    b1.conflicted_number = 1
     assert s.is_conflicted()
 
 
@@ -202,7 +202,7 @@ def test_is_conflicted_detects_ok_correctly():
 
 
 def test_get_new_number_gets_first():
-    """Checks that the get_new_number method will get the lowest available block number, regardeless of add order or block id of existing blocks"""
+    """Checks that the get_new_number method will get_by_id the lowest available block number, regardeless of add order or block id of existing blocks"""
     lowest = 4
     c = Course()
     s = Section(course=c, schedule_id=1)

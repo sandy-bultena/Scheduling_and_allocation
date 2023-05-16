@@ -21,7 +21,6 @@ class TimeSlot:
     # =================================================================
     # Class/Global Variables
     # =================================================================
-    # __instances: dict[int, TimeSlot] = {}
     MAX_HOUR_DIV = 2
     DEFAULT_DAY = WeekDay.Monday.value
     DEFAULT_START = "8:00"
@@ -59,19 +58,11 @@ class TimeSlot:
         #       The order that these are implemented is important
         # day = TimeSlot.DEFAULT_DAY
         self.__day_number: int = 0
-        self.start_number: float = 0
+        self._start_number: float = 0
         self.day = WeekDay.validate(day)
         self.start = start
         self.duration = duration
         self.movable = movable
-
-    # ====================================
-    # id
-    # ====================================
-    # @property
-    # def id(self) -> int:
-    #     """Returns the unique ID for this TimeSlot object."""
-    #     return self.__id
 
     # ====================================
     # day
@@ -107,12 +98,16 @@ class TimeSlot:
 
         self.__start = new_value
         hour, minute = (int(x) for x in new_value.split(":"))
-        self.start_number = hour + minute / 60
+        self._start_number = hour + minute / 60
+
+    @property
+    def start_number(self) -> float:
+        return self._start_number
 
     # ====================================
     # end
     # ====================================
-
+    @property
     def end(self) -> str:
         """Gets the TimeSlot's end time in 24-hour clock format."""
         current_start = self.start_number
@@ -131,10 +126,11 @@ class TimeSlot:
 
     @duration.setter
     def duration(self, new_dur: float):
-        if .25 > new_dur > 0:
+        """sets duration.  must be a positive number, and in increments of 1/2 hours"""
+        if .5 > new_dur > 0:
             new_dur = .5
         else:
-            temp = 2 * new_dur
+            temp = 2 * (new_dur + 0.249)
             rounded = int(float(temp) + 0.5)
             new_dur = rounded / 2
         # No TimeSlot can be longer than 8 hours.
@@ -144,13 +140,6 @@ class TimeSlot:
         if new_dur <= 0:
             new_dur = TimeSlot.DEFAULT_DURATION
         self.__duration = new_dur
-
-    # region movable, start_number & day_number
-
-    # NOTE: Supposedly, it is not Pythonic to have dedicated properties for instance attributes
-    # that don't require any special circumstances, such as having only a getter with no setter
-    # or requiring detailed input validation in the setter. Will ask Sandy about this to see what
-    # she thinks.
 
     # ====================================
     # day_number
@@ -275,7 +264,7 @@ class TimeSlot:
 
     @staticmethod
     def get(timeslot_id: int) -> TimeSlot:
-        # return TimeSlot.__instances.get(id)
+        # return TimeSlot.__instances.get_by_id(id)
         pass
 
     # =================================================================
@@ -286,7 +275,7 @@ class TimeSlot:
 
         Returns the corresponding TimeSlot database entity."""
         # Let child classes implement
-        # d_slot = dbTimeSlot.get(
+        # d_slot = dbTimeSlot.get_by_id(
         #     id=self.__id)  # use the __id so that it refers to the time slot's ID correctly,
         #                    # not block ID (when relevant)
         # if not d_slot: d_slot = dbTimeSlot(day=self.day, duration=self.duration, start=self.start)

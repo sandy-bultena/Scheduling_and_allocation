@@ -5,8 +5,8 @@ from os import path
 
 sys.path.append(path.dirname(path.dirname(__file__)))
 
-from ..Teacher import Teacher
-from ..Block import Block
+from schedule.Schedule.Teacher import Teacher
+from schedule.Schedule.Block import Block
 from ..database.PonyDatabaseConnection import define_database, Teacher as dbTeacher
 from pony.orm import *
 from .db_constants import *
@@ -153,7 +153,7 @@ def test_share_blocks_false():
 
 @db_session
 def test_get_good_id():
-    """Verifies that the static get() method works as intended."""
+    """Verifies that the static get_by_id() method works as intended."""
     Teacher._Teacher__instances = {}
     Teacher._max_id = 0
     teach = Teacher("John", "Smith")
@@ -162,7 +162,7 @@ def test_get_good_id():
 
 
 def test_get_bad_id():
-    """Verifies that get() returns None when receiving an invalid ID."""
+    """Verifies that get_by_id() returns None when receiving an invalid ID."""
     Teacher._Teacher__instances = {}
     Teacher._max_id = 0
     teach = Teacher("John", "Smith")

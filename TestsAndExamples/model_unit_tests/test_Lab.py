@@ -5,10 +5,10 @@ sys.path.append(path.dirname(path.dirname(__file__)))
 import pytest
 from .db_constants import *
 
-from ..Schedule import Schedule
-from ..Lab import Lab
-from ..LabUnavailableTime import LabUnavailableTime
-from ..Block import Block
+from schedule.Schedule.Schedule import Schedule
+from schedule.Schedule.Lab import Lab
+from schedule.Schedule.LabUnavailableTime import LabUnavailableTime
+from schedule.Schedule.Block import Block
 from ..database.PonyDatabaseConnection import define_database, Lab as dbLab, Schedule as dbSchedule, \
     Scenario as dbScenario, LabUnavailableTime as dbUnavailableTime
 from pony.orm import *
@@ -338,7 +338,7 @@ def test_remove_gets_database_times():
 
 @db_session
 def test_get_good():
-    """Verifies that the static get() method works as intended."""
+    """Verifies that the static get_by_id() method works as intended."""
     Lab.reset()
     lab1 = Lab("R-101", "Worst place in the world")
     lab2 = Lab("R-102", "Second-worst place in the world")
@@ -347,7 +347,7 @@ def test_get_good():
 
 
 def test_get_bad():
-    """Verifies that get() returns None when given an invalid ID."""
+    """Verifies that get_by_id() returns None when given an invalid ID."""
     Lab.reset()
     lab1 = Lab("R-101", "Worst place in the world")
     lab2 = Lab("R-102", "Second-worst place in the world")
