@@ -1,0 +1,1625 @@
+--- !!perl/hash:Schedule
+-conflicts: !!perl/hash:Conflicts
+  -list:
+    - !!perl/hash:Conflict
+      -blocks: []
+      -type: 4
+    - !!perl/hash:Conflict
+      -blocks: []
+      -type: 4
+-courses: !!perl/hash:Courses
+  -list:
+    1: &1 !!perl/hash:Course
+      -allocation: 1
+      -id: 1
+      -name: OOP
+      -number: 606
+      -sections:
+        1: &2 !!perl/hash:Section
+          -allocation:
+            9: 6
+          -blocks:
+            70: !!perl/hash:Block
+              -conflicted: 0
+              -day: fri
+              -day_number: 5
+              -duration: 3
+              -id: 70
+              -labs:
+                2: &3 !!perl/hash:Lab
+                  -descr: ''
+                  -id: 2
+                  -number: P326
+              -movable: 1
+              -number: 1
+              -section: *2
+              -start: 10:00
+              -start_number: 10
+              -sync: []
+              -teachers:
+                9: &4 !!perl/hash:Teacher
+                  -dept: ''
+                  -fname: Aref
+                  -id: 9
+                  -lname: Mourtada
+                  -release: 0.2
+            71: !!perl/hash:Block
+              -conflicted: 0
+              -day: thu
+              -day_number: 4
+              -duration: 3
+              -id: 71
+              -labs:
+                2: *3
+              -movable: 1
+              -number: 2
+              -section: *2
+              -start: 10:00
+              -start_number: 10
+              -sync: []
+              -teachers:
+                9: *4
+          -course: *1
+          -hours: 6
+          -id: 30
+          -name: Section 1
+          -num_students: 20
+          -number: 1
+          -streams:
+            4: &5 !!perl/hash:Stream
+              -descr: ''
+              -id: 4
+              -number: 3A
+          -teachers:
+            9: *4
+        2: &6 !!perl/hash:Section
+          -allocation:
+            9: 6
+          -blocks:
+            85: !!perl/hash:Block
+              -conflicted: 0
+              -day: thu
+              -day_number: 4
+              -duration: 3
+              -id: 85
+              -labs:
+                2: *3
+              -movable: 1
+              -number: 1
+              -section: *6
+              -start: 14:30
+              -start_number: 14.5
+              -sync: []
+              -teachers:
+                9: *4
+            86: !!perl/hash:Block
+              -conflicted: 0
+              -day: fri
+              -day_number: 5
+              -duration: 3
+              -id: 86
+              -labs:
+                2: *3
+              -movable: 1
+              -number: 2
+              -section: *6
+              -start: 14:30
+              -start_number: 14.5
+              -sync: []
+              -teachers:
+                9: *4
+          -course: *1
+          -hours: 6
+          -id: 35
+          -name: Section 2
+          -num_students: 20
+          -number: 2
+          -streams:
+            7: &7 !!perl/hash:Stream
+              -descr: ''
+              -id: 7
+              -number: 3B
+          -teachers:
+            9: *4
+    10: &8 !!perl/hash:Course
+      -allocation: 1
+      -id: 10
+      -name: Web Programming
+      -number: 6G3
+      -sections:
+        1: &9 !!perl/hash:Section
+          -allocation:
+            16: 3
+          -blocks:
+            52: !!perl/hash:Block
+              -conflicted: 0
+              -day: tue
+              -day_number: 2
+              -duration: 1.5
+              -id: 52
+              -labs:
+                2: *3
+              -movable: 1
+              -number: 2
+              -section: *9
+              -start: 8:30
+              -start_number: 8.5
+              -sync: []
+              -teachers:
+                16: &10 !!perl/hash:Teacher
+                  -dept: ''
+                  -fname: Chris
+                  -id: 16
+                  -lname: Chadillon
+                  -release: ''
+            53: !!perl/hash:Block
+              -conflicted: 0
+              -day: thu
+              -day_number: 4
+              -duration: 1.5
+              -id: 53
+              -labs:
+                0: &11 !!perl/hash:Lab
+                  -descr: ''
+                  -id: 0
+                  -number: P322
+              -movable: 1
+              -number: 1
+              -section: *9
+              -start: 8:30
+              -start_number: 8.5
+              -sync: []
+              -teachers:
+                16: *10
+          -course: *8
+          -hours: 3
+          -id: 21
+          -name: Section 1
+          -num_students: 15
+          -number: 1
+          -streams: {}
+          -teachers:
+            16: *10
+        2: &12 !!perl/hash:Section
+          -allocation:
+            16: 3
+          -blocks:
+            54: !!perl/hash:Block
+              -conflicted: 0
+              -day: tue
+              -day_number: 2
+              -duration: 1.5
+              -id: 54
+              -labs:
+                2: *3
+              -movable: 1
+              -number: 2
+              -section: *12
+              -start: 10:30
+              -start_number: 10.5
+              -sync: []
+              -teachers:
+                16: *10
+            55: !!perl/hash:Block
+              -conflicted: 0
+              -day: thu
+              -day_number: 4
+              -duration: 1.5
+              -id: 55
+              -labs:
+                0: *11
+              -movable: 1
+              -number: 1
+              -section: *12
+              -start: 10:30
+              -start_number: 10.5
+              -sync: []
+              -teachers:
+                16: *10
+          -course: *8
+          -hours: 3
+          -id: 22
+          -name: Section 2
+          -num_students: 15
+          -number: 2
+          -streams: {}
+          -teachers:
+            16: *10
+    19: &13 !!perl/hash:Course
+      -allocation: 1
+      -id: 19
+      -name: Networking
+      -number: 2N5
+      -sections:
+        1: &14 !!perl/hash:Section
+          -allocation: {}
+          -blocks:
+            95: !!perl/hash:Block
+              -conflicted: 0
+              -day: mon
+              -day_number: 1
+              -duration: 1.5
+              -id: 95
+              -labs:
+                3: &15 !!perl/hash:Lab
+                  -descr: ''
+                  -id: 3
+                  -number: P327
+                5: &16 !!perl/hash:Lab
+                  -descr: ''
+                  -id: 5
+                  -number: P107
+              -movable: 1
+              -number: 1
+              -section: *14
+              -start: 14:30
+              -start_number: 14.5
+              -sync: []
+              -teachers:
+                17: &17 !!perl/hash:Teacher
+                  -dept: ''
+                  -fname: Gabriel
+                  -id: 17
+                  -lname: Larco
+                  -release: 0.16666
+            96: !!perl/hash:Block
+              -conflicted: 0
+              -day: wed
+              -day_number: 3
+              -duration: 1.5
+              -id: 96
+              -labs:
+                3: *15
+                5: *16
+              -movable: 1
+              -number: 2
+              -section: *14
+              -start: 14:30
+              -start_number: 14.5
+              -sync: []
+              -teachers:
+                17: *17
+            97: !!perl/hash:Block
+              -conflicted: 0
+              -day: tue
+              -day_number: 2
+              -duration: 2
+              -id: 97
+              -labs:
+                3: *15
+              -movable: 1
+              -number: 3
+              -section: *14
+              -start: 8:30
+              -start_number: 8.5
+              -sync: []
+              -teachers:
+                17: *17
+          -course: *13
+          -hours: 5
+          -id: 39
+          -name: Section 1
+          -num_students: 29
+          -number: 1
+          -streams:
+            0: &18 !!perl/hash:Stream
+              -descr: ''
+              -id: 0
+              -number: 1A
+          -teachers: {}
+        2: &19 !!perl/hash:Section
+          -allocation: {}
+          -blocks:
+            100: !!perl/hash:Block
+              -conflicted: 0
+              -day: tue
+              -day_number: 2
+              -duration: 2
+              -id: 100
+              -labs:
+                3: *15
+              -movable: 1
+              -number: 3
+              -section: *19
+              -start: 11:00
+              -start_number: 11
+              -sync: []
+              -teachers:
+                17: *17
+            98: !!perl/hash:Block
+              -conflicted: 0
+              -day: wed
+              -day_number: 3
+              -duration: 1.5
+              -id: 98
+              -labs:
+                2: *3
+                5: *16
+              -movable: 1
+              -number: 1
+              -section: *19
+              -start: 8:30
+              -start_number: 8.5
+              -sync: []
+              -teachers:
+                17: *17
+            99: !!perl/hash:Block
+              -conflicted: 0
+              -day: fri
+              -day_number: 5
+              -duration: 1.5
+              -id: 99
+              -labs:
+                2: *3
+                5: *16
+              -movable: 1
+              -number: 2
+              -section: *19
+              -start: 8:30
+              -start_number: 8.5
+              -sync: []
+              -teachers:
+                17: *17
+          -course: *13
+          -hours: 5
+          -id: 40
+          -name: Section 2
+          -num_students: 29
+          -number: 2
+          -streams:
+            1: &20 !!perl/hash:Stream
+              -descr: ''
+              -id: 1
+              -number: 1B
+          -teachers: {}
+    20: &21 !!perl/hash:Course
+      -allocation: 1
+      -id: 20
+      -name: Information Technologies
+      -number: 2T3
+      -sections:
+        1: &22 !!perl/hash:Section
+          -allocation:
+            11: 3
+          -blocks:
+            101: !!perl/hash:Block
+              -conflicted: 0
+              -day: fri
+              -day_number: 5
+              -duration: 1.5
+              -id: 101
+              -labs:
+                3: *15
+              -movable: 1
+              -number: 1
+              -section: *22
+              -start: 13:30
+              -start_number: 13.5
+              -sync: []
+              -teachers:
+                11: &23 !!perl/hash:Teacher
+                  -dept: ''
+                  -fname: Dan
+                  -id: 11
+                  -lname: Gryte
+                  -release: ''
+            102: !!perl/hash:Block
+              -conflicted: 0
+              -day: wed
+              -day_number: 3
+              -duration: 1.5
+              -id: 102
+              -labs:
+                3: *15
+              -movable: 1
+              -number: 2
+              -section: *22
+              -start: 8:30
+              -start_number: 8.5
+              -sync: []
+              -teachers:
+                11: *23
+          -course: *21
+          -hours: 3
+          -id: 41
+          -name: Section 1
+          -num_students: 29
+          -number: 1
+          -streams:
+            0: *18
+          -teachers:
+            11: *23
+        2: &24 !!perl/hash:Section
+          -allocation:
+            11: 3
+          -blocks:
+            103: !!perl/hash:Block
+              -conflicted: 0
+              -day: wed
+              -day_number: 3
+              -duration: 1.5
+              -id: 103
+              -labs:
+                2: *3
+              -movable: 1
+              -number: 1
+              -section: *24
+              -start: 11:30
+              -start_number: 11.5
+              -sync: []
+              -teachers:
+                11: *23
+            104: !!perl/hash:Block
+              -conflicted: 0
+              -day: mon
+              -day_number: 1
+              -duration: 1.5
+              -id: 104
+              -labs: {}
+              -movable: 1
+              -number: 2
+              -section: *24
+              -start: 11:30
+              -start_number: 11.5
+              -sync: []
+              -teachers:
+                11: *23
+          -course: *21
+          -hours: 3
+          -id: 42
+          -name: Section 2
+          -num_students: 29
+          -number: 2
+          -streams:
+            1: *20
+          -teachers:
+            11: *23
+    21: &25 !!perl/hash:Course
+      -allocation: 1
+      -id: 21
+      -name: User Interfaces
+      -number: 2W6
+      -sections:
+        1: &26 !!perl/hash:Section
+          -allocation: {}
+          -blocks:
+            105: !!perl/hash:Block
+              -conflicted: 0
+              -day: tue
+              -day_number: 2
+              -duration: 1.5
+              -id: 105
+              -labs:
+                1: &27 !!perl/hash:Lab
+                  -descr: ''
+                  -id: 1
+                  -number: P325
+              -movable: 1
+              -number: 1
+              -section: *26
+              -start: 11:30
+              -start_number: 11.5
+              -sync: []
+              -teachers:
+                18: &28 !!perl/hash:Teacher
+                  -dept: ''
+                  -fname: Mauricio
+                  -id: 18
+                  -lname: Buschinelli
+                  -release: ''
+            106: !!perl/hash:Block
+              -conflicted: 0
+              -day: thu
+              -day_number: 4
+              -duration: 1.5
+              -id: 106
+              -labs:
+                1: *27
+              -movable: 1
+              -number: 2
+              -section: *26
+              -start: 11:30
+              -start_number: 11.5
+              -sync: []
+              -teachers:
+                18: *28
+            107: !!perl/hash:Block
+              -conflicted: 0
+              -day: fri
+              -day_number: 5
+              -duration: 3
+              -id: 107
+              -labs:
+                1: *27
+              -movable: 1
+              -number: 3
+              -section: *26
+              -start: 8:30
+              -start_number: 8.5
+              -sync: []
+              -teachers:
+                18: *28
+          -course: *25
+          -hours: 6
+          -id: 43
+          -name: Section 1
+          -num_students: 24
+          -number: 1
+          -streams:
+            0: *18
+          -teachers: {}
+        2: &29 !!perl/hash:Section
+          -allocation: {}
+          -blocks:
+            108: !!perl/hash:Block
+              -conflicted: 0
+              -day: thu
+              -day_number: 4
+              -duration: 1.5
+              -id: 108
+              -labs:
+                2: *3
+              -movable: 1
+              -number: 1
+              -section: *29
+              -start: 13:00
+              -start_number: 13
+              -sync: []
+              -teachers:
+                18: *28
+            109: !!perl/hash:Block
+              -conflicted: 0
+              -day: tue
+              -day_number: 2
+              -duration: 1.5
+              -id: 109
+              -labs:
+                2: *3
+              -movable: 1
+              -number: 2
+              -section: *29
+              -start: 13:00
+              -start_number: 13
+              -sync: []
+              -teachers:
+                18: *28
+            110: !!perl/hash:Block
+              -conflicted: 0
+              -day: mon
+              -day_number: 1
+              -duration: 3
+              -id: 110
+              -labs:
+                2: *3
+              -movable: 1
+              -number: 3
+              -section: *29
+              -start: 8:30
+              -start_number: 8.5
+              -sync: []
+              -teachers:
+                18: *28
+          -course: *25
+          -hours: 6
+          -id: 44
+          -name: Section 2
+          -num_students: 24
+          -number: 2
+          -streams:
+            1: *20
+          -teachers: {}
+    22: &30 !!perl/hash:Course
+      -allocation: 1
+      -id: 22
+      -name: Intro to Programming (UI)
+      -number: DBA
+      -sections:
+        1: &31 !!perl/hash:Section
+          -allocation:
+            0: 3
+          -blocks:
+            111: !!perl/hash:Block
+              -conflicted: 0
+              -day: wed
+              -day_number: 3
+              -duration: 1.5
+              -id: 111
+              -labs:
+                2: *3
+              -movable: 1
+              -number: 1
+              -section: *31
+              -start: 13:00
+              -start_number: 13
+              -sync: []
+              -teachers:
+                0: &32 !!perl/hash:Teacher
+                  -dept: ''
+                  -fname: Sandy
+                  -id: 0
+                  -lname: Bultena
+                  -release: ''
+            112: !!perl/hash:Block
+              -conflicted: 0
+              -day: mon
+              -day_number: 1
+              -duration: 1.5
+              -id: 112
+              -labs:
+                2: *3
+              -movable: 1
+              -number: 2
+              -section: *31
+              -start: 13:00
+              -start_number: 13
+              -sync: []
+              -teachers:
+                0: *32
+          -course: *30
+          -hours: 3
+          -id: 45
+          -name: Section 1
+          -num_students: 29
+          -number: 1
+          -streams: {}
+          -teachers:
+            0: *32
+    23: &33 !!perl/hash:Course
+      -allocation: 1
+      -id: 23
+      -name: Programming II
+      -number: 2P6
+      -sections:
+        1: &34 !!perl/hash:Section
+          -allocation: {}
+          -blocks:
+            115: !!perl/hash:Block
+              -conflicted: 0
+              -day: wed
+              -day_number: 3
+              -duration: 1.5
+              -id: 115
+              -labs:
+                3: *15
+                5: *16
+              -movable: 1
+              -number: 1
+              -section: *34
+              -start: 11:30
+              -start_number: 11.5
+              -sync: []
+              -teachers:
+                2: &35 !!perl/hash:Teacher
+                  -dept: ''
+                  -fname: Claudiu
+                  -id: 2
+                  -lname: Scotnotis
+                  -release: ''
+            116: !!perl/hash:Block
+              -conflicted: 0
+              -day: fri
+              -day_number: 5
+              -duration: 1.5
+              -id: 116
+              -labs:
+                3: *15
+                5: *16
+              -movable: 1
+              -number: 2
+              -section: *34
+              -start: 12:00
+              -start_number: 12
+              -sync: []
+              -teachers:
+                2: *35
+            117: !!perl/hash:Block
+              -conflicted: 0
+              -day: thu
+              -day_number: 4
+              -duration: 3
+              -id: 117
+              -labs:
+                3: *15
+              -movable: 1
+              -number: 3
+              -section: *34
+              -start: 14:30
+              -start_number: 14.5
+              -sync: []
+              -teachers:
+                2: *35
+          -course: *33
+          -hours: 6
+          -id: 47
+          -name: Section 1
+          -num_students: 25
+          -number: 1
+          -streams:
+            0: *18
+          -teachers: {}
+        2: &36 !!perl/hash:Section
+          -allocation: {}
+          -blocks:
+            121: !!perl/hash:Block
+              -conflicted: 0
+              -day: wed
+              -day_number: 3
+              -duration: 1.5
+              -id: 121
+              -labs:
+                3: *15
+                5: *16
+              -movable: 1
+              -number: 1
+              -section: *36
+              -start: 13:00
+              -start_number: 13
+              -sync: []
+              -teachers:
+                2: *35
+            122: !!perl/hash:Block
+              -conflicted: 0
+              -day: mon
+              -day_number: 1
+              -duration: 1.5
+              -id: 122
+              -labs:
+                3: *15
+                5: *16
+              -movable: 1
+              -number: 2
+              -section: *36
+              -start: 13:00
+              -start_number: 13
+              -sync: []
+              -teachers:
+                2: *35
+            123: !!perl/hash:Block
+              -conflicted: 0
+              -day: thu
+              -day_number: 4
+              -duration: 3
+              -id: 123
+              -labs:
+                3: *15
+              -movable: 1
+              -number: 3
+              -section: *36
+              -start: 10:00
+              -start_number: 10
+              -sync: []
+              -teachers:
+                2: *35
+          -course: *33
+          -hours: 6
+          -id: 49
+          -name: Section 2
+          -num_students: 25
+          -number: 2
+          -streams:
+            1: *20
+          -teachers: {}
+    24: &37 !!perl/hash:Course
+      -allocation: 1
+      -id: 24
+      -name: Introduction to Computers
+      -number: DAB
+      -sections:
+        1: &38 !!perl/hash:Section
+          -allocation:
+            11: 3
+          -blocks:
+            127: !!perl/hash:Block
+              -conflicted: 0
+              -day: tue
+              -day_number: 2
+              -duration: 1.5
+              -id: 127
+              -labs: {}
+              -movable: 1
+              -number: 1
+              -section: *38
+              -start: 11:30
+              -start_number: 11.5
+              -sync: []
+              -teachers:
+                11: *23
+            128: !!perl/hash:Block
+              -conflicted: 0
+              -day: mon
+              -day_number: 1
+              -duration: 1.5
+              -id: 128
+              -labs: {}
+              -movable: 1
+              -number: 2
+              -section: *38
+              -start: 8:00
+              -start_number: 8
+              -sync: []
+              -teachers:
+                11: *23
+          -course: *37
+          -hours: 3
+          -id: 51
+          -name: Section 1
+          -num_students: 29
+          -number: 1
+          -streams: {}
+          -teachers:
+            11: *23
+      -semester: ''
+    25: &39 !!perl/hash:Course
+      -allocation: 1
+      -id: 25
+      -name: Programming IV
+      -number: 4P6
+      -sections:
+        1: &40 !!perl/hash:Section
+          -allocation:
+            1: 6
+          -blocks:
+            131: !!perl/hash:Block
+              -conflicted: 0
+              -day: tue
+              -day_number: 2
+              -duration: 1.5
+              -id: 131
+              -labs: {}
+              -movable: 1
+              -number: 1
+              -section: *40
+              -start: 10:30
+              -start_number: 10.5
+              -sync: []
+              -teachers:
+                1: &41 !!perl/hash:Teacher
+                  -dept: ''
+                  -fname: Ian
+                  -id: 1
+                  -lname: Clement
+                  -release: 0.25
+            133: !!perl/hash:Block
+              -conflicted: 0
+              -day: thu
+              -day_number: 4
+              -duration: 1.5
+              -id: 133
+              -labs: {}
+              -movable: 1
+              -number: 2
+              -section: *40
+              -start: 8:00
+              -start_number: 8
+              -sync: []
+              -teachers:
+                1: *41
+            134: !!perl/hash:Block
+              -conflicted: 0
+              -day: fri
+              -day_number: 5
+              -duration: 3
+              -id: 134
+              -labs: {}
+              -movable: 1
+              -number: 3
+              -section: *40
+              -start: 12:00
+              -start_number: 12
+              -sync: []
+              -teachers:
+                1: *41
+          -course: *39
+          -hours: 6
+          -id: 53
+          -name: ''
+          -num_students: 25
+          -number: 1
+          -streams: {}
+          -teachers:
+            1: *41
+        2: &42 !!perl/hash:Section
+          -allocation:
+            1: 6
+          -blocks:
+            132: !!perl/hash:Block
+              -conflicted: 0
+              -day: tue
+              -day_number: 2
+              -duration: 1.5
+              -id: 132
+              -labs: {}
+              -movable: 1
+              -number: 1
+              -section: *42
+              -start: 8:30
+              -start_number: 8.5
+              -sync: []
+              -teachers:
+                1: *41
+            135: !!perl/hash:Block
+              -conflicted: 0
+              -day: mon
+              -day_number: 1
+              -duration: 1.5
+              -id: 135
+              -labs: {}
+              -movable: 1
+              -number: 2
+              -section: *42
+              -start: 8:00
+              -start_number: 8
+              -sync: []
+              -teachers:
+                1: *41
+            136: !!perl/hash:Block
+              -conflicted: 0
+              -day: mon
+              -day_number: 1
+              -duration: 3
+              -id: 136
+              -labs: {}
+              -movable: 1
+              -number: 3
+              -section: *42
+              -start: 12:30
+              -start_number: 12.5
+              -sync: []
+              -teachers:
+                1: *41
+          -course: *39
+          -hours: 6
+          -id: 54
+          -name: ''
+          -num_students: 25
+          -number: 2
+          -streams: {}
+          -teachers:
+            1: *41
+      -semester: ''
+    26: &43 !!perl/hash:Course
+      -allocation: 1
+      -id: 26
+      -name: Application Development I
+      -number: 4A8
+      -sections:
+        1: &44 !!perl/hash:Section
+          -allocation:
+            12: 8
+          -blocks:
+            137: !!perl/hash:Block
+              -conflicted: 0
+              -day: fri
+              -day_number: 5
+              -duration: 2
+              -id: 137
+              -labs: {}
+              -movable: 1
+              -number: 1
+              -section: *44
+              -start: 10:00
+              -start_number: 10
+              -sync: []
+              -teachers:
+                12: &45 !!perl/hash:Teacher
+                  -dept: ''
+                  -fname: Helen
+                  -id: 12
+                  -lname: Katalifos
+                  -release: 0.20
+            139: !!perl/hash:Block
+              -conflicted: 0
+              -day: mon
+              -day_number: 1
+              -duration: 2
+              -id: 139
+              -labs: {}
+              -movable: 1
+              -number: 2
+              -section: *44
+              -start: 8:00
+              -start_number: 8
+              -sync: []
+              -teachers:
+                12: *45
+            140: !!perl/hash:Block
+              -conflicted: 0
+              -day: mon
+              -day_number: 1
+              -duration: 2
+              -id: 140
+              -labs: {}
+              -movable: 1
+              -number: 3
+              -section: *44
+              -start: 11:30
+              -start_number: 11.5
+              -sync: []
+              -teachers:
+                12: *45
+            141: !!perl/hash:Block
+              -conflicted: 0
+              -day: wed
+              -day_number: 3
+              -duration: 2
+              -id: 141
+              -labs: {}
+              -movable: 1
+              -number: 4
+              -section: *44
+              -start: 10:30
+              -start_number: 10.5
+              -sync: []
+              -teachers:
+                12: *45
+          -course: *43
+          -hours: 8
+          -id: 55
+          -name: ''
+          -num_students: 25
+          -number: 1
+          -streams: {}
+          -teachers:
+            12: *45
+        2: &46 !!perl/hash:Section
+          -allocation:
+            0: 8
+          -blocks:
+            138: !!perl/hash:Block
+              -conflicted: 0
+              -day: wed
+              -day_number: 3
+              -duration: 2
+              -id: 138
+              -labs: {}
+              -movable: 1
+              -number: 1
+              -section: *46
+              -start: 8:00
+              -start_number: 8
+              -sync: []
+              -teachers:
+                0: *32
+            142: !!perl/hash:Block
+              -conflicted: 0
+              -day: thu
+              -day_number: 4
+              -duration: 2
+              -id: 142
+              -labs: {}
+              -movable: 1
+              -number: 2
+              -section: *46
+              -start: 8:00
+              -start_number: 8
+              -sync: []
+              -teachers:
+                0: *32
+            143: !!perl/hash:Block
+              -conflicted: 0
+              -day: mon
+              -day_number: 1
+              -duration: 2
+              -id: 143
+              -labs: {}
+              -movable: 1
+              -number: 3
+              -section: *46
+              -start: 8:00
+              -start_number: 8
+              -sync: []
+              -teachers:
+                0: *32
+            144: !!perl/hash:Block
+              -conflicted: 0
+              -day: tue
+              -day_number: 2
+              -duration: 2
+              -id: 144
+              -labs: {}
+              -movable: 1
+              -number: 4
+              -section: *46
+              -start: 8:00
+              -start_number: 8
+              -sync: []
+              -teachers:
+                0: *32
+          -course: *43
+          -hours: 8
+          -id: 56
+          -name: ''
+          -num_students: 25
+          -number: 2
+          -streams: {}
+          -teachers:
+            0: *32
+      -semester: ''
+    27: &47 !!perl/hash:Course
+      -allocation: 1
+      -id: 27
+      -name: Web Development II
+      -number: 4W6
+      -sections:
+        1: &48 !!perl/hash:Section
+          -allocation:
+            15: 6
+          -blocks:
+            145: !!perl/hash:Block
+              -conflicted: 0
+              -day: mon
+              -day_number: 1
+              -duration: 1.5
+              -id: 145
+              -labs: {}
+              -movable: 1
+              -number: 1
+              -section: *48
+              -start: 8:00
+              -start_number: 8
+              -sync: []
+              -teachers:
+                15: &49 !!perl/hash:Teacher
+                  -dept: ''
+                  -fname: Vik
+                  -id: 15
+                  -lname: Singh
+                  -release: ''
+            147: !!perl/hash:Block
+              -conflicted: 0
+              -day: thu
+              -day_number: 4
+              -duration: 1.5
+              -id: 147
+              -labs: {}
+              -movable: 1
+              -number: 2
+              -section: *48
+              -start: 11:30
+              -start_number: 11.5
+              -sync: []
+              -teachers:
+                15: *49
+            148: !!perl/hash:Block
+              -conflicted: 0
+              -day: mon
+              -day_number: 1
+              -duration: 3
+              -id: 148
+              -labs: {}
+              -movable: 1
+              -number: 3
+              -section: *48
+              -start: 11:30
+              -start_number: 11.5
+              -sync: []
+              -teachers:
+                15: *49
+          -course: *47
+          -hours: 6
+          -id: 57
+          -name: ''
+          -num_students: 26
+          -number: 1
+          -streams: {}
+          -teachers:
+            15: *49
+        2: &50 !!perl/hash:Section
+          -allocation:
+            15: 6
+          -blocks:
+            146: !!perl/hash:Block
+              -conflicted: 0
+              -day: tue
+              -day_number: 2
+              -duration: 1.5
+              -id: 146
+              -labs: {}
+              -movable: 1
+              -number: 1
+              -section: *50
+              -start: 9:30
+              -start_number: 9.5
+              -sync: []
+              -teachers:
+                15: *49
+            149: !!perl/hash:Block
+              -conflicted: 0
+              -day: wed
+              -day_number: 3
+              -duration: 1.5
+              -id: 149
+              -labs: {}
+              -movable: 1
+              -number: 2
+              -section: *50
+              -start: 9:00
+              -start_number: 9
+              -sync: []
+              -teachers:
+                15: *49
+            150: !!perl/hash:Block
+              -conflicted: 0
+              -day: thu
+              -day_number: 4
+              -duration: 3
+              -id: 150
+              -labs: {}
+              -movable: 1
+              -number: 3
+              -section: *50
+              -start: 8:30
+              -start_number: 8.5
+              -sync: []
+              -teachers:
+                15: *49
+          -course: *47
+          -hours: 6
+          -id: 58
+          -name: ''
+          -num_students: 26
+          -number: 2
+          -streams: {}
+          -teachers:
+            15: *49
+      -semester: ''
+    28: &51 !!perl/hash:Course
+      -allocation: 1
+      -id: 28
+      -name: Stage I
+      -number: 659
+      -sections:
+        1: !!perl/hash:Section
+          -allocation:
+            0: .25
+            11: 2
+            12: 2.5
+            15: 1.5
+            17: 1
+            18: .75
+            20: .5
+          -blocks: {}
+          -course: *51
+          -hours: 9
+          -id: 59
+          -name: ''
+          -num_students: 20
+          -number: 1
+          -streams: {}
+          -teachers:
+            0: *32
+            11: *23
+            12: *45
+            15: *49
+            17: *17
+            18: *28
+            20: &52 !!perl/hash:Teacher
+              -dept: ''
+              -fname: Michael
+              -id: 20
+              -lname: Haaf
+              -release: ''
+        2: !!perl/hash:Section
+          -allocation:
+            11: 2
+            12: 1.5
+            15: 1.5
+            17: 1
+            18: .75
+            20: .5
+          -blocks: {}
+          -course: *51
+          -hours: 9
+          -id: 60
+          -name: ''
+          -num_students: 20
+          -number: 2
+          -streams: {}
+          -teachers:
+            11: *23
+            12: *45
+            15: *49
+            17: *17
+            18: *28
+            20: *52
+      -semester: ''
+    29: &53 !!perl/hash:Course
+      -allocation: 1
+      -id: 29
+      -name: Stage II
+      -number: 65B
+      -sections:
+        1: !!perl/hash:Section
+          -allocation:
+            16: 1.5
+            2: 1.5
+            20: 2
+            4: 6
+            9: 1
+          -blocks: {}
+          -course: *53
+          -hours: 12
+          -id: 63
+          -name: ''
+          -num_students: 20
+          -number: 1
+          -streams: {}
+          -teachers:
+            16: *10
+            2: *35
+            20: *52
+            4: &54 !!perl/hash:Teacher
+              -dept: ''
+              -fname: Larry
+              -id: 4
+              -lname: Fagen
+              -release: ''
+            9: *4
+        2: !!perl/hash:Section
+          -allocation:
+            16: 1.5
+            2: 1.5
+            20: 2
+            4: 6
+            9: 1
+          -blocks: {}
+          -course: *53
+          -hours: 12
+          -id: 64
+          -name: ''
+          -num_students: 20
+          -number: 2
+          -streams: {}
+          -teachers:
+            16: *10
+            2: *35
+            20: *52
+            4: *54
+            9: *4
+      -semester: ''
+    8: &55 !!perl/hash:Course
+      -allocation: 1
+      -id: 8
+      -name: Windows Networking
+      -number: 623
+      -sections:
+        1: &56 !!perl/hash:Section
+          -allocation:
+            16: 3
+          -blocks:
+            42: !!perl/hash:Block
+              -conflicted: 0
+              -day: fri
+              -day_number: 5
+              -duration: 1.5
+              -id: 42
+              -labs:
+                3: *15
+              -movable: 1
+              -number: 1
+              -section: *56
+              -start: 8:30
+              -start_number: 8.5
+              -sync: []
+              -teachers:
+                16: *10
+            43: !!perl/hash:Block
+              -conflicted: 0
+              -day: mon
+              -day_number: 1
+              -duration: 1.5
+              -id: 43
+              -labs:
+                3: *15
+              -movable: 1
+              -number: 2
+              -section: *56
+              -start: 11:30
+              -start_number: 11.5
+              -sync: []
+              -teachers:
+                16: *10
+          -course: *55
+          -hours: 3
+          -id: 16
+          -name: Section 1
+          -num_students: 20
+          -number: 1
+          -streams:
+            4: *5
+          -teachers:
+            16: *10
+        2: &57 !!perl/hash:Section
+          -allocation:
+            16: 3
+          -blocks:
+            87: !!perl/hash:Block
+              -conflicted: 0
+              -day: thu
+              -day_number: 4
+              -duration: 1.5
+              -id: 87
+              -labs: {}
+              -movable: 1
+              -number: 1
+              -section: *57
+              -start: 13:00
+              -start_number: 13
+              -sync: []
+              -teachers:
+                16: *10
+            88: !!perl/hash:Block
+              -conflicted: 0
+              -day: fri
+              -day_number: 5
+              -duration: 1.5
+              -id: 88
+              -labs: {}
+              -movable: 1
+              -number: 2
+              -section: *57
+              -start: 13:00
+              -start_number: 13
+              -sync: []
+              -teachers:
+                16: *10
+          -course: *55
+          -hours: 3
+          -id: 36
+          -name: Section 2
+          -num_students: 20
+          -number: 2
+          -streams:
+            7: *7
+          -teachers:
+            16: *10
+    9: &58 !!perl/hash:Course
+      -allocation: 1
+      -id: 9
+      -name: Intro to Programming (Console)
+      -number: DBF
+      -sections:
+        1: &59 !!perl/hash:Section
+          -allocation:
+            4: 3
+          -blocks:
+            46: !!perl/hash:Block
+              -conflicted: 0
+              -day: mon
+              -day_number: 1
+              -duration: 1.5
+              -id: 46
+              -labs:
+                3: *15
+              -movable: 1
+              -number: 2
+              -section: *59
+              -start: 10:00
+              -start_number: 10
+              -sync: []
+              -teachers:
+                4: *54
+            47: !!perl/hash:Block
+              -conflicted: 0
+              -day: wed
+              -day_number: 3
+              -duration: 1.5
+              -id: 47
+              -labs:
+                3: *15
+              -movable: 1
+              -number: 1
+              -section: *59
+              -start: 10:00
+              -start_number: 10
+              -sync: []
+              -teachers:
+                4: *54
+          -course: *58
+          -hours: 3
+          -id: 18
+          -name: Section 1
+          -num_students: 29
+          -number: 1
+          -streams: {}
+          -teachers:
+            4: *54
+        2: &60 !!perl/hash:Section
+          -allocation:
+            4: 3
+          -blocks:
+            129: !!perl/hash:Block
+              -conflicted: 0
+              -day: tue
+              -day_number: 2
+              -duration: 1.5
+              -id: 129
+              -labs: {}
+              -movable: 1
+              -number: 1
+              -section: *60
+              -start: 9:30
+              -start_number: 9.5
+              -sync: []
+              -teachers:
+                4: *54
+            130: !!perl/hash:Block
+              -conflicted: 0
+              -day: fri
+              -day_number: 5
+              -duration: 1.5
+              -id: 130
+              -labs: {}
+              -movable: 1
+              -number: 2
+              -section: *60
+              -start: 8:30
+              -start_number: 8.5
+              -sync: []
+              -teachers:
+                4: *54
+          -course: *58
+          -hours: 3
+          -id: 52
+          -name: ''
+          -num_students: 29
+          -number: 2
+          -streams: {}
+          -teachers:
+            4: *54
+-labs: !!perl/hash:Labs
+  -list:
+    0: *11
+    1: *27
+    2: *3
+    3: *15
+    4: !!perl/hash:Lab
+      -descr: ''
+      -id: 4
+      -number: P211
+    5: *16
+    6: !!perl/hash:Lab
+      -descr: ''
+      -id: 6
+      -number: X
+-streams: !!perl/hash:Streams
+  -list:
+    0: *18
+    1: *20
+    2: !!perl/hash:Stream
+      -descr: ''
+      -id: 2
+      -number: 2A
+    3: !!perl/hash:Stream
+      -descr: ''
+      -id: 3
+      -number: 2B
+    4: *5
+    7: *7
+-teachers: !!perl/hash:Teachers
+  -list:
+    0: *32
+    1: *41
+    11: *23
+    12: *45
+    15: *49
+    16: *10
+    17: *17
+    18: *28
+    19: !!perl/hash:Teacher
+      -dept: ''
+      -fname: Ivan
+      -id: 19
+      -lname: Miloslavov
+      -release: ''
+    2: *35
+    20: *52
+    4: *54
+    9: *4
+--- 154
+--- 29
+--- 7
+--- 64
+--- 20
+--- 154
+--- 7

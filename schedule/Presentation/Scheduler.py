@@ -299,7 +299,7 @@ def _save_schedule(save_as: bool):
         gui.show_error("Save Schedule", "There is no schedule to save!")
         return
 
-    # get file to save to
+    # get_by_id file to save to
     file: str
     global current_schedule_file
     if save_as or not current_schedule_file:

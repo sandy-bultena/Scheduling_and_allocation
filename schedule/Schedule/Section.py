@@ -419,6 +419,6 @@ class Section:
     def is_conflicted(self) -> bool:
         """ Checks if there is a conflict with this section """
         for b in self.blocks:
-            if b.conflicted:
+            if b.conflicted_number:
                 return True
         return False

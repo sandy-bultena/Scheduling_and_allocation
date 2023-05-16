@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-import Block
 import Schedule
-import LabUnavailableTime
+from .LabUnavailableTime import LabUnavailableTime
 from .ScheduleEnums import WeekDay
 
 """ SYNOPSIS/EXAMPLE:
@@ -20,6 +19,45 @@ def lab_id_generator(max_id: int = 0):
     while True:
         yield the_id
         the_id = the_id + 1
+
+
+_instances: dict[int, Lab] = dict()
+
+
+# ===================================
+# list [tuple]
+# ===================================
+def get_all() -> tuple[Lab]:
+    """Returns an immutable tuple containing all instances of the Lab class."""
+    return tuple(_instances.values())
+
+
+# =================================================================
+# get_by_number
+# =================================================================
+def get_by_number(number: str) -> Lab | None:
+    """Returns the Lab which matches this Lab number, if it exists."""
+    found = [lab for lab in _instances.values() if lab.number == number]
+    return found[0] if found else None
+
+
+# =================================================================
+# get_by_id
+# =================================================================
+
+def get_by_id(lab_id: int) -> Lab | None:
+    """Returns the Lab object matching the specified ID, if it exists."""
+    if lab_id in _instances.keys():
+        return _instances[lab_id]
+    return None
+
+
+# =================================================================
+# reset
+# =================================================================
+def clear_all():
+    """Reset the local list of labs"""
+    Lab.__instances = dict()
 
 
 class Lab:
@@ -43,7 +81,7 @@ class Lab:
         """Creates and returns a new Lab object."""
         self.number = number
         self.descr = descr
-        self._unavailable: dict[int, LabUnavailableTime.LabUnavailableTime] = dict()
+        self._unavailable: dict[int, LabUnavailableTime] = dict()
 
         self.__id = lab_id if lab_id else next(Lab.lab_id)
         Lab.__instances[self.__id] = self
@@ -69,10 +107,9 @@ class Lab:
 
         - Parameter duration => how long does this class last, in hours
         """
-        return self.add_unavailable_slot(
-            LabUnavailableTime.LabUnavailableTime(day, start, duration, schedule=schedule))
+        return self.add_unavailable_slot(LabUnavailableTime(day, start, duration, schedule=schedule))
 
-    def add_unavailable_slot(self, slot: LabUnavailableTime.LabUnavailableTime) -> Lab:
+    def add_unavailable_slot(self, slot: LabUnavailableTime) -> Lab:
         """Adds an existing time slot to this lab's unavailable times."""
         self._unavailable[slot.id] = slot
         return self
@@ -96,7 +133,7 @@ class Lab:
     # get_unavailable
     # =================================================================
 
-    def get_unavailable(self, target_id: int) -> LabUnavailableTime.LabUnavailableTime | None:
+    def get_unavailable(self, target_id: int) -> LabUnavailableTime | None:
         """Return the unavailable time slot object for this Lab.
         
         - Parameter target_id: int -> The ID of the TimeSlot to be returned.
@@ -110,7 +147,7 @@ class Lab:
     # =================================================================
     # unavailable
     # =================================================================
-    def unavailable(self) -> tuple[LabUnavailableTime.LabUnavailableTime]:
+    def unavailable(self) -> tuple[LabUnavailableTime]:
         """Returns all unavailable time slot objects for this lab."""
         return tuple(self._unavailable.values())
 
@@ -127,58 +164,6 @@ class Lab:
     def __repr__(self) -> str:
         return str(self)
 
-    # ===================================
-    # list [tuple]
-    # ===================================
-    @staticmethod
-    def list() -> tuple[Lab]:
-        """Returns an immutable tuple containing all instances of the Lab class."""
-        return tuple(Lab.__instances.values())
-
-    # =================================================================
-    # get_by_number
-    # =================================================================
-    @staticmethod
-    def get_by_number(number: str) -> Lab | None:
-        """Returns the Lab which matches this Lab number, if it exists."""
-        found = [lab for lab in Lab.list() if lab.number == number]
-        return found[0] if found else None
-
-    # =================================================================
-    # get
-    # =================================================================
-    @staticmethod
-    def get(lab_id: int) -> Lab | None:
-        """Returns the Lab object matching the specified ID, if it exists."""
-        if lab_id in Lab.__instances.keys():
-            return Lab.__instances[lab_id]
-        return None
-
-    # =================================================================
-    # share_blocks
-    # =================================================================
-    @staticmethod
-    def share_blocks(block1: Block.Block, block2: Block.Block) -> bool:
-        """Checks whether there are Labs which share the two specified Blocks."""
-
-        # Count occurrences in both sets and ensure that all values are < 2
-        occurrences = {}
-        for lab in block1.labs():
-            if lab.id not in occurrences.keys():
-                occurrences[lab.id] = 0
-            occurrences[lab.id] += 1
-        for lab in block2.labs():
-            if lab.id not in occurrences.keys():
-                occurrences[lab.id] = 0
-            occurrences[lab.id] += 1
-
-        # A count of 2 means that they are in both sets.
-        for lab_count in occurrences.values():
-            if lab_count >= 2:
-                return True
-
-        return False
-
     # =================================================================
     # remove lab / delete
     # =================================================================
@@ -192,14 +177,6 @@ class Lab:
 
     def remove(self):
         self.delete()
-
-    # =================================================================
-    # reset
-    # =================================================================
-    @staticmethod
-    def reset():
-        """Reset the local list of labs"""
-        Lab.__instances = dict()
 
 
 # =================================================================

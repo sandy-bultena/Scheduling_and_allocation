@@ -1,12 +1,14 @@
 from __future__ import annotations
 from .Teacher import Teacher
 from .Course import Course
-from .Conflict import Conflict
+from .Conflicts import Conflict
 from .Lab import Lab
 from .Stream import Stream
 from .Section import Section
 from .Block import Block
 from .ScheduleEnums import ViewType
+
+from typing import Optional
 
 """ SYNOPSIS/EXAMPLE:
     from Schedule.Schedule import Schedule
@@ -32,7 +34,7 @@ class Schedule:
     # CONSTRUCTOR
     # ========================================================
 
-    def __init__(self, file: str):
+    def __init__(self, file: Optional[str] = None):
         """
         Creates an instance of the Schedule class.
         
@@ -259,21 +261,9 @@ class Schedule:
     # --------------------------------------------------------
     def calculate_conflicts(self):
         """Calculate all the conflicts for this schedule"""
-        Conflict.calculate_conflicts(self)
+        calculate_conflicts()
 
-    # --------------------------------------------------------
-    # sharing blocks
-    # --------------------------------------------------------
-    def any_teacher_share_blocks(self, b1: Block, b2: Block) -> bool:
-        return Teacher.share_blocks(b1, b2)
-
-    def any_stream_share_blocks(self, b1: Block, b2: Block) -> bool:
-        return Stream.share_blocks(b1, b2)
-
-    def any_lab_share_blocks(self, b1: Block, b2: Block) -> bool:
-        return Lab.share_blocks(b1, b2)
-
-    # --------------------------------------------------------
+   # --------------------------------------------------------
     # teacher_stat
     # --------------------------------------------------------
     def teacher_stat(self, teacher: Teacher) -> str:
@@ -400,7 +390,7 @@ class Schedule:
         block.remove_all_labs()
 
     # --------------------------------------------------------
-    # get block info for specified ViewType object
+    # get_by_id block info for specified ViewType object
     # --------------------------------------------------------
     def get_blocks_for_obj(self, obj: Teacher | Lab | Stream) -> tuple[Block]:
         """ Returns a tuple of blocks associated with the specified ViewType object"""

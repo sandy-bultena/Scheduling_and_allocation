@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from .Block import Block
-
 """ SYNOPSIS/EXAMPLE:
     from Schedule.Stream import Stream
 
@@ -50,7 +48,7 @@ class Stream:
         return tuple(Stream.__instances.values())
 
     # --------------------------------------------------------
-    # get
+    # get_by_id
     # --------------------------------------------------------
     @staticmethod
     def get(stream_id: int) -> Stream | None:
@@ -80,22 +78,6 @@ class Stream:
     # ========================================================
     # METHODS
     # ========================================================
-
-    # --------------------------------------------------------
-    # share_blocks (STATIC)
-    # --------------------------------------------------------
-    @staticmethod
-    def share_blocks(b1: Block, b2: Block) -> bool:
-        """Checks if there's a Stream that shares the two blocks provided"""
-        occurrences = set()
-        if b1.section is None or b2.section is None:
-            return False
-        for s in b1.section.streams:
-            occurrences.add(s.id)
-        for s in b2.section.streams:
-            if s.id in occurrences:
-                return True
-        return False
 
     # --------------------------------------------------------
     # conversion to string

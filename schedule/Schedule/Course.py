@@ -383,7 +383,7 @@ class Course:
         return tuple(Course.__instances.values())
 
     # =================================================================
-    # get
+    # get_by_id
     # =================================================================
     @staticmethod
     def get(c_id: int) -> Course | None:

@@ -1,5 +1,5 @@
 from __future__ import annotations
-import Time_slot
+from .Time_slot import TimeSlot
 from .ScheduleEnums import WeekDay
 import Schedule
 
@@ -11,7 +11,7 @@ def lab_unavailable_id_generator(max_id: int = 0):
         the_id = the_id + 1
 
 
-class LabUnavailableTime(Time_slot.TimeSlot):
+class LabUnavailableTime(TimeSlot):
     """TimeSlot class representing a time in which a particular Lab is unavailable."""
 
     lab_unavail_id = lab_unavailable_id_generator()
@@ -19,9 +19,9 @@ class LabUnavailableTime(Time_slot.TimeSlot):
     # =================================================================
     # Constructor
     # =================================================================
-    def __init__(self, day: (WeekDay | str) = Time_slot.TimeSlot.DEFAULT_DAY,
-                 start: str = Time_slot.TimeSlot.DEFAULT_START,
-                 duration: float = Time_slot.TimeSlot.DEFAULT_DURATION, movable: bool = True, *,
+    def __init__(self, day: (WeekDay | str) = TimeSlot.DEFAULT_DAY,
+                 start: str = TimeSlot.DEFAULT_START,
+                 duration: float = TimeSlot.DEFAULT_DURATION, movable: bool = True, *,
                  lab_unavail_id: int = None,
                  schedule: Schedule.Schedule):
         super().__init__(day, start, duration, movable)
