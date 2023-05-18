@@ -1,6 +1,6 @@
 from __future__ import annotations
 from .Time_slot import TimeSlot
-from .Lab import Lab
+from .Labs import Lab
 from .Teacher import Teacher
 from .Stream import Stream
 from .ScheduleEnums import WeekDay

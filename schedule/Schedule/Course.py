@@ -2,7 +2,7 @@ from __future__ import annotations
 # directly importing modules to avoid circular dependencies
 from . import Stream
 from . import Teacher
-from . import Lab
+from . import Labs
 from . import Section
 from . import Block
 from .exceptions import InvalidSectionNumberForCourseError

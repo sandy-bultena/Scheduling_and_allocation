@@ -2,7 +2,7 @@ from __future__ import annotations
 from .Teacher import Teacher
 from .Course import Course
 from .Conflicts import Conflict
-from .Lab import Lab
+from .Labs import Lab
 from .Stream import Stream
 from .Section import Section
 from .Block import Block

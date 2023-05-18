@@ -3,7 +3,7 @@ from .Course import Course
 from .Stream import Stream
 from .Teacher import Teacher
 from .Block import Block
-from .Lab import Lab
+from .Labs import Lab
 from .exceptions import InvalidHoursForSectionError
 import re
 

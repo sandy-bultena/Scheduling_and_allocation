@@ -1,17 +1,22 @@
 from __future__ import annotations
 
-import Schedule
 from .LabUnavailableTime import LabUnavailableTime
 from .ScheduleEnums import WeekDay
+from typing import *
 
 """ SYNOPSIS/EXAMPLE:
 
     from Schedule.Lab import Lab
-    from Schedule.Section import Section
-
+    
     lab = Lab(number = "P322")
-    lab.add_unavailable(day = "Mon", start = "3:22", duration = 5)
+    lab.add_unavailable_time(day = "Mon", start = "3:22", duration = 5)
 """
+
+# ============================================================================
+# keep track of all the instances of 'Lab' class, and define the generator
+# that keeps track of which new id to use
+# ============================================================================
+_instances: dict[int, Lab] = dict()
 
 
 def lab_id_generator(max_id: int = 0):
@@ -21,20 +26,17 @@ def lab_id_generator(max_id: int = 0):
         the_id = the_id + 1
 
 
-_instances: dict[int, Lab] = dict()
-
-
-# ===================================
+# ============================================================================
 # list [tuple]
-# ===================================
+# ============================================================================
 def get_all() -> tuple[Lab]:
     """Returns an immutable tuple containing all instances of the Lab class."""
     return tuple(_instances.values())
 
 
-# =================================================================
+# ============================================================================
 # get_by_number
-# =================================================================
+# ============================================================================
 def get_by_number(number: str) -> Lab | None:
     """Returns the Lab which matches this Lab number, if it exists."""
     found = [lab for lab in _instances.values() if lab.number == number]
@@ -44,7 +46,6 @@ def get_by_number(number: str) -> Lab | None:
 # =================================================================
 # get_by_id
 # =================================================================
-
 def get_by_id(lab_id: int) -> Lab | None:
     """Returns the Lab object matching the specified ID, if it exists."""
     if lab_id in _instances.keys():
@@ -52,39 +53,43 @@ def get_by_id(lab_id: int) -> Lab | None:
     return None
 
 
-# =================================================================
+# ============================================================================
 # reset
-# =================================================================
+# ============================================================================
 def clear_all():
     """Reset the local list of labs"""
-    Lab.__instances = dict()
+    _instances.clear()
 
 
+id_generator: Generator[int, Any, None] = lab_id_generator()
+
+
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# CLASS: Lab
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class Lab:
     """
     Describes a distinct, contiguous course/section/class.
 
     Attributes:
     -----------
-    number: int
+    number: str
         The room number.
     desc: str
         The description of the Lab.
     """
-    __instances: dict[int, Lab] = {}
-    lab_id = lab_id_generator()
 
-    # -------------------------------------------------------------------
-    # new
-    # --------------------------------------------------------------------
-    def __init__(self, number: str = "100", descr: str = '', *, lab_id: int = None):
+    # =================================================================
+    # constructor
+    # =================================================================
+    def __init__(self, number: str = "P100", descr: str = '', *, lab_id: int = None):
         """Creates and returns a new Lab object."""
         self.number = number
         self.descr = descr
-        self._unavailable: dict[int, LabUnavailableTime] = dict()
+        self._unavailable: list[LabUnavailableTime] = list()
 
-        self.__id = lab_id if lab_id else next(Lab.lab_id)
-        Lab.__instances[self.__id] = self
+        self.__id = lab_id if lab_id else next(id_generator)
+        _instances[self.__id] = self
 
     # =================================================================
     # id
@@ -95,10 +100,10 @@ class Lab:
         return self.__id
 
     # =================================================
-    # add_unavailable
+    # add_unavailable_time
     # =================================================
-    def add_unavailable(self, day: WeekDay | str, start: str,
-                        duration: float, schedule: Schedule.Schedule) -> Lab:
+    def add_unavailable_time(self, day: WeekDay | str, start: str,
+                             duration: float) -> Lab:
         """Creates a time slot where this lab is not available.
         
         - Parameter day => 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'
@@ -107,49 +112,29 @@ class Lab:
 
         - Parameter duration => how long does this class last, in hours
         """
-        return self.add_unavailable_slot(LabUnavailableTime(day, start, duration, schedule=schedule))
+        return self.add_unavailable_slot(LabUnavailableTime(day, start, duration))
 
     def add_unavailable_slot(self, slot: LabUnavailableTime) -> Lab:
         """Adds an existing time slot to this lab's unavailable times."""
-        self._unavailable[slot.id] = slot
+        self._unavailable.append(slot)
         return self
 
     # =================================================
-    # remove_unavailable
+    # remove_unavailable_slot
     # =================================================
-    def remove_unavailable(self, target_id: int) -> Lab:
-        """Remove the unavailable time slot from this lab.
-        
-        - Parameter target_id -> The ID of the time slot to be removed.
-
-        Returns the modified Lab object.
-        """
-        if target_id in self._unavailable.keys():
-            del self._unavailable[target_id]
-
+    def remove_unavailable_slot(self, slot: LabUnavailableTime) -> Lab:
+        """Remove the unavailable time slot from this lab."""
+        if slot in self._unavailable:
+            self._unavailable.remove(slot)
         return self
-
-    # =================================================================
-    # get_unavailable
-    # =================================================================
-
-    def get_unavailable(self, target_id: int) -> LabUnavailableTime | None:
-        """Return the unavailable time slot object for this Lab.
-        
-        - Parameter target_id: int -> The ID of the TimeSlot to be returned.
-             
-        Returns the TimeSlot object if found, None otherwise.
-        """
-        if target_id in self._unavailable.keys():
-            return self._unavailable[target_id]
-        return None
 
     # =================================================================
     # unavailable
     # =================================================================
-    def unavailable(self) -> tuple[LabUnavailableTime]:
-        """Returns all unavailable time slot objects for this lab."""
-        return tuple(self._unavailable.values())
+    @property
+    def unavailable_slots(self) -> tuple[LabUnavailableTime]:
+        """Returns all immutable list of unavailable time slot objects for this lab."""
+        return tuple(set(self._unavailable))
 
     # =================================================================
     # __str__
@@ -172,8 +157,8 @@ class Lab:
         """Removes this Lab from the Labs object, along with its unavailable TimeSlots."""
 
         # Remove the passed Lab object only if it's actually contained in the list of instances.
-        if self in Lab.__instances.values():
-            del Lab.__instances[self.__id]
+        if self in _instances.values():
+            del _instances[self.__id]
 
     def remove(self):
         self.delete()
