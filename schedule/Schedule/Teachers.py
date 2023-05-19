@@ -2,7 +2,6 @@ from __future__ import annotations
 from .exceptions import InvalidTeacherNameError
 from typing import *
 
-
 """
 SYNOPSIS
 
@@ -36,6 +35,7 @@ def teacher_id_generator(max_id: int = 0):
 
 
 id_generator: Generator[int, Any, None] = teacher_id_generator()
+
 
 # ============================================================================
 # get_all

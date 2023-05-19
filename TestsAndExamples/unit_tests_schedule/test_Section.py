@@ -14,7 +14,7 @@ from schedule.Schedule.Course import Course
 from schedule.Schedule.Block import Block
 from schedule.Schedule.Labs import Lab
 from schedule.Schedule.Teachers import Teacher
-from schedule.Schedule.Stream import Stream
+from schedule.Schedule.Streams import Stream
 
 db: Database
 

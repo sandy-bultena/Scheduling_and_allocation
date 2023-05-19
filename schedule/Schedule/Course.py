@@ -1,6 +1,6 @@
 from __future__ import annotations
 # directly importing modules to avoid circular dependencies
-from . import Stream
+from . import Streams
 from . import Teachers
 from . import Labs
 from . import Section

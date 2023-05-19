@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import *
 
 """ SYNOPSIS/EXAMPLE:
     from Schedule.Stream import Stream
@@ -8,7 +9,12 @@ from __future__ import annotations
     all_labs = Stream.list()
 """
 
+_instances: dict[int, Stream] = {}
 
+
+# ============================================================================
+# auto id generator
+# ============================================================================
 def stream_id_generator(max_id: int = 0):
     the_id = max_id + 1
     while True:
@@ -16,10 +22,40 @@ def stream_id_generator(max_id: int = 0):
         the_id = the_id + 1
 
 
+id_generator: Generator[int, Any, None] = stream_id_generator()
+
+
+# ============================================================================
+# get_all
+# ============================================================================
+def get_all() -> tuple[Stream]:
+    """Returns an immutable tuple containing all instances of the Teacher class."""
+    return tuple(_instances.values())
+
+
+# =================================================================
+# get_by_id
+# =================================================================
+def get_by_id(stream_id: int) -> Stream | None:
+    """Returns the Teacher object matching the specified ID, if it exists."""
+    if stream_id in _instances.keys():
+        return _instances[stream_id]
+    return None
+
+
+# ============================================================================
+# reset
+# ============================================================================
+def clear_all():
+    """Reset the local list of labs"""
+    _instances.clear()
+
+
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# CLASS: Stream
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class Stream:
     """ Describes a group of students whose classes cannot overlap. """
-    __instances: dict[int, Stream] = dict()
-    stream_id_gen = stream_id_generator()
 
     # ========================================================
     # CONSTRUCTOR
@@ -33,39 +69,8 @@ class Stream:
         self.number = number
         self.descr = descr
 
-        self.__id = stream_id if stream_id else next(Stream.stream_id_gen)
-        Stream.__instances[self.__id] = self
-
-    # ========================================================
-    # ITERATING RELATED (STATIC)
-    # ========================================================
-    # --------------------------------------------------------
-    # list
-    # --------------------------------------------------------
-    @staticmethod
-    def list() -> tuple[Stream]:
-        """ Gets all instances of Stream. Returns a tuple object. """
-        return tuple(Stream.__instances.values())
-
-    # --------------------------------------------------------
-    # get_by_id
-    # --------------------------------------------------------
-    @staticmethod
-    def get(stream_id: int) -> Stream | None:
-        """ Gets a Stream with a given ID. If ID doesn't exist, returns None."""
-        return Stream.__instances[stream_id] if stream_id in Stream.__instances else None
-
-    # =================================================================
-    # reset
-    # =================================================================
-    @staticmethod
-    def reset():
-        """Reset the local list of streams"""
-        Stream.__instances = dict()
-
-    # ========================================================
-    # PROPERTIES
-    # ========================================================
+        self.__id = stream_id if stream_id else next(id_generator)
+        _instances[self.__id] = self
 
     # --------------------------------------------------------
     # id
@@ -74,10 +79,6 @@ class Stream:
     def id(self) -> int:
         """ Gets the id of the Stream. """
         return self.__id
-
-    # ========================================================
-    # METHODS
-    # ========================================================
 
     # --------------------------------------------------------
     # conversion to string
@@ -102,7 +103,7 @@ class Stream:
     # --------------------------------------------------------
     def delete(self):
         """ Deletes the current instance of Stream """
-        del Stream.__instances[self.id]
+        del _instances[self.id]
 
     def remove(self):
         self.delete()

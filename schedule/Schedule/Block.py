@@ -2,7 +2,7 @@ from __future__ import annotations
 from .Time_slot import TimeSlot
 from .Labs import Lab
 from .Teachers import Teacher
-from .Stream import Stream
+from .Streams import Stream
 from .ScheduleEnums import WeekDay
 
 """ SYNOPSIS:

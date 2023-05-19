@@ -9,7 +9,7 @@ from schedule.Schedule.Section import Section
 from schedule.Schedule.Teachers import Teacher
 from schedule.Schedule.Block import Block
 from schedule.Schedule.Labs import Lab
-from schedule.Schedule.Stream import Stream
+from schedule.Schedule.Streams import Stream
 
 from ..database.PonyDatabaseConnection import define_database, Course as dbCourse, \
     Section as dbSection, Schedule as dbSchedule, Scenario as dbScenario

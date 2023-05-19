@@ -3,7 +3,7 @@ from .Teachers import Teacher
 from .Course import Course
 from .Conflicts import Conflict
 from .Labs import Lab
-from .Stream import Stream
+from .Streams import Stream
 from .Section import Section
 from .Block import Block
 from .ScheduleEnums import ViewType

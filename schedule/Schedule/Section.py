@@ -1,6 +1,6 @@
 from __future__ import annotations
 from .Course import Course
-from .Stream import Stream
+from .Streams import Stream
 from .Teachers import Teacher
 from .Block import Block
 from .Labs import Lab

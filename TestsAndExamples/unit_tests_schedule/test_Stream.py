@@ -4,7 +4,7 @@ sys.path.append(path.dirname(path.dirname(__file__)))
 import pytest
 from .db_constants import *
 
-from schedule.Schedule.Stream import Stream
+from schedule.Schedule.Streams import Stream
 from schedule.Schedule.Block import Block
 from schedule.Schedule.Section import Section
 from schedule.Schedule.Course import Course
