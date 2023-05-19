@@ -1,5 +1,5 @@
 from __future__ import annotations
-from .Teacher import Teacher
+from .Teachers import Teacher
 from .Course import Course
 from .Conflicts import Conflict
 from .Labs import Lab

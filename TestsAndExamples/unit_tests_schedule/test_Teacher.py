@@ -3,45 +3,38 @@ import pytest
 import sys
 from os import path
 
-sys.path.append(path.dirname(path.dirname(__file__)))
+sys.path.append(path.dirname(path.dirname(__file__) + "/../../"))
 
-from schedule.Schedule.Teacher import Teacher
-from schedule.Schedule.Block import Block
-from ..database.PonyDatabaseConnection import define_database, Teacher as dbTeacher
-from pony.orm import *
-from .db_constants import *
-
-db: Database
+from schedule.Schedule.Teachers import Teacher
+import schedule.Schedule.Teachers as Teachers
 
 
 @pytest.fixture(scope="module", autouse=True)
 def before_and_after_module():
-    global db
-    if PROVIDER == "mysql":
-        db = define_database(host=HOST, passwd=PASSWD, db=DB_NAME, provider=PROVIDER, user=USERNAME)
-    elif PROVIDER == "sqlite":
-        db = define_database(provider=PROVIDER, filename=DB_NAME, create_db=CREATE_DB)
-    yield
-    db.drop_all_tables(with_all_data=True)
-    db.disconnect()
-    db.provider = db.schema = None
+    pass
 
 
 @pytest.fixture(autouse=True)
 def before_and_after():
-    db.create_tables()
-    yield
-    db.drop_table(table_name='time_slot', if_exists=True, with_all_data=True)
-    db.drop_table(table_name='block', if_exists=True, with_all_data=True)
-    db.drop_table(table_name='teacher', if_exists=True, with_all_data=True)
+    Teachers.clear_all()
 
 
-@db_session
+def test_clear_all_removes_all_labs():
+    """verify that clear_all works as expected"""
+    Teacher("R-101", "Worst place in the world")
+    Teacher("R-102", "Second-worst place in the world")
+    Teachers.clear_all()
+    all_teachers = Teachers.get_all()
+    assert len(all_teachers) == 0
+
+
 def test_id():
     """"Verifies that Teacher IDs are incremented automatically."""
-    teach = Teacher("John", "Smith")
-    max_id = max(t.id for t in dbTeacher)  # this works
-    assert max_id == teach.id
+    Teachers.id_generator = Teachers.teacher_id_generator(2)
+    teach1 = Teacher("John", "Smith")
+    assert teach1.id == 3
+    teach2 = Teacher("John", "Smith")
+    assert teach2.id == 4
 
 
 def test_firstname_getter():
@@ -55,6 +48,14 @@ def test_firstname_setter_good():
     """Verifies that firstname setter can set a valid first name."""
     teach = Teacher("John", "Smith")
     new_f_name = "Bob"
+    teach.firstname = new_f_name
+    assert new_f_name == teach.firstname
+
+
+def test_firstname_setter_with_spaces():
+    """Verifies that firstname setter can set a valid first name which has spaces."""
+    teach = Teacher("John", "Smith")
+    new_f_name = "Bob Blue"
     teach.firstname = new_f_name
     assert new_f_name == teach.firstname
 
@@ -79,6 +80,14 @@ def test_lastname_setter_good():
     """Verifies that the lastname setter can set a valid (non-empty) last name for the Teacher."""
     teach = Teacher("John", "Smith")
     new_l_name = "Forstinger"
+    teach.lastname = new_l_name
+    assert new_l_name == teach.lastname
+
+
+def test_lastname_setter_with_spaces():
+    """Verifies that the lastname setter can set a valid (non-empty) last name (with spaces) for the Teacher."""
+    teach = Teacher("John", "Smith")
+    new_l_name = "Forstinger Blue"
     teach.lastname = new_l_name
     assert new_l_name == teach.lastname
 
@@ -130,157 +139,61 @@ def test_string_representation():
     assert f"{f_name} {l_name}" in str(teach)
 
 
-def test_share_blocks_true():
-    """Verifies that the static share_blocks() method returns true if two blocks are sharing a
-    teacher. """
-    teach = Teacher("John", "Smith")
-    block_1 = Block("mon", "8:30", 1.5, 1)
-    block_2 = Block("mon", "10:00", 1.5, 2)
-    block_1.assign_teacher(teach)
-    block_2.assign_teacher(teach)
-    assert Teacher.share_blocks(block_1, block_2) is True
-
-
-def test_share_blocks_false():
-    """Verifies that the static share_blocks() method returns false if two blocks are not sharing
-    any Teachers. """
-    teach = Teacher("John", "Smith")
-    block_1 = Block("mon", "8:30", 1.5, 1)
-    block_2 = Block("mon", "10:00", 1.5, 2)
-    block_1.assign_teacher(teach)
-    assert Teacher.share_blocks(block_1, block_2) is False
-
-
-@db_session
-def test_get_good_id():
-    """Verifies that the static get_by_id() method works as intended."""
-    Teacher._Teacher__instances = {}
-    Teacher._max_id = 0
-    teach = Teacher("John", "Smith")
-    max_id = max(t.id for t in dbTeacher)
-    assert Teacher.get(max_id) == teach
-
-
 def test_get_bad_id():
     """Verifies that get_by_id() returns None when receiving an invalid ID."""
-    Teacher._Teacher__instances = {}
-    Teacher._max_id = 0
-    teach = Teacher("John", "Smith")
+    Teacher("John", "Smith")
     bad_id = 666
-    assert Teacher.get(bad_id) is None
+    assert Teachers.get_by_id(bad_id) is None
 
 
 def test_get_by_name_good():
-    """Verifies that the static get_by_name() method returns the first Teacher matching the
+    """Verifies that the get_by_name() method returns the first Teacher matching the
     passed names. """
-    Teacher._Teacher__instances = {}
     f_name = "John"
     l_name = "Smith"
-    teach_1 = Teacher(f_name, "Smythe")
-    teach_2 = Teacher("Jane", l_name)
-    teach_3 = Teacher("Jane", "Doe")
+    Teacher(f_name, "Smythe")
+    Teacher("Jane", l_name)
+    Teacher("Jane", "Doe")
     teach_4 = Teacher(f_name, l_name)
-    teach_5 = Teacher(f_name, "Doe")
-    assert Teacher.get_by_name(f_name, l_name) == teach_4
+    Teacher(f_name, "Doe")
+    assert Teachers.get_by_name(f_name, l_name) == teach_4
 
 
 def test_get_by_name_bad():
     """Verifies that get_by_name() returns None if no teacher matching both names is found."""
-    Teacher._Teacher__instances = {}
     f_name = "John"
     l_name = "Smith"
-    teach_1 = Teacher(f_name, "Smythe")
-    teach_2 = Teacher("Jane", l_name)
-    teach_3 = Teacher("Jane", "Doe")
-    teach_4 = Teacher("Jim", l_name)
-    teach_5 = Teacher(f_name, "Doe")
-    assert Teacher.get_by_name(f_name, l_name) is None
+    Teacher(f_name, "Smythe")
+    Teacher("Jane", l_name)
+    Teacher("Jane", "Doe")
+    Teacher("Jim", l_name)
+    Teacher(f_name, "Doe")
+    assert Teachers.get_by_name(f_name, l_name) is None
 
 
 def test_get_by_name_missing_name():
     """Verifies that get_by_name() returns None if one of the names is left blank."""
-    Teacher._Teacher__instances = {}
     f_name = "John"
     l_name = "Smith"
-    teach_1 = Teacher(f_name, "Smythe")
-    teach_2 = Teacher("Jane", l_name)
-    teach_3 = Teacher("Jane", "Doe")
-    teach_4 = Teacher(f_name, l_name)
-    teach_5 = Teacher(f_name, "Doe")
+    Teacher(f_name, "Smythe")
+    Teacher("Jane", l_name)
+    Teacher("Jane", "Doe")
+    Teacher(f_name, l_name)
+    Teacher(f_name, "Doe")
     bad_name = ""
-    assert Teacher.get_by_name(f_name, bad_name) is None
+    assert Teachers.get_by_name(f_name, bad_name) is None
 
 
-def test_delete():
-    """Verifies that delete() method can remove a Teacher from the dict of instances."""
+def test_remove():
+    """Verifies that delete() method can remove a Teacher from the list of teacher instances"""
     Teacher._Teacher__instances = {}
     f_name = "John"
     l_name = "Smith"
     teach_1 = Teacher(f_name, "Smythe")
-    teach_2 = Teacher("Jane", l_name)
-    teach_3 = Teacher("Jane", "Doe")
-    teach_4 = Teacher(f_name, l_name)
-    teach_5 = Teacher(f_name, "Doe")
-    teach_1.delete()
-    teachers = Teacher.list()
+    Teacher("Jane", l_name)
+    Teacher("Jane", "Doe")
+    Teacher(f_name, l_name)
+    Teacher(f_name, "Doe")
+    teach_1.remove()
+    teachers = Teachers.get_all()
     assert len(teachers) == 4 and teach_1 not in teachers
-
-
-@db_session
-def test_delete_updates_database():
-    """Verifies that delete() removes the Teacher's corresponding database record."""
-    delete(t for t in dbTeacher)
-    commit()
-    teach = Teacher("John", "Smith")
-    teach.delete()
-    commit()
-    d_teachers = select(t for t in dbTeacher)
-    assert len(d_teachers) == 0
-
-
-@db_session
-def test_remove_ignores_database():
-    """Verifies that remove() doesn't affect the Teacher's corresponding database record."""
-    Teacher.reset()
-    teach = Teacher("John", "Smith")
-    teach.remove()
-    commit()
-    d_teachers = select(t for t in dbTeacher)
-    teachers = list(d_teachers)
-    a_teachers = Teacher.list()
-    assert len(teachers) == 1 and teachers[0].first_name == teach.firstname and teachers[0].last_name == teach.lastname and len(a_teachers) == 0
-
-
-def test_disjoint_true():
-    """Verifies that the static disjoint() method returns True if both sets of Teachers nave no
-    Teachers in common. """
-    f_name = "John"
-    l_name = "Smith"
-    teach_1 = Teacher(f_name, "Smythe")
-    teach_2 = Teacher("Jane", l_name)
-    teach_3 = Teacher("Jane", "Doe")
-    teach_4 = Teacher(f_name, l_name)
-    set_1 = [teach_1, teach_2]
-    set_2 = [teach_3, teach_4]
-    assert Teacher.disjoint(set_1, set_2) is True
-
-
-def test_disjoint_false():
-    """Verifies that disjoint() returns false if the sets have any common Teachers."""
-    f_name = "John"
-    l_name = "Smith"
-    teach_1 = Teacher(f_name, "Smythe")
-    teach_2 = Teacher("Jane", l_name)
-    teach_3 = Teacher("Jane", "Doe")
-    set_1 = [teach_1, teach_2]
-    set_2 = [teach_2, teach_3]
-    assert Teacher.disjoint(set_1, set_2) is False
-
-
-@db_session
-def test_save():
-    teach = Teacher("John", "Smith")
-    flush()
-    teach.dept = "Social Studies"
-    d_teach = teach.save()
-    assert d_teach.dept == teach.dept

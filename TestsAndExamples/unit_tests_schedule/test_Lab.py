@@ -15,8 +15,7 @@ def before_and_after_module():
 
 @pytest.fixture(autouse=True)
 def before_and_after():
-    labs.id_generator = labs.lab_id_generator()
-    pass
+    labs.clear_all()
 
 
 def test_id():

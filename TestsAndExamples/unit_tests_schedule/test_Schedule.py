@@ -12,7 +12,7 @@ from schedule.Schedule.Conflicts import Conflict
 from schedule.Schedule.Labs import Lab
 from schedule.Schedule.Course import Course
 from schedule.Schedule.Stream import Stream
-from schedule.Schedule.Teacher import Teacher
+from schedule.Schedule.Teachers import Teacher
 from schedule.Schedule.Schedule import Schedule
 
 

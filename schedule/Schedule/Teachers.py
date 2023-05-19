@@ -2,7 +2,6 @@ from __future__ import annotations
 from .exceptions import InvalidTeacherNameError
 from typing import *
 
-# import Schedule
 
 """
 SYNOPSIS
@@ -23,7 +22,12 @@ SYNOPSIS
 
 """
 
+_instances: dict[int, Teacher] = {}
 
+
+# ============================================================================
+# auto id generator
+# ============================================================================
 def teacher_id_generator(max_id: int = 0):
     the_id = max_id + 1
     while True:
@@ -31,15 +35,53 @@ def teacher_id_generator(max_id: int = 0):
         the_id = the_id + 1
 
 
+id_generator: Generator[int, Any, None] = teacher_id_generator()
+
+# ============================================================================
+# get_all
+# ============================================================================
+def get_all() -> tuple[Teacher]:
+    """Returns an immutable tuple containing all instances of the Teacher class."""
+    return tuple(_instances.values())
+
+
+# =================================================================
+# get_by_id
+# =================================================================
+def get_by_id(teacher_id: int) -> Teacher | None:
+    """Returns the Teacher object matching the specified ID, if it exists."""
+    if teacher_id in _instances.keys():
+        return _instances[teacher_id]
+    return None
+
+
+# ============================================================================
+# reset
+# ============================================================================
+def clear_all():
+    """Reset the local list of labs"""
+    _instances.clear()
+
+
+# =================================================================
+# get_by_name
+# =================================================================
+def get_by_name(first_name: str, last_name: str) -> Teacher | None:
+    """Returns the first Teacher found matching the first name and last name, if one exists."""
+    if not (first_name and last_name):
+        return None
+    for teacher in _instances.values():
+        if teacher.firstname == first_name and teacher.lastname == last_name:
+            return teacher
+    return None
+
+
 class Teacher:
     """Describes a teacher."""
-    __instances: dict[int, Teacher] = {}
-    teacher_id = teacher_id_generator()
 
     # -------------------------------------------------------------------
-    # new
+    # constructor
     # --------------------------------------------------------------------
-
     def __init__(self, firstname: str, lastname: str, dept: str = "", teacher_id: int = None):
         """Creates a Teacher object.
         
@@ -51,8 +93,8 @@ class Teacher:
         self.dept = dept
         self.release = 0
 
-        self.__id = teacher_id if teacher_id else next(Teacher.teacher_id)
-        Teacher.__instances[self.__id] = self
+        self.__id = teacher_id if teacher_id else next(id_generator)
+        _instances[self.__id] = self
 
     # =================================================================
     # id
@@ -92,6 +134,19 @@ class Teacher:
         self.__lastname = new_name
 
     # =================================================================
+    # remove lab / delete
+    # =================================================================
+    def delete(self):
+        """Removes this Teacher from Teachers"""
+
+        # Remove the passed Lab object only if it's actually contained in the list of instances.
+        if self in _instances.values():
+            del _instances[self.__id]
+
+    def remove(self):
+        self.delete()
+
+    # =================================================================
     # default string
     # =================================================================
     def __str__(self) -> str:
@@ -99,71 +154,6 @@ class Teacher:
 
     def __repl__(self) -> str:
         return str(self)
-
-    # =================================================================
-    # get_by_id all teachers
-    # =================================================================
-    @staticmethod
-    def list() -> tuple[Teacher]:
-        """Returns an immutable tuple containing all occurrences of Teachers."""
-        return tuple(Teacher.__instances.values())
-
-    # =================================================================
-    # get_by_id
-    # =================================================================
-    @staticmethod
-    def get(teacher_id: int) -> Teacher | None:
-        """Returns the Teacher object matching the passed ID, if it exists."""
-        if teacher_id in Teacher.__instances.keys():
-            return Teacher.__instances[teacher_id]
-        return None
-
-    # =================================================================
-    # get_by_name
-    # =================================================================
-    @staticmethod
-    def get_by_name(first_name: str, last_name: str) -> Teacher | None:
-        """Returns the first Teacher found matching the first name and last name, if one exists."""
-        if not (first_name and last_name):
-            return None
-        for teacher in Teacher.__instances.values():
-            if teacher.firstname == first_name and teacher.lastname == last_name:
-                return teacher
-        return None
-
-    # =================================================================
-    # remove teacher
-    # =================================================================
-    def remove(self):
-        """Removes this Teacher from the Teachers object. """
-        if self.id in Teacher.__instances.keys():
-            del Teacher.__instances[self.id]
-
-    def delete(self):
-        """Removes this Teacher from the Teachers object. """
-        self.remove()
-
-    # =================================================================
-    # disjoint
-    # =================================================================
-    @staticmethod
-    def disjoint(lhs: List[Teacher], rhs: List[Teacher]) -> bool:
-        """Determines if one set of teachers is disjoint with another.
-
-        Returns false if even a single Teacher occurs in both sets, or true otherwise."""
-        set1: set[Teacher] = set(lhs)
-        set2: set[Teacher] = set(rhs)
-
-        intersection: set[Teacher] = set1.intersection(set2)
-        return len(intersection) == 0
-
-    # =================================================================
-    # reset
-    # =================================================================
-    @staticmethod
-    def reset():
-        """Reset the local list of teachers"""
-        Teacher.__instances = dict()
 
 
 # =================================================================

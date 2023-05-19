@@ -13,7 +13,7 @@ from schedule.Schedule.Section import Section
 from schedule.Schedule.Course import Course
 from schedule.Schedule.Block import Block
 from schedule.Schedule.Labs import Lab
-from schedule.Schedule.Teacher import Teacher
+from schedule.Schedule.Teachers import Teacher
 from schedule.Schedule.Stream import Stream
 
 db: Database
