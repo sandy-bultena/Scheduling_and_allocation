@@ -4,7 +4,7 @@ from os import path
 
 sys.path.append(path.dirname(path.dirname(__file__) + "/../../"))
 
-from schedule.Schedule.Time_slot import TimeSlot
+from schedule.Schedule.TimeSlot import TimeSlot
 from schedule.Schedule.ScheduleEnums import WeekDay
 
 

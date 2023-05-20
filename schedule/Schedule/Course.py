@@ -3,7 +3,7 @@ from __future__ import annotations
 from . import Streams
 from . import Teachers
 from . import Labs
-from . import Section
+from . import Sections
 from . import Block
 from .exceptions import InvalidSectionNumberForCourseError
 

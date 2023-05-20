@@ -2,69 +2,59 @@ import sys
 from os import path
 import re
 
-sys.path.append(path.dirname(path.dirname(__file__)))
+sys.path.append(path.dirname(path.dirname(__file__) + "/../../"))
 import pytest
-from .db_constants import *
-from ..database.PonyDatabaseConnection import define_database, Schedule as dbSchedule, Scenario as dbScenario, \
-    Section as dbSection
-from pony.orm import *
-
-from schedule.Schedule.Section import Section
-from schedule.Schedule.Course import Course
+import schedule.Schedule.Sections as Sections
+from schedule.Schedule.Sections import Section
 from schedule.Schedule.Block import Block
 from schedule.Schedule.Labs import Lab
 from schedule.Schedule.Teachers import Teacher
 from schedule.Schedule.Streams import Stream
-
-db: Database
+from schedule.Schedule.exceptions import InvalidHoursForSectionError
 
 
 @pytest.fixture(scope="module", autouse=True)
 def before_and_after_module():
-    global db
-    if PROVIDER == "mysql":
-        db = define_database(host=HOST, passwd=PASSWD, db=DB_NAME, provider=PROVIDER, user=USERNAME)
-    elif PROVIDER == "sqlite":
-        db = define_database(provider=PROVIDER, filename=DB_NAME, create_db=CREATE_DB)
-    init_scenario_and_schedule()
-    yield
-    db.drop_all_tables(with_all_data=True)
-    db.disconnect()
-    db.provider = db.schema = None
+    pass
 
 
-@db_session
 def init_scenario_and_schedule():
-    sc = dbScenario()
-    flush()
-    s = dbSchedule(official=False, scenario_id=sc.id)
+    pass
 
 
 @pytest.fixture(autouse=True)
 def before_and_after():
-    db.create_tables()
-    Section.reset()
-    Block.reset()
-    yield
-    db.drop_table(table_name='section', if_exists=True, with_all_data=True)
-    db.drop_table(table_name='block', if_exists=True, with_all_data=True)
+    Sections._all_sections.clear()
+    Sections._block_id_to_section_id.clear()
+
+
+def test_id_generator():
+    """Verifies that the ID generator can be used to change the value of the next section."""
+    Sections.id_generator = Sections.section_id_generator(0)
+    section = Section()
+    assert section.id == 1
+    Sections.id_generator = Sections.section_id_generator(10)
+    section = Section()
+    assert section.id == 11
+
+
+def test_id_input():
+    """Verifies that the ID, if specified, is used"""
+    Sections.id_generator = Sections.section_id_generator(0)
+    section = Section()
+    assert section.id == 1
+    Sections.id_generator = Sections.section_id_generator(10)
+    section = Section(section_id=57)
+    assert section.id == 57
 
 
 # region General & Properties
 def test_constructor_default_values():
     """Checks that the constructor uses default values"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
+    s = Section()
     assert isinstance(s.number, str)
-    assert s.hours
+    assert s.hours == Sections.DEFAULT_HOURS
     assert isinstance(s.name, str)
-
-def test_create_no_schedule_id():
-    """Checks that a section cannot be created without a schedule or section ID"""
-    with pytest.raises(ValueError) as e:
-        s = Section(course=Course())
-    assert "id or schedule_id must be defined" in str(e.value).lower()
-
 
 
 def test_section_created_success():
@@ -72,24 +62,15 @@ def test_section_created_success():
     number = "3A"
     hours = 2
     name = "My Section"
-    c = Course()
-    s = Section(number, hours, name, c, schedule_id=1)
+    s = Section(number, hours, name)
     assert s.name == name
     assert s.hours == hours
     assert s.number == number
 
 
-def test_section_is_added_to_collection():
-    """Checks that newly created Section is added to the collection"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
-    assert s in Section.list()
-
-
 def test_set_hours_valid():
     """Checks that valid hours can be set"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
+    s = Section()
     hours = 2
     s.hours = hours
     assert s.hours == hours
@@ -97,94 +78,82 @@ def test_set_hours_valid():
 
 def test_set_hours_invalid():
     """Checks that invalid hours can't be set"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
-    hours = "string"
-    with pytest.raises(TypeError) as e:
-        s.hours = hours
-    assert "must be a number" in str(e.value).lower()
-    assert s.hours != hours
-
+    s = Section()
     hours = -10
-    with pytest.raises(TypeError) as e:
+    with pytest.raises(InvalidHoursForSectionError) as e:
         s.hours = hours
     assert "must be larger than 0" in str(e.value).lower()
     assert s.hours != hours
 
 
+def test_hours_are_block_hours():
+    """Checks if this section has blocks, it returns the number of block hours"""
+    s = Section()
+    hours = 22
+    s.hours = hours
+    block1: Block = Block("mon", "9:30", 3)
+    block2: Block = Block("mon", "10:30", 3.5)
+    s.add_block(block1)
+    s.add_block(block2)
+    assert s.hours == (block1.duration + block2.duration)
+
+
+def test_cannot_override_block_hours():
+    """Checks if this section has blocks, even if we change section hours, it is still block hours"""
+    s = Section()
+    hours = 22
+    s.hours = hours
+    block1: Block = Block("mon", "9:30", 3)
+    block2: Block = Block("mon", "10:30", 3.5)
+    s.add_block(block1)
+    s.add_block(block2)
+    s.hours = hours
+    assert s.hours == (block1.duration + block2.duration)
+
+
 def test_get_title():
     """Checks that title is retrievable and includes name or number"""
     name = "My Section"
-    c = Course()
-    assert name in Section(name=name, course=c, schedule_id=1).title
+    assert name in Section(name=name).title
 
     number = "3A"
-    assert number in Section(number=number, course=c, schedule_id=1).title
-
-
-def test_set_course_valid():
-    """Checks that valid courses can be set"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
-    c2 = Course("1")
-    s.course = c2
-    assert s.course is c2
-
-
-def test_set_course_invalid():
-    """Checks that invalid courses can't be set"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
-    c2 = 1
-    with pytest.raises(TypeError) as e:
-        s.course = c2
-    assert "invalid course" in str(e.value).lower()
+    assert number in Section(number=number).title
 
 
 def test_set_num_students():
     """Checks that num_students can be set"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
+    s = Section()
     num = 20
     s.num_students = num
     assert s.num_students == num
 
 
 def test_hours_can_be_added():
-    """Checks that hours can be added (rather than set)"""
+    """Checks that hours can be added (rather than set) if no blocks are set"""
     hours = 1
     to_add = 10
-    c = Course()
-    s = Section(hours=hours, course=c, schedule_id=1)
+    s = Section(hours=hours)
     s.add_hours(to_add)
     assert s.hours == hours + to_add
 
 
-@db_session
-def test_delete_deletes_all():
-    """Checks that the delete method removes the Section and all Blocks from respective lists"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
-    id = s.id
-    b1 = Block('Mon', '13:00', 2, 1)
-    b2 = Block('Mon', '13:00', 2, 2)
-    b3 = Block('Mon', '13:00', 2, 3)
-    s.add_block(b1).add_block(b2).add_block(b3)
-    s.delete()
-    assert s not in Section.list()
-    assert dbSection.get_by_id(id=id) is None
-    assert b1 not in Block.list()
-    assert b2 not in Block.list()
-    assert b3 not in Block.list()
+def test_added_hours_ignored_if_blocks():
+    """Checks that added hours will be ignored if blocks are set"""
+    s = Section()
+    block1: Block = Block("mon", "9:30", 3)
+    block2: Block = Block("mon", "10:30", 3.5)
+    s.add_block(block1)
+    s.add_block(block2)
+    s.add_hours(20)
+    assert s.hours == (block1.duration + block2.duration)
 
 
 def test_is_conflicted_detects_conflicts_correctly():
     """Checks that the is_conflicted method correctly picks up conflicted_number blocks"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
-    b1 = Block('Mon', '13:00', 2, 1)
-    b2 = Block('Mon', '13:00', 2, 2)
-    b3 = Block('Mon', '13:00', 2, 3)
+    s = Section()
+    b1 = Block('Mon', '13:00', 2)
+    b2 = Block('Mon', '13:00', 2)
+    b3 = Block('Mon', '13:00', 2)
     s.add_block(b1).add_block(b2).add_block(b3)
     b1.conflicted_number = 1
     assert s.is_conflicted()
@@ -192,61 +161,30 @@ def test_is_conflicted_detects_conflicts_correctly():
 
 def test_is_conflicted_detects_ok_correctly():
     """Checks that the is_conflicted method doesn't return false positive"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
-    b1 = Block('Mon', '13:00', 2, 1)
-    b2 = Block('Mon', '13:00', 2, 2)
-    b3 = Block('Mon', '13:00', 2, 3)
+    s = Section()
+    b1 = Block('Mon', '13:00', 2)
+    b2 = Block('Mon', '13:00', 2)
+    b3 = Block('Mon', '13:00', 2)
     s.add_block(b1).add_block(b2).add_block(b3)
     assert not s.is_conflicted()
 
 
-def test_get_new_number_gets_first():
-    """Checks that the get_new_number method will get_by_id the lowest available block number, regardeless of add order or block id of existing blocks"""
-    lowest = 4
-    c = Course()
-    s = Section(course=c, schedule_id=1)
-    b1 = Block('Mon', '13:00', 2, 1)
-    b2 = Block('Mon', '13:00', 2, 3)
-    b3 = Block('Mon', '13:00', 2, 2)
-    s.add_block(b1).add_block(b2).add_block(b3)
-    assert s.get_new_number() == lowest
-
-
-def test_get_new_number_no_blocks():
-    """Checks that the get_new_number method will return 1 if there are no blocks in the section"""
-    assert Section(course=Course(), schedule_id=1).get_new_number() == 1
-
-
 def test_string_representation_with_valid_name():
     n = "10"
-    s = Section(number=n, name="For students taking calculus", schedule_id=1, course=Course())
+    s = Section(number=n, name="For students taking calculus")
     assert re.search(f"{n}" + r".*?For students taking calculus", str(s))
 
 
 def test_string_representation_with_invalid_name():
     n = "10"
-    s = Section(number=n, name=f"Section {n}", schedule_id=1, course=Course())
+    s = Section(number=n, name=f"Section {n}")
     assert str(s) == f"Section {10}"
 
 
 def test_string_representation_with_no_name():
     n = "10"
-    s = Section(number=n, schedule_id=1, course=Course())
+    s = Section(number=n)
     assert str(s) == f"Section {10}"
-
-
-@db_session
-def test_save():
-    c = Course()
-    s = Section(course=c, schedule_id=1)
-    flush()
-    s.name = "Test Section"
-    s.hours = 2.0
-    s.num_students = 24
-    d_sched = s.save(dbSchedule[1])
-    assert d_sched.name == s.name and d_sched.hours == s.hours \
-           and d_sched.num_students == s.num_students
 
 
 # endregion
@@ -254,95 +192,72 @@ def test_save():
 # region Block
 def test_add_block_valid():
     """Checks that a valid block can be added"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
-    b = Block('Mon', '13:00', 2, 1)
+    s = Section()
+    b = Block('Mon', '13:00', 2)
     s.add_block(b)
     assert b in s.blocks
 
 
-def test_add_block_invalid():
-    """Checks that an invalid block can't be added"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
-    b = 12
-    with pytest.raises(TypeError) as e:
-        s.add_block(b)
-    assert "invalid block" in str(e.value).lower()
-
-
 def test_get_block_by_id_valid():
     """Checks that block can be retrieved by id"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
-    b = Block('Mon', '13:00', 2, 1)
-    id = b.id
-    s.add_block(b)
-    assert s.get_block_by_id(id) is b
+    s = Section()
+    b1 = Block('Mon', '13:00', 2)
+    b1_id = b1.id
+    Block('tue', "12:00", 5)
+    s.add_block(b1)
+    assert s.get_block_by_id(b1_id) is b1
 
 
 def test_get_block_by_id_invalid():
-    """Checks that None is returned when get_block_by_id is passed unfound id"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
+    """Checks that None is returned when get_block_by_id is passed a non-block id"""
+    s = Section()
     assert s.get_block_by_id(-1) is None
 
 
-def test_get_block_valid():
-    """Checks that block can be retrieved by number"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
-    num = 10
-    b = Block('Mon', '13:00', 2, num)
-    s.add_block(b)
-    assert s.get_block(num) is b
-
-
-def test_get_block_invalid():
-    """Checks that None is returned when get_block is passed unfound number"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
-    assert s.get_block(-1) is None
-
-
 def test_remove_block_valid():
-    """Checks that when passed a valid block, it will be removed & deleted"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
-    b = Block('Mon', '13:00', 2, 1)
+    """Checks that when passed a valid block, it will be removed"""
+    s = Section()
+    b = Block('Mon', '13:00', 2)
     s.add_block(b)
     s.remove_block(b)
     assert b not in s.blocks
-    assert b not in Block.list()  # make sure block.delete is called
 
 
-def test_remove_block_invalid():
-    """Checks that error is thrown when remove_block is passed non-Block object"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
-    with pytest.raises(TypeError) as e:
-        s.remove_block(1)
-    assert "invalid block" in str(e.value).lower()
+def find_section_for_given_block():
+    """Given a block, return the section that pertains to that block"""
+    s1 = Section()
+    s2 = Section()
+    b1 = Block("mon", "12:00", 1.5)
+    b2 = Block("tue", "12:00", 1.5)
+    b3 = Block("wed", "20:00", 1.5)
+    b4 = Block("thu", "12:00", 1.5)
+    b5 = Block("fri", "12:00", 1.5)
+    s1.add_block(b1).add_block(b2)
+    s2.add_block(b3).add_block(b4)
+    assert Sections.get_section_with_this_block(b1) == s1
+    assert Sections.get_section_with_this_block(b2) == s1
+    assert Sections.get_section_with_this_block(b3) == s2
+    assert Sections.get_section_with_this_block(b4) == s2
+    assert Sections.get_section_with_this_block(b5) is None
 
 
-def test_remove_block_not_there():
-    """Checks that when passed not-included block, it will still be deleted"""
-    b = Block('Mon', '13:00', 2, 1)
-    c = Course()
-    Section(course=c, schedule_id=1).remove_block(b)
-    assert b not in Block.list()
-
-
-def test_hours_auto_calc_when_blocks_are_present():
-    """Checks that if the section has blocks, hours will be auto-calculated"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
-    dur = 2
-    b1 = Block('Mon', '13:00', dur, 1)
-    b2 = Block('Mon', '13:00', dur, 2)
-    s.add_block(b1).add_block(b2)
-    s.hours = dur
-    assert s.hours == (dur * 2)
+def find_section_for_given_block_after_deletion_returns_none():
+    """Given a block, that has been removed, will not return a section"""
+    s1 = Section()
+    s2 = Section()
+    b1 = Block("mon", "12:00", 1.5)
+    b2 = Block("tue", "12:00", 1.5)
+    b3 = Block("wed", "20:00", 1.5)
+    b4 = Block("thu", "12:00", 1.5)
+    b5 = Block("fri", "12:00", 1.5)
+    s1.add_block(b1).add_block(b2)
+    s2.add_block(b3).add_block(b4)
+    s1.remove_block(b1)
+    assert Sections.get_section_with_this_block(b1) is None
+    assert Sections.get_section_with_this_block(b2) == s1
+    assert Sections.get_section_with_this_block(b3) == s2
+    assert Sections.get_section_with_this_block(b4) == s2
+    assert Sections.get_section_with_this_block(b5) is None
 
 
 # endregion
@@ -351,22 +266,18 @@ def test_hours_auto_calc_when_blocks_are_present():
 
 def test_assign_lab_valid():
     """Checks that a valid lab can be added"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
-    b = Block('Mon', '13:00', 2, 1)
+    s = Section()
+    b = Block('Mon', '13:00', 2)
     l = Lab()
     s.add_block(b)
     s.assign_lab(l)
     assert l in s.labs
 
 
-# don't check for invalid, since verification is done in Block.assign_lab
-
 def test_remove_lab_valid():
     """Checks that when passed a valid lab, it will be removed & deleted"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
-    b = Block('Mon', '13:00', 2, 1)
+    s = Section()
+    b = Block('Mon', '13:00', 2)
     l = Lab()
     s.add_block(b)
     s.assign_lab(l)
@@ -374,13 +285,10 @@ def test_remove_lab_valid():
     assert l not in s.labs
 
 
-# don't check for invalid, since verification is done in Block.remove_lab
-
 def test_remove_lab_not_there():
     """Checks that when passed not-included lab, it will still be 'removed' """
-    c = Course()
-    s = Section(course=c, schedule_id=1)
-    b = Block('Mon', '13:00', 2, 1)
+    s = Section()
+    b = Block('Mon', '13:00', 2)
     l = Lab()
     s.add_block(b)
     s.remove_lab(l)
@@ -393,60 +301,16 @@ def test_remove_lab_not_there():
 
 def test_assign_teacher_valid():
     """Checks that a valid teacher can be added"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
+    s = Section()
+    s.hours = 15
     t = Teacher("Jane", "Doe")
     s.assign_teacher(t)
     assert t in s.teachers
-    assert s.allocated_hours == s.hours
-
-
-def test_assign_teacher_invalid():
-    """Checks that an invalid teacher can't be added"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
-    with pytest.raises(TypeError) as e:
-        s.assign_teacher(12)
-    assert "invalid teacher" in str(e.value).lower()
-
-
-def test_set_teacher_allocation_valid():
-    """Checks that valid hours can be set to valid teacher"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
-    t = Teacher("Jane", "Doe")
-    hours = 12
-    s.assign_teacher(t)
-    s.set_teacher_allocation(t, hours)
-    assert s._allocation[t.id] == hours
-
-
-def test_set_teacher_allocation_new_teacher():
-    """Checks that valid hours can be set to new teacher teacher"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
-    t = Teacher("Jane", "Doe")
-    hours = 12
-    s.set_teacher_allocation(t, hours)
-    assert s._allocation[t.id] == hours
-    assert s.has_teacher(t)
-
-
-def test_set_teacher_allocation_zero_hours():
-    """Checks that assigning 0 hours to teacher will remove that teacher"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
-    t = Teacher("Jane", "Doe")
-    s.assign_teacher(t)
-    s.set_teacher_allocation(t, 0)
-    assert t.id not in s._allocation
-    assert not s.has_teacher(t)
 
 
 def test_get_teacher_allocation_valid():
     """Checks that get_teacher_allocation returns the correct allocation hours"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
+    s = Section()
     t = Teacher("Jane", "Doe")
     hours = 12
     s.assign_teacher(t)
@@ -454,18 +318,90 @@ def test_get_teacher_allocation_valid():
     assert s.get_teacher_allocation(t) == hours
 
 
+def test_assign_teacher_valid_allocation_hours_default_to_section_hours():
+    """Checks that a valid teacher can be added, and that the teacher allocation hours is set to section hours"""
+    s = Section()
+    s.hours = 15
+    t = Teacher("Jane", "Doe")
+    s.assign_teacher(t)
+    assert s.get_teacher_allocation(t) == s.hours
+    t2 = Teacher("Bob", "Doe")
+    s.assign_teacher(t2)
+    assert s.get_teacher_allocation(t2) == s.hours
+
+
+def test_section_allocation_hours_total_of_teacher_hours():
+    """Checks that a valid teacher can be added, and that the teacher allocation hours is set to section hours"""
+    s = Section()
+    s.hours = 15
+    t = Teacher("Jane", "Doe")
+    s.assign_teacher(t)
+    assert s.get_teacher_allocation(t) == s.hours
+    t2 = Teacher("Bob", "Doe")
+    s.assign_teacher(t2)
+    assert s.get_teacher_allocation(t2) == s.hours
+    assert s.allocated_hours == s.get_teacher_allocation(t) + s.get_teacher_allocation(t2)
+
+
+def test_set_teacher_allocation_valid():
+    """Checks that valid hours can be set to valid teacher"""
+    s = Section()
+    t = Teacher("Jane", "Doe")
+    s.hours = 15
+    hours = 12
+    s.assign_teacher(t)
+    s.set_teacher_allocation(t, hours)
+    assert s.get_teacher_allocation(t) == hours
+
+
+def test_section_allocation_hours_total_of_teacher_hours_after_setting_teacher_allocation():
+    """Checks that a valid teacher can be added, and that the teacher allocation hours is set to section hours"""
+    s = Section()
+    s.hours = 15
+    t = Teacher("Jane", "Doe")
+    s.assign_teacher(t)
+    t2 = Teacher("Bob", "Doe")
+    s.assign_teacher(t2)
+    s.set_teacher_allocation(t, 4)
+    s.set_teacher_allocation(t2, 5)
+    assert s.allocated_hours == s.get_teacher_allocation(t) + s.get_teacher_allocation(t2)
+
+
+def test_set_teacher_allocation_new_teacher():
+    """Checks that valid hours can be set to new teacher"""
+    s = Section()
+    t = Teacher("Jane", "Doe")
+    hours = 12
+    s.set_teacher_allocation(t, hours)
+    assert s.has_teacher(t)
+    assert s.get_teacher_allocation(t) == hours
+
+
+def test_set_teacher_allocation_zero_hours():
+    """Checks that assigning 0 hours to teacher will remove that teacher"""
+    s = Section()
+    hours = 5
+    t = Teacher("Jane", "Doe")
+    t2 = Teacher("Jane", "Doe")
+    s.assign_teacher(t)
+    s.assign_teacher(t2)
+    s.set_teacher_allocation(t, 0)
+    s.set_teacher_allocation(t2, hours)
+    assert not s.has_teacher(t)
+    assert s.has_teacher(t2)
+    assert s.allocated_hours == s.get_teacher_allocation(t2)
+
+
 def test_get_teacher_allocation_not_teaching():
     """Checks that get_teacher_allocation returns the correct allocation hours"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
+    s = Section()
     t = Teacher("Jane", "Doe")
     assert s.get_teacher_allocation(t) == 0
 
 
 def test_has_teacher_valid():
     """Checks has_teacher returns True if teacher is included"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
+    s = Section()
     t = Teacher("Jane", "Doe")
     s.assign_teacher(t)
     assert s.has_teacher(t)
@@ -473,89 +409,76 @@ def test_has_teacher_valid():
 
 def test_has_teacher_not_found():
     """Checks has_teacher returns False if teacher is not included"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
+    s = Section()
     t = Teacher("Jane", "Doe")
     assert not s.has_teacher(t)
 
 
-def test_has_teacher_invalid():
-    """Checks has_teacher returns False if non-Teacher is given"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
-    with pytest.raises(TypeError) as e:
-        s.has_teacher(12)
-    assert "invalid teacher" in str(e.value).lower()
-
-
 def test_remove_teacher_valid():
     """Checks that when passed a valid teacher, it will be removed & allocation will be deleted"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
+    s = Section()
+    hours = 5
     t = Teacher("Jane", "Doe")
+    t2 = Teacher("Jane", "Doe")
     s.assign_teacher(t)
+    s.assign_teacher(t2)
     s.remove_teacher(t)
-    assert t not in s.teachers
-    assert t.id not in s._allocation
-
-
-def test_remove_teacher_invalid():
-    """Checks that error is thrown when remove_teacher is passed non-Teacher object"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
-    with pytest.raises(TypeError) as e:
-        s.remove_teacher(1)
-    assert "invalid teacher" in str(e.value).lower()
-
-
-def test_remove_teacher_not_there():
-    """Checks that when passed not-included teacher, it will still be 'removed' """
-    c = Course()
-    s = Section(course=c, schedule_id=1)
-    t = Teacher("Jane", "Doe")
-    s.remove_teacher(t)
-    assert t not in s.teachers
-    assert t.id not in s._allocation
+    s.set_teacher_allocation(t2, hours)
+    assert not s.has_teacher(t)
+    assert s.has_teacher(t2)
+    assert s.allocated_hours == s.get_teacher_allocation(t2)
 
 
 def test_remove_all_deletes_all_teachers():
     """Checks that remove_all_teachers will correctly delete them all"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
+    s = Section()
     s.assign_teacher(Teacher("Jane", "Doe"))
     s.assign_teacher(Teacher("John", "Doe"))
     s.assign_teacher(Teacher("1", "2"))
     s.remove_all_teachers()
     assert not s.teachers
-    assert not s._allocation
+    assert s.allocated_hours == 0
 
 
+def test_teachers_in_blocks_in_teachers_property():
+    s = Section()
+    b1: Block = Block("mon", "13:00", 1.5)
+    b2: Block = Block("mon", "13:00", 1.5)
+    t1 = Teacher("Jane", "doe")
+    t2 = Teacher("John", "Smith")
+    t3 = Teacher("John", "Doe")
+    b1.assign_teacher(t1)
+    b2.assign_teacher(t2)
+    s.add_block(b1).add_block(b2)
+    s.assign_teacher(t3)
+
+    assert len(s.teachers) == 3
+    assert t1 in s.teachers
+    assert t2 in s.teachers
+    assert t3 in s.teachers
+    assert t1 in b1.teachers
+    assert t3 in b1.teachers
+    assert t2 in b2.teachers
+    assert t3 in b2.teachers
+    assert len(b1.teachers) == 2
+    assert len(b2.teachers) == 2
+
+test_teachers_in_blocks_in_teachers_property()
 # endregion
 
 # region Stream
 
 def test_assign_stream_valid():
     """Checks that a valid stream can be added"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
+    s = Section()
     st = Stream()
     s.assign_stream(st)
     assert st in s.streams
 
 
-def test_assign_stream_invalid():
-    """Checks that an invalid stream can't be added"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
-    with pytest.raises(TypeError) as e:
-        s.assign_stream(12)
-    assert "invalid stream" in str(e.value).lower()
-
-
 def test_has_stream_valid():
     """Checks has_stream returns True if stream is included"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
+    s = Section()
     st = Stream()
     s.assign_stream(st)
     assert s.has_stream(st)
@@ -563,44 +486,23 @@ def test_has_stream_valid():
 
 def test_has_stream_not_found():
     """Checks has_stream returns False if stream is not included"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
+    s = Section()
     st = Stream()
     assert not s.has_stream(st)
 
 
-def test_has_stream_invalid():
-    """Checks has_stream returns False if non-Stream is given"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
-    with pytest.raises(TypeError) as e:
-        s.has_stream(12)
-    assert "invalid stream" in str(e.value).lower()
-
-
 def test_remove_stream_valid():
-    """Checks that when passed a valid stream, it will be removed & allocation will be deleted"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
+    """Checks that when passed a valid stream"""
+    s = Section()
     st = Stream()
     s.assign_stream(st)
     s.remove_stream(st)
     assert st not in s.streams
 
 
-def test_remove_stream_invalid():
-    """Checks that error is thrown when remove_stream is passed non-Stream object"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
-    with pytest.raises(TypeError) as e:
-        s.remove_stream(1)
-    assert "invalid stream" in str(e.value).lower()
-
-
 def test_remove_stream_not_there():
     """Checks that when passed not-included stream, it will still be 'removed' """
-    c = Course()
-    s = Section(course=c, schedule_id=1)
+    s = Section()
     st = Stream()
     s.remove_stream(st)
     assert s not in s.streams
@@ -608,8 +510,7 @@ def test_remove_stream_not_there():
 
 def test_remove_all_deletes_all_streams():
     """Checks that remove_all_streams will correctly delete them all"""
-    c = Course()
-    s = Section(course=c, schedule_id=1)
+    s = Section()
     s.assign_stream(Stream())
     s.assign_stream(Stream())
     s.assign_stream(Stream())

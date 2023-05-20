@@ -1,5 +1,6 @@
 from __future__ import annotations
-from .Time_slot import TimeSlot
+from typing import *
+from .TimeSlot import TimeSlot
 from .Labs import Lab
 from .Teachers import Teacher
 from .Streams import Stream
@@ -8,7 +9,6 @@ from .ScheduleEnums import WeekDay
 """ SYNOPSIS:
 
 from Schedule.Course import Course
-from Schedule.Section import Section
 from Schedule.Block import Block
 from Schedule.Teacher import Teacher
 from Schedule.Lab import Lab
@@ -16,8 +16,6 @@ from Schedule.Lab import Lab
 block = Block(day = "Wed", start = "9:30", duration = 1.5)
 teacher = Teacher("Jane", "Doe")
 lab = Lab("P327")
-
-section.add_block(block)
 
 block.assign_teacher(teacher)
 block.remove_teacher(teacher)
@@ -36,6 +34,9 @@ def block_id_generator(max_id: int = 0):
         the_id = the_id + 1
 
 
+id_generator: Generator[int, Any, None] = block_id_generator()
+
+
 class Block(TimeSlot):
     """
     Describes a block which is a specific time slot for teaching part of a section of a course.
@@ -45,8 +46,6 @@ class Block(TimeSlot):
     # Class Variables
     # =================================================================
     _DEFAULT_DAY = 'mon'
-    __instances: dict[int, Block] = {}
-    block_id = block_id_generator()
 
     # =================================================================
     # Constructor
@@ -72,7 +71,7 @@ class Block(TimeSlot):
         self._labs: list[Lab] = list()
         self._streams: list[Stream] = list()
         self._conflicted = 0
-        self._block_id = block_id if block_id else next(Block.block_id)
+        self._block_id = block_id if block_id else next(id_generator)
 
     # =================================================================
     # Properties

@@ -5,7 +5,7 @@ from os import path
 sys.path.append(path.dirname(path.dirname(__file__)))
 
 from schedule.Schedule.Course import Course
-from schedule.Schedule.Section import Section
+from schedule.Schedule.Sections import Section
 from schedule.Schedule.Teachers import Teacher
 from schedule.Schedule.Block import Block
 from schedule.Schedule.Labs import Lab

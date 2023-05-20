@@ -7,7 +7,7 @@ sys.path.append(path.dirname(path.dirname(__file__) + "../"))
 from schedule.Schedule.ScheduleEnums import ConflictType
 from schedule.Schedule.LabUnavailableTime import LabUnavailableTime
 from schedule.Schedule.Block import Block
-from schedule.Schedule.Section import Section
+from schedule.Schedule.Sections import Section
 from schedule.Schedule.Conflicts import Conflict
 from schedule.Schedule.Labs import Lab
 from schedule.Schedule.Course import Course

@@ -5,7 +5,7 @@ from os import path
 sys.path.append(path.dirname(path.dirname(__file__) + "/../../"))
 
 from schedule.Schedule.LabUnavailableTime import LabUnavailableTime
-from schedule.Schedule.Time_slot import TimeSlot
+from schedule.Schedule.TimeSlot import TimeSlot
 
 
 @pytest.fixture(scope="module", autouse=True)

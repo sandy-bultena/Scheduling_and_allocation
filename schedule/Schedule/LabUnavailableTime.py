@@ -1,5 +1,5 @@
 from __future__ import annotations
-from .Time_slot import TimeSlot
+from .TimeSlot import TimeSlot
 from .ScheduleEnums import WeekDay
 import Schedule
 

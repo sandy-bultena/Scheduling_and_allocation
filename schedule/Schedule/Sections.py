@@ -1,15 +1,14 @@
 from __future__ import annotations
-from .Course import Course
 from .Streams import Stream
 from .Teachers import Teacher
 from .Block import Block
 from .Labs import Lab
 from .exceptions import InvalidHoursForSectionError
 import re
+from typing import *
 
 """
     from Schedule.Section import Section
-    from Schedule.Course import Course
     from Schedule.Block import Block
     from Schedule.Lab import Lab
     from Schedule.Teacher import Teacher
@@ -36,7 +35,12 @@ import re
     section.labs()
 """
 
+DEFAULT_HOURS: float = 1.5
 
+
+# =====================================================================================
+# define the id generator
+# =====================================================================================
 def section_id_generator(max_id: int = 0):
     the_id = max_id + 1
     while True:
@@ -44,16 +48,44 @@ def section_id_generator(max_id: int = 0):
         the_id = the_id + 1
 
 
+id_generator: Generator[int, Any, None] = section_id_generator()
+
+
+# =====================================================================================
+# get_section_with_this_block
+# =====================================================================================
+def get_section_with_this_block(block: Block) -> Section | None:
+    """A block belongs to a stream, which stream is it?"""
+    if block.id in _block_id_to_section_id:
+        section_id = _block_id_to_section_id[block.id]
+        if section_id in _all_sections:
+            return _all_sections[section_id]
+    return None
+
+
+_block_id_to_section_id: dict[int, int] = dict()
+_all_sections: dict[id, Section] = dict()
+
+
+def _validate_hours(hours: float | int) -> float:
+    hours = float(hours)
+    if hours <= 0:
+        raise InvalidHoursForSectionError(f"{hours}: hours must be larger than 0")
+    return hours
+
+
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# CLASS: Section
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class Section:
     """
     Describes a section (part of a course)
     """
-    section_id = section_id_generator()
 
     # ========================================================
     # CONSTRUCTOR
     # ========================================================
-    def __init__(self, course: Course, number: str = "", hours: float = 1.5, name: str = "",
+    def __init__(self, number: str = "", hours: float = DEFAULT_HOURS, name: str = "",
                  section_id: int = None):
         """
         Creates an instance of the Section class.
@@ -65,28 +97,18 @@ class Section:
         # LEAVE IN:
         # Allows for teacher allocations to be tracked & calculated correctly in AllocationManager,
         # since Blocks are ignored there
-        self._teachers: dict[int, Teacher] = {}
-        self._allocation: dict[int, float] = {}
-
-        self._streams: dict[int, Stream] = {}
-        self._blocks: dict[int, Block] = {}
-        self._course = course
+        self._teachers: dict[int, Teacher] = dict()
+        self._allocation: dict[int, float] = dict()
+        self._streams: dict[int, Stream] = dict()
+        self._blocks: dict[int, Block] = dict()
 
         self.name = name
         self.number = str(number)
         self.hours = hours
         self.num_students: int = 0
 
-        self.__id = section_id if section_id else next(Section.section_id)
-
-        course.add_section(self)
-
-    @staticmethod
-    def __validate_hours(hours: float | int) -> float:
-        hours = float(hours)
-        if hours <= 0:
-            raise InvalidHoursForSectionError(f"{hours}: hours must be larger than 0")
-        return hours
+        self.__id = section_id if section_id else next(id_generator)
+        _all_sections[self.__id] = self
 
     # ========================================================
     # PROPERTIES
@@ -100,17 +122,17 @@ class Section:
         Gets and sets the number of hours per week of the section
         - When setting, will automatically calculate the total hours if the section has blocks.
         """
+        if self.blocks:
+            self._hours = sum((b.duration for b in self.blocks))
         return self._hours
 
     @hours.setter
     def hours(self, val):
-        val = Section.__validate_hours(val)
-        self._hours = val
-
         if self.blocks:
-            self._hours = 0
-            for b in self.blocks:
-                self._hours += b.duration
+            self._hours = sum((b.duration for b in self.blocks))
+        else:
+            val = _validate_hours(val)
+            self._hours = val
 
     # --------------------------------------------------------
     # id
@@ -137,32 +159,16 @@ class Section:
         return self.name if self.name else f"Section {self.number}"
 
     # --------------------------------------------------------
-    # course
-    # --------------------------------------------------------
-    @property
-    def course(self) -> Course:
-        """ Gets and sets the course that contains this section """
-        return self._course
-
-    @course.setter
-    def course(self, course: Course):
-        self._course = course
-
-    # --------------------------------------------------------
     # labs
     # --------------------------------------------------------
     @property
     def labs(self) -> tuple[Lab]:
         """ Gets all labs assigned to all blocks in this section """
-        labs = set()
+        labs: set[Lab] = set()
         for b in self.blocks:
-            for lab in b.labs():
+            for lab in b.labs:
                 labs.add(lab)
         return tuple(labs)
-
-    def remove_all_labs(self):
-        for b in self.blocks:
-            b.remove_all_labs()
 
     # --------------------------------------------------------
     # teachers
@@ -170,9 +176,10 @@ class Section:
     @property
     def teachers(self) -> tuple[Teacher]:
         """ Gets all teachers assigned to all blocks in this section """
-        teachers = set()
+        teachers: set[Teacher] = set()
         for b in self.blocks:
-            teachers.union(set(b.teachers()))
+            for teacher in b.teachers:
+                teachers.add(teacher)
 
         for t in self._teachers.values():
             teachers.add(t)
@@ -184,7 +191,7 @@ class Section:
     @property
     def streams(self) -> tuple[Stream]:
         """ Gets all streams in this section """
-        return tuple(self._streams.values())
+        return tuple(set(self._streams.values()))
 
     # --------------------------------------------------------
     # allocated_hours
@@ -205,20 +212,9 @@ class Section:
     # --------------------------------------------------------
     def add_hours(self, val: float | int):
         """ Adds hours to section's weekly total """
-        val = Section.__validate_hours(val)
+        val = _validate_hours(val)
         self.hours += val
         return self.hours
-
-    # --------------------------------------------------------
-    # get_block_by_id
-    # --------------------------------------------------------
-    def get_block_by_id(self, block_id: int) -> Block | None:
-        """
-        Gets block with given ID from this section
-        - Parameter id -> The ID of the block to find
-        """
-        f = list(filter(lambda a: a.id == block_id, self.blocks))
-        return f[0] if len(f) > 0 else None
 
     # --------------------------------------------------------
     # assign_lab
@@ -228,9 +224,8 @@ class Section:
         Assign a lab to every block in the section
         - Parameter lab -> The lab to assign
         """
-        if lab:
-            for b in self.blocks:
-                b.assign_lab(lab)
+        for b in self.blocks:
+            b.assign_lab(lab)
         return self
 
     # --------------------------------------------------------
@@ -243,6 +238,16 @@ class Section:
         """
         for b in self.blocks:
             b.remove_lab(lab)
+        return self
+
+    # --------------------------------------------------------
+    # remove_all_labs
+    # --------------------------------------------------------
+    def remove_all_labs(self) -> Section:
+        """Remove all labs from every block in the section"""
+        for lab in self.labs:
+            for b in self.blocks:
+                b.remove_lab(lab)
         return self
 
     # --------------------------------------------------------
@@ -269,7 +274,7 @@ class Section:
         - Parameter hours -> The number of hours to allocate
         """
         if hours:
-            hours = Section.__validate_hours(hours)
+            hours = _validate_hours(hours)
             if not self.has_teacher(teacher):
                 self.assign_teacher(teacher)
             self._allocation[teacher.id] = float(hours)
@@ -385,7 +390,7 @@ class Section:
         """
         for b in blocks:
             self._blocks[b.id] = b
-            b.section = self
+            _block_id_to_section_id[b.id] = self.id
         return self
 
     # --------------------------------------------------------
@@ -398,7 +403,28 @@ class Section:
         """
         if block.id in self._blocks:
             del self._blocks[block.id]
+        if block.id in _block_id_to_section_id:
+            del _block_id_to_section_id[block.id]
         return self
+
+    # --------------------------------------------------------
+    # get_block_by_id
+    # --------------------------------------------------------
+    def get_block_by_id(self, block_id: int) -> Block | None:
+        """
+        Gets block with given ID from this section
+        - Parameter id -> The ID of the block to find
+        """
+        if block_id in self._blocks.keys():
+            return self._blocks[block_id]
+        return None
+
+    # --------------------------------------------------------
+    # has_block
+    # --------------------------------------------------------
+    def has_block(self, block: Block) -> bool:
+        """Does this section have this block? """
+        return self.get_block_by_id(block.id) is not None
 
     # --------------------------------------------------------
     # __str__

@@ -578,5 +578,3 @@ def test_synced_blocks_interdependence_works_as_expected():
     block1.start = "9:30"
     assert block1.start == block2.start == block4.start == "9:30"
     assert block3.start == "11:30"
-
-

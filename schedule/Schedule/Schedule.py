@@ -4,7 +4,7 @@ from .Course import Course
 from .Conflicts import Conflict
 from .Labs import Lab
 from .Streams import Stream
-from .Section import Section
+from .Sections import Section
 from .Block import Block
 from .ScheduleEnums import ViewType
 
