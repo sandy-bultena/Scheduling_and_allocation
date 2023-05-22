@@ -5,6 +5,7 @@ from .Labs import Lab
 from .Teachers import Teacher
 from .Streams import Stream
 from .ScheduleEnums import WeekDay
+import schedule.Schedule.IDGeneratorCode as id_gen
 
 """ SYNOPSIS:
 
@@ -26,15 +27,7 @@ block.remove_lab(lab)
 block.labs()
 """
 
-
-def block_id_generator(max_id: int = 0):
-    the_id = max_id + 1
-    while True:
-        yield the_id
-        the_id = the_id + 1
-
-
-id_generator: Generator[int, Any, None] = block_id_generator()
+_block_id_generator: Generator[int, Any, None] = id_gen.get_id_generator()
 
 
 class Block(TimeSlot):
@@ -71,7 +64,7 @@ class Block(TimeSlot):
         self._labs: list[Lab] = list()
         self._streams: list[Stream] = list()
         self._conflicted = 0
-        self._block_id = block_id if block_id else next(id_generator)
+        self.__block_id = id_gen.set_id(_block_id_generator, block_id)
 
     # =================================================================
     # Properties
@@ -136,7 +129,7 @@ class Block(TimeSlot):
     @property
     def id(self) -> int:
         """Gets the Block id."""
-        return self._block_id
+        return self.__block_id
 
     # =================================================================
     # All about labs

@@ -1,12 +1,16 @@
 import pytest
 import sys
+from typing import *
 from os import path
 
 sys.path.append(path.dirname(path.dirname(__file__) + "/../../"))
 
 from schedule.Schedule.Block import Block
+import schedule.Schedule.Block as blk
 from schedule.Schedule.Labs import Lab
 from schedule.Schedule.Teachers import Teacher
+import schedule.Schedule.IDGeneratorCode as id_gen
+
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -62,6 +66,25 @@ def test_id():
     old_id = block.id
     block = Block(day, start, dur)
     assert block.id == old_id + 1
+
+
+def test_id_with_id_given():
+    """Verifies that the id property works as intended."""
+    blk._block_id_generator: Generator[int, int|None, None] = id_gen.get_id_generator()
+
+    day = "mon"
+    start = "8:30"
+    dur = 2
+    existing_id = 12
+    block1 = Block(day, start, dur, block_id=existing_id)
+    assert block1.id == existing_id
+    block2 = Block(day, start, dur)
+    assert block2.id == existing_id + 1
+    block3 = Block(day, start, dur, block_id=existing_id-5)
+    assert block3.id == existing_id - 5
+    block4 = Block(day, start, dur)
+    assert block4.id == block2.id + 1
+
 
 
 def test_assign_lab_good():

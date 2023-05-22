@@ -22,7 +22,7 @@ def add(conflict: Conflict):
 # list
 # --------------------------------------------------------
 @property
-def all_conflicts() -> tuple[Conflict]:
+def get_all() -> tuple[Conflict]:
     """ Gets all instances of Conflict. Returns a tuple object. """
     return tuple(_instances)
 
@@ -30,7 +30,7 @@ def all_conflicts() -> tuple[Conflict]:
 # --------------------------------------------------------
 # reset
 # --------------------------------------------------------
-def clear_conflicts():
+def clear_all():
     """ Deletes all Conflicts """
     _instances.clear()
 
@@ -257,17 +257,15 @@ class Conflict:
     # ========================================================
     # CONSTRUCTOR
     # ========================================================
-    def __init__(self, conflict_type: ConflictType, blocks: tuple[Block.Block]):
+    def __init__(self, conflict_type: ConflictType, *blocks: Block.Block):
         """
         Creates an instance of the Conflict class.
         - Parameter type -> defines the type of conflict.
         - Parameter blocks -> defines the list of blocks involved in the conflict.
         """
-        if isinstance(blocks, tuple) or isinstance(blocks, set):
-            blocks = list(blocks)
-
+        blocks_list = list(*blocks)
         self.type = conflict_type
-        self.blocks = blocks.copy()  # if list is changed, the Conflict won't be
+        self.blocks = blocks_list.copy()  # if list is changed, the Conflict won't be
         _instances.append(self)
 
     # --------------------------------------------------------
