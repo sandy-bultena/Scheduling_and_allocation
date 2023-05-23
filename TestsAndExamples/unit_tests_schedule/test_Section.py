@@ -11,6 +11,7 @@ from schedule.Schedule.Labs import Lab
 from schedule.Schedule.Teachers import Teacher
 from schedule.Schedule.Streams import Stream
 from schedule.Schedule.exceptions import InvalidHoursForSectionError
+import schedule.Schedule.IDGeneratorCode as id_gen
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -28,24 +29,27 @@ def before_and_after():
     Sections._block_id_to_section_id.clear()
 
 
-def test_id_generator():
-    """Verifies that the ID generator can be used to change the value of the next section."""
-    Sections.id_generator = Sections.section_id_generator(0)
+def test_id():
+    """Verifies that the id property works as intended."""
     section = Section()
-    assert section.id == 1
-    Sections.id_generator = Sections.section_id_generator(10)
+    old_id = section.id
     section = Section()
-    assert section.id == 11
+    assert section.id == old_id + 1
 
 
-def test_id_input():
-    """Verifies that the ID, if specified, is used"""
-    Sections.id_generator = Sections.section_id_generator(0)
-    section = Section()
-    assert section.id == 1
-    Sections.id_generator = Sections.section_id_generator(10)
-    section = Section(section_id=57)
-    assert section.id == 57
+def test_id_with_id_given():
+    """Verifies that the id property works as intended."""
+    Sections._section_id_generator = id_gen.get_id_generator()
+
+    existing_id = 12
+    section1 = Section(section_id=existing_id)
+    assert section1.id == existing_id
+    section2 = Section()
+    assert section2.id == existing_id + 1
+    section3 = Section(section_id=existing_id - 5)
+    assert section3.id == existing_id - 5
+    section4 = Section()
+    assert section4.id == section2.id + 1
 
 
 # region General & Properties

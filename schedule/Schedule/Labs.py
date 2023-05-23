@@ -1,5 +1,5 @@
 from __future__ import annotations
-
+import schedule.Schedule.IDGeneratorCode as id_gen
 from .LabUnavailableTime import LabUnavailableTime
 from .ScheduleEnums import WeekDay
 from typing import *
@@ -17,13 +17,7 @@ from typing import *
 # that keeps track of which new id to use
 # ============================================================================
 _instances: dict[int, Lab] = dict()
-
-
-def lab_id_generator(max_id: int = 0):
-    the_id = max_id + 1
-    while True:
-        yield the_id
-        the_id = the_id + 1
+_lab_id_generator: Generator[int, int, None] = id_gen.get_id_generator()
 
 
 # ============================================================================
@@ -61,9 +55,6 @@ def clear_all():
     _instances.clear()
 
 
-id_generator: Generator[int, Any, None] = lab_id_generator()
-
-
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 # CLASS: Lab
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -88,7 +79,7 @@ class Lab:
         self.descr = descr
         self._unavailable: list[LabUnavailableTime] = list()
 
-        self.__id = lab_id if lab_id else next(id_generator)
+        self.__id = id_gen.set_id(_lab_id_generator, lab_id)
         _instances[self.__id] = self
 
     # =================================================================
@@ -103,7 +94,7 @@ class Lab:
     # add_unavailable_time
     # =================================================
     def add_unavailable_time(self, day: WeekDay | str, start: str,
-                             duration: float) -> Lab:
+                             duration: float) -> LabUnavailableTime:
         """Creates a time slot where this lab is not available.
         
         - Parameter day => 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'
@@ -114,10 +105,10 @@ class Lab:
         """
         return self.add_unavailable_slot(LabUnavailableTime(day, start, duration))
 
-    def add_unavailable_slot(self, slot: LabUnavailableTime) -> Lab:
+    def add_unavailable_slot(self, slot: LabUnavailableTime) ->LabUnavailableTime:
         """Adds an existing time slot to this lab's unavailable times."""
         self._unavailable.append(slot)
-        return self
+        return slot
 
     # =================================================
     # remove_unavailable_slot

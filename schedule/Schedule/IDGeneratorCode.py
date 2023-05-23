@@ -14,6 +14,7 @@ def _id_generator():
 
 
 def get_id_generator() -> Generator[int, int | None, None]:
+    """set up an id generator for your object"""
     x: Generator[int, int | None, None] = _id_generator()
     next(x)
     return x

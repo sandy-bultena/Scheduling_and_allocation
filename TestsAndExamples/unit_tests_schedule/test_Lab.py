@@ -6,6 +6,7 @@ sys.path.append(path.dirname(path.dirname(__file__) + "/../../"))
 import schedule.Schedule.Labs as labs
 from schedule.Schedule.Labs import Lab
 from schedule.Schedule.LabUnavailableTime import LabUnavailableTime
+import schedule.Schedule.IDGeneratorCode as id_gen
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -19,18 +20,26 @@ def before_and_after():
 
 
 def test_id():
-    """Verifies that the ID property automatically increments as Labs are created."""
+    """Verifies that the id property works as intended."""
     lab = Lab()
-    assert lab.id == 1  # The first Lab created will always have an ID of 1.
+    old_id = lab.id
+    lab = Lab()
+    assert lab.id == old_id + 1
 
 
-def test_id_generator():
-    """Verifies that the ID generator can be used to change the value of the next lab."""
-    lab = Lab()
-    assert lab.id == 1
-    labs.id_generator = labs.lab_id_generator(10)
-    lab = Lab()
-    assert lab.id == 11
+def test_id_with_id_given():
+    """Verifies that the id property works as intended."""
+    labs._lab_id_generator = id_gen.get_id_generator()
+
+    existing_id = 12
+    lab1 = Lab(lab_id=existing_id)
+    assert lab1.id == existing_id
+    lab2 = Lab()
+    assert lab2.id == existing_id + 1
+    lab3 = Lab(lab_id=existing_id - 5)
+    assert lab3.id == existing_id - 5
+    lab4 = Lab()
+    assert lab4.id == lab2.id + 1
 
 
 def test_number_getter():
@@ -101,12 +110,12 @@ def test_unavailable():
     start_2 = "10:00"
     dur_2 = 1.5
     lab = Lab()
-    lab.add_unavailable_time(day_1, start_1, dur_1)
-    lab.add_unavailable_time(day_2, start_2, dur_2)
+    lu1 = lab.add_unavailable_time(day_1, start_1, dur_1)
+    lu2 = lab.add_unavailable_time(day_2, start_2, dur_2)
     times = lab.unavailable_slots
     assert len(times) == 2
-    assert times[0].day == day_1
-    assert times[1].day == day_2
+    assert lu1 in lab.unavailable_slots
+    assert lu2 in lab.unavailable_slots
 
 
 def test_unavailable_no_slots():
@@ -119,8 +128,8 @@ def test_unavailable_no_slots():
 
 def test_clear_all_removes_all_labs():
     """verify that clear_all works as expected"""
-    lab1 = Lab("R-101", "Worst place in the world")
-    lab2 = Lab("R-102", "Second-worst place in the world")
+    Lab("R-101", "Worst place in the world")
+    Lab("R-102", "Second-worst place in the world")
     labs.clear_all()
     all_labs = labs.get_all()
     assert len(all_labs) == 0

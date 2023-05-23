@@ -1,5 +1,7 @@
 from __future__ import annotations
 from typing import *
+import schedule.Schedule.IDGeneratorCode as id_gen
+
 
 """ SYNOPSIS/EXAMPLE:
     from Schedule.Stream import Stream
@@ -10,19 +12,7 @@ from typing import *
 """
 
 _instances: dict[int, Stream] = {}
-
-
-# ============================================================================
-# auto id generator
-# ============================================================================
-def stream_id_generator(max_id: int = 0):
-    the_id = max_id + 1
-    while True:
-        yield the_id
-        the_id = the_id + 1
-
-
-id_generator: Generator[int, Any, None] = stream_id_generator()
+_stream_id_generator: Generator[int, int, None] = id_gen.get_id_generator()
 
 
 # ============================================================================
@@ -69,7 +59,7 @@ class Stream:
         self.number = number
         self.descr = descr
 
-        self.__id = stream_id if stream_id else next(id_generator)
+        self.__id = id_gen.set_id(_stream_id_generator, stream_id)
         _instances[self.__id] = self
 
     # --------------------------------------------------------

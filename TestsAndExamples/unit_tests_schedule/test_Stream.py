@@ -29,12 +29,25 @@ def test_clear_all_removes_all_streams():
 
 
 def test_id():
-    """"Verifies that Teacher IDs are incremented automatically."""
-    Streams.id_generator = Streams.stream_id_generator(2)
-    stream1 = Stream("1A", "first years A")
-    assert stream1.id == 3
-    stream2 = Stream("1A", "first years A")
-    assert stream2.id == 4
+    """Verifies that the id property works as intended."""
+    stream = Stream()
+    old_id = stream.id
+    stream = Stream()
+    assert stream.id == old_id + 1
+
+
+def test_id_with_id_given():
+    """Verifies that the id property works as intended."""
+
+    existing_id = 12
+    stream1 = Stream(stream_id=existing_id)
+    assert stream1.id == existing_id
+    stream2 = Stream()
+    assert stream2.id == existing_id + 1
+    stream3 = Stream(stream_id=existing_id - 5)
+    assert stream3.id == existing_id - 5
+    stream4 = Stream()
+    assert stream4.id == stream2.id + 1
 
 
 def test_constructor_default_values():

@@ -6,6 +6,8 @@ from .Labs import Lab
 from .exceptions import InvalidHoursForSectionError
 import re
 from typing import *
+import schedule.Schedule.IDGeneratorCode as id_gen
+
 
 """
     from Schedule.Section import Section
@@ -38,17 +40,12 @@ from typing import *
 DEFAULT_HOURS: float = 1.5
 
 
-# =====================================================================================
-# define the id generator
-# =====================================================================================
-def section_id_generator(max_id: int = 0):
-    the_id = max_id + 1
-    while True:
-        yield the_id
-        the_id = the_id + 1
-
-
-id_generator: Generator[int, Any, None] = section_id_generator()
+# ============================================================================
+# keep track of all the instances of 'Sections' class, and define the generator
+# that keeps track of which new id to use
+# ============================================================================
+_instances: dict[int, Lab] = dict()
+_section_id_generator: Generator[int, int, None] = id_gen.get_id_generator()
 
 
 # =====================================================================================
@@ -107,7 +104,7 @@ class Section:
         self.hours = hours
         self.num_students: int = 0
 
-        self.__id = section_id if section_id else next(id_generator)
+        self.__id = id_gen.set_id(_section_id_generator, section_id)
         _all_sections[self.__id] = self
 
     # ========================================================

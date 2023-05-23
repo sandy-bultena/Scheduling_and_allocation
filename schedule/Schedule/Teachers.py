@@ -1,6 +1,7 @@
 from __future__ import annotations
 from .exceptions import InvalidTeacherNameError
 from typing import *
+import schedule.Schedule.IDGeneratorCode as id_gen
 
 """
 SYNOPSIS
@@ -22,19 +23,7 @@ SYNOPSIS
 """
 
 _instances: dict[int, Teacher] = {}
-
-
-# ============================================================================
-# auto id generator
-# ============================================================================
-def teacher_id_generator(max_id: int = 0):
-    the_id = max_id + 1
-    while True:
-        yield the_id
-        the_id = the_id + 1
-
-
-id_generator: Generator[int, Any, None] = teacher_id_generator()
+_teacher_id_generator: Generator[int, int, None] = id_gen.get_id_generator()
 
 
 # ============================================================================
@@ -93,7 +82,7 @@ class Teacher:
         self.dept = dept
         self.release = 0
 
-        self.__id = teacher_id if teacher_id else next(id_generator)
+        self.__id = id_gen.set_id(_teacher_id_generator, teacher_id)
         _instances[self.__id] = self
 
     # =================================================================

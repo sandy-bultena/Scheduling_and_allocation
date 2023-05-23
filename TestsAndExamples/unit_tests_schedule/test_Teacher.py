@@ -29,12 +29,25 @@ def test_clear_all_removes_all_labs():
 
 
 def test_id():
-    """"Verifies that Teacher IDs are incremented automatically."""
-    Teachers.id_generator = Teachers.teacher_id_generator(2)
-    teach1 = Teacher("John", "Smith")
-    assert teach1.id == 3
-    teach2 = Teacher("John", "Smith")
-    assert teach2.id == 4
+    """Verifies that the id property works as intended."""
+    teacher = Teacher("Jane", "Doe")
+    old_id = teacher.id
+    teacher = Teacher("Jane", "Doe")
+    assert teacher.id == old_id + 1
+
+
+def test_id_with_id_given():
+    """Verifies that the id property works as intended."""
+
+    existing_id = 12
+    teacher1 = Teacher("Jane", "Doe", teacher_id=existing_id)
+    assert teacher1.id == existing_id
+    teacher2 = Teacher("Jane", "Doe")
+    assert teacher2.id == existing_id + 1
+    teacher3 = Teacher("Jane", "Doe", teacher_id=existing_id - 5)
+    assert teacher3.id == existing_id - 5
+    teacher4 = Teacher("Jane", "Doe")
+    assert teacher4.id == teacher2.id + 1
 
 
 def test_firstname_getter():
