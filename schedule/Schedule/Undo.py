@@ -6,16 +6,16 @@
     blocks = Schedule.blocks_for_teacher(teacher)
     undos = []
 
-    # save block[0] before modifying it
-    block = blocks[0]
-    undos.append(Undo(block.id, block.start, block.day, teacher, "Day/Time", new_association))
+    # save blocks[0] before modifying it
+    blocks = blocks[0]
+    undos.append(Undo(blocks.id, blocks.start, blocks.day, teacher, "Day/Time", new_association))
     # original Perl ver of example code (outdated):
-        # push @undos, Undo->new( $block->id, $block->start, $block->day, $teacher, "Day/Time" );
+        # push @undos, Undo->new( $blocks->id, $blocks->start, $blocks->day, $teacher, "Day/Time" );
 """
 
 
 class Undo:
-    """ Holds info about a block so that it can be used as an "undo" """
+    """ Holds info about a blocks so that it can be used as an "undo" """
     _max_id = 0
 
     # ========================================================

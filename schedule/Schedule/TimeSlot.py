@@ -59,7 +59,7 @@ class TimeSlot:
         # day = TimeSlot.DEFAULT_DAY
         self.__day_number: int = 0
         self._start_number: float = 0
-        self.day = WeekDay.validate(day)
+        self.day = day
         self.start = start
         self.duration = duration
         self.movable = movable
@@ -75,6 +75,8 @@ class TimeSlot:
     @day.setter
     def day(self, new_day: str):
         try:
+            if isinstance(new_day, str) and len(new_day) == 3:
+                new_day = new_day.lower()
             self.__day = WeekDay.validate(new_day)
             self.__day_number = WeekDayNumber[self.__day].value
 
@@ -241,7 +243,7 @@ class TimeSlot:
         Tests that the current Time_Slot conflicts with another TimeSlot.
         """
         # Detect time collisions up to this error factor. It is also useful for graphical applications
-        # that require a small error threshold when moving a block into place.
+        # that require a small error threshold when moving a blocks into place.
         delta = 0.05
 
         # detect date collisions. If the dates differ, there's no conflict, and we can leave.
@@ -249,7 +251,7 @@ class TimeSlot:
         if abs(self.day_number - rhs.day_number) >= 1 - delta:
             return False
 
-        # Calculate the start/end for each block with the error factor removed.
+        # Calculate the start/end for each blocks with the error factor removed.
         self_start = self.start_number + delta
         self_end = self.start_number + self.duration - delta
         rhs_end = rhs.start_number + rhs.duration - delta
@@ -258,7 +260,7 @@ class TimeSlot:
         return (self_start < rhs_end) and (rhs_start < self_end)
 
     @staticmethod
-    def list() -> tuple[TimeSlot]:
+    def list() -> tuple[TimeSlot, ...]:
         # return tuple(TimeSlot.__instances.values())
         pass
 
@@ -277,7 +279,7 @@ class TimeSlot:
         # Let child classes implement
         # d_slot = dbTimeSlot.get_by_id(
         #     id=self.__id)  # use the __id so that it refers to the time slot's ID correctly,
-        #                    # not block ID (when relevant)
+        #                    # not blocks ID (when relevant)
         # if not d_slot: d_slot = dbTimeSlot(day=self.day, duration=self.duration, start=self.start)
         # d_slot.day = self.day
         # d_slot.duration = self.duration

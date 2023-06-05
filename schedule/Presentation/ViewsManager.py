@@ -3,7 +3,7 @@
 from .View import View
 from ..GUI.ViewsManagerTk import ViewsManagerTk
 from ..Schedule.Block import Block
-from ..Schedule.Conflict import Conflict
+from ..Schedule.ConflictCalculations import Conflict
 from ..Schedule.Schedule import Schedule
 from ..Schedule.ScheduleEnums import ConflictType, ViewType
 from ..Schedule.Undo import Undo
@@ -30,7 +30,7 @@ class ViewsManager:
         Parameters:
             gui_main: The gui that is used by whatever class invokes this class, because we need to know the main_window etc.
             dirty_flag_ptr: Pointer to a flag that indicates if the schedule has been changed since the last save.
-            schedule: Where course-sections/teachers/labs/streams are defined."""
+            schedule: Where course-sections/teacher_ids/lab_ids/stream_ids are defined."""
         gui = ViewsManagerTk(gui_main)
         self.gui = gui
         self.gui_main = gui_main
@@ -70,11 +70,11 @@ class ViewsManager:
         Parameters:
             type: 'undo' or 'redo'.
             """
-        # NOTE: The parameter description in the Perl code, previously transcribed above,
+        # NOTE: The parameter title in the Perl code, previously transcribed above,
         # is misleading.
 
         # ------------------------------------------------------------------------
-        # get the undo/redo
+        # get_by_id the undo/redo
         # ------------------------------------------------------------------------
         action = None
         if type == 'undo':
@@ -117,7 +117,7 @@ class ViewsManager:
             self.redraw_all_views()
 
         # ------------------------------------------------------------------------
-        # moved a teacher from one course to another, or moved block from
+        # moved a teacher from one course to another, or moved blocks from
         # one lab to a different lab
         # ------------------------------------------------------------------------
         else:
@@ -137,15 +137,15 @@ class ViewsManager:
                 self.add_undo(redo_or_undo)
                 self.remove_last_redo()
 
-            # reassign teacher/lab to block.
+            # reassign teacher/lab to blocks.
             if action.move_type == 'teacher':
-                block.remove_teacher(target_obj)
-                block.assign_teacher(original_obj)
-                block.section.remove_teacher(target_obj)
-                block.section.assign_teacher(original_obj)
+                block.remove_teacher_by_id(target_obj)
+                block.assign_teacher_by_id(original_obj)
+                block.section.remove_teacher_by_id(target_obj)
+                block.section.assign_teacher_by_id(original_obj)
             elif action.move_type == 'lab':
-                block.remove_lab(target_obj)
-                block.assign_lab(original_obj)
+                block.remove_lab_by_id(target_obj)
+                block.assign_lab_by_id(original_obj)
 
             # Update all views to re-place the blocks.
             self.redraw_all_views()
@@ -262,7 +262,7 @@ class ViewsManager:
         """Updates the position of the current moving GuiBlock across all open Views.
 
         Parameters:
-            block: the block object."""
+            block: the blocks object."""
         open_views = self.views()
 
         # Go through all currently open views.
@@ -313,7 +313,7 @@ class ViewsManager:
                 # What is this view's conflict? Start with 0.
                 view_conflict: ConflictType | int = 0
 
-                # for every block...
+                # for every blocks...
                 for block in blocks:
                     # NOTE: ConflictTypes cannot be compared with integers.
                     # If Conflict.most_severe() returns a ConflictType object,
@@ -325,7 +325,7 @@ class ViewsManager:
                     # integers either.
                     if view_conflict is None:
                         view_conflict = 0
-                    view_conflict = Conflict.most_severe(view_conflict | block.conflicted,
+                    view_conflict = Conflict.most_severe(view_conflict | block.conflicted_number,
                                                          type)
                     if view_conflict == Conflict._sorted_conflicts[0]:
                         break
@@ -338,16 +338,16 @@ class ViewsManager:
     def create_view_containing_block(self, schedulable_objs, type: ViewType | str, ob: Block = None):
         """Used as a callback function for View objects.
 
-        Find a scheduable object(s) in the given list. If the given block object is also part of
+        Find a scheduable object(s) in the given list. If the given blocks object is also part of
         that specific schedule, then create a new view.
 
         Parameters:
-            schedulable_objs: A list of objects (teachers/labs/streams) where a schedule can be created for them, and so a view is created for each of these objects.
+            schedulable_objs: A list of objects (teacher_ids/lab_ids/stream_ids) where a schedule can be created for them, and so a view is created for each of these objects.
             type: Type of view to draw (teacher/lab/stream).
             ob: Block object."""
         obj_id = ob.id if ob is not None else None
 
-        # Note: The original Perl code had a to-do in the description that went like this:
+        # Note: The original Perl code had a to-do in the title that went like this:
         # TODO: Clarify what the hell this is doing, once we are working on the View.pm file
         # I'm beginning to see why.
 

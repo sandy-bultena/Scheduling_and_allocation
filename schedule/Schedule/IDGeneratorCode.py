@@ -22,7 +22,6 @@ def get_id_generator() -> Generator[int, int | None, None]:
 
 def set_id(generator: Generator[int, int | None, None], obj_id: int | None):
     """sets the next id if not set, else return valid id"""
-    print(generator, obj_id)
     if obj_id:
         generator.send(obj_id)
         return obj_id

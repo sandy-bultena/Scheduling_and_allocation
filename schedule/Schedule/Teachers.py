@@ -1,5 +1,4 @@
 from __future__ import annotations
-from .exceptions import InvalidTeacherNameError
 from typing import *
 import schedule.Schedule.IDGeneratorCode as id_gen
 
@@ -22,56 +21,19 @@ SYNOPSIS
 
 """
 
-_instances: dict[int, Teacher] = {}
 _teacher_id_generator: Generator[int, int, None] = id_gen.get_id_generator()
 
 
-# ============================================================================
-# get_all
-# ============================================================================
-def get_all() -> tuple[Teacher]:
-    """Returns an immutable tuple containing all instances of the Teacher class."""
-    return tuple(_instances.values())
-
-
-# =================================================================
-# get_by_id
-# =================================================================
-def get_by_id(teacher_id: int) -> Teacher | None:
-    """Returns the Teacher object matching the specified ID, if it exists."""
-    if teacher_id in _instances.keys():
-        return _instances[teacher_id]
-    return None
-
-
-# ============================================================================
-# reset
-# ============================================================================
-def clear_all():
-    """Reset the local list of labs"""
-    _instances.clear()
-
-
-# =================================================================
-# get_by_name
-# =================================================================
-def get_by_name(first_name: str, last_name: str) -> Teacher | None:
-    """Returns the first Teacher found matching the first name and last name, if one exists."""
-    if not (first_name and last_name):
-        return None
-    for teacher in _instances.values():
-        if teacher.firstname == first_name and teacher.lastname == last_name:
-            return teacher
-    return None
-
-
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# CLASS: _Teachers - should never be instantiated directly!
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class Teacher:
     """Describes a teacher."""
 
     # -------------------------------------------------------------------
     # constructor
     # --------------------------------------------------------------------
-    def __init__(self, firstname: str, lastname: str, dept: str = "", teacher_id: int = None):
+    def __init__(self, firstname: str, lastname: str, department: str = "", teacher_id: int = None):
         """Creates a Teacher object.
         
         Parameter **firstname:** str -> first name of the teacher.
@@ -79,11 +41,10 @@ class Teacher:
         Parameter **dept:** str -> department that this teacher is associated with (optional)"""
         self.firstname = firstname
         self.lastname = lastname
-        self.dept = dept
+        self.department = department
         self.release = 0
 
         self.__id = id_gen.set_id(_teacher_id_generator, teacher_id)
-        _instances[self.__id] = self
 
     # =================================================================
     # id
@@ -103,10 +64,8 @@ class Teacher:
 
     @firstname.setter
     def firstname(self, new_name: str):
-        if not (new_name and not new_name.isspace()):
-            raise InvalidTeacherNameError("First name cannot be an empty string")
-
-        self.__firstname = new_name
+        if new_name and not new_name.isspace():
+            self.__firstname = new_name
 
     # =================================================================
     # lastname
@@ -118,22 +77,8 @@ class Teacher:
 
     @lastname.setter
     def lastname(self, new_name: str):
-        if not (new_name and not new_name.isspace()):
-            raise InvalidTeacherNameError("Last name cannot be an empty string")
-        self.__lastname = new_name
-
-    # =================================================================
-    # remove lab / delete
-    # =================================================================
-    def delete(self):
-        """Removes this Teacher from Teachers"""
-
-        # Remove the passed Lab object only if it's actually contained in the list of instances.
-        if self in _instances.values():
-            del _instances[self.__id]
-
-    def remove(self):
-        self.delete()
+        if new_name and not new_name.isspace():
+            self.__lastname = new_name
 
     # =================================================================
     # default string
@@ -143,6 +88,50 @@ class Teacher:
 
     def __repl__(self) -> str:
         return str(self)
+
+
+class Teachers(dict[int, Teacher]):
+
+    # =================================================================
+    # get_all
+    # =================================================================
+    def get_all(self) -> tuple[Teacher, ...]:
+        """Returns the immutable list of teachers."""
+        return tuple(self.values())
+
+    # =================================================================
+    # get_by_id
+    # =================================================================
+    def get_by_id(self, teacher_id: int) -> Teacher | None:
+        """Returns the Teacher object matching the specified ID, if it exists."""
+        return self.get(teacher_id)
+
+    # =================================================================
+    # get_by_name
+    # =================================================================
+    def get_by_name(self, first_name: str, last_name: str) -> Teacher | None:
+        """Returns the first Teacher found matching the first name and last name, if one exists."""
+        if not (first_name and last_name):
+            return None
+        for teacher in self.values():
+            if teacher.firstname == first_name and teacher.lastname == last_name:
+                return teacher
+        return None
+
+    # =================================================================
+    # add
+    # =================================================================
+    def add(self, firstname: str, lastname: str, department: str = "", teacher_id: int = None) -> Teacher:
+        teacher = Teacher(firstname, lastname, department, teacher_id=teacher_id)
+        self[teacher.id] = teacher
+        return teacher
+
+    # =================================================================
+    # remove
+    # =================================================================
+    def remove(self, teacher: Teacher) -> None:
+        if teacher.id in self:
+            del (self[teacher.id])
 
 
 # =================================================================

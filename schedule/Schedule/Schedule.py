@@ -1,12 +1,12 @@
 from __future__ import annotations
-from .Teachers import Teacher
-from .Course import Course
-from .Conflicts import Conflict
-from .Labs import Lab
-from .Streams import Stream
+from .Teachers import Teacher, Teachers
+from .Courses import Course, Courses
+import ConflictCalculations
+from .Labs import Lab, Labs
+from .Streams import Stream, Streams
 from .Sections import Section
 from .Block import Block
-from .ScheduleEnums import ViewType
+from .ScheduleEnums import ViewType, ConflictType
 
 from typing import Optional
 
@@ -40,106 +40,72 @@ class Schedule:
         
         - File -> the schedule YAML file
         """
-        # TODO: read yaml file
+        self.teachers = Teachers()
+        self.streams = Streams()
+        self.labs = Labs()
+        self.courses = Courses()
+
+        # TODO: If file, then read data from file
 
     # --------------------------------------------------------
-    # teachers
+    # teacher_ids
     # --------------------------------------------------------
     @property
-    def assigned_teachers(self) -> tuple[Teacher]:
+    def assigned_teachers(self) -> tuple[Teacher, ...]:
         """Returns a tuple of all the Teacher objects with assigned courses"""
         teachers: set[Teacher] = set()
         for s in self.sections:
-            teachers.union(set(s.teachers))
-            for b in s.blocks:
-                teachers.union(set(b.teachers()))
+            teachers.update(set(s.teachers))
         return tuple(teachers)
 
-    @property
-    def available_teachers(self) -> tuple[Teacher]:
-        """Returns a tuple of all the Teacher objects in this Schedule"""
-        return Teacher.list()
-
     # --------------------------------------------------------
-    # streams
+    # stream_ids
     # --------------------------------------------------------
     @property
-    def assigned_streams(self) -> tuple[Stream]:
+    def assigned_streams(self) -> tuple[Stream, ...]:
         """Returns a tuple of all the Stream objects that have been assigned in this Schedule"""
         streams: set[Stream] = set()
         for s in self.sections:
-            streams.union(set(s.streams))
+            streams.update(set(s.streams))
         return tuple(streams)
 
-    @property
-    def available_streams(self) -> tuple[Stream]:
-        """Returns a tuple of all the Stream objects in this Schedule"""
-        return Stream.list()
-
     # --------------------------------------------------------
-    # courses
+    # lab_ids
     # --------------------------------------------------------
     @property
-    def courses(self) -> tuple[Course]:
-        """Returns a tuple of all the Course objects in this Schedule"""
-        return Course.list()
-
-    # --------------------------------------------------------
-    # labs
-    # --------------------------------------------------------
-    @property
-    def assigned_labs(self) -> tuple[Lab]:
+    def assigned_labs(self) -> tuple[Lab, ...]:
         """Returns a tuple of all the Lab objects that have been assigned in this Schedule"""
         labs: set[Lab] = set()
         for s in self.sections:
-            labs.union(set(s.labs))
+            labs.update(set(s.labs))
         return tuple(labs)
-
-    @property
-    def available_labs(self) -> tuple[Lab]:
-        """Returns a tuple of all the Lab objects in this Schedule"""
-        return tuple(Lab.list())
 
     # --------------------------------------------------------
     # blocks
     # --------------------------------------------------------
     @property
-    def blocks(self) -> tuple[Block]:
+    def blocks(self) -> tuple[Block, ...]:
         """ Returns a tuple of all the schedule's Block objects in this Schedule"""
         blocks: set[Block] = set()
         for s in self.sections:
-            blocks.union(set(s.blocks))
+            blocks.update(set(s.blocks))
         return tuple(blocks)
 
     # --------------------------------------------------------
-    # blocks
+    # sections
     # --------------------------------------------------------
     @property
-    def sections(self) -> tuple[Section]:
+    def sections(self) -> tuple[Section, ...]:
         """ Returns a tuple of all the schedule's Section objects in this Schedule"""
         sections: set[Section] = set()
         for c in self.courses:
-            sections.union(set(c.sections))
+            sections.update(set(c.sections))
         return tuple(sections)
-
-    # --------------------------------------------------------
-    # conflicts
-    # --------------------------------------------------------
-    def conflicts(self) -> tuple[Conflict]:
-        """Returns a tuple of all the Conflict objects"""
-        cons: list[Conflict] = list(Conflict.list())
-        correct: set[Conflict] = set()
-
-        for c in cons:
-            if c.blocks[0].section in self.sections:
-                correct.add(c)
-
-        return tuple(correct)
 
     # --------------------------------------------------------
     # sections_for_teacher
     # --------------------------------------------------------
-    def sections_for_teacher(self, teacher: Teacher) -> tuple[Section]:
+    def sections_for_teacher(self, teacher: Teacher) -> tuple[Section, ...]:
         """
         Returns a tuple of Sections that the given Teacher teaches
         - Parameter teacher -> The Teacher whose Sections should be found
@@ -150,7 +116,7 @@ class Schedule:
     # --------------------------------------------------------
     # courses_for_teacher
     # --------------------------------------------------------
-    def courses_for_teacher(self, teacher: Teacher) -> tuple[Course]:
+    def courses_for_teacher(self, teacher: Teacher) -> tuple[Course, ...]:
         """
         :param teacher: the Teacher whose courses should be found
         :return: a tuple of courses where that teacher teaches
@@ -188,7 +154,7 @@ class Schedule:
         """
         Returns a list of Blocks using the given Lab
         :param lab:
-        :return: a tuple of block objects
+        :return: a tuple of blocks objects
         """
         blocks: [Block] = set([b for b in self.blocks if b.has_lab(lab)])
         return tuple(blocks)
@@ -225,45 +191,39 @@ class Schedule:
     # --------------------------------------------------------
     def remove_course(self, course: Course):
         """Removes Course from schedule"""
-        course.remove()
+        self.courses.remove(course)
 
     # --------------------------------------------------------
-    # remove_teacher
+    # remove_teacher_by_id
     # --------------------------------------------------------
     def remove_teacher(self, teacher: Teacher):
         """Removes Teacher from all scheduled courses and from available teachers list"""
         # go through all blocks, and remove teacher from each
         for b in self.blocks:
             b.remove_teacher(teacher)
-        teacher.remove()
+        for s in self.sections:
+            s.remove_teacher(teacher)
+        self.teachers.remove(teacher)
 
     # --------------------------------------------------------
-    # remove_lab
+    # remove_lab_by_id
     # --------------------------------------------------------
     def remove_lab(self, lab: Lab):
         """Removes Lab from schedule"""
-        # go through all blocks, and remove lab from each
         for b in self.blocks:
             b.remove_lab(lab)
-        lab.remove()
+        self.labs.remove(lab)
 
     # --------------------------------------------------------
-    # remove_stream
+    # remove_stream_by_id
     # --------------------------------------------------------
     def remove_stream(self, stream: Stream):
         """Removes Stream from schedule"""
         for s in self.sections:
             s.remove_stream(stream)
-        stream.remove()
+        self.streams.remove(stream)
 
     # --------------------------------------------------------
-    # calculate conflicts
-    # --------------------------------------------------------
-    def calculate_conflicts(self):
-        """Calculate all the conflicts for this schedule"""
-        calculate_conflicts()
-
-   # --------------------------------------------------------
     # teacher_stat
     # --------------------------------------------------------
     def teacher_stat(self, teacher: Teacher) -> str:
@@ -316,7 +276,7 @@ class Schedule:
             for s in sections:
                 if s.course is c:
                     num_sections += 1
-            message += f"-> {c.description} ({num_sections} Section(s))\n"
+            message += f"-> {c.title} ({num_sections} Section(s))\n"
 
         return message
 
@@ -330,18 +290,6 @@ class Schedule:
         Parameter teacher -> The teacher whose schedule to print
         """
         from functools import cmp_to_key
-
-        def __sort_blocks(a: Block, b: Block) -> int:
-            if a.day_number < b.day_number:
-                return 1
-            elif a.day_number > b.day_number:
-                return -1
-            elif a.start_number < b.start_number:
-                return 1
-            elif a.start_number > b.start_number:
-                return -1
-            else:
-                return 0
 
         head = "=" * 50
         text = f"\n\n{head}\n{teacher}\n{head}\n"
@@ -358,10 +306,10 @@ class Schedule:
                     text += f"\n{s}\n\t" + "- " * 25 + "\n"
 
                     # blocks
-                    for b in sorted(s.blocks, key=cmp_to_key(__sort_blocks)):
+                    for b in sorted(s.blocks, key=cmp_to_key(self.__sort_blocks)):
                         if b.has_teacher(teacher):
-                            text += f"\t{b.day} {b.start} {b.duration} hours\n\t\tlabs: "
-                            text += ", ".join(str(lab) for lab in b.labs()) + "\n"
+                            text += f"\t{b.day} {b.start} {b.duration} hours\n\t\tlab_ids: "
+                            text += ", ".join(str(lab) for lab in b.labs) + "\n"
         return text
 
     # --------------------------------------------------------
@@ -369,7 +317,7 @@ class Schedule:
     # --------------------------------------------------------
     def clear_all_from_course(self, course: Course):
         """
-        Removes all teachers, labs, and streams from course
+        Removes all teacher_ids, lab_ids, and stream_ids from course
         - Parameter course -> The course to be cleared.
         """
         for section in self.sections:
@@ -379,18 +327,7 @@ class Schedule:
                 section.remove_all_labs()
 
     # --------------------------------------------------------
-    # clear_all_from_block
-    # --------------------------------------------------------
-    def clear_all_from_block(self, block: Block):
-        """
-        Removes all teachers, labs, and streams from block
-        - Parameter block -> The block to be cleared.
-        """
-        block.remove_all_teachers()
-        block.remove_all_labs()
-
-    # --------------------------------------------------------
-    # get_by_id block info for specified ViewType object
+    # get_by_id blocks info for specified ViewType object
     # --------------------------------------------------------
     def get_blocks_for_obj(self, obj: Teacher | Lab | Stream) -> tuple[Block]:
         """ Returns a tuple of blocks associated with the specified ViewType object"""
@@ -402,10 +339,62 @@ class Schedule:
             return self.blocks_for_stream(obj)
         return tuple()
 
-    def get_view_type_of_object(self, obj: Teacher | Lab | Stream) -> ViewType | None:
+    @staticmethod
+    def get_view_type_of_object(obj: Teacher | Lab | Stream) -> ViewType | None:
         """Returns the type of the ViewType object"""
         for vtype in ViewType:
             my_class = eval(f"{vtype.name}")
             if isinstance(obj, my_class):
                 return vtype
         return None
+
+    def calculate_conflicts(self):
+        """Reviews the schedule, and creates a list of Conflict objects as necessary"""
+
+        # reset all blocks conflicted_number tags
+        for b in self.blocks:
+            b.reset_conflicted()
+
+        # ---------------------------------------------------------
+        # check all blocks pairs to see if there is a time overlap
+        # ---------------------------------------------------------
+        # check if these blocks have a conflict
+        for teacher in self.assigned_teachers:
+            ConflictCalculations.block_conflict(self.blocks_for_teacher(teacher), ConflictType.TIME_TEACHER)
+        for stream in self.assigned_streams:
+            ConflictCalculations.block_conflict(self.blocks_for_stream(stream), ConflictType.TIME_STREAM)
+        for lab in self.assigned_labs:
+            ConflictCalculations.block_conflict(self.blocks_in_lab(lab), ConflictType.TIME_LAB)
+
+
+        # ---------------------------------------------------------
+        # for each teacher teacher
+        # ---------------------------------------------------------
+        for teacher in self.assigned_teachers:
+
+            # lunch break
+            relevant_blocks = tuple(list(b for b in self.blocks_for_teacher(teacher)
+                                         if b.start_number < ConflictCalculations.LUNCH_END
+                                         and b.start_number + b.duration > ConflictCalculations.LUNCH_START))
+
+            ConflictCalculations.lunch_break_conflict(relevant_blocks)
+
+            # check for 4 day schedule
+            if not teacher.release:
+                ConflictCalculations.number_of_days_conflict(self.blocks_for_teacher(teacher))
+
+            # too many availability hours
+            ConflictCalculations.availability_hours_conflict(self.blocks_for_teacher(teacher))
+
+    @staticmethod
+    def __sort_blocks(a: Block, b: Block) -> int:
+        if a.day_number < b.day_number:
+            return 1
+        elif a.day_number > b.day_number:
+            return -1
+        elif a.start_number < b.start_number:
+            return 1
+        elif a.start_number > b.start_number:
+            return -1
+        else:
+            return 0

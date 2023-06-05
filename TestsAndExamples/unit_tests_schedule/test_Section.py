@@ -91,7 +91,7 @@ def test_set_hours_invalid():
 
 
 def test_hours_are_block_hours():
-    """Checks if this section has blocks, it returns the number of block hours"""
+    """Checks if this section has blocks, it returns the number of blocks hours"""
     s = Section()
     hours = 22
     s.hours = hours
@@ -103,7 +103,7 @@ def test_hours_are_block_hours():
 
 
 def test_cannot_override_block_hours():
-    """Checks if this section has blocks, even if we change section hours, it is still block hours"""
+    """Checks if this section has blocks, even if we change section hours, it is still blocks hours"""
     s = Section()
     hours = 22
     s.hours = hours
@@ -195,7 +195,7 @@ def test_string_representation_with_no_name():
 
 # region Block
 def test_add_block_valid():
-    """Checks that a valid block can be added"""
+    """Checks that a valid blocks can be added"""
     s = Section()
     b = Block('Mon', '13:00', 2)
     s.add_block(b)
@@ -203,7 +203,7 @@ def test_add_block_valid():
 
 
 def test_get_block_by_id_valid():
-    """Checks that block can be retrieved by id"""
+    """Checks that blocks can be retrieved by id"""
     s = Section()
     b1 = Block('Mon', '13:00', 2)
     b1_id = b1.id
@@ -213,13 +213,13 @@ def test_get_block_by_id_valid():
 
 
 def test_get_block_by_id_invalid():
-    """Checks that None is returned when get_block_by_id is passed a non-block id"""
+    """Checks that None is returned when get_block_by_id is passed a non-blocks id"""
     s = Section()
     assert s.get_block_by_id(-1) is None
 
 
 def test_remove_block_valid():
-    """Checks that when passed a valid block, it will be removed"""
+    """Checks that when passed a valid blocks, it will be removed"""
     s = Section()
     b = Block('Mon', '13:00', 2)
     s.add_block(b)
@@ -228,7 +228,7 @@ def test_remove_block_valid():
 
 
 def find_section_for_given_block():
-    """Given a block, return the section that pertains to that block"""
+    """Given a blocks, return the section that pertains to that blocks"""
     s1 = Section()
     s2 = Section()
     b1 = Block("mon", "12:00", 1.5)
@@ -246,7 +246,7 @@ def find_section_for_given_block():
 
 
 def find_section_for_given_block_after_deletion_returns_none():
-    """Given a block, that has been removed, will not return a section"""
+    """Given a blocks, that has been removed, will not return a section"""
     s1 = Section()
     s2 = Section()
     b1 = Block("mon", "12:00", 1.5)
@@ -274,8 +274,8 @@ def test_assign_lab_valid():
     b = Block('Mon', '13:00', 2)
     l = Lab()
     s.add_block(b)
-    s.assign_lab(l)
-    assert l in s.labs
+    s.add_lab(l)
+    assert l in s.lab_ids
 
 
 def test_remove_lab_valid():
@@ -284,9 +284,9 @@ def test_remove_lab_valid():
     b = Block('Mon', '13:00', 2)
     l = Lab()
     s.add_block(b)
-    s.assign_lab(l)
+    s.add_lab(l)
     s.remove_lab(l)
-    assert l not in s.labs
+    assert l not in s.lab_ids
 
 
 def test_remove_lab_not_there():
@@ -296,7 +296,7 @@ def test_remove_lab_not_there():
     l = Lab()
     s.add_block(b)
     s.remove_lab(l)
-    assert l not in s.labs
+    assert l not in s.lab_ids
 
 
 # endregion
@@ -308,8 +308,8 @@ def test_assign_teacher_valid():
     s = Section()
     s.hours = 15
     t = Teacher("Jane", "Doe")
-    s.assign_teacher(t)
-    assert t in s.teachers
+    s.add_teacher(t)
+    assert t in s.teacher_ids
 
 
 def test_get_teacher_allocation_valid():
@@ -317,7 +317,7 @@ def test_get_teacher_allocation_valid():
     s = Section()
     t = Teacher("Jane", "Doe")
     hours = 12
-    s.assign_teacher(t)
+    s.add_teacher(t)
     s.set_teacher_allocation(t, hours)
     assert s.get_teacher_allocation(t) == hours
 
@@ -327,10 +327,10 @@ def test_assign_teacher_valid_allocation_hours_default_to_section_hours():
     s = Section()
     s.hours = 15
     t = Teacher("Jane", "Doe")
-    s.assign_teacher(t)
+    s.add_teacher(t)
     assert s.get_teacher_allocation(t) == s.hours
     t2 = Teacher("Bob", "Doe")
-    s.assign_teacher(t2)
+    s.add_teacher(t2)
     assert s.get_teacher_allocation(t2) == s.hours
 
 
@@ -339,10 +339,10 @@ def test_section_allocation_hours_total_of_teacher_hours():
     s = Section()
     s.hours = 15
     t = Teacher("Jane", "Doe")
-    s.assign_teacher(t)
+    s.add_teacher(t)
     assert s.get_teacher_allocation(t) == s.hours
     t2 = Teacher("Bob", "Doe")
-    s.assign_teacher(t2)
+    s.add_teacher(t2)
     assert s.get_teacher_allocation(t2) == s.hours
     assert s.allocated_hours == s.get_teacher_allocation(t) + s.get_teacher_allocation(t2)
 
@@ -353,7 +353,7 @@ def test_set_teacher_allocation_valid():
     t = Teacher("Jane", "Doe")
     s.hours = 15
     hours = 12
-    s.assign_teacher(t)
+    s.add_teacher(t)
     s.set_teacher_allocation(t, hours)
     assert s.get_teacher_allocation(t) == hours
 
@@ -363,9 +363,9 @@ def test_section_allocation_hours_total_of_teacher_hours_after_setting_teacher_a
     s = Section()
     s.hours = 15
     t = Teacher("Jane", "Doe")
-    s.assign_teacher(t)
+    s.add_teacher(t)
     t2 = Teacher("Bob", "Doe")
-    s.assign_teacher(t2)
+    s.add_teacher(t2)
     s.set_teacher_allocation(t, 4)
     s.set_teacher_allocation(t2, 5)
     assert s.allocated_hours == s.get_teacher_allocation(t) + s.get_teacher_allocation(t2)
@@ -387,8 +387,8 @@ def test_set_teacher_allocation_zero_hours():
     hours = 5
     t = Teacher("Jane", "Doe")
     t2 = Teacher("Jane", "Doe")
-    s.assign_teacher(t)
-    s.assign_teacher(t2)
+    s.add_teacher(t)
+    s.add_teacher(t2)
     s.set_teacher_allocation(t, 0)
     s.set_teacher_allocation(t2, hours)
     assert not s.has_teacher(t)
@@ -404,15 +404,15 @@ def test_get_teacher_allocation_not_teaching():
 
 
 def test_has_teacher_valid():
-    """Checks has_teacher returns True if teacher is included"""
+    """Checks has_teacher_with_id returns True if teacher is included"""
     s = Section()
     t = Teacher("Jane", "Doe")
-    s.assign_teacher(t)
+    s.add_teacher(t)
     assert s.has_teacher(t)
 
 
 def test_has_teacher_not_found():
-    """Checks has_teacher returns False if teacher is not included"""
+    """Checks has_teacher_with_id returns False if teacher is not included"""
     s = Section()
     t = Teacher("Jane", "Doe")
     assert not s.has_teacher(t)
@@ -424,8 +424,8 @@ def test_remove_teacher_valid():
     hours = 5
     t = Teacher("Jane", "Doe")
     t2 = Teacher("Jane", "Doe")
-    s.assign_teacher(t)
-    s.assign_teacher(t2)
+    s.add_teacher(t)
+    s.add_teacher(t2)
     s.remove_teacher(t)
     s.set_teacher_allocation(t2, hours)
     assert not s.has_teacher(t)
@@ -436,11 +436,11 @@ def test_remove_teacher_valid():
 def test_remove_all_deletes_all_teachers():
     """Checks that remove_all_teachers will correctly delete them all"""
     s = Section()
-    s.assign_teacher(Teacher("Jane", "Doe"))
-    s.assign_teacher(Teacher("John", "Doe"))
-    s.assign_teacher(Teacher("1", "2"))
+    s.add_teacher(Teacher("Jane", "Doe"))
+    s.add_teacher(Teacher("John", "Doe"))
+    s.add_teacher(Teacher("1", "2"))
     s.remove_all_teachers()
-    assert not s.teachers
+    assert not s.teacher_ids
     assert s.allocated_hours == 0
 
 
@@ -451,21 +451,21 @@ def test_teachers_in_blocks_in_teachers_property():
     t1 = Teacher("Jane", "doe")
     t2 = Teacher("John", "Smith")
     t3 = Teacher("John", "Doe")
-    b1.assign_teacher(t1)
-    b2.assign_teacher(t2)
+    b1.assign_teacher_by_id(t1)
+    b2.assign_teacher_by_id(t2)
     s.add_block(b1).add_block(b2)
-    s.assign_teacher(t3)
+    s.add_teacher(t3)
 
-    assert len(s.teachers) == 3
-    assert t1 in s.teachers
-    assert t2 in s.teachers
-    assert t3 in s.teachers
-    assert t1 in b1.teachers
-    assert t3 in b1.teachers
-    assert t2 in b2.teachers
-    assert t3 in b2.teachers
-    assert len(b1.teachers) == 2
-    assert len(b2.teachers) == 2
+    assert len(s.teacher_ids) == 3
+    assert t1 in s.teacher_ids
+    assert t2 in s.teacher_ids
+    assert t3 in s.teacher_ids
+    assert t1 in b1.teacher_ids
+    assert t3 in b1.teacher_ids
+    assert t2 in b2.teacher_ids
+    assert t3 in b2.teacher_ids
+    assert len(b1.teacher_ids) == 2
+    assert len(b2.teacher_ids) == 2
 
 test_teachers_in_blocks_in_teachers_property()
 # endregion
@@ -476,20 +476,20 @@ def test_assign_stream_valid():
     """Checks that a valid stream can be added"""
     s = Section()
     st = Stream()
-    s.assign_stream(st)
+    s.add_stream(st)
     assert st in s.streams
 
 
 def test_has_stream_valid():
-    """Checks has_stream returns True if stream is included"""
+    """Checks has_stream_with_id returns True if stream is included"""
     s = Section()
     st = Stream()
-    s.assign_stream(st)
+    s.add_stream(st)
     assert s.has_stream(st)
 
 
 def test_has_stream_not_found():
-    """Checks has_stream returns False if stream is not included"""
+    """Checks has_stream_with_id returns False if stream is not included"""
     s = Section()
     st = Stream()
     assert not s.has_stream(st)
@@ -499,7 +499,7 @@ def test_remove_stream_valid():
     """Checks that when passed a valid stream"""
     s = Section()
     st = Stream()
-    s.assign_stream(st)
+    s.add_stream(st)
     s.remove_stream(st)
     assert st not in s.streams
 
@@ -515,9 +515,9 @@ def test_remove_stream_not_there():
 def test_remove_all_deletes_all_streams():
     """Checks that remove_all_streams will correctly delete them all"""
     s = Section()
-    s.assign_stream(Stream())
-    s.assign_stream(Stream())
-    s.assign_stream(Stream())
+    s.add_stream(Stream())
+    s.add_stream(Stream())
+    s.add_stream(Stream())
     s.remove_all_streams()
     assert not s.streams
 

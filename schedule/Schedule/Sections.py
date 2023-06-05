@@ -1,13 +1,10 @@
 from __future__ import annotations
-from .Streams import Stream
-from .Teachers import Teacher
-from .Block import Block
-from .Labs import Lab
 from .exceptions import InvalidHoursForSectionError
 import re
 from typing import *
 import schedule.Schedule.IDGeneratorCode as id_gen
-
+from schedule.Schedule.Block import Block
+from .TimeSlot import TimeSlot
 
 """
     from Schedule.Section import Section
@@ -28,7 +25,7 @@ import schedule.Schedule.IDGeneratorCode as id_gen
     for b in section.blocks:
         # print info about block
     
-    section.assign_teacher(teacher)
+    section.add_teacher(teacher)
     section.remove_teacher(teacher)
     section.teachers
 
@@ -37,31 +34,29 @@ import schedule.Schedule.IDGeneratorCode as id_gen
     section.labs()
 """
 
-DEFAULT_HOURS: float = 1.5
+
+class ParentContainer(Protocol):
+    @property
+    def id(self) -> int: yield ...
+
+    @property
+    def title(self) -> str: yield ...
 
 
-# ============================================================================
-# keep track of all the instances of 'Sections' class, and define the generator
-# that keeps track of which new id to use
-# ============================================================================
-_instances: dict[int, Lab] = dict()
+class Lab(Protocol):
+    number: str  # needed for __str__ method in Block
+    ...
+
+
+class Stream(Protocol):
+    ...
+
+
+class Teacher(Protocol):
+    ...
+
+
 _section_id_generator: Generator[int, int, None] = id_gen.get_id_generator()
-
-
-# =====================================================================================
-# get_section_with_this_block
-# =====================================================================================
-def get_section_with_this_block(block: Block) -> Section | None:
-    """A block belongs to a stream, which stream is it?"""
-    if block.id in _block_id_to_section_id:
-        section_id = _block_id_to_section_id[block.id]
-        if section_id in _all_sections:
-            return _all_sections[section_id]
-    return None
-
-
-_block_id_to_section_id: dict[int, int] = dict()
-_all_sections: dict[id, Section] = dict()
 
 
 def _validate_hours(hours: float | int) -> float:
@@ -79,10 +74,12 @@ class Section:
     Describes a section (part of a course)
     """
 
+    DEFAULT_HOURS = 3
+
     # ========================================================
     # CONSTRUCTOR
     # ========================================================
-    def __init__(self, number: str = "", hours: float = DEFAULT_HOURS, name: str = "",
+    def __init__(self, course: ParentContainer, number: str = "", hours: float = DEFAULT_HOURS, name: str = "",
                  section_id: int = None):
         """
         Creates an instance of the Section class.
@@ -94,18 +91,18 @@ class Section:
         # LEAVE IN:
         # Allows for teacher allocations to be tracked & calculated correctly in AllocationManager,
         # since Blocks are ignored there
-        self._teachers: dict[int, Teacher] = dict()
-        self._allocation: dict[int, float] = dict()
-        self._streams: dict[int, Stream] = dict()
-        self._blocks: dict[int, Block] = dict()
+        self._teachers: set[Teacher] = set()
+        self._streams: set[Stream] = set()
+        self._allocation: dict[Teacher:float] = dict()
+        self._blocks: set[Block] = set()
 
         self.name = name
         self.number = str(number)
         self.hours = hours
         self.num_students: int = 0
+        self.course = course
 
         self.__id = id_gen.set_id(_section_id_generator, section_id)
-        _all_sections[self.__id] = self
 
     # ========================================================
     # PROPERTIES
@@ -145,7 +142,7 @@ class Section:
     @property
     def blocks(self) -> tuple[Block]:
         """ Gets list of section's blocks """
-        return tuple(self._blocks.values())
+        return tuple(self._blocks)
 
     # --------------------------------------------------------
     # title
@@ -173,22 +170,19 @@ class Section:
     @property
     def teachers(self) -> tuple[Teacher]:
         """ Gets all teachers assigned to all blocks in this section """
-        teachers: set[Teacher] = set()
+        teachers = self._teachers
         for b in self.blocks:
-            for teacher in b.teachers:
-                teachers.add(teacher)
+            teachers.update(b.teachers)
 
-        for t in self._teachers.values():
-            teachers.add(t)
         return tuple(teachers)
 
     # --------------------------------------------------------
     # streams
     # --------------------------------------------------------
     @property
-    def streams(self) -> tuple[Stream]:
+    def streams(self) -> tuple[Stream, ...]:
         """ Gets all streams in this section """
-        return tuple(set(self._streams.values()))
+        return tuple(self._streams)
 
     # --------------------------------------------------------
     # allocated_hours
@@ -214,15 +208,15 @@ class Section:
         return self.hours
 
     # --------------------------------------------------------
-    # assign_lab
+    # add_lab
     # --------------------------------------------------------
-    def assign_lab(self, lab: Lab) -> Section:
+    def add_lab(self, lab: Lab) -> Section:
         """
         Assign a lab to every block in the section
         - Parameter lab -> The lab to assign
         """
         for b in self.blocks:
-            b.assign_lab(lab)
+            b.add_lab(lab)
         return self
 
     # --------------------------------------------------------
@@ -248,17 +242,17 @@ class Section:
         return self
 
     # --------------------------------------------------------
-    # assign_teacher
+    # add_teacher
     # --------------------------------------------------------
-    def assign_teacher(self, teacher: Teacher) -> Section:
+    def add_teacher(self, teacher: Teacher) -> Section:
         """
         Assign a teacher to the section
         - Parameter teacher -> The teacher to be assigned
         """
         for b in self.blocks:
-            b.assign_teacher(teacher)
-        self._teachers[teacher.id] = teacher
-        self._allocation[teacher.id] = self.hours
+            b.add_teacher(teacher)
+        self._teachers.add(teacher)
+        self._allocation[teacher] = self.hours
         return self
 
     # --------------------------------------------------------
@@ -273,8 +267,8 @@ class Section:
         if hours:
             hours = _validate_hours(hours)
             if not self.has_teacher(teacher):
-                self.assign_teacher(teacher)
-            self._allocation[teacher.id] = float(hours)
+                self.add_teacher(teacher)
+            self._allocation[teacher] = float(hours)
         else:
             self.remove_teacher(teacher)
 
@@ -292,8 +286,8 @@ class Section:
         if not self.has_teacher(teacher):
             return 0
         # allocation defined
-        if teacher.id in self._allocation:
-            return self._allocation[teacher.id]
+        if teacher in self._allocation:
+            return self._allocation[teacher]
         # hours not defined, assume total hours
         else:
             return self.hours
@@ -308,10 +302,9 @@ class Section:
         """
         for b in self.blocks:
             b.remove_teacher(teacher)
-        if teacher in self.teachers:
-            del self._teachers[teacher.id]
-        if teacher.id in self._allocation:
-            del self._allocation[teacher.id]
+        self._teachers.discard(teacher)
+        if teacher in self._allocation:
+            del self._allocation[teacher]
 
         return self
 
@@ -332,18 +325,17 @@ class Section:
         Checks if section has teacher
         - Parameter teacher -> The teacher to check
         """
-        return len([t for t in self.teachers if t.id == teacher.id]) > 0
+        return teacher in self._teachers
 
     # --------------------------------------------------------
-    # assign_stream
+    # add_stream
     # --------------------------------------------------------
-    def assign_stream(self, *streams: Stream) -> Section:
+    def add_stream(self, stream: Stream) -> Section:
         """
         Assign streams to this section.
-        - Parameter streams -> The stream(s) to be added. Streams can be added all at once
+        - Parameter stream -> The stream to be added.
         """
-        for s in streams:
-            self._streams[s.id] = s
+        self._streams.add(stream)
         return self
 
     # --------------------------------------------------------
@@ -354,8 +346,7 @@ class Section:
         Remove stream from this section.
         - Parameter stream -> The stream to remove.
         """
-        if stream.id in self._streams:
-            del self._streams[stream.id]
+        self._streams.discard(stream)
         return self
 
     # --------------------------------------------------------
@@ -366,29 +357,24 @@ class Section:
         Check if a section has a stream
         - Parameter stream -> The stream to check
         """
-        return len([s for s in self.streams if s.id == stream.id]) > 0
+        return stream in self._streams
 
     # --------------------------------------------------------
     # remove_all_streams
     # --------------------------------------------------------
     def remove_all_streams(self) -> Section:
         """ Removes all streams from this section """
-        for s in self.streams:
-            self.remove_stream(s)
+        self._streams.clear()
         return self
 
     # --------------------------------------------------------
     # add_block
     # --------------------------------------------------------
-    def add_block(self, *blocks: Block) -> Section:
-        """
-        Assign blocks to this section
-        - Parameter blocks -> The block(s) to assign. Block(s) can be added all at once
-        """
-        for b in blocks:
-            self._blocks[b.id] = b
-            _block_id_to_section_id[b.id] = self.id
-        return self
+    def add_block(self, time_slot: TimeSlot, block_id=None) -> Block:
+        """ Creates and Assign a block to this section"""
+        block = Block(self, time_slot, block_id)
+        self._blocks.add(block)
+        return block
 
     # --------------------------------------------------------
     # remove_block
@@ -398,10 +384,7 @@ class Section:
         Remove a block from this section
         - Parameter block -> The block to remove
         """
-        if block.id in self._blocks:
-            del self._blocks[block.id]
-        if block.id in _block_id_to_section_id:
-            del _block_id_to_section_id[block.id]
+        self._blocks.discard(block)
         return self
 
     # --------------------------------------------------------
@@ -412,8 +395,9 @@ class Section:
         Gets block with given ID from this section
         - Parameter id -> The ID of the block to find
         """
-        if block_id in self._blocks.keys():
-            return self._blocks[block_id]
+        blocks = [b for b in self._blocks if b.id == block_id]
+        if len(blocks) > 0:
+            return blocks[0]
         return None
 
     # --------------------------------------------------------
@@ -421,7 +405,7 @@ class Section:
     # --------------------------------------------------------
     def has_block(self, block: Block) -> bool:
         """Does this section have this block? """
-        return self.get_block_by_id(block.id) is not None
+        return block in self._blocks
 
     # --------------------------------------------------------
     # __str__
@@ -445,3 +429,26 @@ class Section:
             if b.conflicted_number:
                 return True
         return False
+
+
+class Sections(dict[int, Section]):
+
+    # =================================================================
+    # get_by_id
+    # =================================================================
+    def get_by_id(self, section_id: int) -> Section | None:
+        """Returns the Section object matching the specified ID, if it exists."""
+        return self.get(section_id)
+
+    # =================================================================
+    # add
+    # =================================================================
+    def add(self, section: Section) -> None:
+        self[section.id] = section
+
+    # =================================================================
+    # remove
+    # =================================================================
+    def remove(self, section: Section) -> None:
+        if section.id in self:
+            del (self[section.id])

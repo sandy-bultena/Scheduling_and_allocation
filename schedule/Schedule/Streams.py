@@ -2,7 +2,6 @@ from __future__ import annotations
 from typing import *
 import schedule.Schedule.IDGeneratorCode as id_gen
 
-
 """ SYNOPSIS/EXAMPLE:
     from Schedule.Stream import Stream
 
@@ -11,38 +10,11 @@ import schedule.Schedule.IDGeneratorCode as id_gen
     all_labs = Stream.list()
 """
 
-_instances: dict[int, Stream] = {}
 _stream_id_generator: Generator[int, int, None] = id_gen.get_id_generator()
 
 
-# ============================================================================
-# get_all
-# ============================================================================
-def get_all() -> tuple[Stream]:
-    """Returns an immutable tuple containing all instances of the Teacher class."""
-    return tuple(_instances.values())
-
-
-# =================================================================
-# get_by_id
-# =================================================================
-def get_by_id(stream_id: int) -> Stream | None:
-    """Returns the Teacher object matching the specified ID, if it exists."""
-    if stream_id in _instances.keys():
-        return _instances[stream_id]
-    return None
-
-
-# ============================================================================
-# reset
-# ============================================================================
-def clear_all():
-    """Reset the local list of labs"""
-    _instances.clear()
-
-
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# CLASS: Stream
+# CLASS: _Stream - should never be instantiated directly!
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class Stream:
     """ Describes a group of students whose classes cannot overlap. """
@@ -50,17 +22,16 @@ class Stream:
     # ========================================================
     # CONSTRUCTOR
     # ========================================================
-    def __init__(self, number: str = "A", descr: str = "", *, stream_id: int = None):
+    def __init__(self, number: str = "A", description: str = "", *, stream_id: int = None):
         """
         Creates an instance of the Stream class.
         - Parameter number -> defines the stream number.
-        - Parameter desc -> defines the stream description.
+        - Parameter desc -> defines the stream title.
         """
         self.number = number
-        self.descr = descr
+        self.description = description
 
         self.__id = id_gen.set_id(_stream_id_generator, stream_id)
-        _instances[self.__id] = self
 
     # --------------------------------------------------------
     # id
@@ -80,20 +51,35 @@ class Stream:
     def __repl__(self) -> str:
         return str(self)
 
-    # --------------------------------------------------------
-    # description
-    # --------------------------------------------------------
-    @property
-    def description(self) -> str:
-        """ Returns a text string that describes the Stream (number & descr) """
-        return f"{self.number}: {self.descr}"
 
-    # --------------------------------------------------------
-    # delete
-    # --------------------------------------------------------
-    def delete(self):
-        """ Deletes the current instance of Stream """
-        del _instances[self.id]
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# Collection
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+class Streams(dict[int, Stream]):
 
-    def remove(self):
-        self.delete()
+    # =====================================================================================
+    # all
+    # =====================================================================================
+    def get_all(self) -> tuple[Stream, ...]:
+        return tuple(self.values())
+
+    # =====================================================================================
+    # by id
+    # =====================================================================================
+    def get_by_id(self, stream_id: int) -> Stream | None:
+        return self.get(stream_id)
+
+    # =================================================================
+    # add
+    # =================================================================
+    def add(self, number: str = "A", descr: str = "", *, stream_id: int = None) -> Stream:
+        stream = Stream(number, descr, stream_id=stream_id)
+        self[stream.id] = stream
+        return stream
+
+    # =================================================================
+    # remove
+    # =================================================================
+    def remove(self, stream: Stream) -> None:
+        if stream.id in self:
+            del (self[stream.id])
