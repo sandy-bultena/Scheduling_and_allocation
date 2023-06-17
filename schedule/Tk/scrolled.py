@@ -150,7 +150,7 @@ example::
         self._widget = None
 
         # ----------------------------------------------------------------------------------------
-        # get the Tk object that needs to be created
+        # get_by_id the Tk object that needs to be created
         # ----------------------------------------------------------------------------------------
         _tk_widget_type = None
         try:

@@ -40,9 +40,6 @@ class Stream(Protocol):
 
 class ParentContainer(Protocol):
     @property
-    def id(self) -> int: yield ...
-
-    @property
     def title(self) -> str: yield ...
 
 
@@ -71,9 +68,9 @@ class Block:
         self._conflicted = 0
         self.__block_id = id_gen.set_id(_block_id_generator, block_id)
 
-    # =================================================================
+    # ------------------------------------------------------------------------
     # Properties
-    # =================================================================
+    # ------------------------------------------------------------------------
 
     @property
     def conflicted_number(self) -> int:
@@ -157,13 +154,22 @@ class Block:
                 other.duration = self.duration
 
     @property
+    def movable(self) -> bool:
+        """Get/set the duration of the block."""
+        return self.time_slot.movable
+
+    @duration.setter
+    def duration(self, new_movable: bool):
+        self.time_slot.movable = new_movable
+
+    @property
     def id(self) -> int:
         """Gets the Block id."""
         return self.__block_id
 
-    # =================================================================
+    # ------------------------------------------------------------------------
     # All about labs
-    # =================================================================
+    # ------------------------------------------------------------------------
     @property
     def labs(self) -> tuple[Lab, ...]:
         """Returns an immutable list of the labs assigned to this block."""
@@ -188,9 +194,9 @@ class Block:
         """Returns true if the Block has the specified Lab."""
         return lab in self._labs
 
-    # =================================================================
+    # ------------------------------------------------------------------------
     # All about Teachers
-    # =================================================================
+    # ------------------------------------------------------------------------
     @property
     def teachers(self) -> tuple[Teacher, ...]:
         """Returns an immutable list of the teachers assigned to this block."""
@@ -215,9 +221,9 @@ class Block:
         """Returns true if the Block has the specified Lab."""
         return teacher in self._teachers
 
-    # =================================================================
+    # ------------------------------------------------------------------------
     # All about syncing
-    # =================================================================
+    # ------------------------------------------------------------------------
     @property
     def synced_blocks(self) -> tuple[Block, ...]:
         """Returns a tuple of the Blocks which are synced_blocks to this Block."""
@@ -241,9 +247,9 @@ class Block:
 
         return self
 
-    # =================================================================
+    # ------------------------------------------------------------------------
     # string representation of object
-    # =================================================================
+    # ------------------------------------------------------------------------
     def __str__(self) -> str:
         """Returns a text string that describes the Block."""
         text = ""
@@ -256,6 +262,13 @@ class Block:
     def __repr__(self) -> str:
         return self.description
 
+    # ------------------------------------------------------------------------
+    # for sorting
+    # ------------------------------------------------------------------------
+    def __lt__(self, other):
+        if self.day_number != other.day_number:
+            return self.day_number < other.day_number
+        return self.start_number < other.start_number
 
 # =================================================================
 # footer

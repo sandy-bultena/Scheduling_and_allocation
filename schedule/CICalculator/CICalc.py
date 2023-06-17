@@ -52,7 +52,7 @@ class CICalc():
             debug(f"*********** {course.name}")
 
             # per section
-            for section in course.sections_for_teacher(teacher):
+            for section in course.get_sections_for_teacher(teacher):
                 hours = section.get_teacher_allocation(teacher)
                 students = section.num_students
 

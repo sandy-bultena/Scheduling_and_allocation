@@ -1,10 +1,11 @@
+import pytest
+
 import sys
 from os import path
 
-sys.path.append(path.dirname(path.dirname(__file__)))
+sys.path.append(path.dirname(path.dirname(__file__) + "/../../"))
 
-from Undo import Undo
-import pytest
+from schedule.Schedule.Undo import Undo
 
 
 @pytest.fixture(autouse=True)

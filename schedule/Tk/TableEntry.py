@@ -279,7 +279,7 @@ Example::
         if grid_row < 1:
             return data
 
-        # get all the data from all the Entry widgets
+        # get_by_id all the data from all the Entry widgets
         for data_col in range(0, self.number_of_columns):
             w = self.__get_widget_in_row_col(grid_row, data_col + 1)
             if w:
@@ -302,7 +302,7 @@ Example::
             for _ in range(grid_row - self.number_of_rows):
                 self.add_empty_row()
 
-        # get the entry widget
+        # get_by_id the entry widget
         w = self.__get_widget_in_row_col(grid_row, grid_col)
         if not w or not isinstance(w, Entry):
             return
@@ -576,7 +576,7 @@ Example::
             self.frame.configure(width=width_total)
 
     # ===================================================================
-    # get row/col of a widget
+    # get_by_id row/col of a widget
     # ===================================================================
     def __get_row_col_of_widget(self, w: Entry):
         if w:
@@ -585,10 +585,10 @@ Example::
         return 0, 0
 
     # ===================================================================
-    # get widget in row/col
+    # get_by_id widget in row/col
     # ===================================================================
     def __get_widget_in_row_col(self, r, c) -> Entry | None:
-        """get the widget in the row/col"""
+        """get_by_id the widget in the row/col"""
         w = self.frame.grid_slaves(r, c)
         if w:
             return w[0]

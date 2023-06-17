@@ -34,15 +34,19 @@ _course_id_generator: Generator[int, int, None] = id_gen.get_id_generator()
 
 class Lab(Protocol):
     number: str  # needed for __str__ method in Block
-    pass
+
+    def __lt__(self: Lab, other: Lab) -> bool:
+        pass
 
 
 class Stream(Protocol):
-    pass
+    def __lt__(self: Stream, other: Stream) -> bool:
+        pass
 
 
 class Teacher(Protocol):
-    pass
+    def __lt__(self: Teacher, other: Teacher) -> bool:
+        pass
 
 
 class Course:
@@ -60,10 +64,10 @@ class Course:
 
         Parameter **name**: str -> the name of the course."""
 
-        self._number: str = number
+        self.number: str = number
         self.name: str = name
         self.needs_allocation: bool = needs_allocation
-        self.__sections: set[Section] = set()
+        self._sections: set[Section] = set()
         self.semester: int = SemesterType.validate(semester)
 
         self.__id = id_gen.set_id(_course_id_generator, course_id)
@@ -75,14 +79,6 @@ class Course:
     def id(self) -> int:
         """Returns the unique ID for this Course object."""
         return self.__id
-
-    # =================================================================
-    # id
-    # =================================================================
-    @property
-    def number(self) -> str:
-        """Returns the course number"""
-        return self._number
 
     # =================================================================
     # title
@@ -110,7 +106,7 @@ class Course:
         # save section for this course, save course for this section
         # ----------------------------------------------------------
         section = Section(self, number, hours, name, section_id)
-        self.__sections.add(section)
+        self._sections.add(section)
 
         return section
 
@@ -147,7 +143,7 @@ class Course:
     def remove_section(self, section: Section) -> Course:
         """Removes the passed Section from this Course, if it exists.
         Returns the modified Course object."""
-        self.__sections.discard(section)
+        self._sections.discard(section)
         return self
 
     # =================================================================
@@ -156,7 +152,7 @@ class Course:
     @property
     def sections(self) -> tuple[Section, ...]:
         """Returns a list of all the Sections assigned to this Course."""
-        return tuple(self.__sections)
+        return tuple(sorted(self._sections))
 
     # =================================================================
     # number of sections
@@ -169,7 +165,7 @@ class Course:
     # =================================================================
     # sections for teacher
     # =================================================================
-    def sections_for_teacher(self, teacher: Teacher) -> tuple[Section, ...]:
+    def get_sections_for_teacher(self, teacher: Teacher) -> tuple[Section, ...]:
         """Returns a list of the Sections assigned to this course, with this Teacher."""
         sections = []
 
@@ -177,7 +173,7 @@ class Course:
             if teacher in section.teachers:
                 sections.append(section)
 
-        return tuple(set(sections))
+        return tuple(sorted(set(sections)))
 
     # =================================================================
     # max_section_number
@@ -199,15 +195,7 @@ class Course:
         for section in self.sections:
             blocks.extend(section.blocks)
 
-        return tuple(set(blocks))
-
-    # =================================================================
-    # section
-    # =================================================================
-    def section(self, section_number: str) -> Section | None:
-        """Returns the Section associated with this Section number."""
-        found = [s for s in self.sections if s.number == section_number]
-        return found[0] if found else None
+        return tuple(sorted(set(blocks)))
 
     # =================================================================
     # string representation of the object
@@ -251,7 +239,7 @@ class Course:
         teachers: list[Teacher] = list()
         for section in self.sections:
             teachers.extend(section.teachers)
-        return tuple(set(teachers))
+        return tuple(sorted(set(teachers)))
 
     # =================================================================
     # has teacher
@@ -262,7 +250,7 @@ class Course:
         return teacher in self.teachers
 
     # =================================================================
-    # stream_ids
+    # stream
     # =================================================================
     @property
     def streams(self) -> tuple[Stream, ...]:
@@ -271,7 +259,7 @@ class Course:
         streams: list[Stream] = list()
         for section in self.sections:
             streams.extend(section.streams)
-        return tuple(set(streams))
+        return tuple(sorted(set(streams)))
 
     # =================================================================
     # has_stream_with_id
@@ -293,6 +281,20 @@ class Course:
     # =================================================================
     # add_lab
     # =================================================================
+    # =================================================================
+    # stream
+    # =================================================================
+    @property
+    def labs(self) -> tuple[Lab, ...]:
+        """Returns a list of Labs assigned to all Sections of this Course."""
+
+        labs: list[Lab] = list()
+        for section in self.sections:
+            for block in section.blocks:
+                labs.extend(block.labs)
+        return tuple(sorted(set(labs)))
+
+
     def add_lab(self, lab: Lab) -> Course:
         """Assigns a Lab to all Sections of this Course."""
 
@@ -312,7 +314,7 @@ class Course:
         return self
 
     # =================================================================
-    # remove_teacher_by_id
+    # remove_teacher
     # =================================================================
     def remove_teacher(self, teacher: Teacher) -> Course:
         """Removes the passed Teacher from all Sections/Blocks in this Course."""
@@ -357,49 +359,11 @@ class Course:
             number += 1
         return number
 
-
-class Courses(Dict[int, Course]):
-
-    # ============================================================================
-    # get_by_number
-    # ============================================================================
-    def get_by_number(self, number: str) -> Course | None:
-        """Returns the Course which matches this Course number, if it exists."""
-        found = [course for course in self.values() if course.number == number]
-        return found[0] if found else None
-
-    # ============================================================================
-    # get_all
-    # ============================================================================
-    def get_all(self) -> tuple[Course, ...]:
-        """Returns a tuple of all the labs"""
-        return tuple(self.values())
-
-    # =================================================================
-    # get_by_id
-    # =================================================================
-    def get_by_id(self, lab_id: int) -> Lab | None:
-        """Returns the Lab object matching the specified ID, if it exists."""
-        return self.get(lab_id)
-
-    # =================================================================
-    # add
-    # =================================================================
-    def add(self, number: str = "", name: str = "new Course",
-            semester: (SemesterType | int) = SemesterType.any, needs_allocation: bool = True,
-            course_id: int = None) -> Course:
-        """Creates and saves a new Course object."""
-        course:Course = Course(number, name, semester, needs_allocation,course_id)
-        self[course.id] = course
-        return course
-
-    # =================================================================
-    # remove
-    # =================================================================
-    def remove(self, course: Course) -> None:
-        if course.id in self:
-            del (self[course.id])
-
+    # ------------------------------------------------------------------------
+    # for sorting
+    # ------------------------------------------------------------------------
+    def __lt__(self, other):
+        return self.number < other.number
 
 
 # =================================================================

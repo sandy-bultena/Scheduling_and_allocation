@@ -10,7 +10,7 @@ from GuiSchedule.DataEntryTK import DataEntryTK
 
 '''
 =head1 NAME
-DataEntry - provides methods/objects for entering teachers/labs/etc data
+DataEntry - provides methods/objects for entering teacher_ids/lab_ids/etc data
 =head1 VERSION
 Version 6.00
 =head1 SYNOPSIS
@@ -27,7 +27,7 @@ Version 6.00
     # NOTE: requires $views_manager just so that it can update
     #       the views if data has changed (via the dirty flag)
 
-    my $de = DataEntry->new( $mw, $Schedule->teachers,
+    my $de = DataEntry->new( $mw, $Schedule->teacher_ids,
                     $Schedule, \$Dirtyflag, $views_manager );
 =head1 DESCRIPTION
 A generic data entry widget
@@ -164,13 +164,13 @@ class DataEntry:
 
         elif self.type.lower() is 'lab':
             methods.extend(["id", "number", "descr"])
-            titles.extend(['id', 'room', 'description'])
+            titles.extend(['id', 'room', 'title'])
             widths.extend([4, 7, 40])
             sort_by = 'number'
 
         elif self.type.lower() is 'stream':
             methods.extend(["id", "number", "descr"])
-            titles.extend(['id', 'number', 'description'])
+            titles.extend(['id', 'number', 'title'])
             widths.extend([4, 10, 40])
             sort_by = 'number'
 
@@ -289,11 +289,11 @@ class DataEntry:
             if o:
                 dirty_flag += 1
                 if isinstance(o, schedule.Schedule.Teacher.Teacher):
-                    schedule.remove_teacher(o)
+                    schedule.remove_teacher_by_id(o)
                 elif isinstance(o, schedule.Schedule.Stream.Stream):
-                    schedule.remove_stream(o)
+                    schedule.remove_stream_by_id(o)
                 elif isinstance(o, schedule.Schedule.Lab.Lab):
-                    schedule.remove_lab(o)
+                    schedule.remove_lab_by_id(o)
 
         # if there have been changes, set global dirty flag and do what is necessary.
         if dirty_flag > 0:

@@ -6,12 +6,12 @@ from ..Export import DrawView
 from ..GUI.GuiBlockTk import GuiBlockTk
 from ..GUI.ViewTk import ViewTk
 from ..Schedule.Block import Block
-from ..Schedule.Conflict import Conflict
-from ..Schedule.Lab import Lab
+from ..Schedule.ConflictCalculations import Conflict
+from ..Schedule.Labs import Lab
 from ..Schedule.Schedule import Schedule
 from ..Schedule.ScheduleEnums import ConflictType, ViewType
-from ..Schedule.Stream import Stream
-from ..Schedule.Teacher import Teacher
+from ..Schedule.Streams import Stream
+from ..Schedule.Teachers import Teacher
 from ..Schedule.Undo import Undo
 from ..PerlLib import Colour
 from ..UsefulClasses.AllScheduables import AllScheduables
@@ -112,7 +112,7 @@ class View:
         Parameters:
             views_manager: The ViewsManager object responsible for keeping track of all the views.
             mw: Tk main window.
-            schedule: Where course/sections/teachers/labs/streams are defined.
+            schedule: Where course/sections/teacher_ids/lab_ids/stream_ids are defined.
             schedulable_object: Teacher/Lab/Stream that the View is being made for."""
         View.max_id += 1
         self._id = View.max_id
@@ -132,7 +132,7 @@ class View:
         # type of view depends on which object it is for
         # ---------------------------------------------------------------
         blocks = schedule.get_blocks_for_obj(schedulable_object)
-        type = schedule.get_view_type_of_object(schedulable_object)
+        type = schedule.get_view_type_of_object
 
         # ---------------------------------------------------------------
         # save some parameters
@@ -195,7 +195,7 @@ class View:
 
         # redraw all GuiBlocks.
         for b in blocks:
-            # This makes sure that synced blocks have the same start time.
+            # This makes sure that synced_blocks blocks have the same start time.
             b.start = b.start
             b.day = b.day
 
@@ -222,13 +222,13 @@ class View:
             self.views_manager.update_for_conflicts()
 
         # ---------------------------------------------------------------
-        # bind events for each gui block
+        # bind events for each gui blocks
         # ---------------------------------------------------------------
         gbs = self.gui_blocks
         for guiblock in gbs.values():
             block: Block = guiblock.block
 
-            # Bind to allow block to move if clicked and dragged.
+            # Bind to allow blocks to move if clicked and dragged.
             if block.movable:
                 self.gui.set_bindings_for_dragging_guiblocks(self, guiblock,
                                                              self._cb_guiblock_is_moving,
@@ -250,11 +250,11 @@ class View:
         # Go through each GuiBlock on the view.
         if hasattr(self, '_gui_blocks'):
             for guiblock in self.gui_blocks.values():
-                # Race condition, no need to update the current moving block.
+                # Race condition, no need to update the current moving blocks.
                 if guiblock.is_controlled:
                     continue
 
-                # GuiBlock's block is the same as the moving block?
+                # GuiBlock's blocks is the same as the moving blocks?
                 if guiblock.block.id == block.id:
                     self.gui.move_block(guiblock)
                     self.gui.canvas.update_idletasks()
@@ -274,10 +274,10 @@ class View:
         for guiblock in guiblocks.values():
             self.gui.colour_block(guiblock, type)
 
-            # Colour block by conflict only if it is movable.
+            # Colour blocks by conflict only if it is movable.
             if guiblock.block.movable:
                 # Create conflict number for the entire View.
-                view_conflict = view_conflict | guiblock.block.conflicted
+                view_conflict = view_conflict | guiblock.block.conflicted_number
 
         return view_conflict
 
@@ -317,7 +317,7 @@ class View:
 
     @staticmethod
     def _cb_assign_blocks(self, chosen_blocks: list, undef=None):
-        """Give the option of assigning these blocks to a resource (add to course, assign block to
+        """Give the option of assigning these blocks to a resource (add to course, assign blocks to
         teacher/lab/stream).
 
         Handles Event: AssignBlock objects have been selected.
@@ -329,7 +329,7 @@ class View:
         from ..GUI.AssignBlockTk import AssignBlockTk
         (day, start, duration) = AssignBlockTk.get_day_start_duration(chosen_blocks)
 
-        # Create the menu to select the block to assign to the timeslot.
+        # Create the menu to select the blocks to assign to the timeslot.
         AssignToResource(self.gui.mw, self.schedule, day, start, duration, self.schedulable)
 
         # Redraw.
@@ -339,10 +339,10 @@ class View:
         """Toggles whether a GuiBlock is movable or not.
 
         Handles Event: The toggle movable/unmovable on the popup menu has been clicked."""
-        # Get the block that was right-clicked.
+        # Get the blocks that was right-clicked.
         if not self.gui.popup_guiblock:
             return
-        block = self.gui.popup_guiblock.block
+        block = self.gui.popup_guiblock.blocks
 
         # Toggle movability.
         if block.movable:
@@ -360,11 +360,11 @@ class View:
         """Moves the selected class(es) from the original Views Teacher/Lab to the Teacher/Lab
         object.
 
-        Handles Event: The user has selected to move a block between one selectable object and another
+        Handles Event: The user has selected to move a blocks between one selectable object and another
         via the popup menu.
 
         Parameters:
-            that_schedulable: Target destination of the block."""
+            that_schedulable: Target destination of the blocks."""
         this_schedulable = self.schedulable
 
         # Get the GuiBlock that the popup_menu was invoked on.
@@ -372,19 +372,19 @@ class View:
 
         # Reassign teacher/lab to blocks.
         if self.type == "teacher":
-            guiblock.block.remove_teacher(this_schedulable)
-            guiblock.block.assign_teacher(that_schedulable)
-            guiblock.block.section.remove_teacher(this_schedulable)
-            guiblock.block.section.assign_teacher(that_schedulable)
+            guiblock.blocks.remove_teacher_by_id(this_schedulable)
+            guiblock.blocks.assign_teacher_by_id(that_schedulable)
+            guiblock.blocks.section.remove_teacher_by_id(this_schedulable)
+            guiblock.blocks.section.assign_teacher_by_id(that_schedulable)
         elif self.type == "lab":
-            guiblock.block.remove_lab(this_schedulable)
-            guiblock.block.assign_lab(that_schedulable)
+            guiblock.blocks.remove_lab_by_id(this_schedulable)
+            guiblock.blocks.assign_lab_by_id(that_schedulable)
         elif self.type == "stream":
-            guiblock.block.section.remove_stream(this_schedulable)
-            guiblock.block.section.assign_stream(that_schedulable)
+            guiblock.blocks.section.remove_stream_by_id(this_schedulable)
+            guiblock.blocks.section.assign_stream_by_id(that_schedulable)
 
         # There was a change, so redraw all the views.
-        undo = Undo(guiblock.block.id, guiblock.block.start, guiblock.block.day,
+        undo = Undo(guiblock.blocks.id, guiblock.blocks.start, guiblock.blocks.day,
                     self.schedulable, self.type, that_schedulable)
         self.views_manager.add_undo(undo)
 
@@ -405,12 +405,12 @@ class View:
 
         Parameters:
             guiblock: GuiBlock that is moving."""
-        # update same block on different views.
+        # update same blocks on different views.
         block = guiblock.block
         views_manager = self.views_manager
         views_manager.update_all_views(block)
 
-        # Is current block conflicting?
+        # Is current blocks conflicting?
         self.schedule.calculate_conflicts()
         self.gui.colour_block(guiblock, self.type)
 
@@ -418,8 +418,8 @@ class View:
     def _cb_open_companion_view(self, guiblock: GuiBlockTk):
         """Based on the type of this view, will open another view which has this Block.
 
-        lab/stream -> teachers
-        teachers -> streams
+        lab/stream -> teacher_ids
+        teacher_ids -> stream_ids
 
         Handles Event: double-clicking on a guiblock.
 
@@ -435,11 +435,11 @@ class View:
         # no teacher schedules, then open other lab schedules
         # ---------------------------------------------------------------
         if (type == "lab" or type == ViewType.Lab) or (type == "stream" or type == ViewType.Stream):
-            teachers = guiblock.block.teachers()
+            teachers = guiblock.block.teacher_ids()
             if len(teachers) > 0:
                 self.views_manager.create_view_containing_block(teachers, self.type)
             else:
-                labs = guiblock.block.labs()
+                labs = guiblock.block.lab_ids()
                 if len(labs) > 0:
                     self.views_manager.create_view_containing_block(labs, 'teacher',
                                                                     self.schedulable)
@@ -448,11 +448,11 @@ class View:
         # no lab schedules, then open other teacher schedules
         # ---------------------------------------------------------------
         elif type == "teacher" or type == ViewType.Teacher:
-            labs = guiblock.block.labs()
+            labs = guiblock.block.lab_ids()
             if len(labs) > 0:
                 self.views_manager.create_view_containing_block(labs, self.type)
             else:
-                teachers = guiblock.block.teachers()
+                teachers = guiblock.block.teacher_ids()
                 if len(teachers) > 0:
                     self.views_manager.create_view_containing_block(teachers, 'lab',
                                                                     self.schedulable)
@@ -493,9 +493,9 @@ class View:
         Handles Event: For when a GuiBlock has been dropped, and now it is time to refresh
         everything.
         Parameters:
-            block: The block that has been modified by moving a GuiBlock around."""
+            block: The blocks that has been modified by moving a GuiBlock around."""
         self: View
-        # update all the views that have the block just moved to its new position. NOTE: ???
+        # update all the views that have the blocks just moved to its new position. NOTE: ???
         views_manager = self.views_manager
         views_manager.update_all_views(block)
 

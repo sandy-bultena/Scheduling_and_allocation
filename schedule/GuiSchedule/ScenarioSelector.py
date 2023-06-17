@@ -74,7 +74,7 @@ class ScenarioSelector:
         self.window.update()
 
     def open_scenario(self):
-        # self.boxes[0].get() produces a string in this case. Not useful for our purposes.
+        # self.boxes[0].get_by_id() produces a string in this case. Not useful for our purposes.
 
         # Get the selected index.
         selected_index = self.listbox.curselection()[0]

@@ -6,7 +6,7 @@ from schedule.GUI.GuiBlockTk import GuiBlockTk
 from schedule.Presentation.View import View
 
 from schedule.Schedule.Schedule import Schedule
-from schedule.Schedule.Teacher import Teacher
+from schedule.Schedule.Teachers import Teacher
 from schedule.Schedule.Block import Block
 
 from schedule.Schedule.database import PonyDatabaseConnection
@@ -37,7 +37,7 @@ def main():
     my_view = View(views_manager=None, mw=mw, schedule=my_schedule, schedulable_object=teacher)
 
     block = Block("Wed", "9:30", 1.5, 1)
-    block.assign_teacher(teacher)
+    block.assign_teacher_by_id(teacher)
 
     gui_block = GuiBlockTk("stream", my_view.gui, block)
     gui_block.change_colour("red")
@@ -56,7 +56,7 @@ def get_db_schedule():
     sched_teach = PonyDatabaseConnection.Schedule_Teacher(teacher_id=teacher,
                                                           schedule_id=db_schedule,
                                                           work_release=3)
-    db_schedule.teachers.add(sched_teach)
+    db_schedule.teacher_ids.add(sched_teach)
     return db_schedule
 
 

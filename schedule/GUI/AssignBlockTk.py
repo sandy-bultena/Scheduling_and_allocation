@@ -1,17 +1,17 @@
 # COMPLETED?
-"""A half hour time block used to select time slots on a view."""
+"""A half hour time blocks used to select time slots on a view."""
 from tkinter import Canvas
 
 from PerlLib import Colour
 
 
 class AssignBlockTk:
-    """Defines a 1/2 hour block of time within a view.
+    """Defines a 1/2 hour blocks of time within a view.
 
-    You can find this time block by specifying the x/y canvas coordinates, or by the day, start and
+    You can find this time blocks by specifying the x/y canvas coordinates, or by the day, start and
     end time.
 
-    The block can be coloured, or uncoloured."""
+    The blocks can be coloured, or uncoloured."""
     # =================================================================
     # Global Variables
     # =================================================================
@@ -33,11 +33,11 @@ class AssignBlockTk:
         Parameters:
             view: View the GuiBlock will be drawn on.
             day: Day of the week (integer, 1 = monday, etc.)
-            start: Time that this gui block starts (real number)"""
+            start: Time that this gui blocks starts (real number)"""
         # Raise some sort of warning if view is None or absent.
 
         # ---------------------------------------------------------------
-        # draw 1/2 the block
+        # draw 1/2 the blocks
         # ---------------------------------------------------------------
         cn: Canvas = view.gui.canvas
         coords = view.gui.get_time_coords(day, start, 1 / 2)
@@ -85,7 +85,7 @@ class AssignBlockTk:
     # =================================================================
     @staticmethod
     def find(x, y, assigned_blocks: list):
-        """Find the first block within assigned blocks that contains the canvas coords x & y.
+        """Find the first blocks within assigned blocks that contains the canvas coords x & y.
 
         Parameters:
             x: canvas coordinates
@@ -149,7 +149,7 @@ class AssignBlockTk:
             if temp < start:
                 start = temp
 
-        # Note that each block is a 1/2 hour, so the duration (in hours) would be the number of
+        # Note that each blocks is a 1/2 hour, so the duration (in hours) would be the number of
         # blocks divided by two.
         return day, start, size / 2
 
@@ -160,7 +160,7 @@ class AssignBlockTk:
     # at_canvas_coords ($x, $y)
     # =================================================================
     def at_canvas_coords(self, x, y) -> bool:
-        """Does this block contain the canvas coordinates x & y?
+        """Does this blocks contain the canvas coordinates x & y?
 
         NOTE: Will not return true if edge is detected, which is not a bad thing. Maybe the user
         wanted something else."""
@@ -170,7 +170,7 @@ class AssignBlockTk:
     # set_colour ( $colour)
     # =================================================================
     def set_colour(self, colour: str = "mistyrose3"):
-        """Fills the block with the specified colour.
+        """Fills the blocks with the specified colour.
 
         Colour string can be of type '#rrggbb' or a valid unix colour name.
 
@@ -178,7 +178,7 @@ class AssignBlockTk:
             colour: default value is 'mistyrose3'.
 
         Returns:
-            This modified block."""
+            This modified blocks."""
         c = Colour.string(colour)
         self.canvas.itemconfigure(self.id, fill=c)
         return self
@@ -191,10 +191,10 @@ class AssignBlockTk:
         return self.remove_colour()
 
     def remove_colour(self):
-        """Removes any colour from the block.
+        """Removes any colour from the blocks.
 
         Returns:
-            The modified block."""
+            The modified blocks."""
         self.canvas.itemconfigure(self.id, fill='')
         return self
 

@@ -1,8 +1,6 @@
-# IN PROGRESS
-from functools import partial
-
 import pony.orm
 from pony.orm import Database
+from __future__ import annotations
 
 from .ViewsManager import ViewsManager
 from ..GUI.SchedulerTk import SchedulerTk
@@ -13,7 +11,8 @@ from ..Schedule.database.PonyDatabaseConnection import define_database, Scenario
 from ..Schedule.database.db_constants import PROVIDER, DB_NAME, CREATE_DB
 from ..UsefulClasses.NoteBookPageInfo import NoteBookPageInfo
 from .globals import *
-from ..GUI import dirty
+
+from ..Presentation.MenuItem import MenuItem, MenuType, ToolbarItem
 
 """
 # ==================================================================
@@ -31,7 +30,6 @@ from ..GUI import dirty
 # NOTE: Some of these class variables are probably unnecessary now.
 user_base_dir = None
 preferences = {}
-schedule: Schedule
 schedule = None
 current_schedule_file = ""
 current_directory = ""
@@ -41,7 +39,7 @@ gui: SchedulerTk
 global views_manager
 views_manager: ViewsManager
 db: Database = None
-scenario: Scenario = None
+scenario: Scenario | None = None
 
 # ==================================================================
 # required Notebook pages
@@ -68,7 +66,6 @@ def main():
     gui = SchedulerTk()
 
     global required_pages, pages_lookup
-    # TODO: Apart from update_choices_of_schedulable_views, none of these methods have been implemented yet. Please do so.
     required_pages = [
         NoteBookPageInfo("Schedules", update_choices_of_schedulable_views),
         NoteBookPageInfo("Overview", update_overview),
@@ -79,6 +76,8 @@ def main():
     ]
     pages_lookup = dict([(p.name, p) for p in required_pages])
 
+    # SANDY COMMENT:  It was just a way to verify that the gui class has the correct
+    #                 methods, as perl does not have abstract classes
     # NOTE: I have no idea where this comes from. Commenting it out for now.
     # for method in Scheduler.SchedulerManagerGui_methods:
     #     if not hasattr(gui, method):
@@ -105,7 +104,7 @@ def create_main_window():
     global gui, preferences
     gui.create_main_window()
 
-    (toolbar_buttons, button_properties, menu) = menu_info()
+    (toolbar_buttons, button_properties, menu) = __menu_and_toolbar_info()
     gui.create_menu_and_toolbars(toolbar_buttons, button_properties, menu)
     gui.create_front_page(preferences, open_schedule, new_schedule)
     gui.create_status_bar()
@@ -123,7 +122,8 @@ def pre_process_stuff():
 
     # Create the view manager (which shows all the schedule views, etc.)
     global views_manager, schedule
-    views_manager = ViewsManager(gui, dirty.check(), schedule)
+    # TODO: Implement ViewsManager class.
+    views_manager = ViewsManager(gui, is_data_dirty(), schedule)
     gui.set_views_manager(views_manager)
 
 
@@ -147,50 +147,79 @@ def write_ini():
 # ==================================================================
 # define what goes in the menu and toolbar
 # ==================================================================
-def menu_info():
-    # NOTE: Per Sandy's recommendation, I am skipping some aspects of this for now.
+def __menu_and_toolbar_info() -> (list[str], list[ToolbarItem], list[MenuItem]):
+    menu = list()
 
-    # ----------------------------------------------------------
-    # button names
-    # ----------------------------------------------------------
-    buttons = ['new', 'open', 'save']
+    # -----------------------------------------------------------------------------------------
+    # File menu
+    # -----------------------------------------------------------------------------------------
+    file_menu = MenuItem(name='file', menu_type=MenuType.Cascade, label='File')
+    file_menu.add_child(MenuItem(name='new', menu_type=MenuType.Command, label='New', accelerator='Ctrl-n',
+                                 command=lambda *_: print("'File/New' selected")))
+    file_menu.add_child(MenuItem(name='open', menu_type=MenuType.Command, label='Open', accelerator='Ctrl-o',
+                                 command=lambda *_: print("'File/Open' selected")))
 
-    # ----------------------------------------------------------
-    # actions with callback and hints
-    # ----------------------------------------------------------
-    actions: dict[str, dict[str]] = {
-        'new': {
-            'code': new_schedule,
-            'hint': 'Create new Schedule File'
-        },
-        'open': {
-            'code': open_schedule,
-            'hint': 'Open Schedule File'
-        },
-        'save': {
-            'code': save_schedule,
-            'hint': 'Save Schedule File'
-        }
-    }
+    file_menu.add_child(MenuItem(menu_type=MenuType.Separator))
 
-    # ----------------------------------------------------------
-    # menu structure NOTE: SKIP FOR NOW
-    # ----------------------------------------------------------
-    menu: list[dict] = [{
-        'itemType': 'cascade',
-        'label': 'File',
-        'tearoff': 0,
-        'menuitems': [
-            {
-                'itemType': 'command',
-                'label': 'New',
-                'accelerator': 'Ctrl-n',
-                'command': lambda *_: print("'File/New' Selected")
-            }
-        ]
-    }]
+    file_menu.add_child(MenuItem(name='save', menu_type=MenuType.Command, label='Save', accelerator='Ctrl-s',
+                                 underline=0,
+                                 command=lambda *_: print("'File/Save' selected")))
+    file_menu.add_child(MenuItem(name='save_as', menu_type=MenuType.Command, label='Save As',
+                                 command=lambda *_: print("'File/Save As' selected")))
 
-    return buttons, actions, menu
+    file_menu.add_child(MenuItem(menu_type=MenuType.Separator))
+
+    file_menu.add_child(MenuItem(menu_type=MenuType.Command, label='Exit', accelerator='Ctrl-e',
+                                 command=lambda *_: print("'File/Exit' selected")))
+
+    # -----------------------------------------------------------------------------------------
+    # Print menu
+    # -----------------------------------------------------------------------------------------
+    print_menu = MenuItem(name='print', menu_type=MenuType.Cascade, label='Print')
+    pdf_menu = MenuItem(menu_type=MenuType.Cascade, label='PDF')
+    latex_menu = MenuItem(menu_type=MenuType.Cascade, label='Latex')
+    print_menu.add_child(pdf_menu)
+    print_menu.add_child(latex_menu)
+
+    # pdf sub-menu
+    pdf_menu.add_child(MenuItem(menu_type=MenuType.Command, label='Teacher Schedules',
+                                command=lambda *_: print("'Print/Teacher Schedules' selected")))
+    pdf_menu.add_child(MenuItem(menu_type=MenuType.Command, label='Lab Schedules',
+                                command=lambda *_: print("'Print/Lab Schedules' selected")))
+    pdf_menu.add_child(MenuItem(menu_type=MenuType.Command, label='Stream Schedules',
+                                command=lambda *_: print("'Print/Stream Schedules' selected")))
+
+    pdf_menu.add_child(MenuItem(menu_type=MenuType.Separator))
+
+    pdf_menu.add_child(MenuItem(menu_type=MenuType.Command, label='Text Output',
+                                command=lambda *_: print("'Print/Text Output' selected")))
+
+    # latex sub menu
+    latex_menu.add_child(MenuItem(menu_type=MenuType.Command, label='Teacher Schedules',
+                                  command=lambda *_: print("'Print/Teacher Schedules' selected")))
+    latex_menu.add_child(MenuItem(menu_type=MenuType.Command, label='Lab Schedules',
+                                  command=lambda *_: print("'Print/Lab Schedules' selected")))
+    latex_menu.add_child(MenuItem(menu_type=MenuType.Command, label='Stream Schedules',
+                                  command=lambda *_: print("'Print/Stream Schedules' selected")))
+
+    latex_menu.add_child(MenuItem(menu_type=MenuType.Separator))
+
+    latex_menu.add_child(MenuItem(menu_type=MenuType.Command, label='Text Output',
+                                  command=lambda *_: print("'Print/Text Output' selected")))
+
+    # -----------------------------------------------------------------------------------------
+    # toolbar
+    # -----------------------------------------------------------------------------------------
+    toolbar_info = dict()
+    toolbar_info['new'] = ToolbarItem(command=MenuItem.all_menu_items['new'], hint='Create new Schedule File')
+    toolbar_info['open'] = ToolbarItem(command=MenuItem.all_menu_items['open'], hint='Open Schedule File')
+    toolbar_info['save'] = ToolbarItem(command=MenuItem.all_menu_items['save'], hint='Save Schedule File')
+    toolbar_order = ['new', 'open', 'save']
+
+    # return list of top level menu items
+    menu.append(file_menu)
+    menu.append(print_menu)
+    return toolbar_order, toolbar_info, menu
 
 
 # ==================================================================
@@ -220,7 +249,6 @@ def open_schedule():
             db = define_database(provider=PROVIDER, filename=DB_NAME, create_db=CREATE_DB)
         elif PROVIDER == "mysql":
             # Otherwise, connect to the remote MySQL database. NOTE: Come back to this later.
-            # TODO: Implement functionality to connect to the MySQL database.
             pass
 
     def get_scenario(current_scen, selected_scen):
@@ -237,13 +265,15 @@ def open_schedule():
             print(f"In the callback, the scenario is {scenario}.")
 
         # Open a ScenarioSelector window.
-        ScenarioSelector(parent=gui.mw, db=db, callback=get_scenario)
+        ScenarioSelector(parent=gui.mw, db=db, two=False, callback=get_scenario)
+        # NOTE: The lines of code below don't run until the main window of the app is closed.
+        # We'll need to pass in something else to be the ScenarioSelector's parent.
         print(f"The scenario is {scenario}")
-        # gui.show_info("Scenario", f"The selected scenario is {scenario}.")
+        gui.show_info("Scenario", f"The selected scenario is {scenario}.")
 
-        if not scenario:
-            gui.show_error("INVALID SELECTION",
-                           "Incorrect number of Scenarios picked. Please select 1.")
+        if not scenario or len(scenario) != 1 or scenario[0] is None:
+            gui.show_error("INVALID SELECTION", "Incorrect number of Scenarios picked. "
+                                                "Please select 1.")
         else:
             global schedule
 
@@ -252,8 +282,8 @@ def open_schedule():
                 schedule = func()
                 print(f"Retrieved the following object from function: {schedule}")
 
-            ScheduleSelector(parent=gui.mw, db=db, scenario=scenario, callback=get_schedule)
-            # gui.show_info("SCHEDULE SELECTED", f"Successfully selected a Schedule: {schedule}")
+            ScheduleSelector(parent=gui.mw, db=db, scenario=scenario[0], callback=get_schedule)
+            gui.show_info("SCHEDULE SELECTED", f"Successfully selected a Schedule: {schedule}")
 
             # If the schedule was successfully read, then
             views_manager.schedule = schedule
@@ -284,7 +314,7 @@ def _schedule_file_changed(file):
 # ==================================================================
 # save (as) schedule
 # ==================================================================
-def save_schedule(event=None):
+def save_schedule():
     _save_schedule(False)
 
 
@@ -303,14 +333,10 @@ def _save_schedule(save_as: bool):
     file: str
     global current_schedule_file
     if save_as or not current_schedule_file:
-        # NOTE: This probably doesn't need to be implemented anymore. If we're going to switch
-        # back to shared YAML files, on the other hand, this should not be deleted.
-
-        # For now, I'm commenting it out.
-        # file = gui.choose_file()
-        # if not file:
-        #     return
-        pass
+        file = gui.choose_file()
+        # NOTE: This probably doesn't need to be implemented anymore.
+        if not file:
+            return
     else:
         file = current_schedule_file
 
@@ -339,9 +365,9 @@ def save_as_csv():
 # ==================================================================
 def update_choices_of_schedulable_views():
     global views_manager, gui
-    btn_callback = views_manager.get_create_new_view_callback()
+    btn_callback = views_manager.get_create_new_view_callback
     all_view_choices = views_manager.get_all_scheduables()
-    page_name = pages_lookup['Schedules'].id
+    page_name = pages_lookup['Schedules'].name
     gui.draw_view_choices(page_name, all_view_choices, btn_callback)
 
     views_manager.determine_button_colours()
@@ -352,7 +378,6 @@ def update_choices_of_schedulable_views():
 # A text representation of the schedules
 # ==================================================================
 def update_overview():
-    # TODO: IMPLEMENT ME.
     pass
 
 
@@ -361,7 +386,6 @@ def update_overview():
 # - A page where teacher_ids can be added/modified or deleted
 # ==================================================================
 def update_edit_teachers():
-    # TODO: IMPLEMENT ME.
     pass
 
 
@@ -370,7 +394,6 @@ def update_edit_teachers():
 # - A page where stream_ids can be added/modified or deleted
 # ==================================================================
 def update_edit_streams():
-    # TODO: IMPLEMENT ME.
     pass
 
 
@@ -379,7 +402,6 @@ def update_edit_streams():
 # - A page where lab_ids can be added/modified or deleted
 # ==================================================================
 def update_edit_labs():
-    # TODO: IMPLEMENT ME.
     pass
 
 
@@ -388,7 +410,6 @@ def update_edit_labs():
 # - A page where courses can be added/modified or deleted
 # ==================================================================
 def update_edit_courses():
-    # TODO: IMPLEMENT ME.
     pass
 
 
@@ -431,16 +452,10 @@ def print_views(print_type, type):
 # ==================================================================
 def exit_schedule():
     global gui
-    if dirty.check():
+    if is_data_dirty():
         answer = gui.question("Save Schedule", "Do you want to save changes?")
         if answer == "Yes":
             save_schedule()
         elif answer == "Cancel":
             return
     write_ini()
-
-"""
-Rewritten for Python by Evan Laverdiere
-
-All Rights Reserved.
-"""

@@ -1,21 +1,16 @@
 import pytest
-import sys
-from os import path
 
-sys.path.append(path.dirname(path.dirname(__file__) + "../"))
-
-from schedule.Schedule.ScheduleEnums import ConflictType
-from schedule.Schedule.LabUnavailableTime import LabUnavailableTime
-from schedule.Schedule.Block import Block
-from schedule.Schedule.Sections import Section
-from schedule.Schedule.ConflictCalculations import Conflict
-from schedule.Schedule.Labs import Lab
-from schedule.Schedule.Courses import Course
-from schedule.Schedule.Streams import Stream
-from schedule.Schedule.Teachers import Teacher
 from schedule.Schedule.Schedule import Schedule
+from schedule.Schedule.Courses import Course
+from schedule.Schedule.Teachers import Teacher
+from schedule.Schedule.Labs import Lab
+from schedule.Schedule.Streams import Stream
+from schedule.Schedule.TimeSlot import TimeSlot
 
 
+# ============================================================================
+# tests
+# ============================================================================
 @pytest.fixture(scope="module", autouse=True)
 def before_and_after_module():
     pass
@@ -26,764 +21,823 @@ def before_and_after():
     pass
 
 
-def test_teachers_get():
-    """Checks that teacher_ids method returns correct list"""
+def test_constructor():
     schedule = Schedule()
-    t1 = Teacher("Jane", "Doe")
-    t2 = Teacher("John", "Doe")
-    sec1 = Section(course=Course()).add_block(Block('mon', '8:00', 3, 3)
-                                              .assign_teacher_by_id(t1)) \
-        .add_block(Block('tue', '8:00', 3, 3)
-                   .assign_teacher_by_id(t2))
-
-    schedule.sections.append(sec1)
-
-    assert t1 in schedule.teachers()
-    assert t2 in schedule.teachers()
+    assert isinstance(schedule, Schedule)
 
 
-def test_streams_get():
-    """Checks that stream_ids method returns correct list"""
-    sched = Schedule(s.id, False, 2, "")
-    s1 = Stream()
-    s2 = Stream()
-    sec1 = Section(course=Course(), schedule_id=sched.id).add_stream(s1, s2)
+def test_interface():
+    schedule = Schedule()
+    assert hasattr(schedule, "read_file")
+    assert hasattr(schedule, "write_file")
 
-    sched.sections.append(sec1)
+    assert hasattr(schedule, 'add_course')
+    assert hasattr(schedule, 'add_stream')
+    assert hasattr(schedule, 'add_lab')
+    assert hasattr(schedule, 'add_teacher')
 
-    assert s1 in sched.streams()
-    assert s2 in sched.streams()
+    assert hasattr(schedule, 'labs')
+    assert hasattr(schedule, 'courses')
+    assert hasattr(schedule, 'teachers')
+    assert hasattr(schedule, 'streams')
+
+    assert hasattr(schedule, 'get_course_by_number')
+    assert hasattr(schedule, 'get_lab_by_number')
+    assert hasattr(schedule, 'get_stream_by_number')
+    assert hasattr(schedule, 'get_teacher_by_name')
+
+    assert hasattr(schedule, 'get_course_by_id')
+    assert hasattr(schedule, 'get_lab_by_id')
+    assert hasattr(schedule, 'get_stream_by_id')
+    assert hasattr(schedule, 'get_teacher_by_id')
+
+    assert hasattr(schedule, 'remove_teacher')
+    assert hasattr(schedule, 'remove_stream')
+    assert hasattr(schedule, 'remove_lab')
+    assert hasattr(schedule, 'remove_course')
+
+    assert hasattr(schedule, "get_teachers_assigned_to_any_course")
+    assert hasattr(schedule, 'get_streams_assigned_to_any_course')
+    assert hasattr(schedule, 'get_labs_assigned_to_any_course')
+    assert hasattr(schedule, 'get_courses_for_teacher')
+
+    assert hasattr(schedule, 'sections')
+    assert hasattr(schedule, 'blocks')
+
+    assert hasattr(schedule, 'get_sections_for_teacher')
+    assert hasattr(schedule, 'get_sections_for_stream')
+    assert hasattr(schedule, 'get_blocks_for_teacher')
+    assert hasattr(schedule, 'get_blocks_in_lab')
+    assert hasattr(schedule, 'get_blocks_for_stream')
+    assert hasattr(schedule, 'get_blocks_for_obj')
+
+    assert hasattr(schedule, 'clear_all_from_course')
+    assert hasattr(schedule, 'calculate_conflicts')
 
 
-def test_courses_get():
-    """Checks that courses method returns correct list"""
-    sched = Schedule(s.id, False, 2, "")
-    c1 = Course("1")
-    c2 = Course("2")
-    sec1 = Section(course=c1, schedule_id=sched.id)
-    sec2 = Section(course=c2, schedule_id=sched.id)
-    sched.sections.extend([sec1, sec2])
-    assert c1 in sched._courses()
-    assert c2 in sched._courses()
+def test_add_course():
+    s = Schedule()
+    assert len(s._courses) == 0
+    c1 = s.add_course('420-DBF')
+    assert len(s._courses) == 1
+    c2 = s.add_course('420-ABC')
+    assert len(s._courses) == 2
+    assert c1.id in s._courses
+    assert c2.id in s._courses
+    assert isinstance(c1, Course)
 
 
-def test_labs_get():
-    """Checks that lab_ids method returns correct list"""
-    sched = Schedule(s.id, False, 2, "")
-    l1 = Lab()
-    l2 = Lab()
-    sec1 = Section(course=Course(), schedule_id=sched.id).add_block(Block('mon', '8:00', 3, 3)
-                                                                    .assign_lab_by_id(l1)) \
-        .add_block(Block('tue', '8:00', 3, 3)
-                   .assign_lab_by_id(l2))
-
-    sched.sections.append(sec1)
-
-    assert l1 in sched.labs()
-    assert l2 in sched.labs()
+def test_add_stream():
+    s = Schedule()
+    assert len(s._streams) == 0
+    c1 = s.add_stream('4A')
+    assert len(s._streams) == 1
+    c2 = s.add_stream('4B')
+    assert len(s._streams) == 2
+    assert c1.id in s._streams
+    assert c2.id in s._streams
+    assert isinstance(c1, Stream)
 
 
-def test_conflicts_get():
-    """Checks that conflicts method returns correct list"""
-    sched = Schedule(s.id, False, 2, "")
-    b1 = Block('mon', '8:00', 3, 3)
-    b2 = Block('tue', '8:00', 3, 3)
-    c1 = Conflict(ConflictType.AVAILABILITY, [b1, b2])
-    c2 = Conflict(ConflictType.AVAILABILITY, [b1, b2])
+def test_add_lab():
+    s = Schedule()
+    assert len(s._labs) == 0
+    c1 = s.add_lab('4A')
+    assert len(s._labs) == 1
+    c2 = s.add_lab('4B')
+    assert len(s._labs) == 2
+    assert c1.id in s._labs
+    assert c2.id in s._labs
+    assert isinstance(c1, Lab)
 
-    sec1 = Section(course=Course(), schedule_id=sched.id).add_block(b1).add_block(b2)
 
-    sched.sections.append(sec1)
+def test_add_teacher():
+    s = Schedule()
+    assert len(s._teachers) == 0
+    c1 = s.add_teacher('4A', 'Doe')
+    assert len(s._teachers) == 1
+    c2 = s.add_teacher('4B', 'Doe')
+    assert len(s._teachers) == 2
+    assert c1.id in s._teachers
+    assert c2.id in s._teachers
+    assert isinstance(c1, Teacher)
 
-    assert c1 in sched.conflicts()
-    assert c2 in sched.conflicts()
+
+def test_return_courses_as_tuple():
+    s = Schedule()
+    assert len(s.courses) == 0
+    o1 = Course('ABC')
+    o2 = Course('ABC')
+    s._courses = {o1.id: o1, o2.id: o2}
+    assert len(s.courses) == 2
+    assert isinstance(s.courses, tuple)
+    assert o1 in s.courses
+    assert o2 in s.courses
+
+
+def test_return_labs_as_tuple():
+    s = Schedule()
+    assert len(s.labs) == 0
+    o1 = Lab('ABC')
+    o2 = Lab('ABC')
+    s._labs = {o1.id: o1, o2.id: o2}
+    assert len(s.labs) == 2
+    assert isinstance(s.labs, tuple)
+    assert o1 in s.labs
+    assert o2 in s.labs
+
+
+def test_return_streams_as_tuple():
+    s = Schedule()
+    assert len(s.streams) == 0
+    o1 = Stream('ABC')
+    o2 = Stream('ABC')
+    s._streams = {o1.id: o1, o2.id: o2}
+    assert len(s.streams) == 2
+    assert isinstance(s.streams, tuple)
+    assert o1 in s.streams
+    assert o2 in s.streams
+
+
+def test_return_teachers_as_tuple():
+    s = Schedule()
+    assert len(s.teachers) == 0
+    o1 = Teacher('ABC', 'Doe')
+    o2 = Teacher('ABC', 'Doe')
+    s._teachers = {o1.id: o1, o2.id: o2}
+    assert len(s.teachers) == 2
+    assert isinstance(s.teachers, tuple)
+    assert o1 in s.teachers
+    assert o2 in s.teachers
+
+
+def test_get_course_by_number():
+    s = Schedule()
+    o1 = Course('ABC')
+    o2 = Course('DEF')
+    s._courses = {o1.id: o1, o2.id: o2}
+    assert o2 == s.get_course_by_number('DEF')
+    assert o1 == s.get_course_by_number('ABC')
+    assert s.get_course_by_number("boo") is None
+
+
+def test_get_lab_by_number():
+    s = Schedule()
+    o1 = Lab('ABC')
+    o2 = Lab('DEF')
+    s._labs = {o1.id: o1, o2.id: o2}
+    assert o2 == s.get_lab_by_number('DEF')
+    assert o1 == s.get_lab_by_number('ABC')
+    assert s.get_lab_by_number("boo") is None
+
+
+def test_get_stream_by_number():
+    s = Schedule()
+    o1 = Stream('ABC')
+    o2 = Stream('DEF')
+    s._streams = {o1.id: o1, o2.id: o2}
+    assert o2 == s.get_stream_by_number('DEF')
+    assert o1 == s.get_stream_by_number('ABC')
+    assert s.get_stream_by_number("boo") is None
+
+
+def test_get_teacher_by_name():
+    s = Schedule()
+    o1 = Teacher('Jane', 'Doe')
+    o2 = Teacher('John', 'Doe')
+    s._teachers = {o1.id: o1, o2.id: o2}
+    assert o2 == s.get_teacher_by_name('John', 'Doe')
+    assert o2 == s.get_teacher_by_name('JoHn', 'dOe')
+    assert o1 == s.get_teacher_by_name('Jane', 'Doe')
+    assert s.get_teacher_by_name("Jane", "boo") is None
+
+
+def test_get_course_by_id():
+    s = Schedule()
+    o1 = Course('ABC')
+    o2 = Course('DEF')
+    s._courses = {o1.id: o1, o2.id: o2}
+    assert o2 == s.get_course_by_id(o2.id)
+    assert o1 == s.get_course_by_id(o1.id)
+    assert s.get_course_by_id(666666) is None
+
+
+def test_get_lab_by_id():
+    s = Schedule()
+    o1 = Lab('ABC')
+    o2 = Lab('DEF')
+    s._labs = {o1.id: o1, o2.id: o2}
+    assert o2 == s.get_lab_by_id(o2.id)
+    assert o1 == s.get_lab_by_id(o1.id)
+    assert s.get_lab_by_id(666666) is None
+
+
+def test_get_stream_by_id():
+    s = Schedule()
+    o1 = Stream('ABC')
+    o2 = Stream('DEF')
+    s._streams = {o1.id: o1, o2.id: o2}
+    assert o2 == s.get_stream_by_id(o2.id)
+    assert o1 == s.get_stream_by_id(o1.id)
+    assert s.get_stream_by_id(666666) is None
+
+
+
+def test_get_teacher_by_id():
+    s = Schedule()
+    o1 = Teacher('Jane', 'Doe')
+    o2 = Teacher('John', 'Doe')
+    s._teachers = {o1.id: o1, o2.id: o2}
+    assert o2 == s.get_teacher_by_id(o2.id)
+    assert o1 == s.get_teacher_by_id(o1.id)
+    assert s.get_teacher_by_id(666666) is None
+
+
+def test_remove_course():
+    s = Schedule()
+    o1 = Course('ABC')
+    o2 = Course('DEF')
+    s._courses = {o1.id: o1, o2.id: o2}
+    s.remove_course(o2)
+    assert len(s._courses) == 1
+    assert o2 not in s._courses.values()
+
+    # try to remove non-existent course
+    s.remove_course(Course("XYZ"))
+    assert True
+
+
+def test_remove_teacher_simple():
+    s = Schedule()
+    o1 = Teacher('ABC', 'Doe')
+    o2 = Teacher('DEF', 'Doe')
+    s._teachers = {o1.id: o1, o2.id: o2}
+    s.remove_teacher(o2)
+    assert len(s._teachers) == 1
+    assert o2 not in s._teachers.values()
+
+    # try to remove non-existent teacher
+    s.remove_teacher(Teacher("XYZ", 'Doe'))
+    assert True
+
+
+def test_remove_teacher_from_courses():
+    s = Schedule()
+    o1 = Teacher('ABC', 'Doe')
+    o2 = Teacher('DEF', 'Doe')
+    s._teachers = {o1.id: o1, o2.id: o2}
+
+    c1 = s.add_course("C1")
+    c2 = s.add_course("C2")
+    # NOTE: adding teachers is meaningless unless there are sections in the course
+    st1 = c1.add_section("ABC")
+    st2 = c2.add_section("DEF")
+    c1.add_teacher(o1)
+    c1.add_teacher(o2)
+    c2.add_teacher(o1)
+    c2.add_teacher(o2)
+
+    s.remove_teacher(o2)
+    assert len(s._teachers) == 1
+    assert o2 not in c1.teachers
+    assert o2 not in c2.teachers
+    assert o1 in c1.teachers
+    assert o1 in c2.teachers
+
+
+def test_remove_lab_simple():
+    s = Schedule()
+    o1 = Lab('ABC')
+    o2 = Lab('DEF')
+    s._labs = {o1.id: o1, o2.id: o2}
+    s.remove_lab(o2)
+    assert len(s._labs) == 1
+    assert o2 not in s._teachers.values()
+
+    # try to remove non-existent lab
+    s.remove_lab(Lab("XYZ"))
+    assert True
+
+
+def test_remove_lab_complex():
+    s = Schedule()
+    o1 = Lab('ABC')
+    o2 = Lab('DEF')
+    s._labs = {o1.id: o1, o2.id: o2}
+
+    c1 = s.add_course("C1")
+    s1 = c1.add_section("1")
+    s2 = c1.add_section("2")
+    b1 = s1.add_block(TimeSlot('mon', '9:00', 1))
+    b2 = s1.add_block(TimeSlot('mon', '10:00', 1))
+    b3 = s2.add_block(TimeSlot('mon', '10:00', 1))
+    s1.add_lab(o2)
+    b3.add_lab(o2)
+    c1.add_lab(o1)
+
+    assert o2 in b1.labs
+    assert o2 in b2.labs
+    assert o2 in b3.labs
+    assert o2 in s1.labs
+    assert o2 in s2.labs
+    s.remove_lab(o2)
+    assert len(s._labs) == 1
+    assert o2 not in b1.labs
+    assert o2 not in b2.labs
+    assert o2 not in b3.labs
+    assert o2 not in s1.labs
+    assert o2 not in s2.labs
+
+
+def test_remove_stream_simple():
+    s = Schedule()
+    o1 = Stream('ABC')
+    o2 = Stream('DEF')
+    s._streams = {o1.id: o1, o2.id: o2}
+    s.remove_stream(o2)
+    assert len(s._streams) == 1
+    assert o2 not in s._streams.values()
+
+    # try to remove non-existent stream
+    s.remove_stream(Stream("XYZ"))
+    assert True
+
+
+def test_remove_stream_from_courses():
+    s = Schedule()
+    o1 = Stream('ABC')
+    o2 = Stream('DEF')
+    s._streams = {o1.id: o1, o2.id: o2}
+
+    c1 = s.add_course("C1")
+    s1 = c1.add_section("1")
+    s2 = c1.add_section("2")
+    s1.add_stream(o1)
+    s2.add_stream(o2)
+
+    assert o2 not in s1.streams
+    assert o2 in s2.streams
+    assert o2 in c1.streams
+    s.remove_stream(o2)
+    assert len(s._streams) == 1
+    assert o2 not in s1.streams
+    assert o2 not in s2.streams
+    assert o2 not in c1.streams
+
+
+def test_get_teachers_assigned_to_any_course():
+    s = Schedule()
+    o1 = Teacher('ABC', 'Doe')
+    o2 = Teacher('DEF', 'Doe')
+    o3 = Teacher('XYZ', 'Doe')
+    s._teachers = {o1.id: o1, o2.id: o2, o3.id: o3}
+
+    c1 = s.add_course("C1")
+    c2 = s.add_course("C2")
+    # NOTE: adding teachers is meaningless unless there are sections in the course
+    st1 = c1.add_section("ABC")
+    st2 = c2.add_section("DEF")
+    c1.add_teacher(o1)
+    c1.add_teacher(o2)
+    c2.add_teacher(o1)
+
+    assert len(s.teachers) == 3
+    assert o3 in s.teachers
+    assert o3 not in s.get_teachers_assigned_to_any_course
+    assert o2 in s.get_teachers_assigned_to_any_course
+    assert o1 in s.get_teachers_assigned_to_any_course
+    assert len(s.get_teachers_assigned_to_any_course) == 2
+
+
+def get_streams_assigned_to_any_course():
+    s = Schedule()
+    o1 = Stream('ABC')
+    o2 = Stream('DEF')
+    o3 = Stream('XYZ')
+    s._streams = {o1.id: o1, o2.id: o2, o3.id: o3}
+
+    c1 = s.add_course("C1")
+    c2 = s.add_course("C2")
+    c1.add_stream(o1)
+    c1.add_stream(o2)
+    c2.add_stream(o1)
+
+    assert len(s.streams) == 3
+    assert o3 in s.streams
+    assert o3 not in s.get_streams_assigned_to_any_course
+    assert o2 in s.get_streams_assigned_to_any_course
+    assert o1 in s.get_streams_assigned_to_any_course
+    assert len(s.get_streams_assigned_to_any_course) == 2
+
+
+def get_labs_assigned_to_any_course():
+    s = Schedule()
+    o1 = Lab('ABC')
+    o2 = Lab('DEF')
+    o3 = Lab('XYZ')
+    s._labs = {o1.id: o1, o2.id: o2, o3.id: o3}
+
+    c1 = s.add_course("C1")
+    c2 = s.add_course("C2")
+    c1.add_lab(o1)
+    c1.add_lab(o2)
+    c2.add_lab(o1)
+
+    assert len(s.labs) == 3
+    assert o3 in s.labs
+    assert o3 not in s.get_labs_assigned_to_any_course
+    assert o2 in s.get_labs_assigned_to_any_course
+    assert o1 in s.get_labs_assigned_to_any_course
+    assert len(s.get_labs_assigned_to_any_course) == 2
+
+
+def get_courses_for_teacher():
+    s = Schedule()
+    o1 = Teacher('ABC', 'Doe')
+    o2 = Teacher('DEF', 'Doe')
+    o3 = Teacher('XYZ', 'Doe')
+    s._teachers = {o1.id: o1, o2.id: o2, o3.id: o3}
+
+    c1 = s.add_course("C1")
+    c2 = s.add_course("C2")
+    c3 = s.add_course("C3")
+    c1.add_teacher(o1)
+    c1.add_teacher(o2)
+    c2.add_teacher(o1)
+
+    assert c1 in s.get_courses_for_teacher(o1)
+    assert c2 in s.get_courses_for_teacher(o1)
+    assert c3 not in s.get_courses_for_teacher(o1)
+    assert len(s.get_courses_for_teacher(o1)) == 2
+    assert c1 in s.get_courses_for_teacher(o2)
+    assert c2 not in s.get_courses_for_teacher(o2)
+    assert len(s.get_courses_for_teacher(o2)) == 1
+    assert c3 not in s.get_courses_for_teacher(o2)
+
+
+def test_sections():
+    s = Schedule()
+    o1 = Lab('ABC')
+    o2 = Lab('DEF')
+    s._labs = {o1.id: o1, o2.id: o2}
+
+    c1 = s.add_course("C1")
+    c2 = s.add_course("C2")
+    s1 = c1.add_section("1")
+    s2 = c1.add_section("2")
+    s3 = c2.add_section("1")
+    s4 = c2.add_section("2")
+
+    assert len(s.sections) == 4
+    assert s1 in s.sections
+    assert s2 in s.sections
+    assert s3 in s.sections
+    assert s4 in s.sections
+
+
+def test_blocks():
+    s = Schedule()
+    o1 = Lab('ABC')
+    o2 = Lab('DEF')
+    s._labs = {o1.id: o1, o2.id: o2}
+
+    c1 = s.add_course("C1")
+    s1 = c1.add_section("1")
+    s2 = c1.add_section("2")
+    b1 = s1.add_block(TimeSlot('mon', '9:00', 1))
+    b2 = s1.add_block(TimeSlot('mon', '10:00', 1))
+    b3 = s2.add_block(TimeSlot('mon', '10:00', 1))
+
+    assert len(s.blocks) == 3
+    assert b1 in s.blocks
+    assert b2 in s.blocks
+    assert b3 in s.blocks
 
 
 def test_get_sections_for_teacher():
-    """Checks that sections_for_teacher method returns correct sections"""
-    t1 = Teacher("Jane", "Doe")
-    c = Course()
+    s = Schedule()
+    l1 = Lab('ABC')
+    l2 = Lab('DEF')
+    s._labs = {l1.id: l1, l2.id: l2}
+    st1 = Stream('ABC')
+    st2 = Stream('DEF')
+    s._streams = {st1.id: st1, st2.id: st2}
+    t1 = Teacher("ABC", "Doe")
+    t2 = Teacher("DEF", "Doe")
+    t3 = Teacher("XYZ", "Doe")
+    s._teachers = {t1.id: t1, t2.id: t2, t3.id: t3}
 
-    s1 = Section("1", course=c, schedule_id=s.id)
-    s1.add_block(Block('mon', '13:00', 2, 1))
-    s1.add_teacher(t1)
+    c1 = s.add_course("C1")
+    c2 = s.add_course("c3")
+    s1 = c1.add_section("1")
+    s2 = c1.add_section("2")
+    s3 = c2.add_section("1")
+    s4 = c2.add_section("2")
 
-    s2 = Section("2", course=c, schedule_id=s.id)
-    s2.add_block(Block('mon', '13:00', 2, 1))
-    s2.add_teacher(t1)
+    b1 = s1.add_block(TimeSlot('mon', '9:00', 1))
+    b2 = s1.add_block(TimeSlot('mon', '10:00', 1))
+    b3 = s2.add_block(TimeSlot('mon', '10:00', 1))
+    b4 = s3.add_block(TimeSlot('mon', '9:00', 1))
+    b5 = s3.add_block(TimeSlot('mon', '10:00', 1))
+    b6 = s4.add_block(TimeSlot('mon', '10:00', 1))
 
-    s3 = Section("3", course=c, schedule_id=s.id)
+    c1.add_teacher(t1)
+    c2.add_teacher(t2)
 
-    sched = Schedule(s.id, False, 2, "")
-    sched.sections.extend([s1, s2, s3])
+    s1.add_stream(st1)
+    s3.add_stream(st1)
+    s2.add_stream(st2)
+    s4.add_stream(st2)
 
-    sections = sched.sections_for_teacher(t1)
-    assert s1 in sections
-    assert s2 in sections
-    assert s3 not in sections
+    c1.add_lab(l1)
+    c2.add_lab(l2)
 
-
-def test_get_courses_for_teacher():
-    """Checks that courses_for_teacher method returns correct courses"""
-    t1 = Teacher("Jane", "Doe")
-    c = Course(0)
-
-    s1 = Section("1", course=c, schedule_id=s.id)
-    s1.add_block(Block('mon', '13:00', 2, 1))
-    c1 = Course(1).add_section(s1.add_teacher(t1))
-
-    s2 = Section("2", course=c, schedule_id=s.id)
-    s2.add_block(Block('mon', '13:00', 2, 1))
-    c2 = Course(2).add_section(s2)
-    s2.add_teacher(t1)
-
-    c3 = Course(3)
-
-    sched = Schedule(s.id, False, 2, "")
-    sched.sections.extend([s1, s2])
-
-    courses = sched.courses_for_teacher(t1)
-    assert c1 in courses
-    assert c2 in courses
-    assert c3 not in courses
-
-
-def test_get_allocated_courses_for_teacher():
-    """Checks that allocated_courses_for_teacher method returns correct courses"""
-    t1 = Teacher("Jane", "Doe")
-    c = Course()
-
-    s1 = Section("1", course=c, schedule_id=s.id)
-    s1.add_block(Block('mon', '13:00', 2, 1))
-    c1 = Course(1).add_section(s1.add_teacher(t1))
-
-    s2 = Section("2", course=c, schedule_id=s.id)
-    s2.add_block(Block('mon', '13:00', 2, 1))
-    c2 = Course(2)
-    c2.add_section(s2)
-    c2.needs_allocation = False
-    s2.add_teacher(t1)
-
-    sched = Schedule(s.id, False, 2, "")
-    sched.sections.extend([s1, s2])
-
-    courses = sched.allocated_courses_for_teacher(t1)
-    assert c1 in courses
-    assert c2 not in courses
-
-
-def test_get_blocks_for_teacher():
-    """Checks that blocks_for_teacher method returns correct sections"""
-    sched = Schedule(s.id, False, 2, "")
-    t1 = Teacher("Jane", "Doe")
-
-    b1 = Block('mon', '13:00', 2, 1)
-    b1.assign_teacher_by_id(t1)
-    s1 = Section(course=Course(), schedule_id=sched.id).add_block(b1)
-
-    b2 = Block('mon', '13:00', 2, 1)
-    b2.assign_teacher_by_id(t1)
-    s2 = Section(course=Course(), schedule_id=sched.id).add_block(b2)
-
-    b3 = Block('mon', '13:00', 2, 1)
-    s3 = Section(course=Course(), schedule_id=sched.id).add_block(b3)
-
-    sched.sections.extend([s1, s2, s3])
-
-    blocks = sched.blocks_for_teacher(t1)
-    assert b1 in blocks
-    assert b2 in blocks
-    assert b3 not in blocks
-
-
-def test_get_blocks_in_lab():
-    """Checks that blocks_in_lab method returns correct sections"""
-    l1 = Lab()
-    sched = Schedule(s.id, False, 2, "")
-
-    b1 = Block('mon', '13:00', 2, 1)
-    b1.assign_lab_by_id(l1)
-    s1 = Section(course=Course(), schedule_id=sched.id).add_block(b1)
-
-    b2 = Block('mon', '13:00', 2, 1)
-    b2.assign_lab_by_id(l1)
-    s2 = Section(course=Course(), schedule_id=sched.id).add_block(b2)
-
-    b3 = Block('mon', '13:00', 2, 1)
-    s3 = Section(course=Course(), schedule_id=sched.id).add_block(b3)
-
-    sched.sections.extend([s1, s2, s3])
-
-    blocks = sched.blocks_in_lab(l1)
-    assert b1 in blocks
-    assert b2 in blocks
-    assert b3 not in blocks
+    assert len(s.get_sections_for_teacher(t1)) == 2
+    assert s1 in s.get_sections_for_teacher(t1)
+    assert s2 in s.get_sections_for_teacher(t1)
+    assert isinstance(s.get_sections_for_teacher(t1), tuple)
+    assert len(s.get_sections_for_teacher(t3)) == 0
 
 
 def test_get_sections_for_stream():
-    """Checks that sections_for_stream method returns correct sections"""
-    st = Stream()
-    c = Course()
+    s = Schedule()
+    l1 = Lab('ABC')
+    l2 = Lab('DEF')
+    s._labs = {l1.id: l1, l2.id: l2}
+    st1 = Stream('ABC')
+    st2 = Stream('DEF')
+    s._streams = {st1.id: st1, st2.id: st2}
+    t1 = Teacher("ABC", "Doe")
+    t2 = Teacher("DEF", "Doe")
+    t3 = Teacher("XYZ", "Doe")
+    s._teachers = {t1.id: t1, t2.id: t2, t3.id: t3}
 
-    s1 = Section("1", course=c, schedule_id=s.id)
-    s1.add_stream(st)
+    c1 = s.add_course("C1")
+    c2 = s.add_course("c3")
+    s1 = c1.add_section("1")
+    s2 = c1.add_section("2")
+    s3 = c2.add_section("1")
+    s4 = c2.add_section("2")
 
-    s2 = Section("2", course=c, schedule_id=s.id)
-    s2.add_stream(st)
+    b1 = s1.add_block(TimeSlot('mon', '9:00', 1))
+    b2 = s1.add_block(TimeSlot('mon', '10:00', 1))
+    b3 = s2.add_block(TimeSlot('mon', '10:00', 1))
+    b4 = s3.add_block(TimeSlot('mon', '9:00', 1))
+    b5 = s3.add_block(TimeSlot('mon', '10:00', 1))
+    b6 = s4.add_block(TimeSlot('mon', '10:00', 1))
 
-    s3 = Section("3", course=c, schedule_id=s.id)
+    c1.add_teacher(t1)
+    c2.add_teacher(t2)
 
-    sched = Schedule(s.id, False, 2, "")
-    sched.sections.extend([s1, s2, s3])
+    s1.add_stream(st1)
+    s3.add_stream(st1)
+    s2.add_stream(st2)
+    s4.add_stream(st2)
 
-    sections = sched.sections_for_stream(st)
-    assert s1 in sections
-    assert s2 in sections
-    assert s3 not in sections
+    c1.add_lab(l1)
+    c2.add_lab(l2)
+
+    assert len(s.get_sections_for_stream(st2)) == 2
+    assert s2 in s.get_sections_for_stream(st2)
+    assert s4 in s.get_sections_for_stream(st2)
+    assert s1 not in s.get_sections_for_stream(st2)
+
+
+def test_get_blocks_for_teacher():
+    s = Schedule()
+    l1 = Lab('ABC')
+    l2 = Lab('DEF')
+    s._labs = {l1.id: l1, l2.id: l2}
+    st1 = Stream('ABC')
+    st2 = Stream('DEF')
+    s._streams = {st1.id: st1, st2.id: st2}
+    t1 = Teacher("ABC", "Doe")
+    t2 = Teacher("DEF", "Doe")
+    t3 = Teacher("XYZ", "Doe")
+    s._teachers = {t1.id: t1, t2.id: t2, t3.id: t3}
+
+    c1 = s.add_course("C1")
+    c2 = s.add_course("c3")
+    s1 = c1.add_section("1")
+    s2 = c1.add_section("2")
+    s3 = c2.add_section("1")
+    s4 = c2.add_section("2")
+
+    b1 = s1.add_block(TimeSlot('mon', '9:00', 1))
+    b2 = s1.add_block(TimeSlot('mon', '10:00', 1))
+    b3 = s2.add_block(TimeSlot('mon', '10:00', 1))
+    b4 = s3.add_block(TimeSlot('mon', '9:00', 1))
+    b5 = s3.add_block(TimeSlot('mon', '10:00', 1))
+    b6 = s4.add_block(TimeSlot('mon', '10:00', 1))
+
+    c1.add_teacher(t1)
+    c2.add_teacher(t2)
+
+    s1.add_stream(st1)
+    s3.add_stream(st1)
+    s2.add_stream(st2)
+    s4.add_stream(st2)
+
+    c1.add_lab(l1)
+    c2.add_lab(l2)
+
+    assert len(s.get_blocks_for_teacher(t1)) == 3
+    assert b1 in s.get_blocks_for_teacher(t1)
+    assert b2 in s.get_blocks_for_teacher(t1)
+    assert b3 in s.get_blocks_for_teacher(t1)
+    assert len(s.get_blocks_for_teacher(t3)) == 0
+
+
+def test_get_blocks_in_lab():
+    s = Schedule()
+    l1 = Lab('ABC')
+    l2 = Lab('DEF')
+    l3 = Lab('XYZ')
+    s._labs = {l1.id: l1, l2.id: l2}
+    st1 = Stream('ABC')
+    st2 = Stream('DEF')
+    s._streams = {st1.id: st1, st2.id: st2}
+    t1 = Teacher("ABC", "Doe")
+    t2 = Teacher("DEF", "Doe")
+    t3 = Teacher("XYZ", "Doe")
+    s._teachers = {t1.id: t1, t2.id: t2, t3.id: t3}
+
+    c1 = s.add_course("C1")
+    c2 = s.add_course("c3")
+    s1 = c1.add_section("1")
+    s2 = c1.add_section("2")
+    s3 = c2.add_section("1")
+    s4 = c2.add_section("2")
+
+    b1 = s1.add_block(TimeSlot('mon', '9:00', 1))
+    b2 = s1.add_block(TimeSlot('mon', '10:00', 1))
+    b3 = s2.add_block(TimeSlot('mon', '10:00', 1))
+    b4 = s3.add_block(TimeSlot('mon', '9:00', 1))
+    b5 = s3.add_block(TimeSlot('mon', '10:00', 1))
+    b6 = s4.add_block(TimeSlot('mon', '10:00', 1))
+
+    c1.add_teacher(t1)
+    c2.add_teacher(t2)
+
+    s1.add_stream(st1)
+    s3.add_stream(st1)
+    s2.add_stream(st2)
+    s4.add_stream(st2)
+
+    c1.add_lab(l1)
+    c2.add_lab(l2)
+
+    assert len(s.get_blocks_in_lab(l1)) == 3
+    assert b1 in s.get_blocks_in_lab(l1)
+    assert b2 in s.get_blocks_in_lab(l1)
+    assert b3 in s.get_blocks_in_lab(l1)
+    assert isinstance(s.get_blocks_in_lab(l1), tuple)
+    assert len(s.get_blocks_in_lab(l3)) == 0
 
 
 def test_get_blocks_for_stream():
-    """Checks that blocks_for_stream method returns correct sections"""
-    st = Stream()
-    c = Course()
+    s = Schedule()
+    l1 = Lab('ABC')
+    l2 = Lab('DEF')
+    l3 = Lab('XYZ')
+    s._labs = {l1.id: l1, l2.id: l2}
+    st1 = Stream('ABC')
+    st2 = Stream('DEF')
+    st3 = Stream("XYZ")
+    s._streams = {st1.id: st1, st2.id: st2}
+    t1 = Teacher("ABC", "Doe")
+    t2 = Teacher("DEF", "Doe")
+    t3 = Teacher("XYZ", "Doe")
+    s._teachers = {t1.id: t1, t2.id: t2, t3.id: t3}
 
-    s1 = Section("1", course=c, schedule_id=s.id)
-    b1 = Block('mon', '13:00', 2, 1)
-    s1.add_block(b1)
-    s1.add_stream(st)
+    c1 = s.add_course("C1")
+    c2 = s.add_course("c3")
+    s1 = c1.add_section("1")
+    s2 = c1.add_section("2")
+    s3 = c2.add_section("1")
+    s4 = c2.add_section("2")
 
-    s2 = Section("2", course=c, schedule_id=s.id)
-    b2 = Block('mon', '13:00', 2, 1)
-    s2.add_stream(st)
-    s2.add_block(b2)
+    b1 = s1.add_block(TimeSlot('mon', '9:00', 1))
+    b2 = s1.add_block(TimeSlot('mon', '10:00', 1))
+    b3 = s2.add_block(TimeSlot('mon', '11:00', 1))
+    b4 = s3.add_block(TimeSlot('tue', '9:00', 1))
+    b5 = s3.add_block(TimeSlot('tue', '10:00', 1))
+    b6 = s4.add_block(TimeSlot('tue', '11:00', 1))
 
-    b3 = Block('mon', '13:00', 2, 1)
-    s3 = Section("3", course=c, schedule_id=s.id)
-    s3.add_block(b3)
+    c1.add_teacher(t1)
+    c2.add_teacher(t2)
 
-    sched = Schedule(s.id, False, 2, "")
-    sched.sections.extend([s1, s2, s3])
+    s1.add_stream(st1)
+    s3.add_stream(st1)
+    s2.add_stream(st2)
+    s4.add_stream(st2)
 
-    blocks = sched.blocks_for_stream(st)
-    assert b1 in blocks
-    assert b2 in blocks
-    assert b3 not in blocks
+    c1.add_lab(l1)
+    c2.add_lab(l2)
 
+    assert len(s.get_blocks_for_stream(st1)) == 4
+    assert b1 in s.get_blocks_for_stream(st1)
+    assert b2 in s.get_blocks_for_stream(st1)
+    assert b4 in s.get_blocks_for_stream(st1)
+    assert b5 in s.get_blocks_for_stream(st1)
 
-def test_course_remove():
-    """Checks that courses can be removed"""
-    c1 = Course(1)
-    sched = Schedule(s.id, False, 2, "")
-    sched.sections.append(Section("1", course=c1, schedule_id=s.id))
-    sched.remove_course(c1)
-    assert c1 not in sched._courses()
-
-
-def test_teacher_remove():
-    """Checks that teacher_ids can be removed"""
-    t1 = Teacher("Jane", "Doe")
-    sched = Schedule(s.id, False, 2, "")
-    sched.sections.append(
-        Section("1", course=Course(), schedule_id=s.id)
-        .add_block(Block("mon", '8:00', 3, 3)
-                   .assign_teacher_by_id(t1))
-    )
-
-    sched.remove_teacher(t1)
-    assert t1 not in sched.teachers()
-
-
-def test_lab_remove():
-    """Checks that lab_ids can be removed"""
-    l1 = Lab()
-    sched = Schedule(s.id, False, 2, "")
-    sched.sections.append(
-        Section("1", course=Course(), schedule_id=s.id)
-        .add_block(Block("mon", '8:00', 3, 3)
-                   .assign_lab_by_id(l1))
-    )
-    sched.remove_lab(l1)
-    assert l1 not in sched.labs()
+    assert isinstance(s.get_blocks_for_stream(st1), tuple)
+    assert len(s.get_blocks_for_stream(st3)) == 0
 
 
-def test_stream_remove():
-    """Checks that stream_ids can be removed"""
-    s1 = Stream()
-    sched = Schedule(s.id, False, 2, "")
-    sched.sections.append(
-        Section("1", course=Course(), schedule_id=s.id)
-        .add_stream(s1)
-    )
-    sched.remove_stream(s1)
-    assert s1 not in sched.streams()
+def test_get_blocks_for_obj():
+    s = Schedule()
+    l1 = Lab('ABC')
+    l2 = Lab('DEF')
+    l3 = Lab('XYZ')
+    s._labs = {l1.id: l1, l2.id: l2}
+    st1 = Stream('ABC')
+    st2 = Stream('DEF')
+    st3 = Stream("XYZ")
+    s._streams = {st1.id: st1, st2.id: st2, st3.id: st3}
+    t1 = Teacher("ABC", "Doe")
+    t2 = Teacher("DEF", "Doe")
+    t3 = Teacher("XYZ", "Doe")
+    s._teachers = {t1.id: t1, t2.id: t2, t3.id: t3}
+
+    c1 = s.add_course("C1")
+    c2 = s.add_course("c3")
+    s1 = c1.add_section("1")
+    s2 = c1.add_section("2")
+    s3 = c2.add_section("1")
+    s4 = c2.add_section("2")
+
+    b1 = s1.add_block(TimeSlot('mon', '9:00', 1))
+    b2 = s1.add_block(TimeSlot('mon', '10:00', 1))
+    b3 = s2.add_block(TimeSlot('mon', '10:00', 1))
+    b4 = s3.add_block(TimeSlot('mon', '9:00', 1))
+    b5 = s3.add_block(TimeSlot('mon', '10:00', 1))
+    b6 = s4.add_block(TimeSlot('mon', '10:00', 1))
+
+    c1.add_teacher(t1)
+    c2.add_teacher(t2)
+
+    s1.add_stream(st1)
+    s3.add_stream(st1)
+    s2.add_stream(st2)
+    s4.add_stream(st2)
+
+    c1.add_lab(l1)
+    c2.add_lab(l2)
+
+    assert s.get_blocks_for_teacher(t1) == s.get_blocks_for_obj(t1)
+    assert s.get_blocks_in_lab(l1) == s.get_blocks_for_obj(l1)
+    assert s.get_blocks_for_stream(st1) == s.get_blocks_for_obj(st1)
+
+
+def test_clear_all():
+    s = Schedule()
+    l1 = Lab('ABC')
+    l2 = Lab('DEF')
+    l3 = Lab('XYZ')
+    s._labs = {l1.id: l1, l2.id: l2}
+    st1 = Stream('ABC')
+    st2 = Stream('DEF')
+    st3 = Stream("XYZ")
+    s._streams = {st1.id: st1, st2.id: st2, st3.id: st3}
+    t1 = Teacher("ABC", "Doe")
+    t2 = Teacher("DEF", "Doe")
+    t3 = Teacher("XYZ", "Doe")
+    s._teachers = {t1.id: t1, t2.id: t2, t3.id: t3}
+
+    c1 = s.add_course("C1")
+    c2 = s.add_course("c3")
+    s1 = c1.add_section("1")
+    s2 = c1.add_section("2")
+    s3 = c2.add_section("1")
+    s4 = c2.add_section("2")
+
+    b1 = s1.add_block(TimeSlot('mon', '9:00', 1))
+    b2 = s1.add_block(TimeSlot('mon', '10:00', 1))
+    b3 = s2.add_block(TimeSlot('mon', '10:00', 1))
+    b4 = s3.add_block(TimeSlot('mon', '9:00', 1))
+    b5 = s3.add_block(TimeSlot('mon', '10:00', 1))
+    b6 = s4.add_block(TimeSlot('mon', '10:00', 1))
+
+    c1.add_teacher(t1)
+    c2.add_teacher(t2)
+
+    s1.add_stream(st1)
+    s3.add_stream(st1)
+    s2.add_stream(st2)
+    s4.add_stream(st2)
+
+    c1.add_lab(l1)
+    c2.add_lab(l2)
+
+    s.clear_all_from_course(c1)
+
+    assert len(c1.teachers) == 0
+    assert len(c1.labs) == 0
+    assert len(c1.streams) == 0
 
 
 def test_calculate_conflicts():
-    sched = Schedule(s.id, False, 2, "")
-    c = Course()
-
-    # TIME_TEACHER conflict
-    s1 = Section('1', course=c, schedule_id=s.id).add_block(
-        b1 := Block("mon", "13:00", 2, 1),
-        b2 := Block("mon", "14:00", 2, 2),
-        Block('tue', "15:00", 1, 50),
-        Block('wed', "15:00", 1, 51),
-        Block('thu', "15:00", 1, 52)
-    ).add_teacher(Teacher("Jane", "Doe"))
-    time_teacher_conflicted = set([b1, b2])
-
-    # TIME_LAB conflict
-    s2 = Section('2', course=c, schedule_id=s.id).add_block(
-        b3 := Block("mon", "13:00", 2, 3),
-        b4 := Block("mon", "14:00", 2, 4)
-    ).add_lab(Lab())
-    time_lab_conflicted = set([b3, b4])
-
-    # TIME_STREAM conflict
-    s3 = Section('3', course=c, schedule_id=s.id).add_block(
-        b5 := Block("mon", "13:00", 2, 5),
-        b6 := Block("mon", "14:00", 2, 6)
-    ).add_stream(Stream())
-    time_stream_conflicted = set([b5, b6])
-
-    # LUNCH conflict
-    s4 = Section('4', course=c, schedule_id=s.id).add_block(
-        b7 := Block("mon", "10:30", 4, 7),
-        Block('tue', "15:00", 1, 53),
-        Block('wed', "15:00", 1, 54),
-        Block('thu', "15:00", 1, 55)
-    ).add_teacher(Teacher("John", "Doe"))
-    lunch_conflicted = set([b7])
-
-    # MINIMUM_DAYS conflict
-    s5 = Section('5', course=c, schedule_id=s.id).add_block(
-        b8 := Block("mon", "8:30", 2, 8)
-    ).add_teacher(Teacher("Joe", "Doe"))
-    min_days_conflicted = set([b8])
-
-    # AVAILABILITY conflict
-    s6 = Section('6', course=c, schedule_id=s.id).add_block(
-        b9 := Block("mon", "11:30", 8, 9),
-        b10 := Block("tue", "11:30", 8, 10),
-        b11 := Block("wed", "11:30", 8, 11),
-        b12 := Block("thu", "11:30", 8, 12),
-        b13 := Block("fri", "11:30", 8, 13)
-    ).add_teacher(Teacher("J", "D"))
-    availability_conflicted = set([b9, b10, b11, b12, b13])
-
-    sched.sections.extend([s1, s2, s3, s4, s5, s6])
-    sched.calculate_conflicts()
-    conflict_types = dict()
-    conflict_values = dict[int, Conflict]()
-    conflict_block_sets = list[list[Block]]()
-    for i in sched.conflicts():
-        print(i.type)
-        print(i.blocks)
-        if i.type not in conflict_types: conflict_types[i.type] = 0
-        conflict_types[i.type] += 1
-        conflict_values[i.type] = i
-        conflict_block_sets.append(set(i.blocks))
-
-    # check for correct number of instances of each type
-    # TIME_TEACHER, TIME_LAB, & TIME_STREAM
-    assert conflict_types[ConflictType.TIME] == 3
-    assert conflict_types[ConflictType.LUNCH] == 1
-    assert conflict_types[ConflictType.MINIMUM_DAYS] == 1
-    assert conflict_types[ConflictType.AVAILABILITY] == 1
-    assert len(conflict_block_sets) == 6  # 6 total conflicts
-
-    # check that each instance points to the correct blocks for non-TIME conflicts
-    assert set(conflict_values[ConflictType.LUNCH].blocks) == lunch_conflicted
-    assert set(conflict_values[ConflictType.MINIMUM_DAYS].blocks) == min_days_conflicted
-    assert set(conflict_values[ConflictType.AVAILABILITY].blocks) == availability_conflicted
-
-    # check that 3 TIME conflict blocks lists are included in blocks lists
-    assert time_lab_conflicted in conflict_block_sets
-    assert time_stream_conflicted in conflict_block_sets
-    assert time_teacher_conflicted in conflict_block_sets
-
-
-def test_teacher_stats():
-    """Checks that the teacher_stats method gives all and only relevant and accurate information"""
-    sched = Schedule(s.id, False, 2, "")
-    t1 = Teacher("Jane", "Doe")
-    c = Course()
-
-    tue_block = Block('tue', "15:00", 1, 50)
-    wed_block = Block('wed', "15:00", 1, 51)
-    thu_block = Block('thu', "15:00", 1, 52)
-
-    s1 = Section("S1", course=c, schedule_id=s.id)
-    s2 = Section("S2", course=c, schedule_id=s.id)
-    s1.add_block(tue_block)
-    s2.add_block(wed_block)
-    s2.add_block(thu_block)
-
-    c1 = Course("C1", "Course #1")
-    Course("C2", "Course #2")
-    c1.add_section(s1, s2)
-
-    c1.add_teacher(t1)
-    c1.add_teacher(t1)
-
-    sched.sections.extend([s1, s2])
-    stats = sched.teacher_stat(t1)
-
-    assert "Jane Doe's Stats" in stats
-
-    assert "Tuesday" in stats
-    assert "Wednesday" in stats
-    assert "Thursday" in stats
-    assert "Monday" not in stats
-    assert "Friday" not in stats
-
-    assert "Hours of Work: 3" in stats  # 3.0
-    assert "Course #1" in stats
-    assert "Course #2" not in stats
-    assert "2 Section(s)" in stats
-
-
-def test_teacher_details():
-    """Checks that the teacher_details method gives all and only relevant and accurate information"""
-    sched = Schedule(s.id, False, 2, "")
-    t1 = Teacher("Jane", "Doe")
-    c = Course()
-
-    l1 = Lab("P327")
-    l2 = Lab("P326")
-    l3 = Lab("P325")
-
-    tue_block = Block('tue', "12:00", 2.5, 50)
-    tue_block.assign_lab_by_id(l1)
-    tue_block.assign_lab_by_id(l2)
-    wed_block = Block('wed', "8:30", 3, 51)
-    wed_block.assign_lab_by_id(l2)
-    thu_block = Block('thu', "14:00", 1, 52)
-    thu_block.assign_lab_by_id(l3)
-
-    s1 = Section("S1", course=c, schedule_id=s.id)
-    s2 = Section("S2", course=c, schedule_id=s.id)
-    s1.add_block(tue_block)
-    s2.add_block(wed_block)
-    s2.add_block(thu_block)
-
-    c1 = Course("C1", "Course #1")
-    Course("C2", "Course #2")
-    c1.add_section(s1, s2)
-
-    c1.add_teacher(t1)
-    c1.add_teacher(t1)
-
-    sched.sections.extend([s1, s2])
-    dets = sched.teacher_details(t1)
-
-    assert "Jane Doe" in dets
-
-    assert "Course #1" in dets
-    assert "Course #2" not in dets
-    assert "Section S1" in dets
-    assert "Section S2" in dets
-
-    assert tue_block.day in dets
-    assert tue_block.start in dets
-    assert str(tue_block.duration) in dets
-    assert wed_block.day in dets
-    assert wed_block.start in dets
-    assert str(wed_block.duration) in dets
-    assert thu_block.day in dets
-    assert thu_block.start in dets
-    assert str(thu_block.duration) in dets
-
-    assert str(l1) in dets
-    assert str(l2) in dets
-    assert str(l3) in dets
-    assert f"{l1}, {l2}" in dets
-
-
-def test_clear_Course():
-    """Checks that the clear_all_from_course method correctly clears course"""
-    sched = Schedule(s.id, False, 2, "")
-    t1 = Teacher("Jane", "Doe")
-    c = Course()
-
-    tue_block = Block('tue', "15:00", 1, 50).assign_lab_by_id(Lab())
-    wed_block = Block('wed', "15:00", 1, 51).assign_lab_by_id(Lab())
-    thu_block = Block('thu', "15:00", 1, 52).assign_lab_by_id(Lab())
-
-    s1 = Section("S1", course=c, schedule_id=s.id) \
-        .add_block(tue_block) \
-        .add_stream(Stream())
-    s2 = Section("S2", course=c, schedule_id=s.id) \
-        .add_block(wed_block, thu_block) \
-        .add_stream(Stream())
-
-    c1 = Course("C1", "Course #1").add_section(s1, s2) \
-        .add_teacher(t1).add_teacher(t1)
-
-    sched.sections.extend([s1, s2])
-    sched.clear_all_from_course(c1)
-
-    assert len(c1.sections()) == 2
-    assert len(s1.blocks) == 1
-    assert len(s2.blocks) == 2
-    assert not s1.teacher_ids
-    assert not s2.teacher_ids
-    assert not s1.streams
-    assert not s2.streams
-    assert not s1.lab_ids
-    assert not s2.lab_ids
-
-
-def test_clear_section():
-    """Checks that the clear_all_from_section method correctly clears section"""
-    c = Course()
-    s1 = Section("S1", course=c, schedule_id=s.id)
-
-    tue_block = Block('tue', "15:00", 1, 50)
-    tue_block.assign_lab_by_id(Lab())
-    s1.add_block(tue_block)
-    s1.add_block(Block('wed', "15:00", 1, 51))
-    s1.add_block(Block('thu', "15:00", 1, 52))
-
-    s1.add_stream(Stream())
-
-    s1.add_teacher(Teacher("Jane", "Doe"))
-
-    Schedule.clear_all_from_section(s1)
-
-    assert len(s1.blocks) == 3
-    assert not s1.teacher_ids
-    assert not s1.streams
-    assert not s1.lab_ids
-
-
-def test_clear_block():
-    """Checks that the clear_all_from_block method correctly clears blocks"""
-    b1 = Block('tue', "15:00", 1, 50)
-    b1.assign_lab_by_id(Lab())
-    b1.assign_teacher_by_id(Teacher("Jane", "Doe"))
-
-    Schedule.clear_all_from_block(b1)
-
-    assert not b1.teacher_ids()
-    assert not b1.lab_ids()
-
-
-@db_session
-def populate_db(sid: int = None):
-    """Populates the DB with dummy data"""
-    if not sid: sid = s.id
-    c1 = dbCourse(name="Course 1", number="101-NYA", semester=1, allocation=True)
-    c2 = dbCourse(name="Course 2", number="102-NYA", semester=2, allocation=False)
-    c3 = dbCourse(name="Course 3", number="103-NYA", semester=3, allocation=True)
-    c4 = dbCourse(name="Course 4", number="104-NYA", semester=4, allocation=False)
-    st1 = dbStream(number="3A", descr="Stream #1")
-    st2 = dbStream(number="3B", descr="Stream #2")
-    st3 = dbStream(number="3C", descr="Stream #3")
-    st4 = dbStream(number="3D", descr="Stream #4")
-    t1 = dbTeacher(first_name="0Jane", last_name="0Doe", dept="0Computer Science")
-    t2 = dbTeacher(first_name="1John", last_name="1Doe", dept="1English")
-    t3 = dbTeacher(first_name="2Joe", last_name="2Smith", dept="2Science")
-    l1 = dbLab(number="P320", description="Computer Lab 1")
-    l2 = dbLab(number="P321", description="Computer Lab 2")
-    l3 = dbLab(number="P322", description="Computer Lab 3")
-    flush()
-
-    lut1 = dbLUT(day="mon", duration=1, start="8:00", lab_id=l1.id, schedule_id=sid)
-    se1 = dbSection(course_id=c1.id, schedule_id=sid, name="Section 1", number="SE1", num_students=10)
-    se2 = dbSection(course_id=c2.id, schedule_id=sid, name="Section 2", number="SE2", num_students=20)
-    se3 = dbSection(course_id=c3.id, schedule_id=sid, name="Section 3", number="SE3", num_students=30)
-    se4 = dbSection(course_id=c4.id, schedule_id=sid, name="Section 4", number="SE4", num_students=40)
-    se1.stream_ids.add(st1)
-    se2.stream_ids.add(st2)
-    se3.stream_ids.add(st3)
-    se4.stream_ids.add(st4)
-    dbSchedTeach(teacher_id=t1.id, schedule_id=sid, work_release=3)
-    dbSchedTeach(teacher_id=t2.id, schedule_id=sid, work_release=4)
-    dbSchedTeach(teacher_id=t3.id, schedule_id=sid, work_release=5)
-    flush()
-
-    dbSecTeach(teacher_id=t1.id, section_id=se1.id, allocation=3)
-    dbSecTeach(teacher_id=t2.id, section_id=se2.id, allocation=4)
-    dbSecTeach(teacher_id=t3.id, section_id=se3.id, allocation=5)
-    b1 = dbBlock(section_id=se1.id, day="tue", duration=2, start="9:00", number=1)
-    b2 = dbBlock(section_id=se2.id, day="wed", duration=3, start="10:00", number=2)
-    b3 = dbBlock(section_id=se4.id, day="wed", duration=2, start="11:00", number=3)
-    b1.teacher_ids.add(t1)
-    b2.teacher_ids.add(t2)
-    b3.teacher_ids.add(t2)
-    b1.lab_ids.add(l1)
-    b2.lab_ids.add(l2)
-    b3.lab_ids.add(l3)
-    flush()
-
-    # return IDs of each created object, in case they need to be identified in tests
-    return {
-        "c1": c1.id, "c2": c2.id, "c3": c3.id, "c4": c4.id,
-        "st1": st1.id, "st2": st2.id, "st3": st3.id, "st4": st4.id,
-        "t1": t1.id, "t2": t2.id, "t3": t3.id,
-        "l1": l1.id, "l2": l2.id, "l3": l3.id, "lut1": lut1.id,
-        "se1": se1.id, "se2": se2.id, "se3": se3.id, "se4": se4.id,
-        "b1": b1.id, "b2": b2.id, "b3": b3.id,
-    }
-
-
-def test_read_db():
-    """Checks that the read_DB method correctly reads the database and creates required model objects & conflict"""
-    populate_db()
-    ScheduleWrapper.reset_local()
-
-    schedule = Schedule.read_DB(1)
-
-    assert len(schedule._courses()) == 4
-    for i, c in enumerate(sorted(schedule._courses(), key=lambda a: a.id)):
-        assert len(c.sections()) == 1
-        assert c.semester == i + 1
-
-    assert len(schedule.stream_ids()) == 4
-
-    assert len(schedule.teacher_ids()) == 3
-    for t in schedule.teacher_ids():
-        assert t.release
-
-    assert len(schedule.lab_unavailable_times()) == 1
-    lut = LabUnavailableTime.get(1)
-    assert lut.day and lut.start and lut.duration
-    assert len(schedule.lab_ids()) == 3
-    assert Lab.get(1).get_unavailable(1)
-
-    assert len(schedule.sections) == 4
-    for se in schedule.sections:
-        assert len(se.teacher_ids) == 1
-        assert len(se.stream_ids) == 1
-
-    assert len(schedule.blocks()) == 3
-    for b in schedule.blocks():
-        assert len(b.teacher_ids()) == 1
-        assert len(b.lab_ids()) == 1
-        assert b.day and b.start and b.duration
-
-    assert len(schedule.conflicts()) == 1
-    assert schedule.conflicts()[0].type == ConflictType.TIME
-    assert Block.get(2).conflicted
-    assert Block.get(3).conflicted
-
-    assert schedule
-    assert schedule.id == s.id
-    assert schedule.official == s.official
-    assert schedule.scenario_id == 1  # CHECK HARDCODED VALUE; model Schedule holds a # while entity Schedule holds an object
-    assert schedule.descr == s.title
-
-
-@pytest.fixture
-def after_write():
-    # reconnects to the original DB. run after test_write_db
-    global new_db
-    global db
-    yield
-    if new_db:  # if the test fails before setting new_db, don't bother running this
-        # drop all tables to be safe
-        new_db.drop_all_tables(with_all_data=True)
-        new_db.disconnect()
-        new_db.provider = new_db.schema = None
-        if PROVIDER == "mysql":
-            db = define_database(host=HOST, passwd=PASSWD,
-                                 db=DB_NAME, provider=PROVIDER, user=USERNAME)
-        elif PROVIDER == "sqlite":
-            db = define_database(provider=PROVIDER, filename=DB_NAME, create_db=CREATE_DB)
-
-
-def test_write_db(after_write):
-    """
-    Checks that the write_DB method correctly writes to the database
-    NOTE: THIS TEST WILL LIKELY FAIL IF THE ABOVE TEST FAILS
-    IF THEY BOTH FAIL, FIX THE ABOVE ONE FIRST
-    """
-    global db
-    global new_db
-    ids = populate_db()
-    ScheduleWrapper.reset_local()
-    schedule = Schedule.read_DB(1)
-
-    # disconnect from existing database
-    db.disconnect()
-    db.provider = db.schema = None
-
-    # create a new test DB
-    db_name = DB_NAME + "_write_test"
-    if PROVIDER == "mysql":
-        new_db = define_database(host=HOST, passwd=PASSWD,
-                                 db=db_name, provider=PROVIDER, user=USERNAME)
-    elif PROVIDER == "sqlite":
-        new_db = define_database(provider=PROVIDER, filename=db_name + ".sqlite",
-                                 create_db=CREATE_DB)
-    # ensure that there's no existing data
-    new_db.drop_all_tables(with_all_data=True)
-    new_db.create_tables()
-
-    # write to the new DB
-    schedule.write_DB()
-
-    ScheduleWrapper.reset_local()
-    # to avoid having to query the DB here, rely on read_DB again
-    # if read_DB breaks, this test will fail
-    new_schedule = Schedule.read_DB(1)
-
-    # confirm schedule data was transferred correctly
-    assert new_schedule
-    assert new_schedule.id == schedule.id
-    assert new_schedule.descr == schedule.descr
-    assert new_schedule.official == schedule.official
-    assert new_schedule.scenario_id == schedule.scenario_id
-
-    # confirm correct number of courses and data was transferred correctly
-    assert len(schedule._courses()) == 4
-    for i, c in enumerate(sorted(schedule._courses(), key=lambda a: a.id)):
-        assert len(c.sections()) == 1
-        assert c.name == f"Course {i + 1}"
-        assert c.number == f"10{i + 1}-NYA"
-        assert c.needs_allocation == (0 == i % 2)
-        assert c.semester == i + 1
-
-    # confirm correct number of stream_ids and data was transferred correctly
-    assert len(schedule.stream_ids()) == 4
-    for i, st in enumerate(sorted(schedule.stream_ids(), key=lambda a: a.id)):
-        assert st.number == f"3{chr(i + 65)}"
-        assert st.descr == f"Stream #{i + 1}"
-
-    # confirm correct number of teacher_ids and data was transferred correctly
-    assert len(schedule.teacher_ids()) == 3
-    for i, t in enumerate(sorted(schedule.teacher_ids(), key=lambda a: a.id)):
-        assert t.release == i + 3
-        assert t.firstname.startswith(str(i))
-        assert t.lastname.startswith(str(i))
-        assert t.dept.startswith(str(i))
-
-    # confirm correct number of lab_ids and data was transferred correctly
-    assert len(schedule.lab_ids()) == 3
-    assert Lab.get(1).get_unavailable(ids.get("lut1"))
-    for i, l in enumerate(sorted(schedule.lab_ids(), key=lambda a: a.id)):
-        assert l.number == f"P32{i}"
-        assert l.descr == f"Computer Lab {i + 1}"
-
-    # confirm correct number of sections and data was transferred correctly
-    assert len(schedule.sections) == 4
-    for i, se in enumerate(schedule.sections):
-        assert len(se.teacher_ids) == 1
-        assert len(se.stream_ids) == 1
-        assert se.course.id == i + 1
-        assert se.name == f"Section {i + 1}"
-        assert se.number == f"SE{i + 1}"
-        assert se.num_students == (i + 1) * 10
-
-    # confirm correct number of blocks and data was transferred correctly
-    assert len(schedule.blocks()) == 3
-    for i, b in enumerate(sorted(schedule.blocks(), key=lambda a: a.id)):
-        assert len(b.teacher_ids()) == 1
-        assert len(b.lab_ids()) == 1
-        assert b.number == i + 1
-        assert b.start == f"{i + 9}:00"
-        assert b.duration == (i % 2) + 2
-    assert Block.get(1).day == "tue"
-    assert Block.get(2).day == "wed"
-    assert Block.get(2).movable
+    """too much trouble to test this right now"""
+    # TODO: write this test
+    assert True

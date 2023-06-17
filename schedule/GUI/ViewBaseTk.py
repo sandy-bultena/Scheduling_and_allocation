@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .GuiBlockTk import GuiBlockTk
 from ..Schedule.Block import Block
-from ..Schedule.Conflict import Conflict
+from ..Schedule.ConflictCalculations import Conflict
 from ..Schedule.ScheduleEnums import ViewType, WeekDayNumber
 from ..Export import DrawView
 
@@ -184,13 +184,13 @@ class ViewBaseTk:
         return
 
     def move_block(self, guiblock: GuiBlockTk):
-        """Moves the gui block to the appropriate place, based on the block's new day and time.
+        """Moves the gui blocks to the appropriate place, based on the blocks's new day and time.
 
         Parameters:
-            guiblock: The gui block to move."""
+            guiblock: The gui blocks to move."""
         block: Block = guiblock.block
 
-        # Get new coordinates of the block.
+        # Get new coordinates of the blocks.
         coords = self.get_time_coords(block.day_number, block.start_number, block.duration)
 
         # Get the current x/y of the guiblock.
@@ -204,14 +204,14 @@ class ViewBaseTk:
                                       coords[1] - cur_y_pos)
 
     def colour_block(self, guiblock: GuiBlockTk, type: ViewType):
-        """Colours the block according to conflicts.
+        """Colours the blocks according to conflicts.
 
         Parameters:
             guiblock: The guiblock that will be coloured.
             type: The type of schedulable object that this guiblock is attached to (Teacher/Lab/Stream)"""
-        conflict = Conflict.most_severe(guiblock.block.conflicted, type)
+        conflict = Conflict.most_severe(guiblock.block.conflicted_number, type)
 
-        # If the block is unmovable, then grey it out, and do not change its colour even if
+        # If the blocks is unmovable, then grey it out, and do not change its colour even if
         # there is a conflict.
         if not guiblock.block.movable:
             guiblock.change_colour(ViewBaseTk.immovable_colour)
@@ -219,7 +219,7 @@ class ViewBaseTk:
 
         # else...
 
-        # change the colour of the block to the most important conflict.
+        # change the colour of the blocks to the most important conflict.
         if conflict is not None:
             guiblock.change_colour(Conflict.colours()[conflict])
 
@@ -277,8 +277,8 @@ class ViewBaseTk:
 
         Parameters:
             day: The day.
-            start: The start time of the block.
-            duration: Number of hours for this block."""
+            start: The start time of the blocks.
+            duration: Number of hours for this blocks."""
         scl = self.get_scale_info()
         coords = DrawView.get_coords(day, start, duration, scl)
         return coords
@@ -310,7 +310,7 @@ class ViewBaseTk:
 
         Parameters:
             scale: Scale that the view will be resized to."""
-        # get height and width of toplevel.
+        # get_by_id height and width of toplevel.
         window_height = self._toplevel.winfo_height()
         window_width = self._toplevel.winfo_width()
 
@@ -320,7 +320,7 @@ class ViewBaseTk:
         widths = self.canvas.configure()['width']
         canvas_width = int(widths[-1])
 
-        # get current scaling sizes
+        # get_by_id current scaling sizes
         x_origin = self._x_origin
         y_origin = self._y_origin
         horiz_scale = self._horiz_scale
@@ -413,8 +413,8 @@ class ViewBaseTk:
 
         Parameters:
             guiblock: The guiblock that was moved.
-            x: the x position of the block.
-            y: the y position of the block."""
+            x: the x position of the blocks.
+            y: the y position of the blocks."""
         scl = self.get_scale_info()
 
         if guiblock is None:

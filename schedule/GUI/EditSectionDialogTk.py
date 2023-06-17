@@ -19,9 +19,9 @@ Returns:
     A string indicated what action was taken
 
 Required Event Handlers:
-    - cb_add_blocks_to_section            (section_id, list of block hours)
-    - cb_remove_block_from_section        (section_id, block)
-    - cb_edit_block                       (section_id, block)
+    - cb_add_blocks_to_section            (section_id, list of blocks hours)
+    - cb_remove_block_from_section        (section_id, blocks)
+    - cb_edit_block                       (section_id, blocks)
     - cb_change_section_name_by_id        (section_id, name)
     - cb_remove_section_by_id             (section_id)
     - cb_add_teacher_to_section           (section_id, teacher)
@@ -54,31 +54,31 @@ Creates a new section edit dialog box.
 - section_id                             -> The ID of the section
 - section_name                           -> The name of the section
 - kwargs
-    - block_choices                      -> Default options for the block dropdown
+    - block_choices                      -> Default options for the blocks dropdown
     - teacher_choices                    -> Default options for the add teacher dropdown
     - teacher_assigned_choices           -> Default options for the remove teacher dropdown
     - stream_choices                     -> Default options for the add stream dropdown
     - stream_assigned_choices            -> Default options for the remove stream dropdown
     - cb_add_blocks_to_section           -> Method called when blocks are added.
         - Return: updated list of section's blocks
-        - Parameters: section id, list of new block hours
-    - cb_remove_block_from_section       -> Method called when a block is removed.
+        - Parameters: section id, list of new blocks hours
+    - cb_remove_block_from_section       -> Method called when a blocks is removed.
         - Return: updated list of section's blocks
-        - Parameters: section id, block to be removed (Schedule.Block object)
-    - cb_edit_block                      -> Method called when a block needs to be edited.
+        - Parameters: section id, blocks to be removed (Schedule.Block object)
+    - cb_edit_block                      -> Method called when a blocks needs to be edited.
         - Return: updated list of section's blocks
-        - Parameters: section id, block to be edited (Schedule.Block object)
+        - Parameters: section id, blocks to be edited (Schedule.Block object)
     - cb_add_teacher_to_section          -> Method called when a teacher is assigned to all blocks
-        - Return: list of all teachers, updated list of section's teachers
+        - Return: list of all teacher_ids, updated list of section's teacher_ids
         - Parameters: section id, teacher to be added (Schedule.Teacher object)
     - cb_remove_teacher_from_section     -> Method called when a teacher is removed from the section
-        - Return: list of all teachers, updated list of section's teachers
+        - Return: list of all teacher_ids, updated list of section's teacher_ids
         - Parameters: section id, teacher to be removed (Schedule.Teacher object)
     - cb_add_stream_to_section           -> Method called when a stream is added to the section
-        - Return: list of all streams, updated list of section's streams
+        - Return: list of all stream_ids, updated list of section's stream_ids
         - Parameters: section id, stream to be added (Schedule.Stream object)
     - cb_remove_stream_from_section      -> Method called when a stream is removed to the section
-        - Return: list of all streams, updated list of section's streams
+        - Return: list of all stream_ids, updated list of section's stream_ids
         - Parameters: section id, stream to be removed (Schedule.Stream object)
     - cb_change_section_name_by_id       -> Method called if the section name is changed.
         - Parameters: section id, section name
@@ -307,8 +307,8 @@ Creates a new section edit dialog box.
         self.__getattribute__(f'_{dropdown}_option').set('')
     
     def update_block_choices(self, choices : list):
-        """Update the block dropdown to use the provided list"""
-        self.__update_choices(choices, 'block')
+        """Update the blocks dropdown to use the provided list"""
+        self.__update_choices(choices, 'blocks')
     
     def update_teacher_choices(self, choices : list, assigned_choices : list):
         """Update the teacher add and remove dropdowns to use the provided lists"""
@@ -334,31 +334,31 @@ def new(input_frame, course_name : str, section_id : int, section_name : str, bo
     - section_id                             -> The ID of the section
     - section_name                           -> The name of the section
     - kwargs
-        - block_choices                      -> Default options for the block dropdown
+        - block_choices                      -> Default options for the blocks dropdown
         - teacher_choices                    -> Default options for the add teacher dropdown
         - teacher_assigned_choices           -> Default options for the remove teacher dropdown
         - stream_choices                     -> Default options for the add stream dropdown
         - stream_assigned_choices            -> Default options for the remove stream dropdown
         - cb_add_blocks_to_section           -> Method called when blocks are added.
             - Return: updated list of section's blocks
-            - Parameters: section id, list of new block hours
-        - cb_remove_block_from_section       -> Method called when a block is removed.
+            - Parameters: section id, list of new blocks hours
+        - cb_remove_block_from_section       -> Method called when a blocks is removed.
             - Return: updated list of section's blocks
-            - Parameters: section id, block to be removed (Schedule.Block object)
-        - cb_edit_block                      -> Method called when a block needs to be edited.
+            - Parameters: section id, blocks to be removed (Schedule.Block object)
+        - cb_edit_block                      -> Method called when a blocks needs to be edited.
             - Return: updated list of section's blocks
-            - Parameters: section id, block to be edited (Schedule.Block object)
+            - Parameters: section id, blocks to be edited (Schedule.Block object)
         - cb_add_teacher_to_section          -> Method called when a teacher is assigned to all blocks
-            - Return: list of all teachers, updated list of section's teachers
+            - Return: list of all teacher_ids, updated list of section's teacher_ids
             - Parameters: section id, teacher to be added (Schedule.Teacher object)
         - cb_remove_teacher_from_section     -> Method called when a teacher is removed from the section
-            - Return: list of all teachers, updated list of section's teachers
+            - Return: list of all teacher_ids, updated list of section's teacher_ids
             - Parameters: section id, teacher to be removed (Schedule.Teacher object)
         - cb_add_stream_to_section           -> Method called when a stream is added to the section
-            - Return: list of all streams, updated list of section's streams
+            - Return: list of all stream_ids, updated list of section's stream_ids
             - Parameters: section id, stream to be added (Schedule.Stream object)
         - cb_remove_stream_from_section      -> Method called when a stream is removed to the section
-            - Return: list of all streams, updated list of section's streams
+            - Return: list of all stream_ids, updated list of section's stream_ids
             - Parameters: section id, stream to be removed (Schedule.Stream object)
         - cb_change_section_name_by_id       -> Method called if the section name is changed.
             - Parameters: section id, section name
@@ -380,18 +380,18 @@ if __name__ == "__main__":
         # add_blocks            -> list of blocks should be 2 + number added
         # remove_blocks         -> list of blocks should be 1
         # edit_block            -> list of blocks should be 2
-            # NOTE: The edit block GUI is opened by the presenter
-        # add_teacher           -> list of teachers should be 3, assigned teachers should be 2
-        # remove_teacher        -> list of teachers should be 3, assigned teachers should be 1 (different from starting)
-        # add_stream            -> list of streams should be 3, assigned streams should be 2
-        # remove_stream         -> list of streams should be 3, assigned streams should be 1 (different from starting)
+            # NOTE: The edit blocks GUI is opened by the presenter
+        # add_teacher           -> list of teacher_ids should be 3, assigned teacher_ids should be 2
+        # remove_teacher_by_id        -> list of teacher_ids should be 3, assigned teacher_ids should be 1 (different from starting)
+        # add_stream            -> list of stream_ids should be 3, assigned stream_ids should be 2
+        # remove_stream_by_id         -> list of stream_ids should be 3, assigned stream_ids should be 1 (different from starting)
     # _choices options just use hardcoded dummy strings. normally, they should be lists of objects, NOT strings
         # to start, each dropdown should contain:
             # blocks            -> 2
-            # teachers          -> 3
-            # assigned teachers -> 1
-            # streams           -> 3
-            # assigned streams  -> 1
+            # teacher_ids          -> 3
+            # assigned teacher_ids -> 1
+            # stream_ids           -> 3
+            # assigned stream_ids  -> 1
 
     db_options = {
         'cb_add_blocks_to_section': lambda _, b : [*blocks, *[f'Block {i+3}' for i, _ in enumerate(b)]],

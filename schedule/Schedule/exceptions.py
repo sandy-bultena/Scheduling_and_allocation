@@ -8,3 +8,11 @@ class InvalidHoursForSectionError(Exception):
 
 class InvalidTeacherNameError(Exception):
     """Teacher name cannot be just spaces or an empty string"""
+
+
+class CouldNotReadFileError(Exception):
+    """Could not read the schedule file"""
+
+
+class CouldNotWriteFileError(Exception):
+    """Could not read the schedule file"""

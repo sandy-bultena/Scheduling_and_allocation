@@ -91,7 +91,7 @@ def _display_selected_scenario(scenario: PonyDatabaseConnection.Scenario):
 
     desc_frm = ttk.Labelframe(scen_frm, text="Description")
     desc_frm.grid(row=1, column=0, columnspan=2, sticky="ew")
-    ttk.Label(desc_frm, text=scenario.description).grid(row=0, column=0)
+    ttk.Label(desc_frm, text=scenario.title).grid(row=0, column=0)
 
     # List all the Schedules belonging to this section.
     db_schedules = select(sch for sch in PonyDatabaseConnection.Schedule
@@ -115,14 +115,14 @@ def _display_selected_scenario(scenario: PonyDatabaseConnection.Scenario):
 @db_session
 def _open_scenario(listbox: Listbox, db: Database,
                    scenario_dict: dict[str, PonyDatabaseConnection.Scenario]):
-    # Have to jump through some complex hoops to get the Scenario entity corresponding to the
+    # Have to jump through some complex hoops to get_by_id the Scenario entity corresponding to the
     # selected index of the Listbox.
     scenarios = listbox.curselection()
     if len(scenarios) < 1:
         return
-    # Listbox.get() returns a string in this context.
+    # Listbox.get_by_id() returns a string in this context.
     scenario_string = listbox.get(scenarios[0])
-    # Use that string to get the corresponding Scenario entity from the passed dictionary.
+    # Use that string to get_by_id the corresponding Scenario entity from the passed dictionary.
     scenario = scenario_dict[scenario_string]
     flush()
     _display_selected_scenario(scenario)

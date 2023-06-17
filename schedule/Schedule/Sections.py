@@ -34,26 +34,29 @@ from .TimeSlot import TimeSlot
     section.labs()
 """
 
+DEFAULT_HOURS = 3
+
 
 class ParentContainer(Protocol):
-    @property
-    def id(self) -> int: yield ...
-
     @property
     def title(self) -> str: yield ...
 
 
 class Lab(Protocol):
     number: str  # needed for __str__ method in Block
-    ...
+
+    def __lt__(self: Lab, other: Lab) -> bool:
+        pass
 
 
 class Stream(Protocol):
-    ...
+    def __lt__(self: Stream, other: Stream) -> bool:
+        pass
 
 
 class Teacher(Protocol):
-    ...
+    def __lt__(self: Teacher, other: Teacher) -> bool:
+        pass
 
 
 _section_id_generator: Generator[int, int, None] = id_gen.get_id_generator()
@@ -73,8 +76,6 @@ class Section:
     """
     Describes a section (part of a course)
     """
-
-    DEFAULT_HOURS = 3
 
     # ========================================================
     # CONSTRUCTOR
@@ -142,7 +143,7 @@ class Section:
     @property
     def blocks(self) -> tuple[Block]:
         """ Gets list of section's blocks """
-        return tuple(self._blocks)
+        return tuple(sorted(self._blocks))
 
     # --------------------------------------------------------
     # title
@@ -162,7 +163,7 @@ class Section:
         for b in self.blocks:
             for lab in b.labs:
                 labs.add(lab)
-        return tuple(labs)
+        return tuple(sorted(labs))
 
     # --------------------------------------------------------
     # teachers
@@ -170,11 +171,21 @@ class Section:
     @property
     def teachers(self) -> tuple[Teacher]:
         """ Gets all teachers assigned to all blocks in this section """
-        teachers = self._teachers
+        teachers = set()
+        teachers.update(self._teachers)
         for b in self.blocks:
             teachers.update(b.teachers)
 
-        return tuple(teachers)
+        return tuple(sorted(teachers))
+
+    # --------------------------------------------------------
+    # teachers
+    # --------------------------------------------------------
+    @property
+    def section_defined_teachers(self) -> tuple[Teacher]:
+        """ Gets all teachers specifically assigned to the section """
+        return self._teachers
+
 
     # --------------------------------------------------------
     # streams
@@ -182,7 +193,7 @@ class Section:
     @property
     def streams(self) -> tuple[Stream, ...]:
         """ Gets all streams in this section """
-        return tuple(self._streams)
+        return tuple(sorted(self._streams))
 
     # --------------------------------------------------------
     # allocated_hours
@@ -430,25 +441,8 @@ class Section:
                 return True
         return False
 
-
-class Sections(dict[int, Section]):
-
-    # =================================================================
-    # get_by_id
-    # =================================================================
-    def get_by_id(self, section_id: int) -> Section | None:
-        """Returns the Section object matching the specified ID, if it exists."""
-        return self.get(section_id)
-
-    # =================================================================
-    # add
-    # =================================================================
-    def add(self, section: Section) -> None:
-        self[section.id] = section
-
-    # =================================================================
-    # remove
-    # =================================================================
-    def remove(self, section: Section) -> None:
-        if section.id in self:
-            del (self[section.id])
+    # ------------------------------------------------------------------------
+    # for sorting
+    # ------------------------------------------------------------------------
+    def __lt__(self, other):
+        return self.number < other.number

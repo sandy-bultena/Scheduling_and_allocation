@@ -48,14 +48,14 @@ class ViewTk(ViewBaseTk):
                          move_block_cb: Callable):
         """Create a popup menu to be used when right-clicking a GuiBlock.
 
-        Create the pop-up menu BEFORE drawing the blocks, so that it can be bound to each block
+        Create the pop-up menu BEFORE drawing the blocks, so that it can be bound to each blocks
         (done in self.redraw()).
 
         Parameters:
             type: type of View (teacher/lab/stream)
             named_schedulables: all schedulable objects of this type.
-            toggle_movement_cb: callback routine to change a block from movable/unmovable.
-            move_block_cb: callback routine if block is moved from one view to another.
+            toggle_movement_cb: callback routine to change a blocks from movable/unmovable.
+            move_block_cb: callback routine if blocks is moved from one view to another.
 
         Inputs to Callback:
             - view object
@@ -66,14 +66,14 @@ class ViewTk(ViewBaseTk):
         global mw
         pm = Menu(mw, tearoff=0)
 
-        # toggle block from movable to unmovable.
+        # toggle blocks from movable to unmovable.
         pm.add_command(label="Toggle Movable/Fixed", command=partial(
             toggle_movement_cb, view
         ))
 
         # create sub menu
         mm = Menu(pm, tearoff=0)
-        pm.add_cascade(menu=mm, label="Move block(s) to ")
+        pm.add_cascade(menu=mm, label="Move blocks(s) to ")
 
         for named_schedulable in named_schedulables:
             mm.add_command(label=named_schedulable.name, command=partial(
@@ -159,12 +159,12 @@ class ViewTk(ViewBaseTk):
             curr_y = undef.y
             if clicked_block: return  # allow another event to take control
 
-            # if mouse is not on an assignable block, bail out
+            # if mouse is not on an assignable blocks, bail out
             ass_block: AssignBlockTk = AssignBlockTk.find(curr_x, curr_y, assignable_blocks)
             if not ass_block:
                 return
 
-            # get day of assignable block that was clicked.
+            # get_by_id day of assignable blocks that was clicked.
             day = ass_block.day
 
             # set mouse_motion binding
@@ -250,7 +250,7 @@ class ViewTk(ViewBaseTk):
         if y2 is None:
             y2 = event.y
 
-        # get the AssignBlocks currently under the selection window
+        # get_by_id the AssignBlocks currently under the selection window
 
         # NOTE: To ensure that the selected_assigned_blocks list makes it to the callback
         # function which opens the AssignToResource window, we clear it each time and then extend
@@ -343,7 +343,7 @@ class ViewTk(ViewBaseTk):
         x_start = event.x
         y_start = event.y
         # Note: Unlike in Perl, Python will not allow you to unpack less variables than
-        # what a function returns. We must use discards to get rid of the unneeded x2
+        # what a function returns. We must use discards to get_by_id rid of the unneeded x2
         # and y2 values.
         starting_x, starting_y, _, _ = self.canvas.coords(guiblock.rectangle)
 
@@ -352,7 +352,7 @@ class ViewTk(ViewBaseTk):
         global clicked_block
         clicked_block = True
 
-        # This block is being controlled by the mouse.
+        # This blocks is being controlled by the mouse.
         guiblock.is_controlled = True
 
         # Unbind any previous binding for clicking and motion, just in case.
@@ -402,7 +402,7 @@ class ViewTk(ViewBaseTk):
         # Temporarily disable motion while we process stuff (keeps execution cycles down)
         self.canvas.bind("<Motion>", "")
 
-        # raise the block.
+        # raise the blocks.
         guiblock.gui_view.canvas.lift(guiblock.group_tag)
 
         # Where Block needs to go
@@ -414,7 +414,7 @@ class ViewTk(ViewBaseTk):
 
         # check for valid move.
         if cur_x_pos and cur_y_pos:
-            # Where block is moving to:
+            # Where blocks is moving to:
             delta_x = desired_x - cur_x_pos
             delta_y = desired_y - cur_y_pos
 
@@ -422,7 +422,7 @@ class ViewTk(ViewBaseTk):
             self.canvas.move(guiblock.group_tag, delta_x, delta_y)
             self._refresh_gui()
 
-            # set the block's new coordinates (time/day).
+            # set the blocks's new coordinates (time/day).
             self._set_block_coords(guiblock, cur_x_pos, cur_y_pos)
 
             self._moving_cb(guiblock) # TODO: Decide whether to make View._cb_guiblock_is_moving() static.
@@ -475,7 +475,7 @@ class ViewTk(ViewBaseTk):
 
         guiblock.is_controlled = False
 
-        # Let the View do what it needs to do once the block has been dropped.
+        # Let the View do what it needs to do once the blocks has been dropped.
         self._after_release_cb(view, guiblock)
 
         # Get the GuiBlock's new coordinates (closest day/time).
@@ -489,7 +489,7 @@ class ViewTk(ViewBaseTk):
         self.canvas.move(guiblock.group_tag, coords[0] - cur_x_pos, coords[1] - cur_y_pos)
         self._refresh_gui()
 
-        # Update everything that needs to be updated once the block data is finalized.
+        # Update everything that needs to be updated once the blocks data is finalized.
         self._update_after_cb(view, block)
 
     # ============================================================================

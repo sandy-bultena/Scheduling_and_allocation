@@ -2,12 +2,12 @@
 """Create or assign Time Blocks to various resources."""
 from ..GUI.AssignToResourceTk import AssignToResourceTk
 from ..Schedule.Block import Block
-from ..Schedule.Course import Course
-from ..Schedule.Lab import Lab
+from ..Schedule.Courses import Course
+from ..Schedule.Labs import Lab
 from ..Schedule.Schedule import Schedule
 from ..Schedule.ScheduleEnums import ViewType, WeekDayNumber
-from ..Schedule.Section import Section
-from ..Schedule.Teacher import Teacher
+from ..Schedule.Sections import Section
+from ..Schedule.Teachers import Teacher
 
 # ===================================================================
 # globals
@@ -29,12 +29,12 @@ gui: AssignToResourceTk
 class AssignToResource:
     """Create or assign Time Blocks to various resources.
 
-    Called with a date/time/duration of a block, as well as a Teacher/Lab.
+    Called with a date/time/duration of a blocks, as well as a Teacher/Lab.
 
-    Allows the user to assign this block to a Course and Section,
-    or to create a new block.
+    Allows the user to assign this blocks to a Course and Section,
+    or to create a new blocks.
 
-    or to assign an existing block to Course and Section."""
+    or to assign an existing blocks to Course and Section."""
     # =================================================================
     # Class/Global Variables
     # =================================================================
@@ -56,7 +56,7 @@ class AssignToResource:
     # Constructor
     # ===================================================================
     def __init__(self, mw, sched: Schedule, day: int, start, duration, schedulable):
-        """Creates and manages a gui that will allow the user to assign a block to various
+        """Creates and manages a gui that will allow the user to assign a blocks to various
         resources.
 
         Parameters:
@@ -73,7 +73,7 @@ class AssignToResource:
         Duration = duration
 
         global Type
-        Type = sched.get_view_type_of_object(schedulable)
+        Type = sched.get_view_type_of_object
         if Type == ViewType.Lab:
             global lab
             lab = schedulable
@@ -126,26 +126,26 @@ class AssignToResource:
         gui.cb_add_new_lab = AssignToResource._cb_add_new_lab
 
         # ------------------------------------
-        # get lists of resources
+        # get_by_id lists of resources
         # ------------------------------------
 
-        # labs
+        # lab_ids
         lab_names = {}
         sched = AssignToResource.schedule
         for l in sched.labs():
             lab_names[l.id] = str(l)
         gui.set_lab_choices(lab_names)
 
-        # teachers
+        # teacher_ids
         teacher_names = {}
-        for t in sched.teachers():
+        for t in sched._teachers():
             teacher_names[t.id] = str(t)
         gui.set_teacher_choices(teacher_names)
 
         # courses
         course_names = {}
         for course in sched._courses():
-            course_names[course.id] = course.description
+            course_names[course.id] = course.title
         gui.set_course_choices(course_names)
 
         # ------------------------------------
@@ -154,7 +154,7 @@ class AssignToResource:
         answer = gui.show()  # or "Cancel"
 
         # ------------------------------------
-        # assign block to resource
+        # assign blocks to resource
         # ------------------------------------
         if answer == "Ok":
             # check if a Block is defined.
@@ -166,9 +166,9 @@ class AssignToResource:
                 block.start = AssignToResource._hours_to_string(Start)
                 block.duration = Duration
                 if lab:
-                    block.assign_lab(lab)
+                    block.assign_lab_by_id(lab)
                 if teacher:
-                    block.assign_teacher(teacher)
+                    block.assign_teacher_by_id(teacher)
                 return True
         return False
 
@@ -220,14 +220,14 @@ class AssignToResource:
         if Type == 'teacher' or Type == ViewType.Teacher:
             return
 
-        teachers = section.teachers
+        teachers = section.teacher_ids
         if len(teachers) > 0:
             global teacher
             teacher = teachers[0]
             gui.set_teacher(str(teacher))
 
     # ----------------------------------------------------------------------------
-    # block was selected
+    # blocks was selected
     # ----------------------------------------------------------------------------
     @staticmethod
     def _cb_block_selected(id: int):
@@ -260,7 +260,7 @@ class AssignToResource:
             return  # NOTE: This will probably fail.
 
         # Check to see if a section by that name exists.
-        sections_arr = course.get_section_by_name(name)
+        sections_arr = course.get_sections_by_name(name)
         section_new: Section
 
         # --------------------------------------------------------------------
@@ -316,7 +316,7 @@ class AssignToResource:
         block = Block(WeekDayNumber.days_by_number()[Day], AssignToResource._hours_to_string(Start),
                       Duration, number=section.get_new_number())
         section.add_block(block)
-        # NOTE: In the original code, the newly-created block was added to the section first,
+        # NOTE: In the original code, the newly-created blocks was added to the section first,
         # and then its day, start, and duration properties were set. We can't do it that way
         # based on how Block was coded, however.
 
@@ -355,7 +355,7 @@ class AssignToResource:
         # NOTE: In the original Perl code, we could directly assign Labs to Schedules.
         # We can't do that anymore, so we need a workaround.
         for c in AssignToResource.schedule._courses():
-            c.assign_lab(lab)
+            c.assign_lab_by_id(lab)
 
         lab_names = {}
         for l in AssignToResource.schedule.labs():
@@ -391,7 +391,7 @@ class AssignToResource:
         teacher = Teacher(firstname=first_name, lastname=last_name)
 
         teacher_names = {}
-        for teach in AssignToResource.schedule.teachers():
+        for teach in AssignToResource.schedule._teachers():
             teacher_names[teach.id] = str(teach)
 
         gui.set_teacher_choices(teacher_names)

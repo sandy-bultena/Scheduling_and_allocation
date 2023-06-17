@@ -1,28 +1,30 @@
+from __future__ import annotations
 import sys
 from os import path
 import pytest
 
-from schedule.Schedule.Courses import Course, Courses
+
+from schedule.Schedule.Courses import Course
 from schedule.Schedule.ScheduleEnums import SemesterType
+from schedule.Schedule.TimeSlot import TimeSlot
 from schedule.Schedule.exceptions import InvalidSectionNumberForCourseError
 
 sys.path.append(path.dirname(path.dirname(__file__)))
 
 
 class Lab:
-    pass
+    def __lt__(self, other: Lab):
+        return True
 
 
 class Stream:
-    pass
+    def __lt__(self, other: Stream):
+        return True
 
 
 class Teacher:
-    pass
-
-
-class TimeSlot:
-    pass
+    def __lt__(self, other: Teacher):
+        return True
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -62,12 +64,12 @@ def test_full_constructor():
     num = "102-NYA-043"
     name = "My Course"
     sem = SemesterType.summer
-    allo = False
-    c = Course(num, name, sem, allo)
+    alloc = False
+    c = Course(num, name, sem, alloc)
     assert c.name == name
     assert c.number == num
     assert c.semester == SemesterType.validate(sem)
-    assert c.needs_allocation == allo
+    assert c.needs_allocation == alloc
 
 
 def test_name_getter():
@@ -204,26 +206,26 @@ def test_number_of_sections():
 
 
 def test_sections_for_teacher():
-    """Verifies that sections_for_teacher() returns a list of all sections featuring this
+    """Verifies that get_sections_for_teacher() returns a list of all sections featuring this
     teacher in this course. """
     course = Course("abc")
     section_1 = course.add_section("420")
     section_2 = course.add_section("421")
     teach = Teacher()
     section_1.add_teacher(teach)
-    teach_sections = course.sections_for_teacher(teach)
+    teach_sections = course.get_sections_for_teacher(teach)
     assert section_1 in teach_sections
     assert section_2 not in teach_sections
 
 
 def test_sections_for_teacher_empty():
-    """Verifies that sections_for_teacher() returns an empty list if no Teacher has been
+    """Verifies that get_sections_for_teacher() returns an empty list if no Teacher has been
     assigned to the Course. """
     course = Course("abc")
     course.add_section("420")
     course.add_section("421")
     teach2 = Teacher()
-    teach_sections = course.sections_for_teacher(teach2)
+    teach_sections = course.get_sections_for_teacher(teach2)
     assert len(teach_sections) == 0
 
 
@@ -373,7 +375,7 @@ def test_remove_teacher_good():
     course = Course("abc", "Course 1")
     teacher_1 = Teacher()
     teacher_2 = Teacher()
-    ##### TODO: This is a bad design because I have to create a section before the teacher is assigned to it.
+    # TODO: This is a bad design because I have to create a section before the teacher is assigned to it.
     course.add_section()
     course.add_teacher(teacher_1)
     course.add_teacher(teacher_2)
@@ -425,69 +427,3 @@ def test_remove_all_streams():
     course.add_stream(stream_2)
     course.remove_all_streams()
     assert len(course.streams) == 0
-
-
-# ============================================================================
-# Collection
-# ============================================================================
-def test_get_course_by_number():
-    courses = Courses()
-    course1 = courses.add("420-ABC")
-    course2 = courses.add("420-BCD")
-    assert course1 == courses.get_by_number("420-ABC")
-    assert course2 == courses.get_by_number("420-BCD")
-
-
-def test_get_course_by_number_not_exist():
-    courses = Courses()
-    courses.add("420-ABC")
-    courses.add("420-BCD")
-    assert courses.get_by_number("420-XXX") is None
-
-
-def test_get_courses_all():
-    courses = Courses()
-    courses.add("420-ABC")
-    courses.add("420-BCD")
-    have_courses = courses.get_all()
-    assert len(have_courses) == 2
-
-
-def test_get_course_by_id():
-    courses = Courses()
-    course1 = courses.add("420-ABC", course_id=1)
-    course2 = courses.add("420-BCD", course_id=2)
-    assert course1 == courses.get_by_id(1)
-    assert course2 == courses.get_by_id(2)
-
-
-def test_get_course_by_id_not_exist():
-    courses = Courses()
-    courses.add("420-ABC", course_id=1)
-    courses.add("420-BCD", course_id=2)
-    assert courses.get_by_id(9999) is None
-
-
-def test_add_returns_a_course_object():
-    courses = Courses()
-    course = courses.add("420-ABC", course_id=1)
-    assert isinstance(course, Course)
-
-
-def test_add_saves_courses():
-    courses = Courses()
-    course1 = courses.add("420-ABC")
-    course2 = courses.add("420-BCD")
-    have_courses = courses.get_all()
-    assert course1 in have_courses and course2 in have_courses
-
-
-def test_remove_course():
-    courses = Courses()
-    course1 = courses.add("420-ABC")
-    course2 = courses.add("420-BCD")
-    have_courses = courses.get_all()
-    assert course1 in have_courses and course2 in have_courses
-    courses.remove(course2)
-    have_courses = courses.get_all()
-    assert course1 in have_courses and course2 not in have_courses

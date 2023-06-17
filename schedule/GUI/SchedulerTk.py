@@ -111,7 +111,7 @@ class SchedulerTk(MainPageBaseTk):
 
     def draw_view_choices(self, default_tab: str, all_scheduables: AllScheduables,
                           btn_callback: Callable = lambda: None):
-        """The ViewsManager can create schedule views for all teachers/labs etc.
+        """The ViewsManager can create schedule views for all teacher_ids/lab_ids etc.
 
         The allowable views depend on the schedules, so this function needs to be called whenever
         the schedule changes.
@@ -120,7 +120,7 @@ class SchedulerTk(MainPageBaseTk):
 
         Parameters:
             default_tab: Name of notebook tab to draw on.
-            all_scheduables: A list of schedulable objects (teachers/labs/etc.)
+            all_scheduables: A list of schedulable objects (teacher_ids/lab_ids/etc.)
             btn_callback: A callback function called whenever the ViewsManager is asked to create a
             view."""
         f = self.pages[default_tab.lower()]
@@ -168,7 +168,7 @@ class SchedulerTk(MainPageBaseTk):
         Parameters:
             default_page: name of notebook tab to draw on.
             course_text: Text describing all the courses.
-            teacher_text: Text describing all the teachers' workloads."""
+            teacher_text: Text describing all the teacher_ids' workloads."""
         f = self.pages[default_page.lower()]
 
         if not SchedulerTk.overview_notebook:

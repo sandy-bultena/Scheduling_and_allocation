@@ -89,49 +89,13 @@ class Teacher:
     def __repl__(self) -> str:
         return str(self)
 
-
-class Teachers(dict[int, Teacher]):
-
-    # =================================================================
-    # get_all
-    # =================================================================
-    def get_all(self) -> tuple[Teacher, ...]:
-        """Returns the immutable list of teachers."""
-        return tuple(self.values())
-
-    # =================================================================
-    # get_by_id
-    # =================================================================
-    def get_by_id(self, teacher_id: int) -> Teacher | None:
-        """Returns the Teacher object matching the specified ID, if it exists."""
-        return self.get(teacher_id)
-
-    # =================================================================
-    # get_by_name
-    # =================================================================
-    def get_by_name(self, first_name: str, last_name: str) -> Teacher | None:
-        """Returns the first Teacher found matching the first name and last name, if one exists."""
-        if not (first_name and last_name):
-            return None
-        for teacher in self.values():
-            if teacher.firstname == first_name and teacher.lastname == last_name:
-                return teacher
-        return None
-
-    # =================================================================
-    # add
-    # =================================================================
-    def add(self, firstname: str, lastname: str, department: str = "", teacher_id: int = None) -> Teacher:
-        teacher = Teacher(firstname, lastname, department, teacher_id=teacher_id)
-        self[teacher.id] = teacher
-        return teacher
-
-    # =================================================================
-    # remove
-    # =================================================================
-    def remove(self, teacher: Teacher) -> None:
-        if teacher.id in self:
-            del (self[teacher.id])
+    # ------------------------------------------------------------------------
+    # for sorting
+    # ------------------------------------------------------------------------
+    def __lt__(self, other: Teacher) -> bool:
+        if self.lastname != other.lastname:
+            return self.lastname < other.lastname
+        return self.firstname < other.firstname
 
 
 # =================================================================

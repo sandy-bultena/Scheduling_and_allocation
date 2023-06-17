@@ -93,7 +93,7 @@ class AllocationManagerTk(MainPageBaseTk):
         # set selected schedules to those in the preference file
         # --------------------------------------------------------------
         for semester in semesters:
-            _set_file(semester, preferences.get(f'current_{semester}_id'), preferences.get(f'current_{semester}_name'))
+            _set_file(semester, preferences.get_by_id(f'current_{semester}_id'), preferences.get_by_id(f'current_{semester}_name'))
 
 
 def _set_file(semester, schedule_id, schedule_name):

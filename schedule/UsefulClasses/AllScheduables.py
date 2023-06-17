@@ -6,22 +6,22 @@ from ..Schedule.ScheduleEnums import ViewType
 class AllScheduables:
     def __init__(self, schedule: Schedule):
         # Get teacher info.
-        teacher_array = schedule.teachers()
+        teacher_array = schedule._teachers()
         teacher_ordered = sorted(teacher_array, key=lambda t: t.lastname)
         teacher_names = []
         for teach in teacher_ordered:
             name = f"{teach.firstname[0:1].upper()} {teach.lastname}"
             teacher_names.append(name)
 
-        # get lab info
+        # get_by_id lab info
         lab_array = schedule.labs()
         lab_ordered = sorted(lab_array, key=lambda l: l.number)
         lab_names = []
         for lab in lab_ordered:
             lab_names.append(lab.number)
 
-        # get stream info
-        stream_array = schedule.streams()
+        # get_by_id stream info
+        stream_array = schedule._streams()
         stream_ordered = sorted(stream_array, key=lambda s: s.number)
         stream_names = []
         for stream in stream_ordered:

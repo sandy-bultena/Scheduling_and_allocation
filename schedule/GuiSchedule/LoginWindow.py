@@ -3,10 +3,9 @@ from tkinter import Tk, ttk, StringVar
 
 import mysql.connector
 
-from .ScenarioSelector import ScenarioSelector
 from .GuiHelpers import display_error_message
 from ..Schedule.database import PonyDatabaseConnection as PonyDatabaseConnection
-from ..Schedule.unit_tests.db_constants import HOST, DB_NAME, PROVIDER
+from TestsAndExamples.model_unit_tests import HOST, DB_NAME, PROVIDER
 from .ApplicationSelector import ApplicationSelector
 
 

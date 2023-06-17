@@ -5,7 +5,7 @@ Add blocks dialog GUI
 Inputs:
     frame
 Returns: 
-    An array of hours for each block
+    An array of hours for each blocks
         None if cancelled
 Required Event Handlers:
     -none-
@@ -36,7 +36,7 @@ def new(input_frame : Frame = None) -> list[int] | None:
     return _process_block_hours(db_num_blocks)
 
 def _process_block_hours(db_num_blocks : int | None = None) -> list[int] | None:
-    """How many hours per block?"""
+    """How many hours per blocks?"""
     # returns None when db_num_blocks is 0; this seems to be the intended behaviour in Perl
     if not db_num_blocks: return None
 

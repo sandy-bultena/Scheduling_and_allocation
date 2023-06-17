@@ -58,7 +58,7 @@ class AllocationGridTk:
         }
 
         # ------------------------------------------------------------------------
-        # get rid of anything that is currently on this frame
+        # get_by_id rid of anything that is currently on this frame
         # ------------------------------------------------------------------------
         for w in frame.widget.pack_slaves():
             w.destroy()
@@ -441,7 +441,7 @@ class AllocationGridTk:
         original_colour = w.cget('bg')
         data_changed = original_colour == needs_update_colour and inout == 'focusOut'
 
-        # get the widget
+        # get_by_id the widget
         r, c = self.get_row_col(w)
 
         # set colours for rows (data)

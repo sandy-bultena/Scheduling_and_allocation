@@ -90,47 +90,11 @@ class Lab:
     def __repr__(self) -> str:
         return str(self)
 
-
-class Labs(dict[int, Lab]):
-
-    # ============================================================================
-    # get_by_number
-    # ============================================================================
-    def get_by_number(self, number: str) -> Lab | None:
-        """Returns the Lab which matches this Lab number, if it exists."""
-        found = [lab for lab in self.values() if lab.number == number]
-        return found[0] if found else None
-
-    # ============================================================================
-    # get_all
-    # ============================================================================
-    def get_all(self) -> tuple[Lab, ...]:
-        """Returns a tuple of all the labs"""
-        return tuple(self.values())
-
-    # =================================================================
-    # get_by_id
-    # =================================================================
-    def get_by_id(self, lab_id: int) -> Lab | None:
-        """Returns the Lab object matching the specified ID, if it exists."""
-        return self.get(lab_id)
-
-    # =================================================================
-    # add
-    # =================================================================
-    def add(self, number: str = "P100", description: str = '', *, lab_id: int = None) -> Lab:
-        """Creates and saves a new Lab object."""
-        lab: Lab = Lab(number, description, lab_id=lab_id)
-        self[lab.id] = lab
-        return lab
-
-    # =================================================================
-    # remove
-    # =================================================================
-    def remove(self, lab: Lab) -> None:
-        if lab.id in self:
-            del (self[lab.id])
-
+    # ------------------------------------------------------------------------
+    # for sorting
+    # ------------------------------------------------------------------------
+    def __lt__(self, other):
+        return self.number < other.number
 
 # =================================================================
 # footer

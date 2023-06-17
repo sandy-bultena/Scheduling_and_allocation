@@ -237,7 +237,7 @@ def _read_dt_palette(colours : dict[str, str]):
 # _read_gtk_palette
 # =================================================================
 def _read_gtk_palette(palette : str, colours : dict[str, str]):
-    # get the user defined config file for gnome
+    # get_by_id the user defined config file for gnome
     home = os.environ("HOME")
     file = r"/.gconf/desktop/gnome/interface/%gconf.xml"
 
@@ -274,7 +274,7 @@ def _read_gtk_palette(palette : str, colours : dict[str, str]):
 # _read_gtk_palette
 # =================================================================
 def _read_gtk_palette(palette : str, colours : dict[str, str]):
-    # get the user defined config file for gnome
+    # get_by_id the user defined config file for gnome
     home = os.environ("HOME")
     file = r"/.gconf/desktop/gnome/interface/%gconf.xml"
 
@@ -322,10 +322,10 @@ def _read_windows_palette(scheme : str, colours : dict[str, str]):
     try: import winreg
     except: return
 
-    # get the current colour scheme
+    # get_by_id the current colour scheme
     x = winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Control Panel\\Colors")
 
-    # get the colour from the registry
+    # get_by_id the colour from the registry
         # uses QueryValueEx - QueryValue failed to find the key for some reason
     colours['WindowHighlight'] = _key_to_colour(winreg.QueryValueEx(x, 'HilightText')[0])
     colours['WindowForeground'] = _key_to_colour(winreg.QueryValueEx(x, 'MenuText')[0])

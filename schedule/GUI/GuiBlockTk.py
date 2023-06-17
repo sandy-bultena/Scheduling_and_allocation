@@ -24,10 +24,10 @@ class GuiBlockTk:
             gui_view: The GUI object associated with this view.
             block: The Block to turn into a GuiBlock.
             colour: The colour of the GuiBlock."""
-        # get canvas from gui_view to draw on.
+        # get_by_id canvas from gui_view to draw on.
         canvas = gui_view.canvas
 
-        # draw the block
+        # draw the blocks
         gui_objs = DrawView.draw_block(canvas, block, gui_view.get_scale_info(), type, colour,
                                        block_tag=GuiBlockTk.Max_id + 1)
 

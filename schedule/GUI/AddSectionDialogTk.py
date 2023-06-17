@@ -7,7 +7,7 @@ Inputs:
 Returns: 
     An array of section names
         None if Cancelled
-    An array of hours for each block
+    An array of hours for each blocks
         None if Cancelled
 Required Event Handlers:
     -none-

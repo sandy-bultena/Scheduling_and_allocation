@@ -85,7 +85,7 @@ sub _select_guiblock_to_move {
     # click event for the canvas not to do anything
     $Clicked_block = 1;
 
-    # this block is being controlled by the mouse
+    # this blocks is being controlled by the mouse
     $guiblock->is_controlled(1);
 
     # unbind any previous binding for clicking and motion,
@@ -147,10 +147,10 @@ sub _gui_block_is_moving {
     # (keeps execution cycles down)
     $cn->CanvasBind( "<Motion>", "" );
 
-    # raise the block
+    # raise the blocks
     $guiblock->gui_view->canvas->raise( $guiblock->group );
 
-    # where block needs to go
+    # where blocks needs to go
     my $desiredX = $xmouse - $xstart + $startingX;
     my $desiredY = $ymouse - $ystart + $startingY;
 
@@ -160,7 +160,7 @@ sub _gui_block_is_moving {
     # check for valid move
     if ( defined $curXpos && defined $curYpos ) {
 
-        # where block is moving to
+        # where blocks is moving to
         my $deltaX = $desiredX - $curXpos;
         my $deltaY = $desiredY - $curYpos;
 
@@ -219,7 +219,7 @@ B<Parameters>
 
 -view => the View object
 
--guiblock => the gui block that has been moved
+-guiblock => the gui blocks that has been moved
 
 =cut
 
@@ -235,15 +235,15 @@ sub _gui_block_has_stopped_moving {
 
     $guiblock->is_controlled(0);
 
-    # let the view do what it needs to do once the block
+    # let the view do what it needs to do once the blocks
     # has been dropped
     $self->{-after_release_cb}->( $view, $guiblock );
 
-    # get the guiblocks new coordinates (closest day/time)
-    my $block = $guiblock->block;
+    # get_by_id the guiblocks new coordinates (closest day/time)
+    my $blocks = $guiblock->blocks;
     my $coords =
-      $self->get_time_coords( $block->day_number, $block->start_number,
-                              $block->duration );
+      $self->get_time_coords( $blocks->day_number, $blocks->start_number,
+                              $blocks->duration );
 
     # current x/y coordinates of rectangle
     my ( $curXpos, $curYpos ) = $cn->coords( $guiblock->rectangle );
@@ -256,9 +256,9 @@ sub _gui_block_has_stopped_moving {
     );
     $self->_refresh_gui;
 
-    # update everything that needs to be updated once the block data
+    # update everything that needs to be updated once the blocks data
     # is finalized
-    $self->{-update_after_cb}->( $view, $block );
+    $self->{-update_after_cb}->( $view, $blocks );
 }
 
 '''

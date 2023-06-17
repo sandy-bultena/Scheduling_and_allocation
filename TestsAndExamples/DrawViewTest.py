@@ -2,7 +2,7 @@ from tkinter import *
 from tkinter import ttk
 
 from schedule.Export import DrawView
-from schedule.Schedule.Teacher import Teacher
+from schedule.Schedule.Teachers import Teacher
 from schedule.Schedule.Block import Block
 from schedule.Schedule.ScheduleEnums import WeekDay
 from schedule.Schedule.database import PonyDatabaseConnection
@@ -19,8 +19,8 @@ def main():
     teacher = Teacher("John", "Smith")
     block_1 = Block(WeekDay.Monday, "8:30", 1.5, 1)
     block_2 = Block(WeekDay.Wednesday, "8:30", 1.5, 1)
-    block_1.assign_teacher(teacher)
-    block_2.assign_teacher(teacher)
+    block_1.assign_teacher_by_id(teacher)
+    block_2.assign_teacher_by_id(teacher)
 
     blocks = [block_1, block_2]
 

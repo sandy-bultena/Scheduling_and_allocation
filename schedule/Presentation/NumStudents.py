@@ -96,9 +96,9 @@ class NumStudents:
             # --------------------------------------------------------------------------------------------------
             courses: list[Course.Course] = sorted(
                 (c for c in schedule._courses() if c.needs_allocation),
-                key=lambda x: x.description)
+                key=lambda x: x.title)
             for course in courses:
-                course_data = gui_form.NumStudentsDataCourse(name=course.description)
+                course_data = gui_form.NumStudentsDataCourse(name=course.title)
                 semester._courses.append(course_data)
 
                 # --------------------------------------------------------------------------------------------------

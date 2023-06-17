@@ -199,7 +199,7 @@ def darken(colour : str, amount : int = 10) -> str:
   - Parameter colour -> The colour to darken.
   - Parameter amount -> How much to darken by. Defaults to 10.
   """
-  # get HSL
+  # get_by_id HSL
   h, s, l = hsl(string(colour))
 
   # reduce light
@@ -261,7 +261,7 @@ def add(c1 : str, c2 : str) -> str:
   c1 = string(c1)
   c2 = string(c2)
 
-  # get the RGB
+  # get_by_id the RGB
   r1, g1, b1 = rgb(c1)
   r2, g2, b2 = rgb(c2)
 

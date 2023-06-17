@@ -88,11 +88,11 @@ class AssignToResourceTk:
         Parameters:
             frame: A gui object that can support calls to create dialog boxes.
             title: The title of the dialog box.
-            block_text: The description of the block that is the default block to assign."""
+            block_text: The title of the blocks that is the default blocks to assign."""
         # -----------------------------------------------
         # create dialog box
         # -----------------------------------------------
-        # NOTE: tkinter doesn't have a direct analog to Perl/Tk's DialogBox. Must get creative.
+        # NOTE: tkinter doesn't have a direct analog to Perl/Tk's DialogBox. Must get_by_id creative.
         # Using a Pmw Dialog instead.
         db_2 = Dialog(frame,
                       title="Assign Block",
@@ -100,7 +100,7 @@ class AssignToResourceTk:
         self._frame = db_2
         global OKAY
 
-        # Access the Dialog's ButtonBox component megawidget to get access to the actual buttons.
+        # Access the Dialog's ButtonBox component megawidget to get_by_id access to the actual buttons.
         # https://pmw.sourceforge.net/doc/howtouse.html
         # https://pmw.sourceforge.net/doc/Dialog.html
         # https://pmw.sourceforge.net/doc/ButtonBox.html
@@ -113,7 +113,7 @@ class AssignToResourceTk:
         cancel.configure(width=10)
 
         # -----------------------------------------------
-        # description of selected block
+        # title of selected blocks
         # -----------------------------------------------
         self._new_block = block_text
 
@@ -123,7 +123,7 @@ class AssignToResourceTk:
         self._create_main_labels(title)
 
         # -----------------------------------------------
-        # course / section / block widgets
+        # course / section / blocks widgets
         # -----------------------------------------------
         self._setup_course_widgets()
         self._setup_section_widgets()
@@ -246,7 +246,7 @@ class AssignToResourceTk:
         db: Frame = self._frame.component('dialogchildsite')
 
         def browse_cmd(self, event):
-            id = AssignToResourceTk._get_id(self.list_courses, self._tk_course_jbe.get())
+            id = AssignToResourceTk._get_id(self.list_courses, self._tk_course_jbe.get_by_id())
             self.cb_course_selected(id)
 
         # Pmw equivalent of JBrowseEntry seems to be this, at least at first glance.
@@ -315,7 +315,7 @@ class AssignToResourceTk:
                                           ))
 
     # ============================================================================
-    # block
+    # blocks
     # ============================================================================
     def _setup_block_widgets(self):
         db = self._frame.component('dialogchildsite')
@@ -349,7 +349,7 @@ class AssignToResourceTk:
                                         ))
 
     # ============================================================================
-    # teachers
+    # teacher_ids
     # ============================================================================
     def _setup_teacher_widgets(self):
         db = self._frame.component('dialogchildsite')
@@ -439,7 +439,7 @@ class AssignToResourceTk:
         self._lbl_create_lab = AssignToResourceTk._label(db, "Create new from Lab number and name",
                                                          opts)
         self._lbl_create_block = AssignToResourceTk \
-            ._label(db, "Create block from selected date/time", opts)
+            ._label(db, "Create blocks from selected date/time", opts)
 
         # Remaining labels will be bolded and anchored to the west.
         opts = {'font': bold_font, 'anchor': 'w'}
@@ -481,7 +481,7 @@ class AssignToResourceTk:
         self._tk_section_new_btn.grid(row=6, column=3, padx=2, sticky=NSEW)
 
         # -------------------------------------------------------
-        # block
+        # blocks
         # -------------------------------------------------------
         self._lbl_block.grid(row=7, column=0,
                              padx=2,
@@ -531,20 +531,20 @@ class AssignToResourceTk:
         # ------------------------------------------------------------------------
         self._create_setters_and_getters(
             category="list",
-            properties=["courses", "sections", "blocks", "teachers", "labs"],
+            properties=["courses", "sections", "blocks", "teacher_ids", "lab_ids"],
             default={}
         )
 
         self._create_setters_and_getters(
             category="_tb",
-            properties=["course", "section", "block", "teacher", "lab"],
+            properties=["course", "section", "blocks", "teacher", "lab"],
             default=""
         )
 
         self._create_setters_and_getters(
             category="_new",
             properties=["section", "teacher_fname", "teacher_lname", "lab_number", "lab_name",
-                        "block"],
+                        "blocks"],
             default=""
         )
 
@@ -576,7 +576,7 @@ class AssignToResourceTk:
         # Tk Labels
         # ------------------------------------------------------------------------
         labels = ["title", "selected_block", "course_info", "teacher_info", "lab_info",
-                  "course", "teacher", "lab", "section", "block", "create_section",
+                  "course", "teacher", "lab", "section", "blocks", "create_section",
                   "create_teacher", "create_lab", "create_block"
                   ]
 

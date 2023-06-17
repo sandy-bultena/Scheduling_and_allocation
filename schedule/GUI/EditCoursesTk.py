@@ -186,7 +186,7 @@ class EditCoursesTk:
         tree.selection_set(entity_id)
         tree.focus(entity_id)
 
-        # get the object and parent object associated with the selected item,
+        # get_by_id the object and parent object associated with the selected item,
         # if no parent (i.e. Schedule) we don't need a drop down menu
         parent = self.__get_parent(entity_id)
         if not parent:
@@ -209,7 +209,7 @@ class EditCoursesTk:
         pass
 
     # =================================================================
-    # get the parents of a particular object
+    # get_by_id the parents of a particular object
     # =================================================================
     def get_parents(self, tree_item_id: str) -> list[object]:
         return list(self.__get_parent(self.__tree.parent(tree_item_id)))
@@ -233,14 +233,14 @@ class EditCoursesTk:
     def __create_drag_drop_objs(self):
 
         # -------------------------------------------------------------
-        # drag from teachers/labs to course tree
+        # drag from teacher_ids/lab_ids to course tree
         # -------------------------------------------------------------
         pass
 
 
 '''
         # -------------------------------------------------------------
-        # drag from teachers/labs to course tree
+        # drag from teacher_ids/lab_ids to course tree
         # -------------------------------------------------------------
         $self->_tk_teachers_list->DragDrop(
             -event        => '<B1-Motion>',
@@ -281,7 +281,7 @@ class EditCoursesTk:
     sub _teacher_lab_start_drag {
         my ( $lb, $type, $drag ) = @_;
         my ($lb_sel) = $lb->curselection;
-        my ($req)    = $lb->get($lb_sel);
+        my ($req)    = $lb->get_by_id($lb_sel);
         $drag->configure(
             -text => $req,
             -font => [qw/-family arial -size 18/],
@@ -428,7 +428,7 @@ sub delete {
 }
 
 # =================================================================
-# set labs (put in listbox)
+# set lab_ids (put in listbox)
 # =================================================================
 sub set_labs {
     my $self         = shift;
@@ -441,7 +441,7 @@ sub set_labs {
 }
 
 # =================================================================
-# set streams (put in listbox)
+# set stream_ids (put in listbox)
 # =================================================================
 sub set_streams {
     my $self            = shift;
@@ -454,7 +454,7 @@ sub set_streams {
 }
 
 # =================================================================
-# set teachers (put in listbox)
+# set teacher_ids (put in listbox)
 # =================================================================
 sub set_teachers {
     my $self             = shift;
@@ -538,7 +538,7 @@ sub _cmd_dropped_on_tree {
 sub _cmd_double_click_teacher {
     my ( $lb, $self ) = @_;
     my $lb_sel = $lb->curselection;
-    my $txt    = $lb->get($lb_sel);
+    my $txt    = $lb->get_by_id($lb_sel);
 
     my $id;
     if ( $txt =~ /^\s*(\d+)\s*:/ ) {
@@ -557,18 +557,18 @@ sub _cmd_show_scheduable_menu {
     $list->selectionClear( 0, 'end' );
     $list->selectionSet($ent) if defined $ent;
 
-    # get id of currently selected scheduable
+    # get_by_id id of currently selected scheduable
     my $indices = $list->curselection();
     return unless $indices;
     my $index = $indices->[0] if ref($indices);
-    my $scheduable = $list->get($index);
+    my $scheduable = $list->get_by_id($index);
     my $scheduable_id;
     if ( $scheduable =~ /^\s*(\d+)\s*:/ ) {
         $scheduable_id = $1;
     }
     else { return; }
 
-    # get info from Presenter
+    # get_by_id info from Presenter
     my $menu_array =
       $self->cb_get_scheduable_menu_info->( $scheduable_id, $type );
 
@@ -594,7 +594,7 @@ sub _cmd_show_tree_menu {
     my ( $obj, $path ) = $self->__selected_obj();
     return unless $path;
 
-    # get the object and parent object associated with the selected item,
+    # get_by_id the object and parent object associated with the selected item,
     # if no parent (i.e. Schedule) we don't need a drop down menu
     my $parent = $tree->info( 'parent', $path );
     return unless $parent;
@@ -618,7 +618,7 @@ sub _cmd_dragging_over_tree {
     # ignore this if trying to drop from tree to tree
     return if $Dragged_from eq 'Tree';
 
-    # get the nearest item, and if it is good to
+    # get_by_id the nearest item, and if it is good to
     # drop on it, set the selection
 
     my $ent = $tree->GetNearest($y);
@@ -725,7 +725,7 @@ sub _create_panel_for_modifying {
         my $tree = shift;
 
         # -------------------------------------------------------------
-        # drag from teachers/labs to course tree
+        # drag from teacher_ids/lab_ids to course tree
         # -------------------------------------------------------------
         $self->_tk_teachers_list->DragDrop(
             -event        => '<B1-Motion>',
@@ -766,7 +766,7 @@ sub _create_panel_for_modifying {
     sub _teacher_lab_start_drag {
         my ( $lb, $type, $drag ) = @_;
         my ($lb_sel) = $lb->curselection;
-        my ($req)    = $lb->get($lb_sel);
+        my ($req)    = $lb->get_by_id($lb_sel);
         $drag->configure(
             -text => $req,
             -font => [qw/-family arial -size 18/],
@@ -781,7 +781,7 @@ sub _create_panel_for_modifying {
 
 
 # =================================================================
-# get the object from the specified tree path
+# get_by_id the object from the specified tree path
 # =================================================================
 sub __get_obj {
     my $self = shift;

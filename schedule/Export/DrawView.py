@@ -27,8 +27,8 @@ from ..Schedule.ScheduleEnums import ViewType
     teacher = Teacher("John", "Smith")
     block_1 = Block(WeekDay.Monday, "8:30", 1.5, 1)
     block_2 = Block(WeekDay.Wednesday, "8:30", 1.5, 1)
-    block_1.assign_teacher(teacher)
-    block_2.assign_teacher(teacher)
+    block_1.assign_teacher_by_id(teacher)
+    block_2.assign_teacher_by_id(teacher)
 
     blocks = [block_1, block_2]
 
@@ -62,10 +62,10 @@ from ..Schedule.ScheduleEnums import ViewType
     # Draw the teacher blocks on canvas. 
     # Set the type argument to "lab" or "teacher" to change the
     # colours and the information that is displayed in the 
-    # block.
+    # blocks.
     # ----------------------------------------------------------
-    for block in blocks:
-        DrawView.draw_block(cn, block, scl, "stream")
+    for blocks in blocks:
+        DrawView.draw_block(cn, blocks, scl, "stream")
     main_window.mainloop()
 
 """
@@ -194,28 +194,28 @@ def draw_background(canvas: Canvas, scl: dict):
 # =================================================================
 # Todo: Implement the ViewType enum in some capacity.
 def get_block_text(block: Block, scale: float = 1, type="teacher"):
-    """Get the text for a specific type of block.
+    """Get the text for a specific type of blocks.
 
     Parameters:
         block: A Block object.
         scale: scale (1 = 100%)
-        type: Type of view [teacher|lab|stream (affects what gets drawn on the block)."""
+        type: Type of view [teacher|lab|stream (affects what gets drawn on the blocks)."""
     # --------------------------------------------------------------------
-    # get needed block information
+    # get_by_id needed blocks information
     # --------------------------------------------------------------------
     # These checks prevent the app from crashing if the Block doesn't have an associated Section.
     block_num = block.section.course.number if block.section else ""
     block_sec = f"({block.section.number})" if block.section else ""
     block_section_name = block.section.title if block.section else ""
-    labs = block.labs()
+    labs = block.lab_ids()
     block_lab = ",".join(str(l) for l in labs)
     block_duration = block.duration
     block_start_time = block.start_number
-    streams = block.section.streams if block.section else ()
+    streams = block.section.stream_ids if block.section else ()
     block_streams = ",".join(str(s) for s in streams)
 
     # If teacher name is too long, split into multiple lines.
-    teachers = block.teachers()
+    teachers = block.teacher_ids()
     block_teacher = ""
     for t in teachers:
         name = str(t)
@@ -227,7 +227,7 @@ def get_block_text(block: Block, scale: float = 1, type="teacher"):
 
     # --------------------------------------------------------------------
     # The diagram has been scaled down,
-    # ... change what gets printed on the block
+    # ... change what gets printed on the blocks
     # --------------------------------------------------------------------
     if scale <= 0.75:
         # -----------------------------------------------------------
@@ -238,11 +238,11 @@ def get_block_text(block: Block, scale: float = 1, type="teacher"):
             block_num = re.split("[-*]", block_num)
 
         # -----------------------------------------------------------
-        # teachers (scale < .75)
+        # teacher_ids (scale < .75)
         # -----------------------------------------------------------
         block_teacher = ""
 
-        # Don't add teachers if this is a teacher view.
+        # Don't add teacher_ids if this is a teacher view.
         if type != "teacher" and type != ViewType.Teacher:
             for t in teachers:
                 block_teacher = block_teacher + ", ".join(map(t.firstname[0:1], t.lastname[0:1]))
@@ -254,7 +254,7 @@ def get_block_text(block: Block, scale: float = 1, type="teacher"):
                     block_teacher = block_teacher[0:11] + "..."
 
         # -----------------------------------------------------------
-        # labs/resources (scale < .75)
+        # lab_ids/resources (scale < .75)
         # -----------------------------------------------------------
         block_lab = ""
         if type != "lab" and type != ViewType.Lab:
@@ -267,11 +267,11 @@ def get_block_text(block: Block, scale: float = 1, type="teacher"):
                 block_lab = block_lab[0:11] + "..."
 
         # -----------------------------------------------------------
-        # streams (scale < .75)
+        # stream_ids (scale < .75)
         # -----------------------------------------------------------
         block_streams = ""
 
-        # only add stream/text if no teachers or labs,
+        # only add stream/text if no teacher_ids or lab_ids,
         # or GuiBlock can fit all info (i.e. duration of 2 hours or more)
         if (type != "stream" and type != ViewType.Stream) or block_duration >= 2:
             block_streams = ", ".join(map(lambda s: s.number, streams))
@@ -309,17 +309,17 @@ def draw_block(canvas: Canvas, block, scl: dict, type,
         canvas: Canvas to draw on.
         block: Block object.
         scl: Scaling info [dictionary].
-        type: Type of view [teacher|block|stream] (affects what gets drawn on the block).
-        colour: colour of block.
-        block_tag: Integer used to give the drawn block a unique tag identifier.
+        type: Type of view [teacher|blocks|stream] (affects what gets drawn on the blocks).
+        colour: colour of blocks.
+        block_tag: Integer used to give the drawn blocks a unique tag identifier.
 
     Returns:
         -A dict containing the following keys:
         -lines: a list of canvas line objects.
-        -text: text printed on the block.
-        -coords: array of canvas coordinates for the block.
+        -text: text printed on the blocks.
+        -coords: array of canvas coordinates for the blocks.
         -rectangle: the canvas rectangle object.
-        -colour: the colour of the block."""
+        -colour: the colour of the blocks."""
     scale = scl['scale']
     if not block:
         return
@@ -339,17 +339,17 @@ def draw_block(canvas: Canvas, block, scl: dict, type,
     colour = Colour.string(colour)
 
     # --------------------------------------------------------------------
-    # get coords
+    # get_by_id coords
     # --------------------------------------------------------------------
     coords = get_coords(block.day_number, block.start_number, block.duration, scl)
 
     # --------------------------------------------------------------------
-    # get needed block information
+    # get_by_id needed blocks information
     # --------------------------------------------------------------------
     block_text = get_block_text(block, scale, type)
 
     # --------------------------------------------------------------------
-    # draw the block
+    # draw the blocks
     # --------------------------------------------------------------------
     # Create a rectangle.
     rectangle = canvas.create_rectangle(coords, fill=colour, outline=colour,
@@ -434,7 +434,7 @@ def get_coords(day, start, duration, scl):
 
 
 # =================================================================
-# get the shades of the colour
+# get_by_id the shades of the colour
 # =================================================================
 
 def get_colour_shades(colour: str):
@@ -477,10 +477,10 @@ def get_colour_shades(colour: str):
 
 
 # =================================================================
-# using scale info, get the y limits for a specific time period
+# using scale info, get_by_id the y limits for a specific time period
 # =================================================================
 def _time_y_coords(start, duration, y_offset, yorig, v_stretch):
-    """using scale info, get the y limits for a specific time period."""
+    """using scale info, get_by_id the y limits for a specific time period."""
     y_offset = y_offset * v_stretch + yorig
     y = y_offset + (start - earliest_time) * v_stretch
     y2 = duration * v_stretch + y - 1
@@ -489,7 +489,7 @@ def _time_y_coords(start, duration, y_offset, yorig, v_stretch):
 
 
 # =================================================================
-# using scale info, get the x limits for a specific day
+# using scale info, get_by_id the x limits for a specific day
 # =================================================================
 def _days_x_coords(day: int, x_offset, xorig, h_stretch):
     x_offset = x_offset * h_stretch + xorig

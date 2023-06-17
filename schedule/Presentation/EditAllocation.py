@@ -57,8 +57,8 @@ class EditAllocation:
             ))
             self._semester_courses(semester, courses)
 
-            # teachers by semester
-            teachers = sorted(self.schedules[semester].teachers(),
+            # teacher_ids by semester
+            teachers = sorted(self.schedules[semester].teacher_ids(),
                               key=cmp_to_key(
                                   lambda a, b:
                                   a.lastname > b.lastname
@@ -158,7 +158,7 @@ class EditAllocation:
                             .get(row, {}).get(col, {}).get(VALUE_KEY)
 
                     # set the current hours based on info in the schedule
-                    if section.has_teacher(teacher):
+                    if section.has_teacher_with_id(teacher):
                         self._data_teacher_hours(semester).get(row, {})\
                             .get(col, {})[VALUE_KEY] = section.get_teacher_allocation(teacher)
 
@@ -243,7 +243,7 @@ class EditAllocation:
             section = remaining[SECTION_KEY]
             remaining[VALUE_KEY] = section.hours - section.allocated_hours
 
-        # get totals for all semesters
+        # get_by_id totals for all semesters
         for sem in self._semesters:
             if sem == semester:
                 continue
@@ -337,13 +337,13 @@ class EditAllocation:
     def _semester_teachers(self, semester, teachers = None):
         if semester not in self.semesters:
             self.semesters[semester] = dict()
-        if 'teachers' not in self.semesters[semester]:
-            self.semesters[semester]['teachers'] = []
+        if 'teacher_ids' not in self.semesters[semester]:
+            self.semesters[semester]['teacher_ids'] = []
 
         if teachers and len(teachers):
-            self.semesters[semester]['teachers'] = teachers
+            self.semesters[semester]['teacher_ids'] = teachers
 
-        return self.semesters[semester]['teachers']
+        return self.semesters[semester]['teacher_ids']
 
     def _semester_sections(self, semester, sections = None):
         if semester not in self.semesters:

@@ -149,7 +149,7 @@ class MainPageBaseTk:
 
         # create an image object of the logo
             # stored in self because tkinter doesn't keep references persistent
-                # (ie they get garbage collected at method finish)
+                # (ie they get_by_id garbage collected at method finish)
         self.logo = PhotoImage(file = logo)
         
         # frame and label

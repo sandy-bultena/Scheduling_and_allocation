@@ -3,7 +3,7 @@
     
     sched = Schedule.read_DB(my_schedule_id)
     teacher = Teacher.get_by_name("Sandy", "Bultena")
-    blocks = Schedule.blocks_for_teacher(teacher)
+    blocks = Schedule.get_blocks_for_teacher(teacher)
     undos = []
 
     # save blocks[0] before modifying it
