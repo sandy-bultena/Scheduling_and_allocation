@@ -13,8 +13,8 @@ O = platform.system().lower()
 
 def set(mw : Tk, my_size : int = 12):
     # colours
-    colours : dict[str, str] = Colours.GetSystemColours()
-    Colours.SetSystemColours(mw, colours)
+    colours : dict[str, str] = Colours.get_system_colours()
+    Colours.set_system_colours(mw, colours)
     mw.configure(background = colours['WorkspaceColour'])
 
     # define normal font

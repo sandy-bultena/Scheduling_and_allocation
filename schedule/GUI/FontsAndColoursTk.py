@@ -1,39 +1,32 @@
-# COMPLETED
-import sys
-from os import path
-sys.path.append(path.dirname(path.dirname(__file__)))
-
 from ..PerlLib import Colours
 from ..Tk import InitGui
 from tkinter import Tk as root
 from tkinter.font import Font
 
-class FontsAndColoursTk:
-    colours : dict[str, str]
-    fonts : dict[str, Font]
+# Hard code the colours
+colours: dict[str, str] = {
+    'WorkspaceColour': "#eeeeee",
+    "WindowForeground": "black",
+    "SelectedBackground": "#cdefff",
+    "SelectedForeground": "#0000ff",
+    "DarkBackground": "#cccccc",
+    "ButtonBackground": "#abcdef",
+    "ButtonForeground": "black",
+    "ActiveBackground": "#89abcd",
+    "highlightbackground": "#0000ff",
+    "ButtonHighlightBackground": "#ff0000",
+    "DataBackground": "white",
+    "DataForeground": "black",
+}
 
-    def __init__(self, mw : root):
-        FontsAndColoursTk.setup(mw)
+fonts: dict[str, Font]
 
-    @staticmethod
-    def setup(mw : root):
-        # Gets and sets the colours and fonts
-        FontsAndColoursTk.colours, FontsAndColoursTk.fonts = InitGui.set(mw)
+def setup(mw: root):
+    """Gets and sets the colours and fonts"""
+    global colours, fonts
+    colours, fonts = InitGui.set(mw)
 
-        # Hard code the colours
-        FontsAndColoursTk.colours = {
-            'WorkspaceColour'           : "#eeeeee",
-            "WindowForeground"          :  "black",
-            "SelectedBackground"        :  "#cdefff",
-            "SelectedForeground"        :  "#0000ff",
-            "DarkBackground"            :  "#cccccc",
-            "ButtonBackground"          :  "#abcdef",
-            "ButtonForeground"          :  "black",
-            "ActiveBackground"          :  "#89abcd",
-            "highlightbackground"       :  "#0000ff",
-            "ButtonHighlightBackground" :  "#ff0000",
-            "DataBackground"            :  "white",
-            "DataForeground"            :  "black",
-        }
-        Colours.SetSystemColours(mw, FontsAndColoursTk.colours)
-        mw.configure(background = FontsAndColoursTk.colours['WorkspaceColour'])
+    Colours.set_system_colours(mw, colours)
+    mw.configure(background=colours['WorkspaceColour'])
+
+
