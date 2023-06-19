@@ -254,7 +254,7 @@ class DataEntry:
                 # Loop over each method used to get_by_id info about this object.
                 col = 1
                 for method in self._col_methods:
-                    # Set dirty flag if new data is not the same as the currently set property.
+                    # Set dirty flag if new data is not the same as the currently set_default_fonts_and_colours property.
                     dirty_flag += 1 if o.method != data[col - 1] else 0
 
                     # Set the property to the data. TODO: Verify that this works.
@@ -295,7 +295,7 @@ class DataEntry:
                 elif isinstance(o, schedule.Schedule.Lab.Lab):
                     schedule.remove_lab_by_id(o)
 
-        # if there have been changes, set global dirty flag and do what is necessary.
+        # if there have been changes, set_default_fonts_and_colours global dirty flag and do what is necessary.
         if dirty_flag > 0:
             self._set_dirty()
         DataEntry.currently_saving = 0
@@ -314,11 +314,11 @@ class DataEntry:
     # endregion
     # region PRIVATE PROPERTIES AND METHODS
     # =================================================================
-    # set dirty flag
+    # set_default_fonts_and_colours dirty flag
     # =================================================================
     @property
     def _col_methods(self):
-        """Gets or sets the methods required to get_by_id or set the property for each column."""
+        """Gets or sets the methods required to get_by_id or set_default_fonts_and_colours the property for each column."""
         return self.__col_methods
 
     @_col_methods.setter

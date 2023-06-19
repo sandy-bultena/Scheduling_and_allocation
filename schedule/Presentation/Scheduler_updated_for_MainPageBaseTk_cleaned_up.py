@@ -12,7 +12,7 @@ from ..Schedule.database.db_constants import PROVIDER, DB_NAME, CREATE_DB
 from ..UsefulClasses.NoteBookPageInfo import NoteBookPageInfo
 from .globals import *
 
-from ..Presentation.MenuItem import MenuItem, MenuType, ToolbarItem
+from schedule.UsefulClasses.MenuItem import MenuItem, MenuType, ToolbarItem
 
 """
 # ==================================================================

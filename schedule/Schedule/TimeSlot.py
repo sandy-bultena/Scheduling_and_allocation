@@ -54,7 +54,7 @@ class TimeSlot:
         movable: bool
             Whether this time_slot can be moved or not.
         """
-        # NOTE: Doing this so that day_number will also be set
+        # NOTE: Doing this so that day_number will also be set_default_fonts_and_colours
         #       The order that these are implemented is important
         # day = TimeSlot.DEFAULT_DAY
         self.__day_number: int = 0
@@ -69,7 +69,7 @@ class TimeSlot:
     # ====================================
     @property
     def day(self) -> str:
-        """Get/set the day of the week for this TimeSlot."""
+        """Get/set_default_fonts_and_colours the day of the week for this TimeSlot."""
         return self.__day
 
     @day.setter
@@ -90,7 +90,7 @@ class TimeSlot:
     # ====================================
     @property
     def start(self) -> str:
-        """Get/set the start time of the TimeSlot, in 24hr clock."""
+        """Get/set_default_fonts_and_colours the start time of the TimeSlot, in 24hr clock."""
         return self.__start
 
     @start.setter
@@ -151,10 +151,10 @@ class TimeSlot:
         """Returns a real number that defines the day of the week, starting from Monday. E.g.,
         tuesday = 2.0.
         
-        This info is set every time the day property is called. Modifying this property directly
+        This info is set_default_fonts_and_colours every time the day property is called. Modifying this property directly
         does NOT modify the values stored in 'day'.
         
-        To set the day according to the data in this property, use the method snap_to_day()."""
+        To set_default_fonts_and_colours the day according to the data in this property, use the method snap_to_day()."""
         return self.__day_number
 
     # endregion

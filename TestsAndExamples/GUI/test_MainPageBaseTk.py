@@ -1,62 +1,81 @@
-import sys
-import platform
-
-sys.path.append("..")
-
+from functools import partial
 from tkinter import *
-from schedule.Presentation.MenuItem import MenuItem, MenuType, ToolbarItem
-from schedule.GUI.MenuAndToolBarTk import make_toolbar, generate_menu
+from os import path
+import sys
 
 
-# =================================================================================================
-# Test the GUI menu and toolbar creation work as required
-# =================================================================================================
+sys.path.append(path.dirname(path.dirname(__file__) + "/../../"))
+from schedule.UsefulClasses.NoteBookPageInfo import NoteBookPageInfo
+from schedule.GUI.MainPageBaseTk import MainPageBaseTk
+from schedule.UsefulClasses.MenuItem import MenuItem, MenuType, ToolbarItem
 
 
 def main():
-    mw = Tk()
-
-    # preparation
+    # create the top-level window with menu, toolbar and status bar
+    main_page = MainPageBaseTk('My App')
     (buttons, toolbar_info, menu_details) = define_inputs()
+    main_page.create_menu_and_toolbars(buttons, toolbar_info, menu_details)
+    filename: StringVar = StringVar()
+    main_page.create_status_bar(filename)
 
-    menu_bar = Menu(mw)
-    generate_menu(mw, menu_details, menu_bar)
-    mw.configure(menu=menu_bar)
+    filename.set("This file name should appear in the status bar")
 
-    # action
-    toolbar = make_toolbar(mw, buttons, toolbar_info)
-    toolbar.pack(side='top', expand=0, fill='x')
-    toolbar2 = make_toolbar(mw, buttons, toolbar_info, colours={'WorkspaceColour': 'blue', 'ActiveBackground': 'pink'})
-    toolbar2.pack(side='top', expand=0, fill='x')
+    # create the front page with logo
+    option_frame = main_page.create_front_page()
 
-    # test (manually)
-    Label(mw, anchor='w', text="").pack()
-    Label(mw, anchor='w', text="").pack()
-    Label(mw, anchor='w', text= "Verify that there are TWO toolbars").pack(fill='x')
-    Label(mw, anchor='w', text="The top toolbar should have the same background colour has the main window").pack(fill='x')
-    Label(mw, anchor='w', text="The 2nd toolbar should have a background colour of blue").pack(fill='x')
-    Label(mw, anchor='w', text="The 2nd toolbar buttons should turn pink if mouse if hovered over the button").pack(fill='x')
-    Label(mw, anchor='w', text="*** KNOWN BUG: hoverbg does not work in Tk/Toolbar.py").pack(fill='x')
-    Label(mw, text="").pack()
-    Label(mw, anchor='w', text='Verify that there are two file menu items, "file" and "print"').pack(fill='x')
-    Label(mw, anchor='w', text='Verify that "file" has "New", "Open", "Save", "Save As", "Exit"').pack(fill='x')
-    Label(mw, anchor='w', text='Verify that "print" has two sub-menus "pdf" and "latex"').pack(fill='x')
-    Label(mw, anchor='w', text='Verify the "pdf" and "latex" have "Teacher/Lab/Stream" menu choices').pack(fill='x')
-    Label(mw, anchor='w', text="").pack(fill='x')
-    Label(mw, anchor='w', text="Toolbar should have three buttons, with a '|' between open and save").pack(fill='x')
-    Label(mw, anchor='w', text="").pack(fill='x')
-    Label(mw, anchor='w', text="Verify that all buttons and menu items print appropriate message to console").pack(fill='x')
-    Label(mw, anchor='w', text="Verify that all menu item shortcut keys work as expected").pack(fill='x')
-    Label(mw, anchor='w', text="If MAC, verify that all menu item 'command'-? shortcut keys work as expected").pack(fill='x')
+    # define what the notebook pages are supposed to look like on the standard page
+    notebook_info = get_notebook_info()
 
-    mw.mainloop()
+    # add a button so that we can switch to the 'standard page'
+    Button(option_frame, text="Goto Standard Page", command=partial(switch_to_notebook, main_page, notebook_info)) \
+        .pack(side='top', fill='y', expand=0)
+
+    main_page.define_exit_callback(lambda *_: print("Application exited"))
+
+    main_page.start_event_loop()
+
+
+def get_notebook_info():
+    nb1 = NoteBookPageInfo("Schedules", event_handler=lambda *_: print("Schedules called"),
+                           frame_callback=lambda *_: print("Schedules frame callback"))
+
+    nb1.subpages = [
+        NoteBookPageInfo("Schedules-3", lambda *_: print("Schedules/Overview/Schedules-3 called")),
+        NoteBookPageInfo("Overview-3", lambda *_: print("Schedules/Overview/Overview-3 called")),
+        NoteBookPageInfo("Courses-3", lambda *_: print("Schedules/Overview/Courses-3 called")),
+        NoteBookPageInfo("Teachers-3", lambda *_: print("Schedules/Overview/Teachers-3 called")),
+        NoteBookPageInfo("Labs-3", lambda *_: print("Schedules/Overview/Labs-3 called")),
+        NoteBookPageInfo("Streams-3", lambda *_: print("Schedules/Overview/Streams-3 called")),
+    ]
+
+    return [
+        nb1,
+        NoteBookPageInfo("Overview", lambda *_: print("Overview called"),
+                         frame_callback=lambda *_: print("Overview frame method called")),
+        NoteBookPageInfo("Courses", lambda *_: print("Courses called"), frame_args={'background': 'purple'}, ),
+        NoteBookPageInfo("Teachers", lambda *_: print("Teachers called")),
+        NoteBookPageInfo("Labs", lambda *_: print("Labs called")),
+        NoteBookPageInfo("Streams", lambda *_: print("Streams called"))
+    ]
+
+
+def switch_to_notebook(main_page: MainPageBaseTk, notebook_info, *args):
+    print(*args)
+    main_page.create_standard_page(notebook_info)
+
+    # main_page.bind_dirty_flag()
+
+
+# def view_streams(f):
+#    Button(f, text="View Streams tab", command=partial(main_page.update_for_new_schedule_and_show_page, 5)) \
+#        .pack(side='top', fill='y', expand=0)
 
 
 # =================================================================================================
 # Setup
 # =================================================================================================
 def define_inputs():
-    menu = list()
+    menu_items = list()
 
     # -----------------------------------------------------------------------------------------
     # File menu
@@ -89,7 +108,7 @@ def define_inputs():
     print_menu.add_child(pdf_menu)
     print_menu.add_child(latex_menu)
 
-    # pdf sub-menu
+    # pdf sub-menu_times
     pdf_menu.add_child(MenuItem(menu_type=MenuType.Command, label='Teacher Schedules',
                                 command=lambda *_: print("'Print/Teacher Schedules' selected")))
     pdf_menu.add_child(MenuItem(menu_type=MenuType.Command, label='Lab Schedules',
@@ -102,7 +121,7 @@ def define_inputs():
     pdf_menu.add_child(MenuItem(menu_type=MenuType.Command, label='Text Output',
                                 command=lambda *_: print("'Print/Text Output' selected")))
 
-    # latex sub menu
+    # latex sub menu_times
     latex_menu.add_child(MenuItem(menu_type=MenuType.Command, label='Teacher Schedules',
                                   command=lambda *_: print("'Print/Teacher Schedules' selected")))
     latex_menu.add_child(MenuItem(menu_type=MenuType.Command, label='Lab Schedules',
@@ -124,12 +143,10 @@ def define_inputs():
     toolbar_info['save'] = ToolbarItem(command=MenuItem.all_menu_items['save'].command, hint='Save Schedule File')
     toolbar_order = ['new', 'open', '', 'save']
 
-    # return list of top level menu items
-    menu.append(file_menu)
-    menu.append(print_menu)
+    # return list of top level menu_times items
+    menu_items.append(file_menu)
+    menu_items.append(print_menu)
 
-    return toolbar_order, toolbar_info, menu
+    return toolbar_order, toolbar_info, menu_items
 
-
-if __name__ == "__main__":
-    main()
+main()

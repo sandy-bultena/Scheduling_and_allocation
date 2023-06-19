@@ -1,22 +1,114 @@
+"""Sets up the standard Tk properties (fonts, colours)"""
 
-"""Set the colour palette for Tk objects"""
 from __future__ import annotations
-
-import schedule.UsefulClasses.Colour as colour
+from tkinter import Tk
+from tkinter.font import Font
 import platform
 import re
-from tkinter import Tk
+from typing import Literal
 
-OS_name = platform.system().lower()
+import schedule.UsefulClasses.Colour as colour
+
+operating_system = platform.system().lower()
+
+# old (or maybe new default colours?)
+# _old_default_colours =
+# {  'WorkspaceColour': "#eeeeee",
+#     "WindowForeground": "black",
+#     "SelectedBackground": "#cdefff",
+#     "SelectedForeground": "#0000ff",
+#     "DarkBackground": "#cccccc",
+#     "ButtonBackground": "#abcdef",
+#     "ButtonForeground": "black",
+#     "ActiveBackground": "#89abcd",
+#     "highlightbackground": "#0000ff",
+#     "ButtonHighlightBackground": "#ff0000",
+#     "DataBackground": "white",
+#     "DataForeground": "black",
+#    }
+
+available_colours = Literal[
+    'WorkspaceColour',
+    'WindowForeground',
+    'SelectedBackground',
+    'SelectedForeground',
+    'DarkBackground',
+    'ButtonBackground',
+    'ButtonForeground',
+    'ActiveBackground',
+    'ButtonHighlightBackground',
+    'DataBackground',
+    'DataForeground',
+]
+
+available_fonts = Literal[
+                  'normal',
+                  'bold',
+                  'big',
+                  'bigbold',
+                  'fixed',
+                  'small':
+                  ]
+
+colours: dict[available_colours, str] = dict()
+fonts: dict[available_fonts, Font] = dict()
+
+
+def set_default_fonts_and_colours(mw: Tk, font_size: int = 12, dark_mode: bool = False):
+    global colours
+    global fonts
+    colours = _get_system_colours(dark=dark_mode)
+    _set_system_colours(mw, colours)
+    mw.configure(background=colours['WorkspaceColour'])
+
+    fonts = _define_fonts(mw, font_size)
+    mw.option_add( "*Font", fonts['normal'],)
+    return colours, fonts
+
+
+def _define_fonts(mw: Tk, my_size: int = 12) -> dict[available_fonts, Font]:
+    # define normal font
+    size = my_size
+    if re.search('win', operating_system):
+        size -= 2
+    family = 'arial'
+    if re.search('darwin', operating_system):
+        print ("hello darwin")
+        family = 'lucidia'
+        size += 3
+
+    set_props = {
+        'slant': 'roman', 'underline': 0, 'overstrike': 0
+    }
+
+    normal_weight: Literal['normal'] = 'normal'
+    bold_weight: Literal['bold'] = 'bold'
+    normal_size = size
+    bigger_size = size + 2
+    normal_font = family
+    fixed_font = 'courier new'
+
+    # make fonts
+    fonts: [available_fonts, str] = {
+        'normal': Font(mw, **set_props, weight=normal_weight, size=normal_size, family=normal_font),
+        'bold': Font(mw, **set_props, weight=bold_weight, size=normal_size, family=normal_font),
+        'big': Font(mw, **set_props, weight=normal_weight, size=bigger_size, family=normal_font),
+        'bigbold': Font(mw, **set_props, weight=bold_weight, size=bigger_size, family=normal_font),
+        'fixed': Font(mw, **set_props, weight=bold_weight, size=size + 1, family=fixed_font),
+        'small': Font(mw, **set_props, weight=normal_weight, size=size - 2, family=normal_font)
+    }
+
+    return fonts
 
 
 # =================================================================
-# get_system_colours
+# _get_system_colours
 # =================================================================
-def get_system_colours(dark: bool = False) -> dict[str, str]:
-    """Gets the system colours from the user default settings
-
-    Returns colour hash"""
+def _get_system_colours(dark: bool = False) -> dict[available_colours, str]:
+    """
+    Defines the colours for the Tk app.
+    Does not get the system colours anymore.
+    Times have changed."""
 
     colours = dict()
 
@@ -72,7 +164,7 @@ def get_system_colours(dark: bool = False) -> dict[str, str]:
         colours['SelectedForeground'] = '#FFFFFF'
 
     # mac won't change button colours
-    if re.match('darwin', OS_name):
+    if re.match('darwin', operating_system):
         colours['ButtonBackground'] = "#FFFFFF"
 
     # default foregrounds (white or black depending on if colour is dark or not)
@@ -97,10 +189,10 @@ def get_system_colours(dark: bool = False) -> dict[str, str]:
 
 
 # =================================================================
-# set_system_colours
+# _set_system_colours
 # =================================================================
-def set_system_colours(mw: Tk, colours: dict[str, str | None]):
-    """Using colour array and main window, set up some standard defaults for Tk widgets"""
+def _set_system_colours(mw: Tk, colours: dict[str, str | None]):
+    """Using colour array and main window, set_default_fonts_and_colours up some standard defaults for Tk widgets"""
 
     # make sure that all expected key values are at least None to avoid KeyNotFound crashes
     keys = [
@@ -141,7 +233,7 @@ def set_system_colours(mw: Tk, colours: dict[str, str | None]):
     _option_add(mw, "*Radiobutton.background", colours['WorkspaceColour'])
     _option_add(mw, "*Radiobutton.highlightBackground", colours['WorkspaceColour'])
     _option_add(mw, "*Radiobutton.activeForeground", colours['WindowForeground'])
-    if re.match('windows', OS_name):
+    if re.match('windows', operating_system):
         _option_add(mw, "*Radiobutton.selectColor", colours['DataBackground'])
 
     # check buttons
@@ -150,7 +242,7 @@ def set_system_colours(mw: Tk, colours: dict[str, str | None]):
     _option_add(mw, '*Checkbutton.background', colours['WorkspaceColour'])
     _option_add(mw, '*Checkbutton.activeForeground', colours['WindowForeground'])
     _option_add(mw, '*Checkbutton.highlightBackground', colours['WorkspaceColour'])
-    if re.match('windows', OS_name):
+    if re.match('windows', operating_system):
         _option_add(mw, '*Checkbutton.selectColor', colours['DataBackground'])
 
     # lists and entries
@@ -187,4 +279,3 @@ def _option_add(mw: Tk, option: str, new_value):
     """Sets the provided option on mw. If new_value is none, does nothing"""
     if new_value:
         mw.option_add(option, new_value)
-

@@ -271,7 +271,7 @@ def test_blocks_bad():
 
 
 def test_str_representation_full():
-    """Too difficult to set up, and not an issue (for now) if the wrong string is returned"""
+    """Too difficult to set_default_fonts_and_colours up, and not an issue (for now) if the wrong string is returned"""
 
 
 def test_description():

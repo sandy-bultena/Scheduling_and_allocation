@@ -19,7 +19,7 @@ def before_and_after():
 
 
 def test_defaults():
-    """Verifies that default values are set correctly"""
+    """Verifies that default values are set_default_fonts_and_colours correctly"""
     slot = TimeSlot()
     assert slot.day == TimeSlot.DEFAULT_DAY
     assert slot.start == TimeSlot.DEFAULT_START
@@ -30,7 +30,7 @@ def test_defaults():
 
 
 def test_calculate_end_time():
-    """Verifies that end time is set correctly"""
+    """Verifies that end time is set_default_fonts_and_colours correctly"""
     slot = TimeSlot(WeekDay.Tuesday, start="13:15", duration=1.5)
     assert slot.day == "tue"
     assert slot.start == "13:15"
@@ -149,7 +149,7 @@ def test_snap_to_time():
 
 def test_snap_to_time_bad_value_to_minimum():
     """Verifies that snap_to_time adjusts TimeSlot's start property to the minimum value of 8 if
-    start is set to something less than 8. """
+    start is set_default_fonts_and_colours to something less than 8. """
     slot = TimeSlot()
     slot.start = "5:00"
     slot.snap_to_time()
@@ -159,7 +159,7 @@ def test_snap_to_time_bad_value_to_minimum():
 
 def test_snap_to_time_bad_value_to_maximum():
     """Verifies that snap_to_time adjusts TimeSlot's start property to the maximum value of 18
-    minus duration if start is set to something greater than 18. """
+    minus duration if start is set_default_fonts_and_colours to something greater than 18. """
     slot = TimeSlot()
     slot.start = "19:00"
     slot.snap_to_time()

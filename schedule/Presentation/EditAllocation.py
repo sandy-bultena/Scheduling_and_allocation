@@ -157,7 +157,7 @@ class EditAllocation:
                         self._data_teacher_hours(semester)\
                             .get(row, {}).get(col, {}).get(VALUE_KEY)
 
-                    # set the current hours based on info in the schedule
+                    # set_default_fonts_and_colours the current hours based on info in the schedule
                     if section.has_teacher_with_id(teacher):
                         self._data_teacher_hours(semester).get(row, {})\
                             .get(col, {})[VALUE_KEY] = section.get_teacher_allocation(teacher)
@@ -215,7 +215,7 @@ class EditAllocation:
                 col += 1
 
         # ------------------------------------------------------------------------
-        # set up the binding of the data to the gui elements in gui_grid
+        # set_default_fonts_and_colours up the binding of the data to the gui elements in gui_grid
         # ------------------------------------------------------------------------
         self.gui.bind_data_to_grid(
             semester, courses_text, courses_balloon, sections_text,

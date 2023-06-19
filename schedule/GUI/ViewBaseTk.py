@@ -295,7 +295,7 @@ class ViewBaseTk:
     # required here.
     @property
     def _popup_menu(self):
-        """Get/set the popup menu for this guiblock."""
+        """Get/set_default_fonts_and_colours the popup menu for this guiblock."""
         return self.__popup
 
     @_popup_menu.setter
@@ -339,7 +339,7 @@ class ViewBaseTk:
 
         current_scale = scale
 
-        # set scales to new size
+        # set_default_fonts_and_colours scales to new size
         x_origin *= scale
         y_origin *= scale
         width_scale *= scale
@@ -349,14 +349,14 @@ class ViewBaseTk:
         canvas_height *= scale
         canvas_width *= scale
 
-        # set the new scaling sizes.
+        # set_default_fonts_and_colours the new scaling sizes.
         self._x_origin = x_origin
         self._y_origin = y_origin
         self._horiz_scale = horiz_scale
         self._width_scale = width_scale
         self.current_scale = current_scale
 
-        # set height and width of canvas and toplevel
+        # set_default_fonts_and_colours height and width of canvas and toplevel
         self.canvas.configure(width=canvas_width,
                               height=canvas_height)
         self._toplevel.configure(width=window_width,

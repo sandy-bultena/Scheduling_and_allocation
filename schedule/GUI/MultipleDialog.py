@@ -101,7 +101,7 @@ class MultipleDialog(simpledialog.Dialog):
         self.result = results
     
     def validate(self):
-        # just check that they exist; validation is being checked when they're set
+        # just check that they exist; validation is being checked when they're set_default_fonts_and_colours
         if self.required:
             for i in self.hour_inputs:
                 if not i.get(): return False

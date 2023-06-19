@@ -1,6 +1,6 @@
 # COMPLETED
 from __future__ import annotations
-from ..Exceptions import exceptions
+from schedule.Exceptions import exceptions
 
 """
 Example::

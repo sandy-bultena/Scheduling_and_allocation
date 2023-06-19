@@ -92,7 +92,7 @@ def test_section_created_success():
 
 
 def test_set_hours_valid():
-    """Checks that valid hours can be set"""
+    """Checks that valid hours can be set_default_fonts_and_colours"""
     s = Section(course)
     hours = 2
     s.hours = hours
@@ -100,7 +100,7 @@ def test_set_hours_valid():
 
 
 def test_set_hours_invalid():
-    """Checks that invalid hours can't be set"""
+    """Checks that invalid hours can't be set_default_fonts_and_colours"""
     s = Section(course)
     hours = -10
     with pytest.raises(InvalidHoursForSectionError) as e:
@@ -140,7 +140,7 @@ def test_get_title():
 
 
 def test_set_num_students():
-    """Checks that num_students can be set"""
+    """Checks that num_students can be set_default_fonts_and_colours"""
     s = Section(course)
     num = 20
     s.num_students = num
@@ -148,7 +148,7 @@ def test_set_num_students():
 
 
 def test_hours_can_be_added():
-    """Checks that hours can be added (rather than set) if no blocks are set"""
+    """Checks that hours can be added (rather than set_default_fonts_and_colours) if no blocks are set_default_fonts_and_colours"""
     hours = 1
     to_add = 10
     s = Section(course, hours=hours)
@@ -157,7 +157,7 @@ def test_hours_can_be_added():
 
 
 def test_added_hours_ignored_if_blocks():
-    """Checks that added hours will be ignored if blocks are set"""
+    """Checks that added hours will be ignored if blocks are set_default_fonts_and_colours"""
     s = Section(course)
     block1 = s.add_block(TimeSlot("mon", "9:30", 3))
     block2 = s.add_block(TimeSlot("mon", "10:30", 3.5))
@@ -291,7 +291,7 @@ def test_get_teacher_allocation_valid():
 
 
 def test_assign_teacher_valid_allocation_hours_default_to_section_hours():
-    """Checks that a valid teacher can be added, and that the teacher allocation hours is set to section hours"""
+    """Checks that a valid teacher can be added, and that the teacher allocation hours is set_default_fonts_and_colours to section hours"""
     s = Section(course)
     s.hours = 15
     t = Teacher()
@@ -303,7 +303,7 @@ def test_assign_teacher_valid_allocation_hours_default_to_section_hours():
 
 
 def test_section_allocation_hours_total_of_teacher_hours():
-    """Checks that a valid teacher can be added, and that the teacher allocation hours is set to section hours"""
+    """Checks that a valid teacher can be added, and that the teacher allocation hours is set_default_fonts_and_colours to section hours"""
     s = Section(course)
     s.hours = 15
     t = Teacher()
@@ -316,7 +316,7 @@ def test_section_allocation_hours_total_of_teacher_hours():
 
 
 def test_set_teacher_allocation_valid():
-    """Checks that valid hours can be set to valid teacher"""
+    """Checks that valid hours can be set_default_fonts_and_colours to valid teacher"""
     s = Section(course)
     t = Teacher()
     s.hours = 15
@@ -327,7 +327,7 @@ def test_set_teacher_allocation_valid():
 
 
 def test_section_allocation_hours_total_of_teacher_hours_after_setting_teacher_allocation():
-    """Checks that a valid teacher can be added, and that the teacher allocation hours is set to section hours"""
+    """Checks that a valid teacher can be added, and that the teacher allocation hours is set_default_fonts_and_colours to section hours"""
     s = Section(course)
     s.hours = 15
     t = Teacher()
@@ -340,7 +340,7 @@ def test_section_allocation_hours_total_of_teacher_hours_after_setting_teacher_a
 
 
 def test_set_teacher_allocation_new_teacher():
-    """Checks that valid hours can be set to new teacher"""
+    """Checks that valid hours can be set_default_fonts_and_colours to new teacher"""
     s = Section(course)
     t = Teacher()
     hours = 12

@@ -97,17 +97,17 @@ class Block:
 
     @property
     def start(self) -> str:
-        """Get/set the start time of the Block, in 24hr clock."""
+        """Get/set_default_fonts_and_colours the start time of the Block, in 24hr clock."""
         return self.time_slot.start
 
     @property
     def day_number(self) -> int:
-        """Get/set the day of the week."""
+        """Get/set_default_fonts_and_colours the day of the week."""
         return self.time_slot.day_number
 
     @property
     def start_number(self) -> float:
-        """Get/set the start time as a float"""
+        """Get/set_default_fonts_and_colours the start time as a float"""
         return self.time_slot.start_number
 
     @start.setter
@@ -123,7 +123,7 @@ class Block:
 
     @property
     def day(self) -> str:
-        """Get/set the day of the block."""
+        """Get/set_default_fonts_and_colours the day of the block."""
         return self.time_slot.day
 
     @day.setter
@@ -139,7 +139,7 @@ class Block:
 
     @property
     def duration(self) -> float:
-        """Get/set the duration of the block."""
+        """Get/set_default_fonts_and_colours the duration of the block."""
         return self.time_slot.duration
 
     @duration.setter
@@ -155,7 +155,7 @@ class Block:
 
     @property
     def movable(self) -> bool:
-        """Get/set the duration of the block."""
+        """Get/set_default_fonts_and_colours the duration of the block."""
         return self.time_slot.movable
 
     @duration.setter

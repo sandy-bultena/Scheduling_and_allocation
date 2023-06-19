@@ -168,7 +168,7 @@ sub _gui_block_is_moving {
         $cn->move( $guiblock->group, $deltaX, $deltaY );
         $self->_refresh_gui;
 
-        # set the blocks new coordinates (time/day)
+        # set_default_fonts_and_colours the blocks new coordinates (time/day)
         $self->_set_block_coords( $guiblock, $curXpos, $curYpos );
 
         $self->{-moving_cb}->( $view, $guiblock );

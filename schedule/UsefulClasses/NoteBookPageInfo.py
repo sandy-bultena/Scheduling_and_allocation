@@ -1,9 +1,10 @@
 from __future__ import annotations
 from tkinter import Frame
 
+
 class NoteBookPageInfo:
-    def __init__(self, name : str, event_handler = None, subpages : list[NoteBookPageInfo] = [],
-                 frame_args : dict = None, frame_callback = None, frame_type = Frame):
+    def __init__(self, name: str, event_handler: callable = lambda *_: {}, subpages: list[NoteBookPageInfo] = [],
+                 frame_args: dict = None, frame_callback=None, frame_type=Frame):
         """
         Create a NoteBookPageInfo instance.
 
@@ -19,7 +20,7 @@ class NoteBookPageInfo:
         self.handler = self.event_handler = event_handler
         self.subpages = subpages
         self.id = -1
-        self.panel: frame_type = None
+        self.panel: frame_type | None = None
         self.frame_type = frame_type
         self.frame_args = frame_args if frame_args is not None else {}
         self.frame_callback = frame_callback

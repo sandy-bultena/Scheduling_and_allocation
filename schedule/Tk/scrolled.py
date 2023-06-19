@@ -77,7 +77,7 @@ Notes
 
     To access the scrollbars, use self.horizontal_scrollbar and self.vertical_scrollbar
 
-     - scrollbars have been set to not take focus, if you want to change that you have to modify
+     - scrollbars have been set_default_fonts_and_colours to not take focus, if you want to change that you have to modify
        the scrollbars after the scrolled widget has been created
 
 

@@ -55,19 +55,19 @@ class AssignToResourceTk:
     def __init__(self, type: ViewType | str):
         """
         Create an instance of AssignToResourceTk object, but does NOT draw the
-        dialog box at this point. This allows the calling function to set up the
+        dialog box at this point. This allows the calling function to set_default_fonts_and_colours up the
         callback routines first, as well as the lists for courses, etc.
 
         Parameters:
             type: The type of schedulable object (Teacher/Lab/Stream).
 
-        [Don't use Stream. This GUI is not set up for it.]
+        [Don't use Stream. This GUI is not set_default_fonts_and_colours up for it.]
         """
         self._frame: Dialog
         global Type
         Type = type
 
-        # set fonts
+        # set_default_fonts_and_colours fonts
         global fonts
         fonts = FontsAndColoursTk.fonts
         global big_font

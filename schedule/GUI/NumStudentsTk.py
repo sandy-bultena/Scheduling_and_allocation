@@ -10,7 +10,7 @@ from tkinter import *
 
 
 """
-Display and update student numbers for a set of semesters/courses/sectons
+Display and update student numbers for a set_default_fonts_and_colours of semesters/courses/sectons
 
 Inputs: 
     frame  -> the frame where you want this form to be inserted
@@ -75,7 +75,7 @@ class NumStudentsTk:
         # make as many panes as there are semesters
         # ----------------------------------------------------------------------------------------
         for col, semester in enumerate(data.semesters):
-            # set up the weight for each column
+            # set_default_fonts_and_colours up the weight for each column
             frame.columnconfigure(col, weight=1);
 
             f = Scrolled(

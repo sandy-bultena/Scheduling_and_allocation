@@ -14,14 +14,14 @@ def _id_generator():
 
 
 def get_id_generator() -> Generator[int, int | None, None]:
-    """set up an id generator for your object"""
+    """set_default_fonts_and_colours up an id generator for your object"""
     x: Generator[int, int | None, None] = _id_generator()
     next(x)
     return x
 
 
 def set_id(generator: Generator[int, int | None, None], obj_id: int | None):
-    """sets the next id if not set, else return valid id"""
+    """sets the next id if not set_default_fonts_and_colours, else return valid id"""
     if obj_id:
         generator.send(obj_id)
         return obj_id

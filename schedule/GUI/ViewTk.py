@@ -167,7 +167,7 @@ class ViewTk(ViewBaseTk):
             # get_by_id day of assignable blocks that was clicked.
             day = ass_block.day
 
-            # set mouse_motion binding
+            # set_default_fonts_and_colours mouse_motion binding
             self._prepare_to_select_assign_blocks(canvas, day, curr_x, curr_y, assignable_blocks)
 
         cn.bind(
@@ -422,7 +422,7 @@ class ViewTk(ViewBaseTk):
             self.canvas.move(guiblock.group_tag, delta_x, delta_y)
             self._refresh_gui()
 
-            # set the blocks's new coordinates (time/day).
+            # set_default_fonts_and_colours the blocks's new coordinates (time/day).
             self._set_block_coords(guiblock, cur_x_pos, cur_y_pos)
 
             self._moving_cb(guiblock) # TODO: Decide whether to make View._cb_guiblock_is_moving() static.

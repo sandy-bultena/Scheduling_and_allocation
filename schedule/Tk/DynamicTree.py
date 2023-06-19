@@ -22,7 +22,7 @@ class DynamicTree(ttk.Treeview):
         # configuration and defaults
         # ---------------------------------------------------------------
         # this is a table of all the additional options available to
-        # Dynamic tree and the methods used to set those options
+        # Dynamic tree and the methods used to set_default_fonts_and_colours those options
         self.__config_specs = {
             'children': lambda selected: self.__default_callback('children', selected),
             'on_select': lambda selected: self.__default_callback('on_select', selected),

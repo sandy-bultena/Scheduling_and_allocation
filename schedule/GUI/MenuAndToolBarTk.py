@@ -1,11 +1,11 @@
-# COMPLETED
 from tkinter import *
 import re
 from os import path
 
-from ..Presentation.MenuItem import MenuItem, MenuType, ToolbarItem
+from schedule.UsefulClasses.MenuItem import MenuItem, MenuType, ToolbarItem
 from ..Tk import FindImages
 from ..Tk.ToolBar import ToolBar
+from ..Tk.InitGuiFontsAndColours import available_colours
 
 """
 Example::
@@ -86,7 +86,7 @@ def generate_menu(mw, menu_details: list[MenuItem], parent: Menu):
 
 
 def make_toolbar(mw, button_names: list[str], actions: dict[str:ToolbarItem],
-                 colours: dict[str:str] = None) -> ToolBar:
+                 colours: dict[available_colours:str] = None) -> ToolBar:
     """Create a toolbar described by the actions"""
     image_dir = FindImages.get_image_dir()
     if colours is None:

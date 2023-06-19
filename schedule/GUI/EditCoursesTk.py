@@ -178,7 +178,7 @@ class EditCoursesTk:
     def __cmd_show_tree_menu(self, e: Event):
         tree: ttk.Treeview = self.__tree
 
-        # which entity was selected (based on mouse position), and set focus and selection
+        # which entity was selected (based on mouse position), and set_default_fonts_and_colours focus and selection
         entity_id = tree.identify_row(e.y)
         if not entity_id:
             return
@@ -323,7 +323,7 @@ sub new {
     $self->_tk_frame($frame);
 
     # ----------------------------------------------------------------
-    # set up photos and styles, etc.
+    # set_default_fonts_and_colours up photos and styles, etc.
     # ----------------------------------------------------------------
     $Styles{-course} = $frame->ItemStyle(
         'text',
@@ -428,7 +428,7 @@ sub delete {
 }
 
 # =================================================================
-# set lab_ids (put in listbox)
+# set_default_fonts_and_colours lab_ids (put in listbox)
 # =================================================================
 sub set_labs {
     my $self         = shift;
@@ -441,7 +441,7 @@ sub set_labs {
 }
 
 # =================================================================
-# set stream_ids (put in listbox)
+# set_default_fonts_and_colours stream_ids (put in listbox)
 # =================================================================
 sub set_streams {
     my $self            = shift;
@@ -454,7 +454,7 @@ sub set_streams {
 }
 
 # =================================================================
-# set teacher_ids (put in listbox)
+# set_default_fonts_and_colours teacher_ids (put in listbox)
 # =================================================================
 sub set_teachers {
     my $self             = shift;
@@ -619,7 +619,7 @@ sub _cmd_dragging_over_tree {
     return if $Dragged_from eq 'Tree';
 
     # get_by_id the nearest item, and if it is good to
-    # drop on it, set the selection
+    # drop on it, set_default_fonts_and_colours the selection
 
     my $ent = $tree->GetNearest($y);
     $tree->selectionClear;
@@ -868,7 +868,7 @@ sub __create_setters_and_getters {
             return $self->{ $cat . "_" . $prop } || $default;
         };
 
-        # set getter to property pointer
+        # set_default_fonts_and_colours getter to property pointer
         *{ $cat . "_" . $prop . "_ptr" } = sub {
             my $self = shift;
             return \$self->{ $cat . "_" . $prop };

@@ -153,7 +153,7 @@ Example::
         # configuration and defaults
         # ---------------------------------------------------------------
         # this is a table of all the additional options available to
-        # TableEntry, and the methods used to set those options
+        # TableEntry, and the methods used to set_default_fonts_and_colours those options
         self.__config_specs = {
             'bg_entry': self.__bg_entry,
             'rows': self.__set_rows,
@@ -213,7 +213,7 @@ Example::
         # for each column, add an entry box
         for data_col in range(0, self.number_of_columns):
 
-            # set the column width if defined, else use the default width
+            # set_default_fonts_and_colours the column width if defined, else use the default width
             column_widths[data_col] = column_widths[data_col] if column_widths[data_col] else self.cget("defwidth")
 
             # if there is something already there, delete it
@@ -229,7 +229,7 @@ Example::
                       relief="ridge",
                       )
 
-            # if the column has been set to disabled, disable it
+            # if the column has been set_default_fonts_and_colours to disabled, disable it
             if columns_enabled_disabled[data_col]:
                 w.configure(state="disabled")
 
@@ -316,7 +316,7 @@ Example::
         w.delete(0, 'end')
         w.insert(0, data)
 
-        # if entry widget was disabled, set it back to disabled
+        # if entry widget was disabled, set_default_fonts_and_colours it back to disabled
         if disabled_flag:
             w.configure(state="disabled")
 
@@ -412,7 +412,7 @@ Example::
         return flag
 
     # ====================================================================================
-    # set the background colour for all the entry widgets
+    # set_default_fonts_and_colours the background colour for all the entry widgets
     # ====================================================================================
     def __bg_entry(self, colour):
         if colour is None:
@@ -463,7 +463,7 @@ Example::
         if grid_row < 0:
             grid_row = 0
 
-        # set the focus, and move the scrollbars appropriately
+        # set_default_fonts_and_colours the focus, and move the scrollbars appropriately
         w2 = self.__get_widget_in_row_col(grid_row, grid_col)
         if w2:
             self.__scrolled_frame.see(w2)
@@ -562,7 +562,7 @@ Example::
         for r in range(0, num_of_rows):
             self.add_empty_row()
 
-        # calculate the width of the row, to set the pane width
+        # calculate the width of the row, to set_default_fonts_and_colours the pane width
         width_total = 0
         for c in range(self.number_of_columns + 1):
             w = self.__get_widget_in_row_col(1, c)
@@ -649,7 +649,7 @@ Example::
             w.selection_range(0, 'end')
 
     # ====================================================================================
-    # set the titles for each column
+    # set_default_fonts_and_colours the titles for each column
     # ====================================================================================
     def __set_titles(self, title_list: list):
         if title_list is None:
@@ -661,7 +661,7 @@ Example::
         return self.cget('titles')
 
     # ====================================================================================
-    # set which columns of entry widgets are disabled
+    # set_default_fonts_and_colours which columns of entry widgets are disabled
     # ====================================================================================
     def __set_disabled_columns(self, column_disabled_list: list):
         if column_disabled_list is None:
@@ -680,8 +680,8 @@ Example::
         return self.cget('disabled')
 
     # ====================================================================================
-    # set the callback for the button at the end of the row
-    # NB:  If this is not set during the __init__, there will NOT be a button at the end
+    # set_default_fonts_and_colours the callback for the button at the end of the row
+    # NB:  If this is not set_default_fonts_and_colours during the __init__, there will NOT be a button at the end
     #      of the row
     # ====================================================================================
     def __set_button_callback(self, button_callback: callable):
@@ -696,14 +696,14 @@ Example::
         return self.cget("buttontext")
 
     # ====================================================================================
-    # set the number of columns
+    # set_default_fonts_and_colours the number of columns
     # ====================================================================================
     def __set_columns(self, columns: list):
         self.__configure_save(columns=columns)
         return self.cget("columns")
 
     # ====================================================================================
-    # set the widths for each column
+    # set_default_fonts_and_colours the widths for each column
     # ====================================================================================
     def __set_column_widths(self, colwidths_list: list):
         if not colwidths_list:
@@ -718,21 +718,21 @@ Example::
         return self.cget('colwidths')
 
     # ====================================================================================
-    # set the callback function for the delete button
+    # set_default_fonts_and_colours the callback function for the delete button
     # ====================================================================================
     def __set_delete_callback(self, delete_callback: callable):
         self.__configure_save(delete=delete_callback)
         return self.cget("delete")
 
     # ====================================================================================
-    # set the number of rows
+    # set_default_fonts_and_colours the number of rows
     # ====================================================================================
     def __set_rows(self, rows: list):
         self.__configure_save(rows=rows)
         return self.cget("rows")
 
     # ====================================================================================
-    # set the default width of a column
+    # set_default_fonts_and_colours the default width of a column
     # ====================================================================================
     def __set_default_width(self, default_width: int):
         self.__configure_save(defwidth=default_width)

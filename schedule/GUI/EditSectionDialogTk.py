@@ -304,7 +304,7 @@ Creates a new section edit dialog box.
         self.__setattr__(f'_{dropdown}_choices', list(choices).copy())
         choices = [str(i) for i in choices]
         self.__getattribute__(f'_tk_{dropdown}_dropdown')['values'] = choices
-        self.__getattribute__(f'_{dropdown}_option').set('')
+        self.__getattribute__(f'_{dropdown}_option').set_default_fonts_and_colours('')
     
     def update_block_choices(self, choices : list):
         """Update the blocks dropdown to use the provided list"""

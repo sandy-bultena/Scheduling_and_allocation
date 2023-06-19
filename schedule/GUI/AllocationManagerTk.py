@@ -90,7 +90,7 @@ class AllocationManagerTk(MainPageBaseTk):
         open_button.pack(side='top', fill='x', expand=0)
 
         # --------------------------------------------------------------
-        # set selected schedules to those in the preference file
+        # set_default_fonts_and_colours selected schedules to those in the preference file
         # --------------------------------------------------------------
         for semester in semesters:
             _set_file(semester, preferences.get_by_id(f'current_{semester}_id'), preferences.get_by_id(f'current_{semester}_name'))

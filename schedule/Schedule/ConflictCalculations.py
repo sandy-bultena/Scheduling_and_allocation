@@ -158,7 +158,7 @@ def block_conflict(blocks_for_week: tuple[Block, ...], conflict_type: ConflictTy
     calculate if any two blocks overlap each other in time, and then
     assign a TIME conflict, and the specified conflict_type to each block that overlap
     :param blocks_for_week: a list of blocks to check for time overlap
-    :param conflict_type: what conflict type to set it to
+    :param conflict_type: what conflict type to set_default_fonts_and_colours it to
     :return: a list of conflicts
     """
     conflicts: list[Conflict] = list()

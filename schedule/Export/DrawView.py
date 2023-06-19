@@ -325,7 +325,7 @@ def draw_block(canvas: Canvas, block, scl: dict, type,
         return
 
     # --------------------------------------------------------------------
-    # set the colour and pixel width of edge
+    # set_default_fonts_and_colours the colour and pixel width of edge
     # --------------------------------------------------------------------
     if not colour:
         colour = colours[type] or colours['teacher']
@@ -375,7 +375,7 @@ def draw_block(canvas: Canvas, block, scl: dict, type,
         for line in lines:
             canvas.addtag_withtag(f"block_{block_tag}", line)
 
-    # set text
+    # set_default_fonts_and_colours text
     text = canvas.create_text(
         (x1 + x2) / 2, (y1 + y2) / 2, text=block_text, fill=text_colour,
         tags=("text", "members", "movable")

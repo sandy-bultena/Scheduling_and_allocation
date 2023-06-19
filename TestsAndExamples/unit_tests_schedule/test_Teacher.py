@@ -54,7 +54,7 @@ def test_string_representation_short():
 
 
 def test_firstname_setter_good():
-    """Verifies that firstname setter can set a valid first name."""
+    """Verifies that firstname setter can set_default_fonts_and_colours a valid first name."""
     teach = Teacher("John", "Smith")
     new_f_name = "Bob"
     teach.firstname = new_f_name
@@ -62,7 +62,7 @@ def test_firstname_setter_good():
 
 
 def test_firstname_setter_with_spaces():
-    """Verifies that firstname setter can set a valid first name which has spaces."""
+    """Verifies that firstname setter can set_default_fonts_and_colours a valid first name which has spaces."""
     teach = Teacher("John", "Smith")
     new_f_name = "Bob Blue"
     teach.firstname = new_f_name
@@ -78,7 +78,7 @@ def test_firstname_setter_bad():
 
 
 def test_lastname_setter_good():
-    """Verifies that the lastname setter can set a valid (non-empty) last name for the Teacher."""
+    """Verifies that the lastname setter can set_default_fonts_and_colours a valid (non-empty) last name for the Teacher."""
     teach = Teacher("John", "Smith")
     new_l_name = "Forstinger"
     teach.lastname = new_l_name
@@ -86,7 +86,7 @@ def test_lastname_setter_good():
 
 
 def test_lastname_setter_with_spaces():
-    """Verifies that the lastname setter can set a valid (non-empty) last name (with spaces) for the Teacher."""
+    """Verifies that the lastname setter can set_default_fonts_and_colours a valid (non-empty) last name (with spaces) for the Teacher."""
     teach = Teacher("John", "Smith")
     new_l_name = "Forstinger Blue"
     teach.lastname = new_l_name

@@ -302,14 +302,14 @@ class AllocationGridTk:
                     self.entry_widgets[row][col] = de
                     self.widgets_row_col[de] = [row, col]
 
-                    # set colour in column to make it easier to read
+                    # set_default_fonts_and_colours colour in column to make it easier to read
                     colour = de.cget('bg')
                     if i % 2:
                         colour = very_light_grey
                     self.column_colours[col] = colour
                     de.configure(bg=colour)
 
-                    # set bindings for navigation
+                    # set_default_fonts_and_colours bindings for navigation
                     # de.bind("<Key-Left>", partial(self._move, 'prevCell'))
                     # de.bind("<Key-leftarrow>", partial(self._move, 'prevCell'))
                     # de.bind("<Key-Right>", partial(self._move, 'nextCell'))
@@ -433,7 +433,7 @@ class AllocationGridTk:
         else:
             w.selection_clear()
 
-        # set data colour and totals colour
+        # set_default_fonts_and_colours data colour and totals colour
         dcolour = colour or bg_colour
         tcolour = colour
 
@@ -444,23 +444,23 @@ class AllocationGridTk:
         # get_by_id the widget
         r, c = self.get_row_col(w)
 
-        # set colours for rows (data)
+        # set_default_fonts_and_colours colours for rows (data)
         col_colour = Colour.add(dcolour, self.column_colours.get(c))
         for row in range(self.num_rows):
             wid = self.get_widget(row, c)
             wid.configure(bg=col_colour)
 
-        # set colours for cols (data)
+        # set_default_fonts_and_colours colours for cols (data)
         for col in range(self.num_cols):
             wid = self.get_widget(r, col)
             col_colour = Colour.add(dcolour, self.column_colours.get(col))
             wid.configure(bg=col_colour)
 
-        # set colour for row header
+        # set_default_fonts_and_colours colour for row header
         widget = self.row_header_widgets[r]
         widget.configure(disabledbackground=dcolour)
 
-        # set colours for totals row
+        # set_default_fonts_and_colours colours for totals row
         if tcolour:
             tcolour = Colour.add(tcolour, totals_colour)
         else:

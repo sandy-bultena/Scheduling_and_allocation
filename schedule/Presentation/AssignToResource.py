@@ -274,7 +274,7 @@ class AssignToResource:
                 f"The name of the section will be set to something unique."
             )
 
-            # If not, set the section to the first instance of the section with the section name.
+            # If not, set_default_fonts_and_colours the section to the first instance of the section with the section name.
             if answer.lower() == 'no':
                 section = sections_arr[0]
                 AssignToResource._cb_section_selected(section.id)
@@ -317,7 +317,7 @@ class AssignToResource:
                       Duration, number=section.get_new_number())
         section.add_block(block)
         # NOTE: In the original code, the newly-created blocks was added to the section first,
-        # and then its day, start, and duration properties were set. We can't do it that way
+        # and then its day, start, and duration properties were set_default_fonts_and_colours. We can't do it that way
         # based on how Block was coded, however.
 
         blocks_arr = section.blocks

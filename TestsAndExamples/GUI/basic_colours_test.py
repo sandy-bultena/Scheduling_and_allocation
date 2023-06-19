@@ -3,16 +3,14 @@ from os import path
 import sys
 
 sys.path.append(path.dirname(path.dirname(__file__) + "/../../"))
-from schedule.GUI.ColoursTk import get_system_colours, set_system_colours
+from schedule.Tk.InitGuiFontsAndColours import set_default_fonts_and_colours
 
-# TODO: button colour changes don't work on mac
+
+# TODO: button colour changes don't work on mac, not yet tested on windows
 
 def main():
     mw: Toplevel = Tk()
-    colours = get_system_colours(dark=True)
-    print(colours)
-    mw.configure(background=colours['WorkspaceColour'])
-    set_system_colours(mw, colours)
+    colours = set_default_fonts_and_colours(mw, dark_mode=True)
     mw.geometry('400x150')
     mw.title('Button Background Example')
 

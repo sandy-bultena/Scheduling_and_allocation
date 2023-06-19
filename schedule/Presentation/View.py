@@ -146,7 +146,7 @@ class View:
         self._gui_blocks = {}
 
         # ---------------------------------------------------------------
-        # set the title
+        # set_default_fonts_and_colours the title
         # ---------------------------------------------------------------
         title = ""
         if schedulable_object and isinstance(schedulable_object, Teacher):
@@ -215,7 +215,7 @@ class View:
         self._setup_for_assignable_blocks()
 
         # ---------------------------------------------------------------
-        # set colour for all buttons on main window, "Schedules" tab
+        # set_default_fonts_and_colours colour for all buttons on main window, "Schedules" tab
         # ---------------------------------------------------------------
         self._set_view_button_colours()
         if self.views_manager:
@@ -350,7 +350,7 @@ class View:
         else:
             block.movable = True
 
-        # Redraw, and set the dirty flag.
+        # Redraw, and set_default_fonts_and_colours the dirty flag.
         self.views_manager.redraw_all_views()
         views_manager = self.views_manager
         if views_manager:
@@ -488,7 +488,7 @@ class View:
 
     @staticmethod
     def cb_update_after_moving_block(self, block: Block):
-        """Update all views, calculate conflicts and set button colours, and set the dirty flag.
+        """Update all views, calculate conflicts and set_default_fonts_and_colours button colours, and set_default_fonts_and_colours the dirty flag.
 
         Handles Event: For when a GuiBlock has been dropped, and now it is time to refresh
         everything.

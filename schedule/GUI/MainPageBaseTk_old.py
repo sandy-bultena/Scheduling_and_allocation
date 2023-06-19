@@ -36,7 +36,7 @@ class MainPageBaseTk:
         dirty.init_dirty_flag()
         globals.init_dirty_flag(dirty.set_, dirty.unset, dirty.check)
         dirty.dirty_flag.trace_add('write', partial(
-            lambda dft, *_: dft.set("NOT SAVED" if globals.is_data_dirty() else ""),
+            lambda dft, *_: dft.set_default_fonts_and_colours("NOT SAVED" if globals.is_data_dirty() else ""),
             self.dirty_flag_text))
     
     def define_exit_callback(self, exit = lambda *_: {}):
@@ -173,7 +173,7 @@ class MainPageBaseTk:
         """Create the 'normal' page after the main page has fulfilled its purpose"""
         def tab_changed(notebook : Notebook, cmds : dict, *_):
             index = notebook.index(notebook.select())
-            # if not set, default to empty lambda. if set and not None, call
+            # if not set_default_fonts_and_colours, default to empty lambda. if set_default_fonts_and_colours and not None, call
             if (f := cmds.get(index, lambda *_: {})) is not None: f()
         
         def create_notebook(parent : Notebook, events : dict, pages : dict[int, Frame], tabs : list[NoteBookPageInfo], id_prefix : str = "", ):

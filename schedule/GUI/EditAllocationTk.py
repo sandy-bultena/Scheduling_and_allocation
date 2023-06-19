@@ -16,7 +16,7 @@ class EditAllocationTk:
         self.scrolled_frame = Scrolled(frame, 'Frame')
         self.scrolled_frame.pack(side='top', expand=1, fill='both')
 
-        # scrolled is set up, use the internal frame from now on
+        # scrolled is set_default_fonts_and_colours up, use the internal frame from now on
         self.scrolled_frame = self.scrolled_frame.widget
 
         # manage the scrollbar?
@@ -46,7 +46,7 @@ class EditAllocationTk:
                 # make new frame if it does not already exist
                 if sem not in panes or not panes[sem]:
                     panes[sem] = Scrolled(self.scrolled_frame, 'Frame')
-                    panes[sem].pack_forget()  # unpack the widget until we're ready to set it up
+                    panes[sem].pack_forget()  # unpack the widget until we're ready to set_default_fonts_and_colours it up
 
                 # make and replace existing grid
                 if self.gui_grid(sem):
@@ -108,19 +108,19 @@ class EditAllocationTk:
         return False
 
     # ============================================================================
-    # set the allocation grid cb_data_entry callback for specified semester
+    # set_default_fonts_and_colours the allocation grid cb_data_entry callback for specified semester
     # ============================================================================
     def set_cb_data_entry(self, semester, handler):
         self.gui_grid(semester).cb_data_entry(handler)
 
     # ============================================================================
-    # set the allocation grid cb_process_data_change callback for specified semester
+    # set_default_fonts_and_colours the allocation grid cb_process_data_change callback for specified semester
     # ============================================================================
     def set_cb_process_data_change(self, semester, handler):
         self.gui_grid(semester).cb_process_data_change(handler)
 
     # ============================================================================
-    # set the allocation grid cb_bottom_row_ok callback for specified semester
+    # set_default_fonts_and_colours the allocation grid cb_bottom_row_ok callback for specified semester
     # ============================================================================
     def set_cb_bottom_row_ok(self, semester, handler):
         self.gui_grid(semester).cb_bottom_row_ok(handler)
