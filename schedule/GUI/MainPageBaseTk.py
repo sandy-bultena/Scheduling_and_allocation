@@ -6,6 +6,8 @@ from functools import partial
 from tkinter.ttk import Notebook
 from tkinter import *
 from tkinter.font import Font
+from tkinter import filedialog as fd
+
 
 # from tkinter.messagebox import showerror, showinfo, askyesnocancel
 
@@ -16,6 +18,8 @@ from ..GUI.MenuAndToolBarTk import generate_menu, make_toolbar
 from ..UsefulClasses.NoteBookPageInfo import NoteBookPageInfo
 from ..UsefulClasses.MenuItem import MenuItem, ToolbarItem
 import schedule.UsefulClasses.Colour as Colour
+from ..UsefulClasses.Preferences import Preferences
+
 
 Operating_system = platform.system().lower()
 
@@ -35,7 +39,9 @@ def _tab_changed(notebook: Notebook, events: dict, *_):
 class MainPageBaseTk:
     """Generic main page for Scheduler and Allocation Manager apps"""
 
-    def __init__(self, title="Main Window"):
+    def __init__(self, title,  preferences: Preferences):
+        self.preferences = preferences
+        self.dark_mode = preferences.dark_mode()
         self.notebook: Notebook | None = None
         self.wait = None
         self.notebook_pages_info: list[NoteBookPageInfo] | None = None
@@ -84,7 +90,7 @@ class MainPageBaseTk:
         Label(status_frame, textvariable=self.dirty_flag_text, borderwidth=1, relief='ridge', width=15,
               foreground=red).pack(side='right', fill='x')
 
-    def create_front_page(self, logo: PhotoImage | None = None):
+    def create_front_page_base(self, logo: PhotoImage | None = None):
         """Creates the very first page that is shown to the user"""
         mw = self.mw
         self.front_page_frame = Frame(mw, borderwidth=10, relief='flat', background=self.colours['DataBackground'])
@@ -149,7 +155,7 @@ class MainPageBaseTk:
         self.mw.protocol("WM_DELETE_WINDOW", self._exit_schedule)
 
         # colours and fonts
-        tk_fonts_and_colours.set_default_fonts_and_colours(self.mw)
+        tk_fonts_and_colours.set_default_fonts_and_colours(self.mw, dark_mode=self.dark_mode)
         self.colours = tk_fonts_and_colours.colours
         self.fonts = tk_fonts_and_colours.fonts
 
@@ -224,3 +230,31 @@ class MainPageBaseTk:
     def _exit_schedule(self, *_):
         self.exit_callback()
         self.mw.destroy()
+
+    # ========================================================================
+    # choose existing file to read
+    # ========================================================================
+    def _select_file(self):
+        current_dir = self.preferences.current_dir()
+        filetypes = (
+            ('schedule files', '*.csv'),
+            ('All files', '*.*')
+        )
+        if current_dir is None:
+            current_dir = self.preferences.home_directory()
+        if current_dir is not None:
+            filename = fd.askopenfilename(
+                title='Open a file',
+                initialdir=current_dir,
+                filetypes=filetypes
+            )
+        else:
+            filename = fd.askopenfilename(
+                title='Open a file',
+                filetypes=filetypes
+            )
+        self.preferences.current_file(filename)
+        self.current_file = self.preferences.current_file()
+        self._open_schedule()
+
+

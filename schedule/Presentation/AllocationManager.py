@@ -67,7 +67,7 @@ def get_user_preferences():
 
 
 # ==================================================================
-# read_ini
+# _read_ini
 # ==================================================================
 def read_ini():
     from os import path
@@ -90,7 +90,7 @@ def read_ini():
 
 
 # ==================================================================
-# write_ini
+# _write_ini
 # ==================================================================
 def write_ini():
     # open file
@@ -110,7 +110,7 @@ def create_main_window():
     gui.create_main_window()
     toolbar_buttons, button_properties, menu = menu_info()
     gui.create_menu_and_toolbars(toolbar_buttons, button_properties, menu)
-    gui.create_front_page(preferences, semesters, _open_schedule, get_schedule)
+    gui.create_front_page_base(preferences, semesters, _open_schedule, get_schedule)
 
 
 # ==================================================================

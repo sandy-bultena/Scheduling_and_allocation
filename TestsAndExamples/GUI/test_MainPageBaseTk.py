@@ -8,11 +8,13 @@ sys.path.append(path.dirname(path.dirname(__file__) + "/../../"))
 from schedule.UsefulClasses.NoteBookPageInfo import NoteBookPageInfo
 from schedule.GUI.MainPageBaseTk import MainPageBaseTk
 from schedule.UsefulClasses.MenuItem import MenuItem, MenuType, ToolbarItem
+from schedule.UsefulClasses.Preferences import Preferences
 
 
 def main():
     # create the top-level window with menu, toolbar and status bar
-    main_page = MainPageBaseTk('My App')
+
+    main_page = MainPageBaseTk('My App', Preferences())
     (buttons, toolbar_info, menu_details) = define_inputs()
     main_page.create_menu_and_toolbars(buttons, toolbar_info, menu_details)
     filename: StringVar = StringVar()
@@ -21,13 +23,13 @@ def main():
     filename.set("This file name should appear in the status bar")
 
     # create the front page with logo
-    option_frame = main_page.create_front_page()
+    option_frame = main_page.create_front_page_base()
 
     # define what the notebook pages are supposed to look like on the standard page
     notebook_info = get_notebook_info()
 
     # add a button so that we can switch to the 'standard page'
-    Button(option_frame, text="Goto Standard Page", command=partial(switch_to_notebook, main_page, notebook_info)) \
+    Button(option_frame, text="Goto Standard Page", height=5, width=50, command=partial(switch_to_notebook, main_page, notebook_info)) \
         .pack(side='top', fill='y', expand=0)
 
     main_page.define_exit_callback(lambda *_: print("Application exited"))

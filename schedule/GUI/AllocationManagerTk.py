@@ -19,7 +19,7 @@ class AllocationManagerTk(MainPageBaseTk):
         semesters = semesters_
 
         logo_file = FindImages.get_allocation_logo()
-        option_frame = super().create_front_page(logo_file)
+        option_frame = super().create_front_page_base(logo_file)
 
         button_width = 100  # double Perl version
 

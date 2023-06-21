@@ -73,7 +73,6 @@ def _define_fonts(mw: Tk, my_size: int = 12) -> dict[available_fonts, Font]:
         size -= 2
     family = 'arial'
     if re.search('darwin', operating_system):
-        print ("hello darwin")
         family = 'lucidia'
         size += 3
 

@@ -106,7 +106,7 @@ def create_main_window():
 
     (toolbar_buttons, button_properties, menu) = __menu_and_toolbar_info()
     gui.create_menu_and_toolbars(toolbar_buttons, button_properties, menu)
-    gui.create_front_page(preferences, open_schedule, new_schedule)
+    gui.create_front_page_base(preferences, open_schedule, new_schedule)
     gui.create_status_bar()
 
 
@@ -128,7 +128,7 @@ def pre_process_stuff():
 
 
 # ==================================================================
-# read_ini
+# _read_ini
 # ==================================================================
 def read_ini():
     # NOTE: This function may no longer be necessary, since we aren't reading from YAML
@@ -137,7 +137,7 @@ def read_ini():
 
 
 # ==================================================================
-# write_ini
+# _write_ini
 # ==================================================================
 def write_ini():
     # NOTE: Same with this one.
