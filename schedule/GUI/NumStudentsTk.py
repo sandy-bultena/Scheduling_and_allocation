@@ -33,11 +33,11 @@ def example():
                 section.data_validate = validate_factory(data, section)
                 course.sections.append(section)
 
-    mw = Tk()
-    frame = Frame(mw, bg='blue', border=4, relief=RIDGE)
+    _mw = Tk()
+    frame = Frame(_mw, bg='blue', border=4, relief=RIDGE)
     frame.pack(expand=1, fill=BOTH)
     NumStudentsTk(frame, data)
-    mw.mainloop()
+    _mw.mainloop()
 
 
 def validate_factory(data, section):

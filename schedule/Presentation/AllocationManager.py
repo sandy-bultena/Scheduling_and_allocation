@@ -48,7 +48,7 @@ def main():
 
 
 # ==================================================================
-# user preferences saved in ini file (JSON format)
+# user _preferences saved in ini file (JSON format)
 # ==================================================================
 def get_user_preferences():
     global user_base_dir
@@ -117,7 +117,7 @@ def create_main_window():
 # menu_info
 # ==================================================================
 def menu_info():
-    """Define what goes in the menu and toolbar"""
+    """Define what goes in the menu and _toolbar"""
     # button names
     buttons = ['open_fall', 'open_winter', 'save']  # ,'new_fall', 'new_winter']
 
@@ -238,14 +238,14 @@ def get_schedule(semester: str):
         pass  # TODO: Implement this
     else:
         # Open a ScenarioSelector window
-        ScenarioSelector(parent=gui.mw, db=db, callback=_get_scenario)
+        ScenarioSelector(parent=gui._mw, db=db, callback=_get_scenario)
 
         if scenarios[semester]:
             def _get_schedule(func):
                 global schedules
                 schedules.schedules[semester] = func()
 
-            ScheduleSelector(parent=gui.mw, db=db, scenario=scenarios[semester], callback=_get_schedule)
+            ScheduleSelector(parent=gui._mw, db=db, scenario=scenarios[semester], callback=_get_schedule)
 
             if schedules.schedules[semester]:
                 return schedules.schedules[semester]

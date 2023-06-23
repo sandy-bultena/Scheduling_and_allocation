@@ -186,8 +186,8 @@ class EditCoursesTk:
         tree.selection_set(entity_id)
         tree.focus(entity_id)
 
-        # get_by_id the object and parent object associated with the selected item,
-        # if no parent (i.e. Schedule) we don't need a drop down menu
+        # get_by_id the object and notebook object associated with the selected item,
+        # if no notebook (i.e. Schedule) we don't need a drop down menu
         parent = self.__get_parent(entity_id)
         if not parent:
             return
@@ -594,11 +594,11 @@ sub _cmd_show_tree_menu {
     my ( $obj, $path ) = $self->__selected_obj();
     return unless $path;
 
-    # get_by_id the object and parent object associated with the selected item,
-    # if no parent (i.e. Schedule) we don't need a drop down menu
-    my $parent = $tree->info( 'parent', $path );
-    return unless $parent;
-    my $parent_obj = $tree->infoData($parent)->{-obj};
+    # get_by_id the object and notebook object associated with the selected item,
+    # if no notebook (i.e. Schedule) we don't need a drop down menu
+    my $notebook = $tree->info( 'notebook', $path );
+    return unless $notebook;
+    my $parent_obj = $tree->infoData($notebook)->{-obj};
 
     # create the drop down menu
     my $menu_array = $self->cb_get_tree_menu->( $obj, $parent_obj, $path );

@@ -268,13 +268,13 @@ def _set_system_colours(mw: Tk, colours: dict[str, str | None]):
     _option_add(mw, '*ROText.foreground', colours['DataForeground'])
     _option_add(mw, '*ROText.background', colours['DataBackground'])
 
-    # notebook
+    # _notebook
     _option_add(mw, "*NoteBook.inactiveBackground", colours['DarkBackground'])
     _option_add(mw, "*NoteBook.background", colours['WorkspaceColour'])
     _option_add(mw, "*NoteBook.backpagecolour", colours['WorkspaceColour'])
 
 
 def _option_add(mw: Tk, option: str, new_value):
-    """Sets the provided option on mw. If new_value is none, does nothing"""
+    """Sets the provided option on _mw. If new_value is none, does nothing"""
     if new_value:
         mw.option_add(option, new_value)

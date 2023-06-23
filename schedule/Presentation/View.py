@@ -330,7 +330,7 @@ class View:
         (day, start, duration) = AssignBlockTk.get_day_start_duration(chosen_blocks)
 
         # Create the menu to select the blocks to assign to the timeslot.
-        AssignToResource(self.gui.mw, self.schedule, day, start, duration, self.schedulable)
+        AssignToResource(self.gui._mw, self.schedule, day, start, duration, self.schedulable)
 
         # Redraw.
         self.redraw()

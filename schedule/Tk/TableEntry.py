@@ -30,8 +30,8 @@ class TableEntry(tk.Frame):
 
 Inputs
 ------
-    parent: Frame
-        the parent widget that will contain the TableEntry widget
+    notebook: Frame
+        the notebook widget that will contain the TableEntry widget
 
 Additional TableEntry Options
 -----------------------------
@@ -85,9 +85,9 @@ Example::
     ]
 
     # make a Tk window
-    mw = Tk()
-    mw.geometry("500x300")
-    frame = Frame(mw)
+    _mw = Tk()
+    _mw.geometry("500x300")
+    frame = Frame(_mw)
     frame.pack(expand=1, fill="both")
 
     # add the TableEntry object
@@ -113,7 +113,7 @@ Example::
 
     de.add_empty_row();
 
-    mw.mainloop()
+    _mw.mainloop()
 
     def on_delete(data: list):
         print(f"Deleted row, {data}")
@@ -142,7 +142,7 @@ Example::
     # Constructor
     # ===================================================================
     def __init__(self, parent: Any, **kwargs):
-        """Create a TableEntry widget inside 'parent'"""
+        """Create a TableEntry widget inside 'notebook'"""
         tk.Frame.__init__(self, parent)
         self._cget = dict()
         self.frame = None

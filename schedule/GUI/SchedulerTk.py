@@ -6,6 +6,9 @@ from ..UsefulClasses.Preferences import Preferences
 
 from .MainPageBaseTk import MainPageBaseTk
 from tkinter import *
+from tkinter import messagebox
+from tkinter import ttk
+from ..Tk.scrolled import Scrolled
 
 BUTTON_WIDTH = 50
 MAX_LEN_OF_DISPLAYED_FILENAME = 25
@@ -15,6 +18,12 @@ class SchedulerTk(MainPageBaseTk):
     """
     GUI Code for the main Scheduling application window. Inherits from MainPageBaseTk.
     """
+    # ========================================================================
+    # class variables
+    # ========================================================================
+    overview_notebook: Optional[ttk.Notebook] = None
+    overview_teacher_textbox: Optional[Text] = None
+    overview_course_textbox: Optional[Text] = None
 
     # ========================================================================
     # constructor
@@ -23,8 +32,6 @@ class SchedulerTk(MainPageBaseTk):
         self.preferences: Preferences = preferences
         self.current_file: Optional[str] = None
         self.current_file_button: Optional[Button] = None
-        self._open_schedule_callback: Callable[[str], None] = lambda filename: None
-        self._new_schedule_callback: Callable[[], None] = lambda: None
 
         super().__init__(title, preferences)
         self.current_semester: StringVar = StringVar()
@@ -32,7 +39,7 @@ class SchedulerTk(MainPageBaseTk):
     # ========================================================================
     # create front page
     # ========================================================================
-    def create_front_page(self, open_schedule_callback: Callable[[str], None],
+    def create_front_page(self, open_schedule_callback: Callable[[str, str], None],
                           new_schedule_callback: Callable[[], None]):
 
         self._open_schedule_callback = open_schedule_callback
@@ -111,12 +118,15 @@ class SchedulerTk(MainPageBaseTk):
         self._semester_change_event()
 
     # ========================================================================
-    # update current file
+    # semester has changed, so update semester and update current file
     # ========================================================================
     def _semester_change_event(self, *_):
-        self.preferences.semester(self.current_semester.get())
 
+        # update semester and current file
+        self.preferences.semester(self.current_semester.get())
         self.current_file = self.preferences.current_file()
+
+        # update the button that opens the last previous file
         if self.current_file_button is not None:
             if self.current_file is not None:
                 basename = os.path.basename(self.current_file)
@@ -125,13 +135,6 @@ class SchedulerTk(MainPageBaseTk):
                 self.current_file_button.configure(state='normal', text=basename)
             else:
                 self.current_file_button.configure(state='disabled', text='')
-
-    # ========================================================================
-    # read_current_file
-    # ========================================================================
-    def _open_schedule(self):
-        if self.current_file is not None:
-            self._open_schedule_callback(self.current_file)
 
     # def set_views_manager(self, my_views_manager):
     #     """Defines the code that manages the view"""
@@ -155,7 +158,7 @@ class SchedulerTk(MainPageBaseTk):
     #     Draws the buttons to access any of the available views.
     #
     #     Parameters:
-    #         default_tab: Name of notebook tab to draw on.
+    #         default_tab: Name of _notebook tab to draw on.
     #         all_scheduables: A list of schedulable objects (teacher_ids/lab_ids/etc.)
     #         btn_callback: A callback function called whenever the ViewsManager is asked to create a
     #         view."""
@@ -184,7 +187,7 @@ class SchedulerTk(MainPageBaseTk):
     #         # NOTE: Program was crashing inside this function call because
     #         # view_choices_scrolled_frame already has children managed by pack, while the
     #         # function is trying to add buttons managed by grid to view_choices_scrolled_frame.
-    #         # Tcl doesn't like it when children of the same parent use different geometry managers.
+    #         # Tcl doesn't like it when children of the same notebook use different geometry managers.
     #         views_manager.gui.create_buttons_for_frame(
     #             view_choices_scrolled_frame,
     #             all_scheduables.by_type(type),
@@ -198,80 +201,72 @@ class SchedulerTk(MainPageBaseTk):
     # overview_notebook = None
     # overview_pages: dict[str, Frame] = {}
     #
-    # def draw_overview(self, default_page: str, course_text, teacher_text):
-    #     """Writes the text overview of the schedule to the appropriate GUI object.
-    #
-    #     Parameters:
-    #         default_page: name of notebook tab to draw on.
-    #         course_text: Text describing all the courses.
-    #         teacher_text: Text describing all the teacher_ids' workloads."""
-    #     f = self.pages[default_page.lower()]
-    #
-    #     if not SchedulerTk.overview_notebook:
-    #         SchedulerTk.overview_notebook = Notebook(f)
-    #         SchedulerTk.overview_notebook.pack(expand=True, fill=BOTH)
-    #
-    #         # NOTE: tkinter notebooks behave somewhat differently from PerlTk ones. They don't
-    #         # create child Frames when the add() method is called; a child Frame must be created
-    #         # first, and THEN it can be added to the Notebook using .add().
-    #         course2 = Frame(SchedulerTk.overview_notebook)
-    #
-    #         # Not entirely sure if this will work, just assigning the Frame itself to the
-    #         # dictionary. In the original Perl,
-    #         SchedulerTk.overview_notebook.add(course2, text="by Course")
-    #         SchedulerTk.overview_pages['course2'] = course2
-    #
-    #         teacher2 = Frame(SchedulerTk.overview_notebook)
-    #         SchedulerTk.overview_notebook.add(teacher2, text="by Teacher")
-    #         SchedulerTk.overview_pages['teacher2'] = teacher2
-    #     SchedulerTk._actions_course(course_text)
-    #     SchedulerTk._actions_teacher(teacher_text)
-    #
-    # # Draw Course Overview
-    # @staticmethod
-    # def _actions_course(text: str):
-    #     f = SchedulerTk.overview_pages['course2']
-    #
-    #     if not SchedulerTk.tbox2:
-    #         SchedulerTk.tbox2 = Scrolled(
-    #             f,
-    #             'Text',
-    #             height=20,
-    #             width=50,
-    #             scrollbars='se',
-    #             state=DISABLED,
-    #             wrap=NONE
-    #         )
-    #         SchedulerTk.tbox2.pack(expand=True, fill=BOTH)
-    #
-    #     # Note: Not sure if this will work in tkinter.
-    #     SchedulerTk.tbox2.widget.delete("1.0", "end")
-    #
-    #     for txt in text:
-    #         SchedulerTk.tbox2.widget.insert('end', txt)
-    #
-    # @staticmethod
-    # def _actions_teacher(text: str):
-    #     f = SchedulerTk.overview_pages['teacher2']
-    #
-    #     if not SchedulerTk.tbox3:
-    #         SchedulerTk.tbox3 = Scrolled(
-    #             f,
-    #             "Text",
-    #             height=20,
-    #             width=50,
-    #             scrollbars='se',
-    #             wrap=NONE,
-    #             state=DISABLED
-    #         )
-    #         SchedulerTk.tbox3.pack(expand=True, fill=BOTH)
-    #     SchedulerTk.tbox3.widget.delete("1.0", "end")
-    #
-    #     for txt in text:
-    #         SchedulerTk.tbox3.widget.insert('end', txt)
+    # ========================================================================
+    # write a text overview of schedule, 2 modes.. teacher/course
+    # ========================================================================
+    def draw_overview(self, page_name: str, course_text: tuple[str, ...],
+                      teacher_text: tuple[str, ...]):
+        """
+        Writes the text overview of the schedule to the appropriate GUI object.
+        :param page_name: name of _notebook tab to draw on.
+        :param course_text: Text describing all the courses.
+        :param teacher_text: Text describing all the teacher_ids' workloads.
+        """
+        f = self.dict_of_frames.get(page_name.lower())
+        if f is None:
+            messagebox.showerror('Draw Overview', "invalid page_name")
+            return
 
-    def choose_existing_file(self, curr_dir, file_types):
-        pass
+        # --------------------------------------------------------------------
+        # create the gui widgets necessary to write stuff to if they
+        # don't yet exist
+        # --------------------------------------------------------------------
+        if SchedulerTk.overview_notebook is None:
+            SchedulerTk.overview_notebook = ttk.Notebook(f)
+            SchedulerTk.overview_notebook.pack(expand=True, fill=BOTH)
 
-    def choose_file(self, curr_dir, file_types):
-        pass
+            course_overview_frame = Frame(SchedulerTk.overview_notebook)
+            SchedulerTk.overview_notebook.add(course_overview_frame, text="by Course")
+            self.dict_of_frames['course_overview'] = course_overview_frame
+
+            teacher_overview_frame = Frame(SchedulerTk.overview_notebook)
+            SchedulerTk.overview_notebook.add(teacher_overview_frame, text="by Teacher")
+            self.dict_of_frames['teacher_overview'] = teacher_overview_frame
+
+            s: Scrolled = Scrolled(
+                course_overview_frame,
+                'Text',
+                height=20,
+                width=50,
+                scrollbars='se',
+                wrap=NONE
+            )
+            s.pack(expand=True, fill=BOTH)
+            SchedulerTk.overview_course_textbox = s.widget
+
+            s: Scrolled = Scrolled(
+                teacher_overview_frame,
+                'Text',
+                height=20,
+                width=50,
+                scrollbars='se',
+                wrap=NONE,
+                fg=self.colours["DataForeground"]
+            )
+            s.pack(expand=True, fill=BOTH)
+            SchedulerTk.overview_teacher_textbox = s.widget
+
+        # --------------------------------------------------------------------
+        # write info into appropriate text boxes
+        # --------------------------------------------------------------------
+        SchedulerTk.overview_teacher_textbox.delete("1.0", "end")
+        for txt in teacher_text:
+            SchedulerTk.overview_teacher_textbox.insert('end', txt+"\n")
+
+        SchedulerTk.overview_course_textbox.delete("1.0", "end")
+        for txt in course_text:
+            SchedulerTk.overview_course_textbox.insert('end', txt+"\n")
+
+        # make text boxes read-only
+        SchedulerTk.overview_teacher_textbox.config(state=DISABLED)
+        SchedulerTk.overview_course_textbox.config(state=DISABLED)

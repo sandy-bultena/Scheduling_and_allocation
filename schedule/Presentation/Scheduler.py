@@ -74,7 +74,7 @@ def main():
 
 
 # ==================================================================
-# user preferences saved in ini file (YAML format)
+# user _preferences saved in ini file (YAML format)
 # ==================================================================
 # NOTE: This will have to change significantly to look through the database instead.
 def get_user_preferences():
@@ -129,7 +129,7 @@ def write_ini():
 
 
 # ==================================================================
-# define what goes in the menu and toolbar
+# define what goes in the menu and _toolbar
 # ==================================================================
 def __menu_and_toolbar_info() -> (list[str], list[ToolbarItem], list[MenuItem]):
     menu = list()
@@ -192,7 +192,7 @@ def __menu_and_toolbar_info() -> (list[str], list[ToolbarItem], list[MenuItem]):
                                   command=lambda *_: print("'Print/Text Output' selected")))
 
     # -----------------------------------------------------------------------------------------
-    # toolbar
+    # _toolbar
     # -----------------------------------------------------------------------------------------
     toolbar_info = dict()
     toolbar_info['new'] = ToolbarItem(command=MenuItem.all_menu_items['new'], hint='Create new Schedule File')
@@ -249,9 +249,9 @@ def open_schedule():
             print(f"In the callback, the scenario is {scenario}.")
 
         # Open a ScenarioSelector window.
-        ScenarioSelector(parent=gui.mw, db=db, two=False, callback=get_scenario)
+        ScenarioSelector(parent=gui._mw, db=db, two=False, callback=get_scenario)
         # NOTE: The lines of code below don't run until the main window of the app is closed.
-        # We'll need to pass in something else to be the ScenarioSelector's parent.
+        # We'll need to pass in something else to be the ScenarioSelector's notebook.
         print(f"The scenario is {scenario}")
         gui.show_info("Scenario", f"The selected scenario is {scenario}.")
 
@@ -266,7 +266,7 @@ def open_schedule():
                 schedule = func()
                 print(f"Retrieved the following object from function: {schedule}")
 
-            ScheduleSelector(parent=gui.mw, db=db, scenario=scenario[0], callback=get_schedule)
+            ScheduleSelector(parent=gui._mw, db=db, scenario=scenario[0], callback=get_schedule)
             gui.show_info("SCHEDULE SELECTED", f"Successfully selected a Schedule: {schedule}")
 
             # If the schedule was successfully read, then

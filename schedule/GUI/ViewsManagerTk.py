@@ -11,7 +11,7 @@ from ..UsefulClasses.ScheduablesByType import ScheduablesByType
 class ViewsManagerTk:
     def __init__(self, gui):
         self._main_gui = gui
-        self.main_window = gui.mw
+        self.main_window = gui._mw
         self._button_refs: dict[str, Button] = {}
 
     @property

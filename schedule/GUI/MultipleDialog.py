@@ -15,7 +15,7 @@ class MultipleDialog(simpledialog.Dialog):
                  label_title : str = "{0}", validation : Callable[[str], bool] = None,
                  required : bool = True):
         """
-        - parent      -> Parent frame
+        - notebook      -> Parent frame
         - title       -> Title of dialog window
         - prompt      -> Prompt shown under header
         - num_entries -> Number of inputs to take from the user

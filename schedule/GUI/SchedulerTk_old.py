@@ -108,11 +108,11 @@ class SchedulerTk(MainPageBaseTk):
         Draws the buttons to access any of the available views.
 
         Parameters:
-            default_tab: Name of notebook tab to draw on.
+            default_tab: Name of _notebook tab to draw on.
             all_scheduables: A list of schedulable objects (teacher_ids/lab_ids/etc.)
             btn_callback: A callback function called whenever the ViewsManager is asked to create a
             view."""
-        f = self.pages[default_tab.lower()]
+        f = self.dict_of_frames[default_tab.lower()]
 
         views_manager.gui.reset_button_refs()
 
@@ -137,7 +137,7 @@ class SchedulerTk(MainPageBaseTk):
             # NOTE: Program was crashing inside this function call because
             # view_choices_scrolled_frame already has children managed by pack, while the
             # function is trying to add buttons managed by grid to view_choices_scrolled_frame.
-            # Tcl doesn't like it when children of the same parent use different geometry managers.
+            # Tcl doesn't like it when children of the same notebook use different geometry managers.
             views_manager.gui.create_buttons_for_frame(
                 view_choices_scrolled_frame,
                 all_scheduables.by_type(type),
@@ -155,10 +155,10 @@ class SchedulerTk(MainPageBaseTk):
         """Writes the text overview of the schedule to the appropriate GUI object.
 
         Parameters:
-            default_page: name of notebook tab to draw on.
+            default_page: name of _notebook tab to draw on.
             course_text: Text describing all the courses.
             teacher_text: Text describing all the teacher_ids' workloads."""
-        f = self.pages[default_page.lower()]
+        f = self.dict_of_frames[default_page.lower()]
 
         if not SchedulerTk.overview_notebook:
             SchedulerTk.overview_notebook = Notebook(f)

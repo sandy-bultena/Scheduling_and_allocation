@@ -112,7 +112,7 @@ class ToolBar(Frame):
         if disabled: b.configure(state='disabled')
 
     def bar(self):
-        """Add a divider on the toolbar"""
+        """Add a divider on the _toolbar"""
         Label(self, text='', bg=self.cget('bg'), relief='raised', borderwidth=1) \
             .pack(side='left', padx=3)
 

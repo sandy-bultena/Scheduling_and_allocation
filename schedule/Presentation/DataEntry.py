@@ -19,15 +19,15 @@ Version 6.00
     use GUI::DataEntryTk;
 
     my $Dirtyflag   = 0;
-    my $mw          = MainWindow->new();
+    my $_mw          = MainWindow->new();
     my $Schedule = Schedule->read_YAML('myschedule_file.yaml');
-    my $views_manager = ViewsManager->new( $mw, \$Dirtyflag, \$Schedule );
+    my $views_manager = ViewsManager->new( $_mw, \$Dirtyflag, \$Schedule );
 
     # create a data entry list
     # NOTE: requires $views_manager just so that it can update
     #       the views if data has changed (via the dirty flag)
 
-    my $de = DataEntry->new( $mw, $Schedule->teacher_ids,
+    my $de = DataEntry->new( $_mw, $Schedule->teacher_ids,
                     $Schedule, \$Dirtyflag, $views_manager );
 =head1 DESCRIPTION
 A generic data entry widget
@@ -228,7 +228,7 @@ class DataEntry:
         # Get data from the GUI object.
         all_data = self.gui.get_all_data()
 
-        # Just in case saving is already in progress, wait before continuing.
+        # Just in case saving is already in progress, _wait before continuing.
         if DataEntry.currently_saving > 2:
             return  # 2 is too many.
         if DataEntry.currently_saving:

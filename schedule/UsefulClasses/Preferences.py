@@ -111,7 +111,7 @@ class Preferences:
 
 def _read_ini() -> cp.ConfigParser:
     """if the ini file can be found, read it, if the config file cannot be found, use defaults"""
-    ini_file = _get_app_data_location("preferences.csv")
+    ini_file = _get_app_data_location("_preferences.csv")
     config = cp.ConfigParser()
 
     # ini file exists, read it
@@ -158,8 +158,8 @@ def _get_app_data_location(ini_file_name: str) -> Optional[str]:
 
 
 def _write_ini(config: cp.ConfigParser):
-    """write preferences in a safe place (it's secret, ha! ha!)"""
-    ini_file = _get_app_data_location("preferences.csv")
+    """write _preferences in a safe place (it's secret, ha! ha!)"""
+    ini_file = _get_app_data_location("_preferences.csv")
     if ini_file is None:
         return
 

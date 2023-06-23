@@ -22,7 +22,7 @@ _input_frame : Frame
 
 def new(input_frame : Frame = None) -> tuple[list[str], list[int]] | None:
     """Create a new dialog instance"""
-    if not input_frame: raise ValueError("Error: Add Blocks Dialog must have a parent frame")
+    if not input_frame: raise ValueError("Error: Add Blocks Dialog must have a notebook frame")
     global _input_frame
 
     _input_frame = input_frame

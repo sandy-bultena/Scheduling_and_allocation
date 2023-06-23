@@ -14,18 +14,18 @@ Example::
     from schedule.Presentation.MenuItem import MenuItem, MenuType, ToolbarItem
     from schedule.GUI.MenuAndToolBarTk import make_toolbar, generate_menu
 
-    mw = Tk()
+    _mw = Tk()
 
     (buttons, toolbar_info, menu_details) = define_inputs()
 
-    menu_bar = Menu(mw)
-    generate_menu(mw, menu_details, menu_bar)
-    mw.configure(menu=menu_bar)
+    menu_bar = Menu(_mw)
+    generate_menu(_mw, menu_details, menu_bar)
+    _mw.configure(menu=menu_bar)
 
-    toolbar = make_toolbar(mw, buttons, toolbar_info)
-    toolbar.pack(side='top', expand=0, fill='x')
+    _toolbar = make_toolbar(_mw, buttons, toolbar_info)
+    _toolbar.pack(side='top', expand=0, fill='x')
 
-    mw.mainloop()
+    _mw.mainloop()
 
     def define_inputs():
         menu = list()
@@ -87,7 +87,7 @@ def generate_menu(mw, menu_details: list[MenuItem], parent: Menu):
 
 def make_toolbar(mw, button_names: list[str], actions: dict[str:ToolbarItem],
                  colours: dict[available_colours:str] = None) -> ToolBar:
-    """Create a toolbar described by the actions"""
+    """Create a _toolbar described by the actions"""
     image_dir = FindImages.get_image_dir()
     if colours is None:
         colours = dict()

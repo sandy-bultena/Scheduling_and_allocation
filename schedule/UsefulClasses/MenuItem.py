@@ -89,7 +89,7 @@ class MenuItem:
 
 
 class ToolbarItem:
-    """data defining a toolbar item, command, hint, image, etc"""
+    """data defining a _toolbar item, command, hint, image, etc"""
 
     def __init__(self, command: callable | None = None, hint: str | None = None, image: str | None = None, sc=None):
         self.command = command

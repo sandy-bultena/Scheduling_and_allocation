@@ -18,7 +18,7 @@ class LoginWindow:
     def __init__(self, parent: Tk):
         """Creates a new login window.
 
-        parent: TK = The root element that is the parent of this LoginWindow."""
+        notebook: TK = The root element that is the notebook of this LoginWindow."""
         self.parent = parent
         self.frame = self._setup_frame()
         self._setup_interface()
@@ -60,12 +60,12 @@ class LoginWindow:
             self.__status_var.set("Connection successful.")
             self.parent.update()
             sleep(2)
-            # If successful, make the LoginWindow's parent disappear. We don't want the window
+            # If successful, make the LoginWindow's notebook disappear. We don't want the window
             # hanging around as a distraction.
             self.parent.withdraw()
             ApplicationSelector(self.parent, db)
             # Then display the scenario selector window.
-            #ScenarioSelector(self.parent, db)
+            #ScenarioSelector(self.notebook, db)
         except mysql.connector.DatabaseError as err:
             display_error_message(str(err))
         except TypeError as err:

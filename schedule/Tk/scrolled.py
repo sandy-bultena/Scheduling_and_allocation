@@ -89,28 +89,28 @@ example::
         from tkinter import *
         from scrolled import Scrolled
 
-        mw = Tk()
-        scrolled_listbox = Scrolled(mw, 'Listbox', scrollbars=E, bg='pink')
+        _mw = Tk()
+        scrolled_listbox = Scrolled(_mw, 'Listbox', scrollbars=E, bg='pink')
         scrolled_listbox.pack(fill=BOTH, side=TOP, expand=1)
         scrolled_listbox.vertical_scrollbar.configure(width=30)
 
         for i in range(20):
             scrolled_listbox.widget.insert("end", f"entry {i=}")
 
-        mw.mainloop()
+        _mw.mainloop()
 
     Example
         from tkinter import *
         from scrolled import Scrolled
 
-        mw = Tk()
-        scrolled_frame = Scrolled(mw, 'Frame', scrollbars=E)
+        _mw = Tk()
+        scrolled_frame = Scrolled(_mw, 'Frame', scrollbars=E)
         scrolled_frame.pack(fill=BOTH, side=TOP, expand=1)
 
         for i in range(10):
             Button(scrolled_frame.widget,text=f"Button {i}").pack(ipady=10)
 
-        mw.mainloop()
+        _mw.mainloop()
     """
 
     # ==============================================================================================
@@ -141,7 +141,7 @@ example::
         # ----------------------------------------------------------------------------------------
         # initialize the holding frame
         # ----------------------------------------------------------------------------------------
-        Frame.__init__(self,parent,**kwargs)
+        Frame.__init__(self, parent)
 
         self._widget_type = widget_type
         self._scrollable_object = None
@@ -194,7 +194,7 @@ example::
 
             self._widget = _tk_widget_type(self, **kwargs)
             self._scrollable_object = self._widget
-            self._scrollable_object.pack()
+            self._scrollable_object.pack(fill='both', expand=1)
 
         except AttributeError:
 
@@ -226,7 +226,7 @@ example::
         if self._horizontal_scrollbar is not None:
             self._horizontal_scrollbar.configure(command=self._scrollable_object.xview)
             self._scrollable_object.configure(xscrollcommand=self._horizontal_scrollbar.set)
-        self.pack(fill="both",expand=1)
+        self.pack(fill="both", expand=1)
 
     # ===============================================================================================================
     # pass on all 'configure' to the scrollable object

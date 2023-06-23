@@ -35,7 +35,7 @@ class ViewTk(ViewBaseTk):
 
         - view: the View that is calling this function.
 
-        - mw: The main window (TK main window)."""
+        - _mw: The main window (TK main window)."""
         global mw
         mw = new_mw
         super().__init__(new_mw, conflict_info)

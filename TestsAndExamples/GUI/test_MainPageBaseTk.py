@@ -10,9 +10,10 @@ from schedule.GUI.MainPageBaseTk import MainPageBaseTk
 from schedule.UsefulClasses.MenuItem import MenuItem, MenuType, ToolbarItem
 from schedule.UsefulClasses.Preferences import Preferences
 
+# TODO: write test for update_for_new_schedule_and_show_page
 
 def main():
-    # create the top-level window with menu, toolbar and status bar
+    # create the top-level window with menu, _toolbar and status bar
 
     main_page = MainPageBaseTk('My App', Preferences())
     (buttons, toolbar_info, menu_details) = define_inputs()
@@ -22,10 +23,10 @@ def main():
 
     filename.set("This file name should appear in the status bar")
 
-    # create the front page with logo
+    # create the front page with _logo
     option_frame = main_page.create_front_page_base()
 
-    # define what the notebook pages are supposed to look like on the standard page
+    # define what the _notebook pages are supposed to look like on the standard page
     notebook_info = get_notebook_info()
 
     # add a button so that we can switch to the 'standard page'
@@ -137,7 +138,7 @@ def define_inputs():
                                   command=lambda *_: print("'Print/Text Output' selected")))
 
     # -----------------------------------------------------------------------------------------
-    # toolbar
+    # _toolbar
     # -----------------------------------------------------------------------------------------
     toolbar_info = dict()
     toolbar_info['new'] = ToolbarItem(command=MenuItem.all_menu_items['new'].command, hint='Create new Schedule File')

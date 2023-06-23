@@ -8,7 +8,7 @@ from schedule.GUI.MenuAndToolBarTk import make_toolbar, generate_menu
 
 
 # =================================================================================================
-# Test the GUI menu and toolbar creation work as required
+# Test the GUI menu and _toolbar creation work as required
 # =================================================================================================
 
 
@@ -32,9 +32,9 @@ def main():
     Label(mw, anchor='w', text="").pack()
     Label(mw, anchor='w', text="").pack()
     Label(mw, anchor='w', text= "Verify that there are TWO toolbars").pack(fill='x')
-    Label(mw, anchor='w', text="The top toolbar should have the same background colour has the main window").pack(fill='x')
-    Label(mw, anchor='w', text="The 2nd toolbar should have a background colour of blue").pack(fill='x')
-    Label(mw, anchor='w', text="The 2nd toolbar buttons should turn pink if mouse if hovered over the button").pack(fill='x')
+    Label(mw, anchor='w', text="The top _toolbar should have the same background colour has the main window").pack(fill='x')
+    Label(mw, anchor='w', text="The 2nd _toolbar should have a background colour of blue").pack(fill='x')
+    Label(mw, anchor='w', text="The 2nd _toolbar buttons should turn pink if mouse if hovered over the button").pack(fill='x')
     Label(mw, anchor='w', text="*** KNOWN BUG: hoverbg does not work in Tk/Toolbar.py").pack(fill='x')
     Label(mw, text="").pack()
     Label(mw, anchor='w', text='Verify that there are two file menu items, "file" and "print"').pack(fill='x')
@@ -115,7 +115,7 @@ def define_inputs():
                                   command=lambda *_: print("'Print/Text Output' selected")))
 
     # -----------------------------------------------------------------------------------------
-    # toolbar
+    # _toolbar
     # -----------------------------------------------------------------------------------------
     toolbar_info = dict()
     toolbar_info['new'] = ToolbarItem(command=MenuItem.all_menu_items['new'].command, hint='Create new Schedule File')

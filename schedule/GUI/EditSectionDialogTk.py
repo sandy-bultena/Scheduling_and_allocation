@@ -49,7 +49,7 @@ class EditSectionDialog(simpledialog.Dialog):
         """
 Creates a new section edit dialog box.
 # Params:
-- parent                                 -> The parent Tk object
+- notebook                                 -> The notebook Tk object
 - title                                  -> The dialog box header
 - section_id                             -> The ID of the section
 - section_name                           -> The name of the section
@@ -329,7 +329,7 @@ def new(input_frame, course_name : str, section_id : int, section_name : str, bo
 
     Creates a new section edit dialog box.
     # Params:
-    - parent                                 -> The parent Tk object
+    - notebook                                 -> The notebook Tk object
     - title                                  -> The dialog box header
     - section_id                             -> The ID of the section
     - section_name                           -> The name of the section
