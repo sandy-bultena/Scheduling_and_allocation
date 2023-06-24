@@ -2,17 +2,20 @@ from ..Tk import FindImages
 from tkinter import Frame, PhotoImage, Button, Label
 import os
 from functools import partial
-from idlelib.tooltip import Hovertip
+from ..Tk.idlelib_tooltip import Hovertip
 
-# TODO: hoverbg doesn't work tkinter... need to explicitly tie it to the <enter> and <leave> events.
-#       NOTE: not a big deal
+
 class ToolBar(Frame):
     def __init__(self, parent, hoverbg=None, buttonbg=None, **kwargs):
         super().__init__(master=parent, **kwargs)
 
         self.config_options = ['hoverbg', 'buttonbg']
-        if hoverbg: self.configure(hoverbg=hoverbg)
-        if buttonbg: self.configure(buttonbg=buttonbg)
+        if hoverbg:
+            self.configure(hoverbg=hoverbg)
+        if buttonbg:
+            self.configure(buttonbg=buttonbg)
+
+        self.images = list()
 
         # some defaults
         image_dir = FindImages.get_image_dir()
@@ -28,8 +31,10 @@ class ToolBar(Frame):
         # https://stackoverflow.com/a/70568930
         # workaround to tkinter seemingly not having ConfigSpecs
         for key in self.config_options:
-            if key in kwargs: setattr(self, key, kwargs.pop(key))
-        if kwargs: super().configure(**kwargs)
+            if key in kwargs:
+                setattr(self, key, kwargs.pop(key))
+        if kwargs:
+            super().configure(**kwargs)
 
     def config(self, **kwargs):
         self.configure(**kwargs)
@@ -60,7 +65,7 @@ class ToolBar(Frame):
             image_file = self.defaults['image']
 
         name = details.get('name', os.path.basename(image_file))
-        callback = details.get('command', lambda *_, **__: {})
+        callback: callable = details.get('command', lambda *_, **__: None)
         hint = details.get('hint', '')
         shortcut_key = details.get('shortcut', [])
         disabled = details.get('disabled', False)
@@ -72,16 +77,19 @@ class ToolBar(Frame):
 
         # define image
         image = PhotoImage(file=image_file)
-        # if the image is larger than the button, roughly scale it down so its not auto-cropped
+
+        # if the image is larger than the button, roughly scale it down, so it's not auto-cropped
+        # NOTE: have to save the image in object instance so that the ref does not get removed
         if btn_width < image.width() or btn_height < image.height():
-            image = image.subsample(round(image.width() / btn_width), round(image.height() / btn_height))
+            image = image.subsample(round(image.width() / btn_width),
+                                              round(image.height() / btn_height))
+        self.images.append(image)
 
         # add button
-        (b := Button(
+        b = Button(
             master=self,
             text=name,
             image=image,
-            command=callback,
             relief='flat',
             bg=bg,
             activebackground=bg,
@@ -90,14 +98,16 @@ class ToolBar(Frame):
             highlightcolor=bg,
             width=20,
             height=20
-        )).pack(side='left')
+        )
+        b.pack(side='left')
         self.buttons[name] = b
 
-        # no idea why this is needed, but without it the buttons randomly don't call callback
+        # weird behaviour, using 'command=' doesn't work, but this does
         b.bind('<Button-1>', callback)
 
         # add the tooltip
-        if hint: Hovertip(b, hint, 500)
+        if hint:
+            Hovertip(b, hint, 1000)
 
         # make the button slightly raised when mouse hovers
         # pass image to stop it from being destroyed when this method ends
@@ -106,10 +116,12 @@ class ToolBar(Frame):
 
         # add the bindings for keypresses
         if shortcut_key:
-            for sk in shortcut_key: mw.bind(f"<{sk}>", partial(lambda *_: b.invoke(), b))
+            for sk in shortcut_key:
+                mw.bind(f"<{sk}>", partial(lambda *_: b.invoke(), b))
 
         # disable the button?
-        if disabled: b.configure(state='disabled')
+        if disabled:
+            b.configure(state='disabled')
 
     def bar(self):
         """Add a divider on the _toolbar"""
@@ -129,12 +141,13 @@ class ToolBar(Frame):
             self.buttons[name].configure(state='normal' if action else 'disabled')
 
 
-def button_enter(b: Button, hbg, mw, image=None, *_):
-    b.configure(relief='raised')
-    b.configure(activebackground=hbg)
+def button_enter(b: Button, hbg, mw, *_):
+    b.configure(relief='raised', width=25, height=25)
+    b.configure(activebackground="#000000")
     mw.update()
 
-def button_leave(b: Button, bg, mw, image=None, *_):
-    b.configure(relief='flat')
+
+def button_leave(b: Button, bg, mw, *_):
+    b.configure(relief='flat', width=20, height=20)
     b.configure(activebackground=bg)
     mw.update()

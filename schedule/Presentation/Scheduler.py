@@ -1,6 +1,7 @@
 # IN PROGRESS
 from __future__ import annotations
 
+import traceback
 from typing import Optional
 
 # from .ViewsManager import ViewsManager
@@ -12,6 +13,8 @@ from ..Presentation.globals import *
 
 from schedule.UsefulClasses.MenuItem import MenuItem, MenuType, ToolbarItem
 
+
+# TODO: Menu items are not working.
 
 class Scheduler:
     """
@@ -55,15 +58,21 @@ class Scheduler:
     # open/new schedule
     # TODO: maybe save current schedule first?
     # ==================================================================
-    def select_file(self):
+    def select_file(self, *_):
+        print("==========")
+        traceback.print_stack()
+        print("==========")
+        print("in Scheduler: called select_file")
         self.gui.select_file()
 
     def open_schedule(self, filename: str, semester: str):
         self.schedule = Schedule(filename)
         self.gui.schedule_filename = filename
+        print ("Calling standard page")
         self.gui.create_standard_page(self._required_pages)
 
-    def new_schedule(self):
+    def new_schedule(self, *_):
+        print ("Called new_schedule")
         self.schedule = Schedule()
         self.gui.schedule_filename = ""
         self.gui.create_standard_page(self._required_pages)
@@ -167,9 +176,10 @@ class Scheduler:
         # _toolbar
         # -----------------------------------------------------------------------------------------
         toolbar_info = dict()
-        toolbar_info['new'] = ToolbarItem(command=MenuItem.all_menu_items['new'], hint='Create new Schedule File')
-        toolbar_info['open'] = ToolbarItem(command=MenuItem.all_menu_items['open'], hint='Open Schedule File')
-        toolbar_info['save'] = ToolbarItem(command=MenuItem.all_menu_items['save'], hint='Save Schedule File')
+        toolbar_info['new'] = ToolbarItem(command=MenuItem.all_menu_items['new'].command,
+                                          hint='Create new Schedule File')
+        toolbar_info['open'] = ToolbarItem(command=MenuItem.all_menu_items['open'].command, hint='Open Schedule File')
+        toolbar_info['save'] = ToolbarItem(command=MenuItem.all_menu_items['save'].command, hint='Save Schedule File')
         toolbar_order = ['new', 'open', 'save']
 
         # return list of top level menu items
@@ -283,7 +293,7 @@ class Scheduler:
         #     ans = gui.question(
         #         "Unsaved Changes",
         #         "There are unsaved changes.\nDo you want to save them?"
-        #     )
+        #          )
         #     if ans:
         #         save_schedule()
         #     else:

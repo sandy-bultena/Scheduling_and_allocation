@@ -183,10 +183,13 @@ add_lab,4
 section,,2,Section 2,5.5,26
 add_stream,4
 add_block,,mon,8:30,1.5,1
+add_block_teacher,2
 add_lab,4
 add_block,,thu,12:30,2.0,1
+add_block_teacher,2
 add_lab,4
 add_block,,fri,8:30,2.0,1
+add_block_teacher,2
 add_lab,4
 
 course,,420-3P5,Programming III,1,1

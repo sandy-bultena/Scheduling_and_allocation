@@ -336,7 +336,11 @@ class Section:
         Checks if section has teacher
         - Parameter teacher -> The teacher to check
         """
-        return teacher in self._teachers
+        answer = False
+        answer = teacher in self._teachers
+        for b in self.blocks:
+            answer = answer or b.has_teacher(teacher)
+        return answer
 
     # --------------------------------------------------------
     # add_stream

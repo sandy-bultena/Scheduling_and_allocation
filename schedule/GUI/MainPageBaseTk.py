@@ -137,6 +137,7 @@ class MainPageBaseTk:
             if self._top_level_notebook:
                 self._top_level_notebook.select(self._default_notebook_page)
                 self._top_level_notebook.event_generate("<<NotebookTabChanged>>")
+                return
 
         # create the page
         self._standard_page_created = True
@@ -269,14 +270,16 @@ class MainPageBaseTk:
                 title='Open a file',
                 filetypes=filetypes
             )
-        self._preferences.current_file(filename)
-        self.current_file = self._preferences.current_file()
-        self._open_schedule()
+        if filename:
+            self._preferences.current_file(filename)
+            self._open_schedule()
 
     # ========================================================================
     # read_current_file
     # ========================================================================
     def _open_schedule(self):
         semester = self._preferences.semester()
-        if self.current_file is not None:
-            self._open_schedule_callback(self.current_file, semester)
+        current_file = self._preferences.current_file()
+        print(f"{current_file=}")
+        if current_file is not None:
+            self._open_schedule_callback(current_file, semester)

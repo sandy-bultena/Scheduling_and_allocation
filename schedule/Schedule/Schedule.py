@@ -359,8 +359,6 @@ class Schedule:
         Prints a schedule for a specific teacher
         Parameter teacher -> The teacher whose schedule to print
         """
-        from functools import cmp_to_key
-
         head = "=" * 50
         text = f"\n\n{head}\n{teacher}\n{head}\n"
 
@@ -373,12 +371,12 @@ class Schedule:
             # sections
             for s in sorted(c.sections, key=lambda a: a.number):
                 if s.has_teacher(teacher):
-                    text += f"\n{s}\n\t" + "- " * 25 + "\n"
+                    text += f"\n\t{s}\n\t" + "- " * 25 + "\n"
 
                     # blocks
-                    for b in sorted(s.blocks, key=cmp_to_key(self.__sort_blocks)):
+                    for b in s.blocks:
                         if b.has_teacher(teacher):
-                            text += f"\t{b.day} {b.start} {b.duration} hours\n\t\tlab_ids: "
+                            text += f"\t{b.day} {b.start} {b.duration} hours\n\t\tlabs: "
                             text += ", ".join(str(lab) for lab in b.labs) + "\n"
         return text
 
@@ -436,16 +434,3 @@ class Schedule:
 
             # too many availability hours
             availability_hours_conflict(self.get_blocks_for_teacher(teacher))
-
-    @staticmethod
-    def __sort_blocks(a: Block, b: Block) -> int:
-        if a.day_number < b.day_number:
-            return 1
-        elif a.day_number > b.day_number:
-            return -1
-        elif a.start_number < b.start_number:
-            return 1
-        elif a.start_number > b.start_number:
-            return -1
-        else:
-            return 0

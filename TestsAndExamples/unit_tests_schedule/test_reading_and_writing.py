@@ -28,9 +28,14 @@ def test_read_write():
 
     # TODO: not a good test
     schedule = s.Schedule(path.dirname(__file__) + "/test.csv")
+    teachers_text = list()
+    for t in schedule.teachers:
+        teachers_text.append(schedule.teacher_details(t))
+
     schedule.write_file(path.dirname(__file__) + "/test_output.csv")
     assert (cmp(path.dirname(__file__) + "/test.csv", path.dirname(__file__) + "/test_output.csv"))
 
+test_read_write()
 #schedule = s.Schedule(path.dirname(__file__) + "/test.csv")
 def test_schedule_actually_has_stuff_in_it():
     """smoke test to see if schedule is actually populated with data - not validating data though"""
