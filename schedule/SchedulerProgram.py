@@ -2,7 +2,7 @@ from Presentation.Scheduler import Scheduler
 
 
 def main():
-    Scheduler.main()
+    Scheduler()
 
 
 if __name__ == "__main__":

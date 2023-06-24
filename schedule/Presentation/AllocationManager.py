@@ -104,10 +104,10 @@ def write_ini():
 
 
 # ==================================================================
-# create_main_window
+# create_start_window
 # ==================================================================
 def create_main_window():
-    gui.create_main_window()
+    gui.create_start_window()
     toolbar_buttons, button_properties, menu = menu_info()
     gui.create_menu_and_toolbars(toolbar_buttons, button_properties, menu)
     gui.create_front_page_base(preferences, semesters, _open_schedule, get_schedule)

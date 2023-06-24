@@ -59,6 +59,15 @@ class MainPageBaseTk:
 
         self._initialize_top_window(title)
         self._dirty_flag_text: StringVar = StringVar(value="")
+        self._schedule_filename: StringVar = StringVar(value="")
+
+    @property
+    def schedule_filename(self):
+        return self._schedule_filename.get()
+
+    @schedule_filename.setter
+    def schedule_filename(self, value: str):
+        self._schedule_filename.set(value)
 
     def create_menu_and_toolbars(self, buttons: list[str], toolbar_info: dict[str:ToolbarItem],
                                  menu_details: list[MenuItem]):
@@ -73,11 +82,9 @@ class MainPageBaseTk:
         self._toolbar = make_toolbar(self._mw, buttons, toolbar_info)
         self._toolbar.pack(side='top', expand=0, fill='x')
 
-    def create_status_bar(self, current_filename: StringVar = None):
+    def create_status_bar(self):
         """Create a status bar for current filename and dirty flag"""
         mw = self._mw
-        if not current_filename:
-            current_filename = StringVar()
 
         # choose what colour to show dirty flag text based on WorkspaceColour
         red = "#880000" if Colour.is_light(self.colours['WorkspaceColour']) else '#ff0000'
@@ -86,7 +93,7 @@ class MainPageBaseTk:
         status_frame = Frame(mw, borderwidth=0, relief='flat')
         status_frame.pack(side='bottom', expand=0, fill='x')
 
-        Label(status_frame, textvariable=current_filename, borderwidth=1, relief='ridge') \
+        Label(status_frame, textvariable=self._schedule_filename, borderwidth=1, relief='ridge') \
             .pack(side='left', expand=1, fill='x')
 
         Label(status_frame, textvariable=self._dirty_flag_text, borderwidth=1, relief='ridge', width=15,
@@ -125,6 +132,13 @@ class MainPageBaseTk:
     def create_standard_page(self, notebook_pages_info: list[NoteBookPageInfo] | None = None):
         """Create the 'normal' page after the main page has fulfilled its purpose"""
 
+        # if the page is already created, do not recreate it
+        if self._standard_page_created:
+            if self._top_level_notebook:
+                self._top_level_notebook.select(self._default_notebook_page)
+                self._top_level_notebook.event_generate("<<NotebookTabChanged>>")
+
+        # create the page
         self._standard_page_created = True
         mw = self._mw
         self._front_page_frame.destroy()
@@ -204,15 +218,15 @@ class MainPageBaseTk:
 
         return pages
 
-    def update_for_new_schedule_and_show_page(self):
-        """Reset the GUI when a new schedule is read."""
-
-        if self._standard_page_created:
-            if self._top_level_notebook:
-                self._top_level_notebook.select(self._default_notebook_page)
-                self._top_level_notebook.event_generate("<<NotebookTabChanged>>")
-        else:
-            self.create_standard_page()
+    # def update_for_new_schedule_and_show_page(self):
+    #     """Reset the GUI when a new schedule is read."""
+    #
+    #     if self._standard_page_created:
+    #         if self._top_level_notebook:
+    #             self._top_level_notebook.select(self._default_notebook_page)
+    #             self._top_level_notebook.event_generate("<<NotebookTabChanged>>")
+    #     else:
+    #         self.create_standard_page()
 
     def wait_for_it(self, title, msg):
         self.stop_waiting()
@@ -236,7 +250,7 @@ class MainPageBaseTk:
     # ========================================================================
     # choose existing file to read
     # ========================================================================
-    def _select_file(self):
+    def select_file(self):
         current_dir = self._preferences.current_dir()
         filetypes = (
             ('schedule files', '*.csv'),

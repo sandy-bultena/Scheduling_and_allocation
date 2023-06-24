@@ -18,10 +18,9 @@ def main():
     main_page = MainPageBaseTk('My App', Preferences())
     (buttons, toolbar_info, menu_details) = define_inputs()
     main_page.create_menu_and_toolbars(buttons, toolbar_info, menu_details)
-    filename: StringVar = StringVar()
-    main_page.create_status_bar(filename)
+    main_page.create_status_bar()
 
-    filename.set("This file name should appear in the status bar")
+    main_page.schedule_filename = "This file name should appear in the status bar"
 
     # create the front page with _logo
     option_frame = main_page.create_front_page_base()

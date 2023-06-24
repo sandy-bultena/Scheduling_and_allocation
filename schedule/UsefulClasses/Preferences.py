@@ -16,9 +16,9 @@ class Preferences:
         operating_system = platform.system().lower()
 
         user_base_dir = None
-        if re.search(r'win', operating_system):
+        if re.match(r'win', operating_system):
             user_base_dir = os.environ['CSIDL_MYDOCUMENTS'] if os.environ['CSIDL_MYDOCUMENTS'] else None
-        elif re.search('darwin', operating_system):
+        elif re.match('darwin', operating_system):
             user_base_dir = os.environ['HOME']
         if user_base_dir is not None and os.path.isdir(user_base_dir):
             return user_base_dir

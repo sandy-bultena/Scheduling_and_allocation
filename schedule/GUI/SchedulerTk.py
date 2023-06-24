@@ -102,7 +102,7 @@ class SchedulerTk(MainPageBaseTk):
             font=self.fonts['big'],
             borderwidth=0,
             bg=self.colours['DataBackground'],
-            command=self._select_file,
+            command=self.select_file,
             width=BUTTON_WIDTH,
             height=3
         ).pack(side=TOP, fill=Y, expand=0)
