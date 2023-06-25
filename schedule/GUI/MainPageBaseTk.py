@@ -280,6 +280,5 @@ class MainPageBaseTk:
     def _open_schedule(self):
         semester = self._preferences.semester()
         current_file = self._preferences.current_file()
-        print(f"{current_file=}")
         if current_file is not None:
             self._open_schedule_callback(current_file, semester)

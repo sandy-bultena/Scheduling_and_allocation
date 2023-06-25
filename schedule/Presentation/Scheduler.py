@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import traceback
-from typing import Optional
+from typing import Optional, Protocol
 
 # from .ViewsManager import ViewsManager
 from ..GUI.SchedulerTk import SchedulerTk
@@ -14,7 +14,23 @@ from ..Presentation.globals import *
 from schedule.UsefulClasses.MenuItem import MenuItem, MenuType, ToolbarItem
 
 
-# TODO: Menu items are not working.
+class GuiMain(Protocol):
+    def create_menu_and_toolbars(self, buttons: list[str], toolbar_info: dict[str:ToolbarItem],
+                                 menu_details: list[MenuItem]): ...
+
+    def create_front_page(self, open_schedule_callback: Callable[[str, str], None],
+                          new_schedule_callback: Callable[[], None]): ...
+
+    def create_status_bar(self): ...
+
+    def start_event_loop(self): ...
+
+    def select_file(self): ...
+
+    def draw_overview(self, page_name: str, course_text: tuple[str], teachers_text: tuple[str]): ...
+
+    def create_standard_page(self, notebook_pages_info: Optional[list[NoteBookPageInfo]] = None): ...
+
 
 class Scheduler:
     """
@@ -23,12 +39,15 @@ class Scheduler:
     # ==================================================================
     """
 
-    def __init__(self):
+    def __init__(self, gui: Optional[GuiMain] = None):
         self.user_base_dir: Optional[str] = None
         self.schedule: Optional[Schedule] = None
 
         self.preferences: Preferences = Preferences()
-        self.gui: SchedulerTk = SchedulerTk('Scheduler', self.preferences)
+        if gui:
+            self.gui = gui
+        else:
+            self.gui = SchedulerTk('Scheduler', self.preferences)
 
         #        self.views_manager: Optional[viewsManager] = None
 
@@ -47,8 +66,9 @@ class Scheduler:
         # --------------------------------------------------------------------
         # create the Gui Main Window
         # --------------------------------------------------------------------
-        (toolbar_buttons, button_properties, menu) = self._menu_and_toolbar_info()
-        self.gui.create_menu_and_toolbars(toolbar_buttons, button_properties, menu)
+        (self._toolbar_buttons, self._button_properties, self._menu) = self._menu_and_toolbar_info()
+
+        self.gui.create_menu_and_toolbars(self._toolbar_buttons, self._button_properties, self._menu)
         self.gui.create_front_page(self.open_schedule, self.new_schedule)
         self.gui.create_status_bar()
         # pre_process_stuff()
@@ -59,20 +79,14 @@ class Scheduler:
     # TODO: maybe save current schedule first?
     # ==================================================================
     def select_file(self, *_):
-        print("==========")
-        traceback.print_stack()
-        print("==========")
-        print("in Scheduler: called select_file")
         self.gui.select_file()
 
     def open_schedule(self, filename: str, semester: str):
         self.schedule = Schedule(filename)
         self.gui.schedule_filename = filename
-        print ("Calling standard page")
         self.gui.create_standard_page(self._required_pages)
 
     def new_schedule(self, *_):
-        print ("Called new_schedule")
         self.schedule = Schedule()
         self.gui.schedule_filename = ""
         self.gui.create_standard_page(self._required_pages)
@@ -292,8 +306,8 @@ class Scheduler:
         # if is_data_dirty():
         #     ans = gui.question(
         #         "Unsaved Changes",
-        #         "There are unsaved changes.\nDo you want to save them?"
-        #          )
+        #         "There are unsaved changes.\nDo you want to save them?" )
+        #
         #     if ans:
         #         save_schedule()
         #     else:
@@ -327,7 +341,7 @@ class Scheduler:
     
     Originally written by Sandy Bultena
     
-    Copyrighted by the standard GPL License Agreeement
+    Copyrighted by the standard GPL License Agreement
     
     All Rights Reserved.
     """
