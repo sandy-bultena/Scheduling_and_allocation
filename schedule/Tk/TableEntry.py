@@ -8,6 +8,7 @@ import os
 
 from ..Tk.scrolled import Scrolled
 from ..Tk.FindImages import get_image_dir
+from ..UsefulClasses.Colour import darken, lighten, is_light
 
 
 # =================================================================================================
@@ -156,6 +157,8 @@ Example::
         # TableEntry, and the methods used to set_default_fonts_and_colours those options
         self.__config_specs = {
             'bg_entry': self.__bg_entry,
+            'fg_entry': self.__fg_entry,
+            'bg_entry_disabled': self.__bg_entry_disabled,
             'rows': self.__set_rows,
             'columns': self.__set_columns,
             'titles': self.__set_titles,
@@ -170,9 +173,12 @@ Example::
         # this is a table of all the additional options available to
         # TableEntry, and their default values
         bg = self.winfo_toplevel().cget("bg")
+        fg = "#000000" if is_light(bg) else "#ffffff"
         self._defaults = {
             "rows": 10,
             "bg_entry": "#ffffff",
+            "fg_entry": "#000000",
+            "bg_entry_disabled": "#dddddd",
             "columns": 10,
             "titles": list(),
             "colwidths": list(),
@@ -183,6 +189,7 @@ Example::
             "relief": 'flat',
             "buttontext": "Go",
             "bg": bg,
+            "fg": fg,
             "delete": None,
             "buttoncmd": None,
         }
@@ -225,7 +232,9 @@ Example::
             w = Entry(self.frame,
                       width=column_widths[data_col],
                       bg=self.cget("bg_entry"),
-                      disabledforeground="black",
+                      fg=self.cget("fg_entry"),
+                      disabledbackground=self.cget("bg_entry_disabled"),
+                      disabledforeground=self.cget("fg_entry"),
                       relief="ridge",
                       )
 
@@ -319,6 +328,33 @@ Example::
         # if entry widget was disabled, set_default_fonts_and_colours it back to disabled
         if disabled_flag:
             w.configure(state="disabled")
+
+    # ===================================================================
+    # clear data
+    # ===================================================================
+    def clear_data(self):
+        """Put data into a cell specified by row and col"""
+        for data_row in range(self.number_of_rows):
+            grid_row = data_row + 1
+            for data_col in range(self.number_of_columns):
+                grid_col = data_col + 1
+
+                # get_by_id the entry widget
+                w = self.__get_widget_in_row_col(grid_row, grid_col)
+                if not w or not isinstance(w, Entry):
+                    return
+
+                # we have to disable Entry widgets before this can work
+                disabled_flag = w.cget("state") == "disabled"
+                if disabled_flag:
+                    w.configure(state="normal")
+
+                # remove what was there and insert the data
+                w.delete(0, 'end')
+
+                # if entry widget was disabled, set_default_fonts_and_colours it back to disabled
+                if disabled_flag:
+                    w.configure(state="disabled")
 
     # =================================================================================================
     # configure, cget, etc
@@ -417,9 +453,27 @@ Example::
     def __bg_entry(self, colour):
         if colour is None:
             return self.cget('bg_entry')
-        self.__configure_save(colour=colour)
+        print (f"setting colour {colour}")
+        bg_colour = self.cget('bg_entry')
+        disabled_colour = darken(bg_colour, 20) if is_light(bg_colour) else lighten(bg_colour, 20)
+        self.__bg_entry_disabled(disabled_colour)
+        self.__configure_save(bg_entry=colour)
         self.__apply_to_all_entry_widgets(lambda w, r, c: w.configure(bg=colour))
         return self.cget("bg_entry")
+
+    def __bg_entry_disabled(self, colour):
+        if colour is None:
+            return self.cget('bg_entry_disabled')
+        self.__configure_save(bg_entry_disabled=colour)
+        self.__apply_to_all_entry_widgets(lambda w, r, c: w.configure(disabledbackground=colour))
+        return self.cget("bg_entry_disabled")
+
+    def __fg_entry(self, colour):
+        if colour is None:
+            return self.cget('fg_entry')
+        self.__configure_save(fg_entry=colour)
+        self.__apply_to_all_entry_widgets(lambda w, r, c: w.configure(bg=colour))
+        return self.cget("fg_entry")
 
     # ====================================================================================
     # callback for button at end of row being clicked
@@ -629,6 +683,9 @@ Example::
         to_configure = self._defaults.copy()
         to_configure.update(kwargs)
         self.__configure_save(**to_configure)
+        bg_colour = self.cget('bg_entry')
+        disabled_colour = darken(bg_colour, 20) if is_light(bg_colour) else lighten(bg_colour, 20)
+        self.__configure_save(bg_entry_disabled=disabled_colour)
         self.__draw()
 
     # ====================================================================================
