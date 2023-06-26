@@ -79,9 +79,12 @@ class Scheduler:
     # TODO: maybe save current schedule first?
     # ==================================================================
     def select_file(self, *_):
-        self.gui.select_file()
+        filename: Optional[str] = self.gui.select_file()
+        if filename:
+            self.preferences.current_file(filename)
+            self.open_schedule(filename)
 
-    def open_schedule(self, filename: str, semester: str):
+    def open_schedule(self, filename: str):
         self.schedule = Schedule(filename)
         self.gui.schedule_filename = filename
         self.gui.create_standard_page(self._required_pages)

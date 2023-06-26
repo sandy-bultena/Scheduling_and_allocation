@@ -251,7 +251,7 @@ class MainPageBaseTk:
     # ========================================================================
     # choose existing file to read
     # ========================================================================
-    def select_file(self):
+    def select_file(self) -> Optional[str]:
         current_dir = self._preferences.current_dir()
         filetypes = (
             ('schedule files', '*.csv'),
@@ -270,10 +270,8 @@ class MainPageBaseTk:
                 title='Open a file',
                 filetypes=filetypes
             )
-        if filename:
-            self._preferences.current_file(filename)
-            self._open_schedule()
-
+        return filename
+    
     # ========================================================================
     # read_current_file
     # ========================================================================

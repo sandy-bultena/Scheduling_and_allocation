@@ -39,6 +39,8 @@ available_colours = Literal[
     'ButtonHighlightBackground',
     'DataBackground',
     'DataForeground',
+    'DisabledBackground',
+    'DisabledForeground',
 ]
 
 available_fonts = Literal[
@@ -62,7 +64,7 @@ def set_default_fonts_and_colours(mw: Tk, font_size: int = 12, dark_mode: bool =
     mw.configure(background=colours['WorkspaceColour'])
 
     fonts = _define_fonts(mw, font_size)
-    mw.option_add( "*Font", fonts['normal'],)
+    mw.option_add("*Font", fonts['normal'],)
     return colours, fonts
 
 
@@ -145,7 +147,7 @@ def _get_system_colours(dark: bool = False) -> dict[available_colours, str]:
         else:
             colours['DataForeground'] = '#FFFFFF'
 
-    # a darker background/lighter colour for unused tabs
+    # a darker/lighter background colour for unused tabs
     if 'DataBackground' in colours and colour.is_light(colours['DataBackground']):
         colours['DarkBackground'] = colour.darken(colours['WorkspaceColour'], 10)
     else:
@@ -161,6 +163,14 @@ def _get_system_colours(dark: bool = False) -> dict[available_colours, str]:
     else:
         colours['SelectedBackground'] = colour.darken(colours['DataBackground'], -10)
         colours['SelectedForeground'] = '#FFFFFF'
+
+    # a darker/lighter background colour for disabled widgets
+    if 'DataBackground' in colours and colour.is_light(colours['DataBackground']):
+        colours['DisabledBackground'] = colour.darken(colours['DataBackground'], 2)
+        colours['DisabledForeground'] = '#000000'
+    else:
+        colours['DisabledBackground'] = colour.darken(colours['DataBackground'], -2)
+        colours['DisabledForeground'] = '#FFFFFF'
 
     # mac won't change button colours
     if re.match('darwin', operating_system):
@@ -206,6 +216,9 @@ def _set_system_colours(mw: Tk, colours: dict[str, str | None]):
         'ButtonHighlightBackground',
         'DataBackground',
         'DataForeground',
+        'DisabledBackground',
+        'DisabledForeground',
+
     ]
     for k in keys:
         if k not in colours:
@@ -247,6 +260,8 @@ def _set_system_colours(mw: Tk, colours: dict[str, str | None]):
     # lists and entries
     _option_add(mw, '*Entry.foreground', colours['DataForeground'])
     _option_add(mw, '*Entry.background', colours['DataBackground'])
+    _option_add(mw, '*Entry.disabledforeground', colours['DisabledForeground'])
+    _option_add(mw, '*Entry.disabledbackground', colours['DisabledBackground'])
     _option_add(mw, '*Listbox.foreground', colours['DataForeground'])
     _option_add(mw, '*Listbox.background', colours['DataBackground'])
     _option_add(mw, '*BrowseEntry.foreground', colours['DataForeground'])

@@ -1,0 +1,104 @@
+from functools import partial
+from typing import *
+from ..Tk.TableEntry import TableEntry
+from dataclasses import dataclass
+from tkinter import *
+
+"""
+Basically a Tk::TableEntry object with some restrictions
+
+The first column I<must> be a unique identifier for the corresponding data
+object, and can not be edited.
+"""
+
+
+@dataclass
+class DEColumnDescription:
+    title: str
+    column_width: int
+
+
+class DataEntryTk:
+
+    def __init__(self,
+                 parent: Frame,
+                 column_descriptions: list[DEColumnDescription],
+                 data: list,
+                 delete_callback: callable = lambda *_: None,
+                 save_callback: Callable[[list], None] = lambda *_: None,
+                 bg_colour: str = "#ffffff",
+                 fg_colour: str = "#000000"
+                 ):
+        titles: list[str] = list()
+        column_widths: list[int] = list()
+        for cd in column_descriptions:
+            titles.append(cd.title)
+            column_widths.append(cd.column_width)
+        self.save_callback = save_callback
+
+        self.de = TableEntry(
+            parent,
+            rows=1,
+            columns=len(column_descriptions),
+            titles=titles,
+            column_widths=column_widths,
+            delete=partial(delete_callback, data),
+            fg_entry=fg_colour,
+            bg_entry=bg_colour
+        )
+        self.de.pack(side=TOP, expand=True, fill=BOTH)
+
+        # disable the first columns, but not the rest
+        disabled = [1]
+        disabled.extend([0 for _ in range(1, self.de.number_of_columns)])
+        self.de.configure(disabled=disabled)
+        self.refresh(data)
+
+        # --------------------------------------------------------------------------
+        # NOTE: If weird shit is happening, give up and use a 'Save' button
+        # ... clicking the 'Delete' triggers a 'Leave'...
+        # --------------------------------------------------------------------------
+        self.de.bind('<Leave>', lambda *_: self.save_callback(data))
+
+    def refresh(self, data: list[list[Any]]):
+        """
+        refresh the data
+        :param data: a list of lists (a 2-d array sort of)
+        """
+        self.de.clear_data()
+        for row, row_data in enumerate(data):
+            for col, cell_data in enumerate(row_data):
+                self.de.put(row, col, str(cell_data))
+
+        if self.de.number_of_rows <= len(data):
+            self.de.add_empty_row()
+
+    def get_all_data(self) -> list[list[str]]:
+        """
+        reads the data stored in teh TableEntry widget
+        :return: a list of rows, which is a list of columns with the data
+        """
+        data: list = list()
+        for row in range(self.de.number_of_rows):
+            data.append(self.de.read_row(row))
+        return data
+
+
+"""
+=head1 AUTHOR
+
+Sandy Bultena, Ian Clement, Jack Burns
+
+=head1 COPYRIGHT
+
+Copyright (c) 2021, Jack Burns, Sandy Bultena, Ian Clement. 
+
+All Rights Reserved.
+
+This module is free software. It may be used, redistributed
+and/or modified under the terms of the Perl Artistic License
+
+     (see http://www.perl.com/perl/misc/Artistic.html)
+
+=cut
+"""
