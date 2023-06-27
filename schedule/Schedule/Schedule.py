@@ -167,6 +167,16 @@ class Schedule:
         """Returns the Section which matches this Section number, if it exists."""
         return self._teachers.get(teacher_id)
 
+    def get_view_type_obj_by_id(self, view_type: ViewType, obj_id: int) -> Optional[Teacher | Stream | Lab]:
+        """Returns the Section which matches this Section number, if it exists."""
+        if view_type == ViewType.teacher:
+            return self._teachers.get(obj_id)
+        elif view_type == ViewType.stream:
+            return self._streams.get(obj_id)
+        elif view_type == ViewType.lab:
+            return self._labs.get(obj_id)
+        return None
+
     # ========================================================================
     # removing objects from the collections
     # - this may require detaching some dependencies
