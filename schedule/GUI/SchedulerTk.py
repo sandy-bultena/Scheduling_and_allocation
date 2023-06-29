@@ -9,6 +9,8 @@ from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
 from ..Tk.scrolled import Scrolled
+from ..GUI.DataEntryTk import DataEntryTk
+from ..Schedule.ScheduleEnums import ViewType
 
 BUTTON_WIDTH = 50
 MAX_LEN_OF_DISPLAYED_FILENAME = 25
@@ -272,3 +274,7 @@ class SchedulerTk(MainPageBaseTk):
         # make text boxes read-only
         SchedulerTk._overview_teacher_textbox.config(state=DISABLED)
         SchedulerTk._overview_course_textbox.config(state=DISABLED)
+
+    def get_gui_container(self, page_name: str) -> Optional[Frame]:
+        return self.dict_of_frames.get(page_name.lower())
+

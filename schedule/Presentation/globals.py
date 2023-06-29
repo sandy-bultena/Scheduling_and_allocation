@@ -10,7 +10,6 @@ dirty_flag_changed_cb: callable = lambda *_: None
 
 dirty_set: Callable = lambda *_: None
 dirty_unset: Callable = lambda *_: None
-is_dirty: Callable = lambda *_: None
 
 
 def set_dirty_flag(*_):
@@ -30,4 +29,4 @@ def unset_dirty_flag(*_):
 # TODO: Not sure if we need this
 def is_data_dirty():
     """Get the current state of the application, dirty (True) or clean (False)"""
-    return is_dirty()
+    return dirty_flag

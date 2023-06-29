@@ -15,50 +15,60 @@ object, and can not be edited.
 @dataclass
 class DEColumnDescription:
     title: str
-    column_width: int
+    width: int
+    property: str
 
 
 class DataEntryTk:
 
     def __init__(self,
                  parent: Frame,
-                 column_descriptions: list[DEColumnDescription],
-                 data: list,
-                 delete_callback: callable = lambda *_: None,
-                 save_callback: Callable[[list], None] = lambda *_: None,
+                 delete_callback: Optional[Callable[[list], None]],
+                 save_callback: Optional[Callable[[], None]],
                  bg_colour: str = "#ffffff",
                  fg_colour: str = "#000000"
                  ):
+        self.delete_callback = delete_callback
+        self.save_callback = save_callback
+        self.frame = parent
+        self.bg_colour = bg_colour
+        self.fg_colour = fg_colour
+        self.de: Optional[TableEntry] = None
+
+    def initialize_columns(self, column_descriptions: list[DEColumnDescription]):
+
         titles: list[str] = list()
         column_widths: list[int] = list()
         for cd in column_descriptions:
             titles.append(cd.title)
-            column_widths.append(cd.column_width)
-        self.save_callback = save_callback
+            column_widths.append(cd.width)
+
+        if self.de is not None:
+            self.de.destroy()
 
         self.de = TableEntry(
-            parent,
+            self.frame,
             rows=1,
             columns=len(column_descriptions),
             titles=titles,
             column_widths=column_widths,
-            delete=partial(delete_callback, data),
-            fg_entry=fg_colour,
-            bg_entry=bg_colour
+            delete=self.delete_callback,
+            fg_entry=self.fg_colour,
+            bg_entry=self.bg_colour
         )
         self.de.pack(side=TOP, expand=True, fill=BOTH)
+        print ("from de, testing delete", self.delete_callback([1,2,3]))
+        # --------------------------------------------------------------------------
+        # NOTE: If weird shit is happening, give up and use a 'Save' button
+        # ... clicking the 'Delete' triggers a 'Leave'...
+        # --------------------------------------------------------------------------
+        self.de.bind('<Leave>', self.save_callback)
+
 
         # disable the first columns, but not the rest
         disabled = [1]
         disabled.extend([0 for _ in range(1, self.de.number_of_columns)])
         self.de.configure(disabled=disabled)
-        self.refresh(data)
-
-        # --------------------------------------------------------------------------
-        # NOTE: If weird shit is happening, give up and use a 'Save' button
-        # ... clicking the 'Delete' triggers a 'Leave'...
-        # --------------------------------------------------------------------------
-        self.de.bind('<Leave>', lambda *_: self.save_callback(data))
 
     def refresh(self, data: list[list[Any]]):
         """

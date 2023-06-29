@@ -147,6 +147,10 @@ class Schedule:
 
     def get_teacher_by_name(self, firstname: str, lastname: str) -> Teacher | None:
         """Returns the Teacher which matches this name, if it exists."""
+        for t in self._teachers.values():
+            if t.firstname.lower() == firstname.lower():
+                if t.lastname.lower() == lastname.lower():
+                    print (t)
         found = [t for t in self._teachers.values() if t.firstname.lower() == firstname.lower() and
                  t.lastname.lower() == lastname.lower()]
         return found[0] if found else None

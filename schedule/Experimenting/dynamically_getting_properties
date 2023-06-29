@@ -1,0 +1,14 @@
+def get_set_properties_and_attributes(obj,name, value=None, set=False):
+     """dynamically set attributes and properties"""
+     #
+     f = getattr(obj, name, None)
+     if f is None: return None
+     #
+     if not set:
+         if callable(f):
+             return f()
+         else:
+             return f
+     #
+     else:
+         setattr(obj,name,value)

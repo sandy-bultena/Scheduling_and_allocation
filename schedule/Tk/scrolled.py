@@ -139,7 +139,7 @@ example::
         scrollbars will be created as requested (self.horizontal_scrollbar, self.vertical_scrollbar)
         """
         # ----------------------------------------------------------------------------------------
-        # initialize the holding frame
+        # initialize_columns the holding frame
         # ----------------------------------------------------------------------------------------
         Frame.__init__(self, parent)
 

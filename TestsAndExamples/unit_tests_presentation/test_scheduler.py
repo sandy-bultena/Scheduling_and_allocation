@@ -5,9 +5,7 @@ sys.path.append(path.dirname(path.dirname(__file__) + "/../../"))
 
 from typing import Callable, Optional
 
-import schedule.Presentation.Scheduler
 from schedule.UsefulClasses import NoteBookPageInfo
-from schedule.UsefulClasses.MenuItem import ToolbarItem, MenuItem
 from schedule.Presentation.Scheduler import Scheduler
 from schedule.Schedule.Schedule import Schedule
 from schedule.UsefulClasses.MenuItem import MenuItem, MenuType, ToolbarItem

@@ -10,9 +10,12 @@ from ..Schedule.Schedule import Schedule
 from ..UsefulClasses.NoteBookPageInfo import NoteBookPageInfo
 from ..UsefulClasses.Preferences import Preferences
 from ..Presentation.globals import *
+from ..Schedule.ScheduleEnums import ViewType
+from ..Presentation.DataEntry import DataEntry
 
 from schedule.UsefulClasses.MenuItem import MenuItem, MenuType, ToolbarItem
 
+class GuiContainer(Protocol): ...
 
 class GuiMain(Protocol):
     def create_menu_and_toolbars(self, buttons: list[str], toolbar_info: dict[str:ToolbarItem],
@@ -31,6 +34,8 @@ class GuiMain(Protocol):
 
     def create_standard_page(self, notebook_pages_info: Optional[list[NoteBookPageInfo]] = None): ...
 
+    def get_gui_container(self, page_name: str) -> Optional[GuiContainer]: ...
+
 
 class Scheduler:
     """
@@ -42,8 +47,12 @@ class Scheduler:
     def __init__(self, gui: Optional[GuiMain] = None):
         self.user_base_dir: Optional[str] = None
         self.schedule: Optional[Schedule] = None
+        self._teachers_de: Optional[DataEntry] = None
+        self._streams_de: Optional[DataEntry] = None
+        self._labs_de: Optional[DataEntry] = None
 
         self.preferences: Preferences = Preferences()
+        # gui is optional for testing purposes
         if gui:
             self.gui = gui
         else:
@@ -265,7 +274,13 @@ class Scheduler:
     # - A page where teacher_ids can be added/modified or deleted
     # ==================================================================
     def update_edit_teachers(self):
-        pass
+        if self._teachers_de is None:
+            teachers_frame = self.gui.get_gui_container("teachers")
+            self._teachers_de = DataEntry(teachers_frame, ViewType.teacher, self.schedule)
+
+        # reset the schedule object just in case the schedule file has changed
+        self._teachers_de.schedule = self.schedule
+        self._teachers_de.refresh()
 
     # ==================================================================
     # update_edit_streams

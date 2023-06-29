@@ -166,10 +166,10 @@ def _get_system_colours(dark: bool = False) -> dict[available_colours, str]:
 
     # a darker/lighter background colour for disabled widgets
     if 'DataBackground' in colours and colour.is_light(colours['DataBackground']):
-        colours['DisabledBackground'] = colour.darken(colours['DataBackground'], 2)
+        colours['DisabledBackground'] = colour.darken(colours['DataBackground'], 20)
         colours['DisabledForeground'] = '#000000'
     else:
-        colours['DisabledBackground'] = colour.darken(colours['DataBackground'], -2)
+        colours['DisabledBackground'] = colour.darken(colours['DataBackground'], -20)
         colours['DisabledForeground'] = '#FFFFFF'
 
     # mac won't change button colours

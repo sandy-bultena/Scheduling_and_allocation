@@ -1,11 +1,12 @@
 
 from time import sleep
-from typing import Any, Optional, Callable
+from typing import Any, Optional, Callable, Protocol
 
 from ..Schedule.Schedule import Schedule
 from ..Presentation.globals import set_dirty_flag
-from ..GUI.DataEntryTk import DataEntryTk
+from ..GUI.DataEntryTk import DataEntryTk, DEColumnDescription
 from ..Schedule.ScheduleEnums import ViewType
+
 
 property_conversions_from_str = {
     "id": lambda x: int(x),
@@ -38,54 +39,74 @@ class DataEntry:
     # =================================================================
     # new
     # =================================================================
-    def __init__(self, gui: DataEntryTk, view_type: ViewType, view_type_objs: list,
-                 schedule: Schedule):
+    def __init__(self, frame, view_type: ViewType, schedule: Optional[Schedule], test_gui=None):
         """
         Creates the basic DataEntry (a simple matrix)
+        :param frame: gui container object
         :param view_type: Is it a lab, stream or teacher
-        :param view_type_objs: the objects to be displayed
-        :param schedule: the schedule
+        :param schedule: The Schedule object
         """
+        if not test_gui:
+            self.gui = DataEntryTk(frame, self._cb_delete_obj, self._cb_save)
+        else:
+            self.gui = test_gui
+
         self.delete_queue = list()
         self.view_type = view_type
-        self.objs = view_type_objs
         self.schedule = schedule
-        self.gui = gui
-        self._col_methods: list[Callable[[Any, Optional[str]], None]]
-        self.col_titles = ['invalid viewType']
-        self.col_widths = [40]
+        self.column_descriptions: list[DEColumnDescription] = [
+            DEColumnDescription(title="No Schedule", width=40, property="")
+        ]
 
         # ---------------------------------------------------------------
         # what are the columns?
         # ---------------------------------------------------------------
         if self.view_type == ViewType.teacher:
-            self._col_get_methods = ['id', 'firstname', 'lastname', 'release']
-            self.col_titles = ["id", 'first name', 'last name', 'RT']
-            self.col_widths = [4, 20, 20, 8]
+            self.column_descriptions = [
+                DEColumnDescription(title="ID", width=4, property="id"),
+                DEColumnDescription(title="First Name", width=20, property="firstname"),
+                DEColumnDescription(title="Last Name", width=20, property="lastname"),
+                DEColumnDescription(title="RT", width=8, property="release"),
+            ]
 
         elif self.view_type is ViewType.lab:
-            self._col_property_names = ['id', 'number', 'description']
-            self.col_titles = ["id", 'room', 'title']
-            self.col_widths = [4, 7, 40]
+            self.column_descriptions = [
+                DEColumnDescription(title="ID", width=4, property="id"),
+                DEColumnDescription(title="Room", width=7, property="number"),
+                DEColumnDescription(title="Description", width=40, property="description"),
+            ]
 
         elif self.view_type is ViewType.stream:
-            self._col_property_names = ['id', 'number', 'description']
-            self.col_titles = ['id', 'number', 'title']
-            self.col_widths = [4, 10, 40]
+            self.column_descriptions = [
+                DEColumnDescription(title="ID", width=4, property="id"),
+                DEColumnDescription(title="Number", width=10, property="number"),
+                DEColumnDescription(title="Name", width=40, property="description"),
+            ]
 
-        self.refresh()
+        self.gui.initialize_columns(self.column_descriptions)
 
     # =================================================================
     # refresh the tables
     # =================================================================
     def refresh(self):
+        objs = tuple()
+        data = list()
+
+        if self.schedule is None:
+            self.gui.refresh(data)
+
+        if self.view_type == ViewType.lab:
+            objs = self.schedule.labs
+        elif self.view_type == ViewType.stream:
+            objs = self.schedule.streams
+        elif self.view_type == ViewType.teacher:
+            objs = self.schedule.teachers
 
         # Create a 2-d array of the data that needs to be displayed.
-        data = list()
-        for obj in self.objs:
+        for obj in objs:
             row = list()
-            for col_property in self._col_property_names:
-                row.append(str(get_set_property(obj, col_property)))
+            for column in self.column_descriptions:
+                row.append(str(get_set_property(obj, column.property)))
             data.append(row)
 
         # refresh the GUI
@@ -101,14 +122,17 @@ class DataEntry:
     # ------------------------------------------------------------------------
     # adding a ViewType object to the schedule
     # ------------------------------------------------------------------------
-    def add_obj(self, data: dict):
+    def __add_obj(self, data: dict):
+        print(f"adding object: {data}")
         if self.view_type == ViewType.teacher:
             teacher = self.schedule.add_teacher(firstname=data["firstname"],
                                                 lastname=data["lastname"])
             teacher.release = data["release"]
+
         elif self.view_type == ViewType.lab:
             self.schedule.add_lab(number=data["number"],
                                   description=data["description"])
+
         elif self.view_type == ViewType.stream:
             self.schedule.add_stream(number=data["number"],
                                      description=data["description"])
@@ -118,7 +142,6 @@ class DataEntry:
     # ------------------------------------------------------------------------
     def _cb_save(self):
         """Save any changes that the user entered in the GUI form."""
-        schedule = self.schedule
         any_changes = False
 
         # Get data from the GUI object.
@@ -135,6 +158,7 @@ class DataEntry:
         # Read data from the data object.
         for row in all_data:
             data = row.copy()
+            #print(f"Processing: {data}")
 
             # --------------------------------------------------------------------
             # if this row has an ID, then we need to update the
@@ -145,14 +169,14 @@ class DataEntry:
                 obj = self.schedule.get_view_type_obj_by_id(self.view_type, obj_id)
 
                 # Loop over each method used to get_by_id info about this object.
-                for col, property_name in enumerate(self._col_property_names):
+                for col, column in enumerate(self.column_descriptions):
                     if col == self.Id_index:
                         continue
 
                     # check if data has changed
-                    if str(get_set_property(obj, property_name)) != data[col]:
-                        value = property_conversions_from_str[property_name](data[col])
-                        get_set_property(obj, property_name, value, set_flag=True)
+                    if str(get_set_property(obj, column.property)) != data[col]:
+                        value = property_conversions_from_str[column.property](data[col])
+                        get_set_property(obj, column.property, value, set_flag=True)
                         any_changes = True
 
             # --------------------------------------------------------------------
@@ -162,11 +186,11 @@ class DataEntry:
             else:
                 any_changes = True
                 new_data = dict()
-                for col, property_name in enumerate(self._col_property_names):
+                for col, column in enumerate(self.column_descriptions):
                     if col == self.Id_index:
                         continue
-                    new_data['property_name'] = property_conversions_from_str[property_name](data[col])
-                self.add_obj(new_data)
+                    new_data[column.property] = property_conversions_from_str[column.property](data[col])
+                self.__add_obj(new_data)
 
         # ------------------------------------------------------------------------
         # go through delete queue and apply changes
@@ -181,21 +205,24 @@ class DataEntry:
             elif self.view_type == ViewType.stream:
                 self.schedule.remove_stream(obj)
 
-        # if there have been changes, set_default_fonts_and_colours global dirty flag and do what is necessary.
+        # if there have been changes, set global dirty flag
         if any_changes:
             set_dirty_flag()
+
+        # all done saving, decrement number of files currently being saved
         DataEntry.Currently_saving -= 1
 
     # =================================================================
     # delete object
     # =================================================================
-    def _cb_delete_obj(self, data):
+    def _cb_delete_obj(self, row_data: list[str]):
         """Save delete requests, to be processed later."""
-
-        # Create a queue so we can delete the objects when the new info is saved.
-        obj = self.schedulable_list_obj.get_by_id(data[DataEntry.Id_index])
+        obj = None
+        if row_data[self.Id_index] and row_data[self.Id_index] != '':
+            obj_id = int(row_data[self.Id_index])
+            obj = self.schedule.get_view_type_obj_by_id(self.view_type, obj_id)
         if obj:
-            self.delete_queue.extend([self.schedulable_list_obj, obj])
+            self.delete_queue.append(obj)
 
 
 '''
