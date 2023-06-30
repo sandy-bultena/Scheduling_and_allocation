@@ -9,8 +9,6 @@ from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
 from ..Tk.scrolled import Scrolled
-from ..GUI.DataEntryTk import DataEntryTk
-from ..Schedule.ScheduleEnums import ViewType
 
 BUTTON_WIDTH = 50
 MAX_LEN_OF_DISPLAYED_FILENAME = 25
@@ -41,7 +39,7 @@ class SchedulerTk(MainPageBaseTk):
     # ========================================================================
     # create front page
     # ========================================================================
-    def create_front_page(self, open_schedule_callback: Callable[[str, str], None],
+    def create_front_page(self, open_schedule_callback: Callable[[str], None],
                           new_schedule_callback: Callable[[], None]):
 
         self._open_schedule_callback = open_schedule_callback

@@ -57,7 +57,6 @@ class DataEntryTk:
             bg_entry=self.bg_colour
         )
         self.de.pack(side=TOP, expand=True, fill=BOTH)
-        print ("from de, testing delete", self.delete_callback([1,2,3]))
         # --------------------------------------------------------------------------
         # NOTE: If weird shit is happening, give up and use a 'Save' button
         # ... clicking the 'Delete' triggers a 'Leave'...
@@ -82,6 +81,9 @@ class DataEntryTk:
 
         if self.de.number_of_rows <= len(data):
             self.de.add_empty_row()
+
+        # stupid Tk won't update image unless I do this.  Oh well, at least it worked
+        self.frame.focus_set()
 
     def get_all_data(self) -> list[list[str]]:
         """

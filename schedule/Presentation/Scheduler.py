@@ -1,7 +1,6 @@
 # IN PROGRESS
 from __future__ import annotations
 
-import traceback
 from typing import Optional, Protocol
 
 # from .ViewsManager import ViewsManager
@@ -21,8 +20,8 @@ class GuiMain(Protocol):
     def create_menu_and_toolbars(self, buttons: list[str], toolbar_info: dict[str:ToolbarItem],
                                  menu_details: list[MenuItem]): ...
 
-    def create_front_page(self, open_schedule_callback: Callable[[str, str], None],
-                          new_schedule_callback: Callable[[], None]): ...
+    def create_front_page(self, open_schedule_callback: Callable[[Scheduler, str], None],
+                          new_schedule_callback: Callable[[Scheduler], None]): ...
 
     def create_status_bar(self): ...
 
@@ -88,12 +87,11 @@ class Scheduler:
     # TODO: maybe save current schedule first?
     # ==================================================================
     def select_file(self, *_):
-        filename: Optional[str] = self.gui.select_file()
-        if filename:
-            self.preferences.current_file(filename)
-            self.open_schedule(filename)
+        self.gui.select_file()
 
     def open_schedule(self, filename: str):
+        if filename:
+            self.preferences.current_file(filename)
         self.schedule = Schedule(filename)
         self.gui.schedule_filename = filename
         self.gui.create_standard_page(self._required_pages)
@@ -287,14 +285,26 @@ class Scheduler:
     # - A page where stream_ids can be added/modified or deleted
     # ==================================================================
     def update_edit_streams(self):
-        pass
+        if self._streams_de is None:
+            streams_frame = self.gui.get_gui_container("streams")
+            self._streams_de = DataEntry(streams_frame, ViewType.stream, self.schedule)
+
+        # reset the schedule object just in case the schedule file has changed
+        self._streams_de.schedule = self.schedule
+        self._streams_de.refresh()
 
     # ==================================================================
     # update_edit_labs
     # - A page where lab_ids can be added/modified or deleted
     # ==================================================================
     def update_edit_labs(self):
-        pass
+        if self._labs_de is None:
+            labs_frame = self.gui.get_gui_container("labs")
+            self._labs_de = DataEntry(labs_frame, ViewType.lab, self.schedule)
+
+        # reset the schedule object just in case the schedule file has changed
+        self._labs_de.schedule = self.schedule
+        self._labs_de.refresh()
 
     # ==================================================================
     # draw_edit_courses

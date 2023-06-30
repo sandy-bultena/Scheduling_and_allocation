@@ -77,7 +77,7 @@ def test_init():
 def test_open_existing_file_directly():
     gui = GuiMainTest()
     obj = Scheduler(gui)
-    obj.open_schedule(schedule_file, "fall")
+    obj.open_schedule(schedule_file)
     assert isinstance(obj.schedule, Schedule)
     assert len(obj.schedule.teachers) == 15
 
@@ -175,7 +175,7 @@ def test_update_overview_no_teachers_or_courses():
 def test_update_overview_teachers_and_courses():
     gui = GuiMainTest()
     obj = Scheduler(gui)
-    obj.open_schedule(schedule_file, 'fall')
+    obj.open_schedule(schedule_file)
     obj.update_overview()
     assert gui.draw_overview_called
     assert len(gui.course_text) > 1
@@ -187,7 +187,7 @@ def test_update_overview_teachers_and_courses():
 def test_update_overview_changing_schedules():
     gui = GuiMainTest()
     obj = Scheduler(gui)
-    obj.open_schedule(schedule_file, 'fall')
+    obj.open_schedule(schedule_file)
     obj.update_overview()
     assert gui.draw_overview_called
     assert len(gui.course_text) > 1

@@ -1,18 +1,16 @@
-
 from time import sleep
-from typing import Any, Optional, Callable, Protocol
+from typing import Any, Optional
 
 from ..Schedule.Schedule import Schedule
 from ..Presentation.globals import set_dirty_flag
 from ..GUI.DataEntryTk import DataEntryTk, DEColumnDescription
 from ..Schedule.ScheduleEnums import ViewType
 
-
 property_conversions_from_str = {
-    "id": lambda x: int(x),
+    "id": lambda x: int(x) if x else 0,
     "firstname": lambda x: x,
     "lastname": lambda x: x,
-    "release": lambda x: float(x),
+    "release": lambda x: float(x) if x else 0,
     "number": lambda x: x,
     "description": lambda x: x
 }
@@ -123,7 +121,6 @@ class DataEntry:
     # adding a ViewType object to the schedule
     # ------------------------------------------------------------------------
     def __add_obj(self, data: dict):
-        print(f"adding object: {data}")
         if self.view_type == ViewType.teacher:
             teacher = self.schedule.add_teacher(firstname=data["firstname"],
                                                 lastname=data["lastname"])
@@ -140,7 +137,7 @@ class DataEntry:
     # ------------------------------------------------------------------------
     # Save updated data
     # ------------------------------------------------------------------------
-    def _cb_save(self):
+    def _cb_save(self, *_):
         """Save any changes that the user entered in the GUI form."""
         any_changes = False
 
@@ -156,9 +153,9 @@ class DataEntry:
         DataEntry.Currently_saving += 1
 
         # Read data from the data object.
-        for row in all_data:
-            data = row.copy()
-            #print(f"Processing: {data}")
+        for data in all_data:
+            if not len([x for x in data if x]):
+                continue
 
             # --------------------------------------------------------------------
             # if this row has an ID, then we need to update the
@@ -211,6 +208,7 @@ class DataEntry:
 
         # all done saving, decrement number of files currently being saved
         DataEntry.Currently_saving -= 1
+        self.refresh()
 
     # =================================================================
     # delete object

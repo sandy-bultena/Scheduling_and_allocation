@@ -38,6 +38,7 @@ def main():
 
     Button(mw, text="clear", command=lambda *_: de.de.clear_data()).pack()
     Button(mw, text="refresh", command=lambda *_: de.refresh(data2)).pack()
+    Button(mw, text="get data", command=lambda *_: print(de.get_all_data())).pack()
 
     print ("testing delete callback", de.delete_callback())
     print ("testing save callback", de.save_callback())

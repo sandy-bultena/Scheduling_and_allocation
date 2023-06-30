@@ -7,7 +7,7 @@ from tkinter.ttk import Notebook
 from tkinter import *
 from tkinter.font import Font
 from tkinter import filedialog as fd
-from typing import Callable, Optional
+from typing import Callable, Optional, Any
 
 # from tkinter.messagebox import showerror, showinfo, askyesnocancel
 
@@ -44,7 +44,7 @@ class MainPageBaseTk:
         self.fonts: dict[tk_fonts_and_colours.available_fonts, Font] | None = None
         self.exit_callback: Callable[[], None] = lambda: None
         self.dict_of_frames: dict[str, Frame] = dict()
-        self._open_schedule_callback: Callable[[str, str], None] = lambda filename, semester: None
+        self._open_schedule_callback: Callable[[Any, str], None] = lambda filename, semester: None
         self._new_schedule_callback: Callable[[], None] = lambda: None
 
         self._preferences = preferences
@@ -251,6 +251,7 @@ class MainPageBaseTk:
     # ========================================================================
     # choose existing file to read
     # ========================================================================
+
     def select_file(self) -> Optional[str]:
         current_dir = self._preferences.current_dir()
         filetypes = (
@@ -270,8 +271,8 @@ class MainPageBaseTk:
                 title='Open a file',
                 filetypes=filetypes
             )
-        return filename
-    
+        self._open_schedule_callback(filename)
+
     # ========================================================================
     # read_current_file
     # ========================================================================
@@ -279,4 +280,4 @@ class MainPageBaseTk:
         semester = self._preferences.semester()
         current_file = self._preferences.current_file()
         if current_file is not None:
-            self._open_schedule_callback(current_file, semester)
+            self._open_schedule_callback(current_file)

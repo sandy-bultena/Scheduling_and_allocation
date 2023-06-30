@@ -1,5 +1,4 @@
 from __future__ import annotations
-
 from tkinter import *
 import tkinter as tk
 from typing import Any
@@ -582,22 +581,19 @@ Example::
             data = self.read_row(data_row)
             delete_callback(data)
 
-        # now remove the widgets and the row
-        for grid_col in range(0, self.number_of_columns + 2):
-            w = self.__get_widget_in_row_col(grid_row, grid_col)
-            if w:
-                w.grid_forget()
-                w.destroy()
 
-        # we want to move everything up, (even though it looks
-        # ok without doing it, we want to make sure that all the
-        # row/cols stays in sync with the numbering schemes that we have
+        # we want to move everything up
         for grid_row in range(grid_row + 1, self.number_of_rows + 1):
-            for grid_col in range(0, self.number_of_columns + 2):
-                w = self.__get_widget_in_row_col(grid_row, grid_col)
-                if w:
-                    w.grid_forget()
-                    w.grid(row=grid_row - 1, column=grid_col, sticky="nsew")
+            for grid_col in range(1, self.number_of_columns + 2):
+                w1 = self.__get_widget_in_row_col(grid_row-1, grid_col)
+                w2 = self.__get_widget_in_row_col(grid_row, grid_col)
+                if w1:
+                    was_state = w1.cget('state')
+                    w1.configure(state="normal")
+                    w1.delete(0, 'end')
+                    if w2:
+                        w1.insert(0, w2.get())
+                    w1.configure(state=was_state)
 
         # adjust the number of rows
         self.configure(rows=self.number_of_rows - 1)

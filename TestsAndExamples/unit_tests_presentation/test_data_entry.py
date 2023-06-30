@@ -59,6 +59,25 @@ def test_refresh():
     assert len(gui.data) == 3
     assert not is_data_dirty()
 
+def test_handle_empty_rows():
+    schedule = Schedule()
+    unset_dirty_flag()
+    assert not is_data_dirty()
+    t1 = schedule.add_teacher("Jane", "Doe")
+    t1.release = 0.25
+    t2 = schedule.add_teacher("John", "Doe")
+    t3 = schedule.add_teacher("Babe", "Ruth")
+    gui = Gui()
+    de = DataEntry("", ViewType.teacher, schedule, gui)
+    de.refresh()
+    assert gui.called_refresh
+    gui.data.append(["", "", "", ""])
+    de._cb_save()
+    assert gui.called_get_all_data
+    assert len(schedule.teachers) == 3
+    assert not is_data_dirty()
+
+
 def test_adding_new_teacher():
     schedule = Schedule()
     unset_dirty_flag()
