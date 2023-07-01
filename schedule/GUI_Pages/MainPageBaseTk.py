@@ -14,7 +14,7 @@ from typing import Callable, Optional, Any
 from schedule.Tk import FindImages
 import schedule.Tk.InitGuiFontsAndColours as tk_fonts_and_colours
 from ..Presentation import globals
-from ..GUI.MenuAndToolBarTk import generate_menu, make_toolbar
+from ..GUI_Pages.MenuAndToolBarTk import generate_menu, make_toolbar
 from ..UsefulClasses.NoteBookPageInfo import NoteBookPageInfo
 from ..UsefulClasses.MenuItem import MenuItem, ToolbarItem
 import schedule.UsefulClasses.Colour as Colour
@@ -220,7 +220,7 @@ class MainPageBaseTk:
         return pages
 
     # def update_for_new_schedule_and_show_page(self):
-    #     """Reset the GUI when a new schedule is read."""
+    #     """Reset the GUI_Pages when a new schedule is read."""
     #
     #     if self._standard_page_created:
     #         if self._top_level_notebook:

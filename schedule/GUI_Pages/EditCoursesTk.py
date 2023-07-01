@@ -1,14 +1,12 @@
 from tkinter import *
 from tkinter import ttk
 from ..Tk.scrolled import Scrolled
-from ..PerlLib.Colours import Colour
 from tkinter.font import Font
-from ..GUI.FontsAndColoursTk import FontsAndColoursTk
 import re
 
 
 # =================================================================
-# Edit courses GUI
+# Edit courses GUI_Pages
 # - inserts widgets into a gui container (frame)
 # -----------------------------------------------------------------
 # INPUTS:

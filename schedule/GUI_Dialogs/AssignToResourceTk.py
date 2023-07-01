@@ -19,7 +19,7 @@ from tkinter import *
 from Pmw.Pmw_2_1_1.lib.PmwDialog import Dialog
 
 from .FontsAndColoursTk import FontsAndColoursTk
-from ..Schedule.ScheduleEnums import ViewType
+from schedule.Schedule.ScheduleEnums import ViewType
 
 # ============================================================================
 # globals
@@ -61,7 +61,7 @@ class AssignToResourceTk:
         Parameters:
             type: The type of schedulable object (Teacher/Lab/Stream).
 
-        [Don't use Stream. This GUI is not set_default_fonts_and_colours up for it.]
+        [Don't use Stream. This GUI_Pages is not set_default_fonts_and_colours up for it.]
         """
         self._frame: Dialog
         global Type
@@ -76,7 +76,7 @@ class AssignToResourceTk:
         bold_font = fonts['bold']
 
         # Set up the many, many, MANY attributes that this object will use to keep track of its
-        # various GUI elements and widgets.
+        # various GUI_Pages elements and widgets.
         self.__setup()
 
     # ============================================================================

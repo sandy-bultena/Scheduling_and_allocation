@@ -6,7 +6,7 @@ import sys
 
 sys.path.append(path.dirname(path.dirname(__file__) + "/../../"))
 from schedule.UsefulClasses.NoteBookPageInfo import NoteBookPageInfo
-from schedule.GUI.MainPageBaseTk import MainPageBaseTk
+from schedule.GUI_Pages.MainPageBaseTk import MainPageBaseTk
 from schedule.UsefulClasses.MenuItem import MenuItem, MenuType, ToolbarItem
 from schedule.UsefulClasses.Preferences import Preferences
 

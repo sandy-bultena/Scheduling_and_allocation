@@ -4,6 +4,8 @@ import os
 from functools import partial
 from ..Tk.idlelib_tooltip import Hovertip
 
+# TODO: Standardize the method for cget/configure between TableEntry,
+#       dynamic entry, and ToolBar.  (Best? is DynamicTree)
 
 class ToolBar(Frame):
     def __init__(self, parent, hoverbg=None, buttonbg=None, **kwargs):

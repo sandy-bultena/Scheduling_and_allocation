@@ -1,6 +1,6 @@
 # COMPLETED
 """
-Edit section dialog GUI
+Edit section dialog GUI_Pages
 
 Required Inputs:
     - frame
@@ -34,10 +34,10 @@ NOTE:
     - The section name will be updated only when the dialog is closed.
 """
 
-import AddBlocksDialogTk
+from schedule.GUI_Dialogs import AddBlocksDialogTk
 # NOTE: RELIES ON Presentation.EditSectionDialog
 
-from tkinter import simpledialog, Frame, Misc, Button, ACTIVE, LEFT, Label, Entry, StringVar, Button, messagebox
+from tkinter import simpledialog, Frame, Misc, ACTIVE, LEFT, Label, Entry, StringVar, Button, messagebox
 from tkinter.ttk import Combobox
 
 class EditSectionDialog(simpledialog.Dialog):
@@ -380,7 +380,7 @@ if __name__ == "__main__":
         # add_blocks            -> list of blocks should be 2 + number added
         # remove_blocks         -> list of blocks should be 1
         # edit_block            -> list of blocks should be 2
-            # NOTE: The edit blocks GUI is opened by the presenter
+            # NOTE: The edit blocks GUI_Pages is opened by the presenter
         # add_teacher           -> list of teacher_ids should be 3, assigned teacher_ids should be 2
         # remove_teacher_by_id        -> list of teacher_ids should be 3, assigned teacher_ids should be 1 (different from starting)
         # add_stream            -> list of stream_ids should be 3, assigned stream_ids should be 2

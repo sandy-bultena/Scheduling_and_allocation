@@ -1,6 +1,6 @@
 # COMPLETED
 """
-Add blocks dialog GUI
+Add blocks dialog GUI_Pages
 
 Inputs:
     frame

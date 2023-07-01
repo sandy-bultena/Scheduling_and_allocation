@@ -1,55 +1,75 @@
-from typing import Any
-from functools import partial
+from __future__ import annotations
+from typing import *
 from tkinter import *
 from tkinter import ttk
-from os import path
-import sys
 from functools import partial
-
-sys.path.append(path.dirname(path.dirname(__file__)))
-from scrolled import Scrolled
-
-sys.path.append(path.dirname(path.dirname(__file__)))
 
 
 class DynamicTree(ttk.Treeview):
-    def __init__(self, master, *args, **kwargs):
-        super().__init__(master, *args, **kwargs)
+
+    def __init__(self, master, *_, **kwargs):
+        super().__init__(master)
         self.master = master
-        self._cget = dict()
+        self._configuration_memory: dict[str, Any] = dict()
 
         # ---------------------------------------------------------------
         # configuration and defaults
+        # IMPORTANT NOTE:  Every key in __config_specs needs a
+        #                  corresponding key in _defaults, or the
+        #                  program will crash
         # ---------------------------------------------------------------
         # this is a table of all the additional options available to
         # Dynamic tree and the methods used to set_default_fonts_and_colours those options
-        self.__config_specs = {
-            'children': lambda selected: self.__default_callback('children', selected),
-            'on_select': lambda selected: self.__default_callback('on_select', selected),
-            'status_var': self.__define_status_variable,
-            'right_click': lambda selected: self.__default_callback('right_click', selected),
+
+        _status_variable: StringVar = StringVar()
+        self.__config_specs: dict[str, Callable[[DynamicTree, Any], None]] = {
+            'children': partial(self._save_config_spec, 'children'),
+            'on_select': partial(self._save_config_spec, 'on_select'),
+            'status_var': partial(self._save_config_spec, 'status_var'),
+            'right_click': partial(self._save_config_spec, 'status_var'),
         }
 
         # this is a table of all the additional options available to
         # Dynamic tree, and their default values
+        self._defaults: dict[str, Callable[[DynamicTree, Any], None]]
         self._defaults = {
-            'children': None,
-            'on_select': None,
-            'status_var': StringVar(),
-            'right_click': None,
+            'children': lambda children, selected: None,
+            'on_select': lambda selected_obj, selected: None,
+            'status_var': _status_variable,
+            'right_click': lambda selected_obj, selected: None,
         }
 
+        # set options to defaults
+        self._configuration_memory = self._defaults.copy()
+
         # ---------------------------------------------------------------
-        # configure & draw
+        # apply user options
         # ---------------------------------------------------------------
-        to_configure = self._defaults.copy()
-        to_configure.update(kwargs)
-        self.__configure_save(**to_configure)
+        self.configure(**kwargs)
 
         # ---------------------------------------------------------------
         # setup bindings
         # ---------------------------------------------------------------
         self.bind('<<TreeviewOpen>>', self.open_branch)
+
+    # =================================================================================================
+    # configure, cget, etc
+    # =================================================================================================
+    def _save_config_spec(self, this_property: str, value: Any):
+        self._configuration_memory[this_property] = value
+
+    def cget(self, option: str) -> Any:
+        if option in self._configuration_memory:
+            return self._configuration_memory[option]
+        else:
+            return super().cget(option)
+
+    def configure(self, **kwargs):
+        for k, v in kwargs.items():
+            if k in self._configuration_memory:
+                self._configuration_memory[k](v)
+            else:
+                super().configure(**{k: v})
 
     # ====================================================================================
     # run a callback routine
@@ -59,43 +79,14 @@ class DynamicTree(ttk.Treeview):
         if callback:
             callback(*args)
 
-    # ====================================================================================
-    # define the StringVar for 'status_var'
-    # ====================================================================================
-    def __define_status_variable(self, variable: StringVar):
-        self.__configure_save(status_var=variable)
-        return self.cget("status_var")
-
-    # ===================================================================
-    # save the additional DynamicTree options in a list
-    # ===================================================================
-    def __configure_save(self, **kwargs):
-        for k, v in kwargs.items():
-            self._cget[k] = v
-
-    # =================================================================================================
-    # configure, cget, etc
-    # =================================================================================================
-    def cget(self, option: str) -> Any:
-        if option in self._cget:
-            return self._cget[option]
-        else:
-            return super().cget(option)
-
-    def configure(self, **kwargs):
-        for k, v in kwargs.items():
-            if k in self._cget:
-                self.__config_specs[k](v)
-            else:
-                super().configure(**{k: v})
-
     # =================================================================================================
     # sub open_branch -> callback for tree
     # -> dynamically updates the next level of grandchildren, using
     #    callback routine defined by '-children'
     # =================================================================================================
-    def open_branch(self, event):
+    def open_branch(self, *_):
         item = self.focus()
+
 
 '''
 

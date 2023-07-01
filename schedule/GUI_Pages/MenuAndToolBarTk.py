@@ -12,7 +12,7 @@ Example::
 
     from tkinter import *
     from schedule.Presentation.MenuItem import MenuItem, MenuType, ToolbarItem
-    from schedule.GUI.MenuAndToolBarTk import make_toolbar, generate_menu
+    from schedule.GUI_Pages.MenuAndToolBarTk import make_toolbar, generate_menu
 
     _mw = Tk()
 

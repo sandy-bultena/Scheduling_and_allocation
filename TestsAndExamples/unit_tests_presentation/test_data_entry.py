@@ -3,7 +3,7 @@ import sys
 from os import path
 
 sys.path.append(path.dirname(path.dirname(__file__) + "/../../"))
-from schedule.GUI.DataEntryTk import DEColumnDescription
+from schedule.GUI_Pages.DataEntryTk import DEColumnDescription
 from typing import Any
 from schedule.Schedule.Schedule import Schedule
 from schedule.Presentation.DataEntry import DataEntry

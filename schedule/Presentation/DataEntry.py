@@ -3,7 +3,7 @@ from typing import Any, Optional
 
 from ..Schedule.Schedule import Schedule
 from ..Presentation.globals import set_dirty_flag
-from ..GUI.DataEntryTk import DataEntryTk, DEColumnDescription
+from ..GUI_Pages.DataEntryTk import DataEntryTk, DEColumnDescription
 from ..Schedule.ScheduleEnums import ViewType
 
 property_conversions_from_str = {
@@ -107,7 +107,7 @@ class DataEntry:
                 row.append(str(get_set_property(obj, column.property)))
             data.append(row)
 
-        # refresh the GUI
+        # refresh the GUI_Pages
         self.gui.refresh(data)
 
         # purge the delete queue
@@ -138,10 +138,10 @@ class DataEntry:
     # Save updated data
     # ------------------------------------------------------------------------
     def _cb_save(self, *_):
-        """Save any changes that the user entered in the GUI form."""
+        """Save any changes that the user entered in the GUI_Pages form."""
         any_changes = False
 
-        # Get data from the GUI object.
+        # Get data from the GUI_Pages object.
         all_data = self.gui.get_all_data()
 
         # Just in case saving is already in progress,

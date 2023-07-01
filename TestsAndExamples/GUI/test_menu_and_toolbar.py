@@ -4,11 +4,11 @@ sys.path.append("../..")
 
 from tkinter import *
 from schedule.UsefulClasses.MenuItem import MenuItem, MenuType, ToolbarItem
-from schedule.GUI.MenuAndToolBarTk import make_toolbar, generate_menu
+from schedule.GUI_Pages.MenuAndToolBarTk import make_toolbar, generate_menu
 
 
 # =================================================================================================
-# Test the GUI menu and _toolbar creation work as required
+# Test the GUI_Pages menu and _toolbar creation work as required
 # =================================================================================================
 
 

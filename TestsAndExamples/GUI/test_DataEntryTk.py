@@ -6,8 +6,8 @@ import sys
 sys.path.append(path.dirname(path.dirname(__file__) + "/../../"))
 
 from schedule.Tk.InitGuiFontsAndColours import set_default_fonts_and_colours
-from schedule.GUI.DataEntryTk import DataEntryTk
-from schedule.GUI.DataEntryTk import DEColumnDescription
+from schedule.GUI_Pages.DataEntryTk import DataEntryTk
+from schedule.GUI_Pages.DataEntryTk import DEColumnDescription
 
 
 # TODO: button colour changes don't work on mac, not yet tested on windows

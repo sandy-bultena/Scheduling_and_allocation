@@ -2,7 +2,7 @@ from tkinter import Tk
 
 from pony.orm import commit, db_session
 
-from schedule.GUI.GuiBlockTk import GuiBlockTk
+from schedule.GUI_Pages.GuiBlockTk import GuiBlockTk
 from schedule.Presentation.View import View
 
 from schedule.Schedule.Schedule import Schedule

@@ -1,7 +1,7 @@
 # IN PROGRESS
 """ViewsManager - Manage all of the views (presentations of schedules)"""
 from .View import View
-from ..GUI.ViewsManagerTk import ViewsManagerTk
+from ..GUI_Pages.ViewsManagerTk import ViewsManagerTk
 from ..Schedule.Block import Block
 from ..Schedule.ConflictCalculations import Conflict
 from ..Schedule.Schedule import Schedule
@@ -286,7 +286,7 @@ class ViewsManager:
 
     def get_all_scheduables(self):
         """Gets a list of all schedulable objects and organizes them by type (teacher/lab/stream).
-        Contains a list of the schedulable objects, the names to be displayed in the GUI, etc.
+        Contains a list of the schedulable objects, the names to be displayed in the GUI_Pages, etc.
 
         Returns:
             An array of ScheduablesByType."""

@@ -16,7 +16,7 @@ MAX_LEN_OF_DISPLAYED_FILENAME = 25
 
 class SchedulerTk(MainPageBaseTk):
     """
-    GUI Code for the main Scheduling application window. Inherits from MainPageBaseTk.
+    GUI_Pages Code for the main Scheduling application window. Inherits from MainPageBaseTk.
     """
     # ========================================================================
     # class variables
@@ -207,7 +207,7 @@ class SchedulerTk(MainPageBaseTk):
     def draw_overview(self, page_name: str, course_text: tuple[str, ...],
                       teacher_text: tuple[str, ...]):
         """
-        Writes the text overview of the schedule to the appropriate GUI object.
+        Writes the text overview of the schedule to the appropriate GUI_Pages object.
         :param page_name: name of _notebook tab to draw on.
         :param course_text: Text describing all the courses.
         :param teacher_text: Text describing all the teacher_ids' workloads.

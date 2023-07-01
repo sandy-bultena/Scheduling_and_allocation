@@ -1,6 +1,6 @@
 # COMPLETED
 """Create or assign Time Blocks to various resources."""
-from ..GUI.AssignToResourceTk import AssignToResourceTk
+from schedule.GUI_Dialogs.AssignToResourceTk import AssignToResourceTk
 from ..Schedule.Block import Block
 from ..Schedule.Courses import Course
 from ..Schedule.Labs import Lab
@@ -60,7 +60,7 @@ class AssignToResource:
         resources.
 
         Parameters:
-            mw: The main GUI window.
+            mw: The main GUI_Pages window.
             sched: Schedule object.
             day: new Block information
             start: new Block information

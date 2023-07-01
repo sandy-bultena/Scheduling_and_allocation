@@ -3,8 +3,8 @@ from tkinter import Tk
 
 from .AssignToResource import AssignToResource
 from ..Export import DrawView
-from ..GUI.GuiBlockTk import GuiBlockTk
-from ..GUI.ViewTk import ViewTk
+from ..GUI_Pages.GuiBlockTk import GuiBlockTk
+from ..GUI_Pages.ViewTk import ViewTk
 from ..Schedule.Block import Block
 from ..Schedule.ConflictCalculations import Conflict
 from ..Schedule.Labs import Lab
@@ -46,7 +46,7 @@ class View:
 
     @property
     def gui(self) -> ViewTk:
-        """Returns the GUI object for this view."""
+        """Returns the GUI_Pages object for this view."""
         return self._gui
 
     @gui.setter
@@ -326,7 +326,7 @@ class View:
             chosen_blocks: Array of AssignBlocks that have been selected by the user."""
 
         # Get the day and time of the chosen blocks.
-        from ..GUI.AssignBlockTk import AssignBlockTk
+        from ..GUI_Pages.AssignBlockTk import AssignBlockTk
         (day, start, duration) = AssignBlockTk.get_day_start_duration(chosen_blocks)
 
         # Create the menu to select the blocks to assign to the timeslot.
@@ -533,7 +533,7 @@ class View:
             return
 
         # Loop through each half hour time slot, and create and draw AssignBlock for each.
-        from ..GUI.AssignBlockTk import AssignBlockTk
+        from ..GUI_Pages.AssignBlockTk import AssignBlockTk
         assignable_blocks: list[AssignBlockTk] = []
         for day in range(1, 6):
             for start in range(View.earliest_time * 2, View.latest_time * 2):

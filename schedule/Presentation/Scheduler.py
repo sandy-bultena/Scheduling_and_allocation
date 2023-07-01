@@ -4,7 +4,7 @@ from __future__ import annotations
 from typing import Optional, Protocol
 
 # from .ViewsManager import ViewsManager
-from ..GUI.SchedulerTk import SchedulerTk
+from ..GUI_Pages.SchedulerTk import SchedulerTk
 from ..Schedule.Schedule import Schedule
 from ..UsefulClasses.NoteBookPageInfo import NoteBookPageInfo
 from ..UsefulClasses.Preferences import Preferences

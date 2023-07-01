@@ -1,6 +1,6 @@
 # COMPLETED
 """
-Add sections dialog GUI
+Add sections dialog GUI_Pages
 
 Inputs:
     frame

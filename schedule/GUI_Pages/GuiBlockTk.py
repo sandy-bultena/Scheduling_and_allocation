@@ -21,7 +21,7 @@ class GuiBlockTk:
 
         Parameters:
             type: Type of view (teacher/lab/stream).
-            gui_view: The GUI object associated with this view.
+            gui_view: The GUI_Pages object associated with this view.
             block: The Block to turn into a GuiBlock.
             colour: The colour of the GuiBlock."""
         # get_by_id canvas from gui_view to draw on.

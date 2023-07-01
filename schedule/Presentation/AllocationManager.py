@@ -1,5 +1,5 @@
 # IN PROGRESS
-"""Entry point for the GUI Allocation Management Tool"""
+"""Entry point for the GUI_Pages Allocation Management Tool"""
 
 # TODO: Currently crashes when opening the same schedule twice, including when selecting a schedule
 # then re-opening the same semester selector and selecting that schedule again,

@@ -1,7 +1,7 @@
 from __future__ import annotations
 from tkinter import *
 import tkinter as tk
-from typing import Any
+from typing import Any, Callable
 from functools import partial
 import os
 
@@ -9,7 +9,8 @@ from ..Tk.scrolled import Scrolled
 from ..Tk.FindImages import get_image_dir
 from ..UsefulClasses.Colour import darken, lighten, is_light
 
-
+# TODO:  Maybe refactor the method for config_specs, etc.
+#        Check DynamicTree methods (if was coded after this was)
 # =================================================================================================
 # NOTES TO DEVELOPERS
 # =================================================================================================
@@ -154,7 +155,7 @@ Example::
         # ---------------------------------------------------------------
         # this is a table of all the additional options available to
         # TableEntry, and the methods used to set_default_fonts_and_colours those options
-        self.__config_specs = {
+        self.__config_specs: dict[str:Callable[[TableEntry, Any], None]] = {
             'bg_entry': self.__bg_entry,
             'fg_entry': self.__fg_entry,
             'bg_entry_disabled': self.__bg_entry_disabled,
@@ -173,7 +174,7 @@ Example::
         # TableEntry, and their default values
         bg = self.winfo_toplevel().cget("bg")
         fg = "#000000" if is_light(bg) else "#ffffff"
-        self._defaults = {
+        self._defaults: dict[str, Any] = {
             "rows": 10,
             "bg_entry": "#ffffff",
             "fg_entry": "#000000",
@@ -452,7 +453,6 @@ Example::
     def __bg_entry(self, colour):
         if colour is None:
             return self.cget('bg_entry')
-        print (f"setting colour {colour}")
         bg_colour = self.cget('bg_entry')
         disabled_colour = darken(bg_colour, 20) if is_light(bg_colour) else lighten(bg_colour, 20)
         self.__bg_entry_disabled(disabled_colour)

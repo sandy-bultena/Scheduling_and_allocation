@@ -3,7 +3,7 @@ from pony.orm import Database
 from __future__ import annotations
 
 from .ViewsManager import ViewsManager
-from ..GUI.SchedulerTk import SchedulerTk
+from ..GUI_Pages.SchedulerTk import SchedulerTk
 from ..GuiSchedule.ScenarioSelector import ScenarioSelector
 from ..GuiSchedule.ScheduleSelector import ScheduleSelector
 from ..Schedule.Schedule import Schedule
@@ -19,7 +19,7 @@ from schedule.UsefulClasses.MenuItem import MenuItem, MenuType, ToolbarItem
 # This is the main entry point for the Scheduler Program
 # ==================================================================
 
-# uses MVP protocol, so the GUI must be implement the methods, etc
+# uses MVP protocol, so the GUI_Pages must be implement the methods, etc
 # defined in SchedulerManagerViewInterface.pm
 
 
@@ -81,7 +81,7 @@ def main():
     # NOTE: I have no idea where this comes from. Commenting it out for now.
     # for method in Scheduler.SchedulerManagerGui_methods:
     #     if not hasattr(gui, method):
-    #         raise ValueError(f"Your GUI class does not contain the method {method}")
+    #         raise ValueError(f"Your GUI_Pages class does not contain the method {method}")
 
     get_user_preferences()
     create_main_window()
