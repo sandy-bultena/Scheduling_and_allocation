@@ -7,7 +7,7 @@ import os
 
 from ..Tk.scrolled import Scrolled
 from ..Tk.FindImages import get_image_dir
-from ..UsefulClasses.Colour import darken, lighten, is_light
+from ..Tk.InitGuiFontsAndColours import TkColours
 
 # TODO:  Maybe refactor the method for config_specs, etc.
 #        Check DynamicTree methods (if was coded after this was)
@@ -40,8 +40,6 @@ Additional TableEntry Options
         The number of data rows in TableEntry, should not be modified after TableEntry is created
     columns: int
         The number of data columns in TableEntry, should not be modified after TableEntry is created
-    bg_entry: str
-        The colour of the background of all the entry widgets
     titles: list
         A list of column titles
     colwidths: list
@@ -142,9 +140,10 @@ Example::
     # ===================================================================
     # Constructor
     # ===================================================================
-    def __init__(self, parent: Any, **kwargs):
+    def __init__(self, parent: Frame, colours: TkColours, **kwargs):
         """Create a TableEntry widget inside 'notebook'"""
         tk.Frame.__init__(self, parent)
+        self.colours = colours
         self._cget = dict()
         self.frame = None
         self.__scrolled_frame = None
@@ -156,9 +155,6 @@ Example::
         # this is a table of all the additional options available to
         # TableEntry, and the methods used to set_default_fonts_and_colours those options
         self.__config_specs: dict[str:Callable[[TableEntry, Any], None]] = {
-            'bg_entry': self.__bg_entry,
-            'fg_entry': self.__fg_entry,
-            'bg_entry_disabled': self.__bg_entry_disabled,
             'rows': self.__set_rows,
             'columns': self.__set_columns,
             'titles': self.__set_titles,
@@ -172,13 +168,8 @@ Example::
 
         # this is a table of all the additional options available to
         # TableEntry, and their default values
-        bg = self.winfo_toplevel().cget("bg")
-        fg = "#000000" if is_light(bg) else "#ffffff"
         self._defaults: dict[str, Any] = {
             "rows": 10,
-            "bg_entry": "#ffffff",
-            "fg_entry": "#000000",
-            "bg_entry_disabled": "#dddddd",
             "columns": 10,
             "titles": list(),
             "colwidths": list(),
@@ -188,8 +179,6 @@ Example::
             "height": 200,
             "relief": 'flat',
             "buttontext": "Go",
-            "bg": bg,
-            "fg": fg,
             "delete": None,
             "buttoncmd": None,
         }
@@ -229,12 +218,13 @@ Example::
                 old.destroy()
 
             # make entry widget
+            print(f"Background colour: {self.colours.DataBackground}")
             w = Entry(self.frame,
                       width=column_widths[data_col],
-                      bg=self.cget("bg_entry"),
-                      fg=self.cget("fg_entry"),
-                      disabledbackground=self.cget("bg_entry_disabled"),
-                      disabledforeground=self.cget("fg_entry"),
+                      bg=self.colours.DataBackground,
+                      fg=self.colours.DataForeground,
+                      disabledbackground=self.colours.DisabledBackground,
+                      disabledforeground=self.colours.DataForeground,
                       relief="ridge",
                       )
 
@@ -387,12 +377,10 @@ Example::
     # add the "delete" button at the beginning of a row
     # ====================================================================================
     def __add_delete_btn_to_row(self, grid_row):
-        bg = self.cget("bg")
         b = Button(self.frame,
                    relief="flat",
-                   highlightbackground=bg,
-                   highlightcolor=bg,
-                   bg=bg,
+                   highlightbackground=self.colours.HighlightBackground,
+                   bg=self.colours.ButtonBackground,
                    )
         if self.delete_photo:
             b.configure(image=self.delete_photo)
@@ -446,33 +434,6 @@ Example::
         for col in disabled_columns:
             flag = flag and col
         return flag
-
-    # ====================================================================================
-    # set_default_fonts_and_colours the background colour for all the entry widgets
-    # ====================================================================================
-    def __bg_entry(self, colour):
-        if colour is None:
-            return self.cget('bg_entry')
-        bg_colour = self.cget('bg_entry')
-        disabled_colour = darken(bg_colour, 20) if is_light(bg_colour) else lighten(bg_colour, 20)
-        self.__bg_entry_disabled(disabled_colour)
-        self.__configure_save(bg_entry=colour)
-        self.__apply_to_all_entry_widgets(lambda w, r, c: w.configure(bg=colour))
-        return self.cget("bg_entry")
-
-    def __bg_entry_disabled(self, colour):
-        if colour is None:
-            return self.cget('bg_entry_disabled')
-        self.__configure_save(bg_entry_disabled=colour)
-        self.__apply_to_all_entry_widgets(lambda w, r, c: w.configure(disabledbackground=colour))
-        return self.cget("bg_entry_disabled")
-
-    def __fg_entry(self, colour):
-        if colour is None:
-            return self.cget('fg_entry')
-        self.__configure_save(fg_entry=colour)
-        self.__apply_to_all_entry_widgets(lambda w, r, c: w.configure(bg=colour))
-        return self.cget("fg_entry")
 
     # ====================================================================================
     # callback for button at end of row being clicked
@@ -679,9 +640,6 @@ Example::
         to_configure = self._defaults.copy()
         to_configure.update(kwargs)
         self.__configure_save(**to_configure)
-        bg_colour = self.cget('bg_entry')
-        disabled_colour = darken(bg_colour, 20) if is_light(bg_colour) else lighten(bg_colour, 20)
-        self.__configure_save(bg_entry_disabled=disabled_colour)
         self.__draw()
 
     # ====================================================================================

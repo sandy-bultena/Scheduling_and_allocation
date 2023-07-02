@@ -259,7 +259,7 @@ class ViewTk(ViewBaseTk):
         selected_assigned_blocks.clear()
         selected_assigned_blocks.extend(AssignBlockTk.in_range(x1, y1, x2, y2, assign_blocks_day))
 
-        # colour the selection blue
+        # Colour the selection blue
         for blk in assign_blocks_day:
             blk.unfill()
         for blk in selected_assigned_blocks:

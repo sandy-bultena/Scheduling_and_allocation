@@ -13,11 +13,11 @@ from typing import Callable, Optional, Any
 
 from schedule.Tk import FindImages
 import schedule.Tk.InitGuiFontsAndColours as tk_fonts_and_colours
+from schedule.Tk.InitGuiFontsAndColours import TkColours
 from ..Presentation import globals
 from ..GUI_Pages.MenuAndToolBarTk import generate_menu, make_toolbar
 from ..UsefulClasses.NoteBookPageInfo import NoteBookPageInfo
 from ..UsefulClasses.MenuItem import MenuItem, ToolbarItem
-import schedule.UsefulClasses.Colour as Colour
 from ..UsefulClasses.Preferences import Preferences
 
 Operating_system = platform.system().lower()
@@ -40,8 +40,8 @@ class MainPageBaseTk:
 
     def __init__(self, title, preferences: Preferences):
         self.dark_mode = preferences.dark_mode()
-        self.colours: dict[tk_fonts_and_colours.available_colours, str] | None = None
-        self.fonts: dict[tk_fonts_and_colours.available_fonts, Font] | None = None
+        self.colours: Optional[TkColours] = None
+        self.fonts: Optional[dict[tk_fonts_and_colours.available_fonts, Font]] = None
         self.exit_callback: Callable[[], None] = lambda: None
         self.dict_of_frames: dict[str, Frame] = dict()
         self._open_schedule_callback: Callable[[Any, str], None] = lambda filename, semester: None
@@ -86,9 +86,6 @@ class MainPageBaseTk:
         """Create a status bar for current filename and dirty flag"""
         mw = self._mw
 
-        # choose what colour to show dirty flag text based on WorkspaceColour
-        red = "#880000" if Colour.is_light(self.colours['WorkspaceColour']) else '#ff0000'
-
         # draw frame and labels for current filename and dirty flag
         status_frame = Frame(mw, borderwidth=0, relief='flat')
         status_frame.pack(side='bottom', expand=0, fill='x')
@@ -97,12 +94,12 @@ class MainPageBaseTk:
             .pack(side='left', expand=1, fill='x')
 
         Label(status_frame, textvariable=self._dirty_flag_text, borderwidth=1, relief='ridge', width=15,
-              foreground=red).pack(side='right', fill='x')
+              foreground=self.colours.DirtyColour).pack(side='right', fill='x')
 
     def create_front_page_base(self, logo: PhotoImage | None = None):
         """Creates the very first page that is shown to the user"""
         mw = self._mw
-        self._front_page_frame = Frame(mw, borderwidth=10, relief='flat', background=self.colours['DataBackground'])
+        self._front_page_frame = Frame(mw, borderwidth=10, relief='flat', background=self.colours.DataBackground)
         self._front_page_frame.pack(side='top', expand=1, fill='both')
         if logo is None:
             logo = FindImages.get_logo()
@@ -119,13 +116,13 @@ class MainPageBaseTk:
         # --------------------------------------------------------------
         # frame for holding buttons for starting the scheduling tasks
         # --------------------------------------------------------------
-        option_frame = Frame(self._front_page_frame, bg=self.colours['DataBackground'], borderwidth=10, relief='flat')
+        option_frame = Frame(self._front_page_frame, bg=self.colours.DataBackground, borderwidth=5, relief='flat')
         option_frame.pack(side='left', expand=1, fill='both')
 
-        Frame(option_frame, bg=self.colours['DataBackground']).pack(expand=1, fill='both')
-        center_frame = Frame(option_frame, bg=self.colours['DataBackground'])
+        Frame(option_frame, bg=self.colours.DataBackground).pack(expand=1, fill='both')
+        center_frame = Frame(option_frame, bg=self.colours.DataBackground)
         center_frame.pack(expand=0, fill='both')
-        Frame(option_frame, bg=self.colours['DataBackground']).pack(expand=1, fill='both')
+        Frame(option_frame, bg=self.colours.DataBackground).pack(expand=1, fill='both')
 
         return center_frame
 
@@ -166,7 +163,7 @@ class MainPageBaseTk:
         self.exit_callback = exit_cmd
 
     def _initialize_top_window(self, title):
-        """Create the top level window, specify fonts and colours"""
+        """Create the top level window, specify fonts and colors"""
         # create main window and frames
         self._mw = Tk()
         self._mw.title(title)
@@ -175,7 +172,7 @@ class MainPageBaseTk:
         # when clicking the 'x' in the corner of the window, call _exit_schedule
         self._mw.protocol("WM_DELETE_WINDOW", self._exit_schedule)
 
-        # colours and fonts
+        # colors and fonts
         tk_fonts_and_colours.set_default_fonts_and_colours(self._mw, dark_mode=self.dark_mode)
         self.colours = tk_fonts_and_colours.colours
         self.fonts = tk_fonts_and_colours.fonts
@@ -252,7 +249,7 @@ class MainPageBaseTk:
     # choose existing file to read
     # ========================================================================
 
-    def select_file(self) -> Optional[str]:
+    def select_file(self):
         current_dir = self._preferences.current_dir()
         filetypes = (
             ('schedule files', '*.csv'),
@@ -271,13 +268,12 @@ class MainPageBaseTk:
                 title='Open a file',
                 filetypes=filetypes
             )
-        self._open_schedule_callback(filename)
+        self._open_schedule_callback(filename, "")
 
     # ========================================================================
     # read_current_file
     # ========================================================================
     def _open_schedule(self):
-        semester = self._preferences.semester()
         current_file = self._preferences.current_file()
         if current_file is not None:
-            self._open_schedule_callback(current_file)
+            self._open_schedule_callback(current_file, "")

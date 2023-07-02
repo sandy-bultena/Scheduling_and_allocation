@@ -82,7 +82,7 @@ class ViewBaseTk:
 
         Parameters:
             mw: Main Window
-            conflict_info: a ptr to an array of hashes. Each hash has a key for the conflict text and the foreground and background colours."""
+            conflict_info: a ptr to an array of hashes. Each hash has a key for the conflict text and the foreground and background colors."""
         self.mw = mw
 
         # ---------------------------------------------------------------
@@ -93,7 +93,7 @@ class ViewBaseTk:
         tl.resizable(False, False)
 
         # ---------------------------------------------------------------
-        # Create bar at top to show colour coding of conflicts
+        # Create bar at top to show Colour coding of conflicts
         # ---------------------------------------------------------------
         f = Frame(tl)
         f.pack(expand=1, fill="x")
@@ -211,7 +211,7 @@ class ViewBaseTk:
             type: The type of schedulable object that this guiblock is attached to (Teacher/Lab/Stream)"""
         conflict = Conflict.most_severe(guiblock.block.conflicted_number, type)
 
-        # If the blocks is unmovable, then grey it out, and do not change its colour even if
+        # If the blocks is unmovable, then grey it out, and do not change its Colour even if
         # there is a conflict.
         if not guiblock.block.movable:
             guiblock.change_colour(ViewBaseTk.immovable_colour)
@@ -219,11 +219,11 @@ class ViewBaseTk:
 
         # else...
 
-        # change the colour of the blocks to the most important conflict.
+        # change the Colour of the blocks to the most important conflict.
         if conflict is not None:
             guiblock.change_colour(Conflict.colours()[conflict])
 
-        # no conflict found, reset back to default colour.
+        # no conflict found, reset back to default Colour.
         else:
             guiblock.change_colour(guiblock.colour)
 

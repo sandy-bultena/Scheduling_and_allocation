@@ -1,8 +1,8 @@
-from functools import partial
 from typing import *
 from ..Tk.TableEntry import TableEntry
 from dataclasses import dataclass
 from tkinter import *
+from ..Tk.InitGuiFontsAndColours import TkColours
 
 """
 Basically a Tk::TableEntry object with some restrictions
@@ -25,14 +25,14 @@ class DataEntryTk:
                  parent: Frame,
                  delete_callback: Optional[Callable[[list], None]],
                  save_callback: Optional[Callable[[], None]],
-                 bg_colour: str = "#ffffff",
-                 fg_colour: str = "#000000"
+                 colours: Optional[TkColours],
                  ):
+        if colours is None:
+            colours = TkColours()
+        self.colours = colours
         self.delete_callback = delete_callback
         self.save_callback = save_callback
         self.frame = parent
-        self.bg_colour = bg_colour
-        self.fg_colour = fg_colour
         self.de: Optional[TableEntry] = None
 
     def initialize_columns(self, column_descriptions: list[DEColumnDescription]):
@@ -53,8 +53,7 @@ class DataEntryTk:
             titles=titles,
             column_widths=column_widths,
             delete=self.delete_callback,
-            fg_entry=self.fg_colour,
-            bg_entry=self.bg_colour
+            colours=self.colours,
         )
         self.de.pack(side=TOP, expand=True, fill=BOTH)
         # --------------------------------------------------------------------------

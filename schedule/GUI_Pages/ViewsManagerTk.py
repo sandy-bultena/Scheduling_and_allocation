@@ -47,16 +47,16 @@ class ViewsManagerTk:
         self._button_refs.clear()
 
     def set_button_colour(self, obj, view_conflict):
-        """Sets the colour of the button which is used to create the view.
+        """Sets the Colour of the button which is used to create the view.
 
-        The colour is dependent on the conflict for this particular view."""
+        The Colour is dependent on the conflict for this particular view."""
         # Get the button associated with the current teacher/lab/stream.
 
         button_pts = self._button_refs
         btn = button_pts.get(obj)
 
-        # Set button colour to conflict colour if there is a conflict.
-        if not hasattr(FontsAndColoursTk, "colours"):
+        # Set button Colour to conflict Colour if there is a conflict.
+        if not hasattr(FontsAndColoursTk, "colors"):
             # Call this just in case FontsAndColoursTk hasn't been initialized yet. Avoids crashes.
             FontsAndColoursTk(self.mw)
 

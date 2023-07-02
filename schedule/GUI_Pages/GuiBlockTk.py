@@ -23,7 +23,7 @@ class GuiBlockTk:
             type: Type of view (teacher/lab/stream).
             gui_view: The GUI_Pages object associated with this view.
             block: The Block to turn into a GuiBlock.
-            colour: The colour of the GuiBlock."""
+            colour: The Colour of the GuiBlock."""
         # get_by_id canvas from gui_view to draw on.
         canvas = gui_view.canvas
 
@@ -35,7 +35,7 @@ class GuiBlockTk:
         text: int = gui_objs['text']
         rectangle: int = gui_objs['rectangle']
         coords = gui_objs['coords']
-        colour = gui_objs['colour']
+        colour = gui_objs['Colour']
 
         # Group rectangle and text to create a GuiBlock,
         # So that they both move as one on the UI.
@@ -65,13 +65,13 @@ class GuiBlockTk:
         self.is_controlled = False
 
     # =================================================================
-    # change the colour of the guiblock
+    # change the Colour of the guiblock
     # =================================================================
     def change_colour(self, colour: str):
-        """Change the colour of the GuiBlock (including text and shading).
+        """Change the Colour of the GuiBlock (including text and shading).
 
         Parameters:
-            colour: A string specifying a valid colour (name or #rrggbb acceptable)."""
+            colour: A string specifying a valid Colour (name or #rrggbb acceptable)."""
         colour = Colour.string(colour)
 
         cn = self.gui_view.canvas
@@ -96,7 +96,7 @@ class GuiBlockTk:
     # Skipping most of these except for Colour, as that's the only one with special validation.
     @property
     def colour(self):
-        """Gets/sets the colour for this GuiBlock."""
+        """Gets/sets the Colour for this GuiBlock."""
         return self._colour
 
     @colour.setter

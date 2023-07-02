@@ -167,12 +167,12 @@ class AssignBlockTk:
         return True if (self.x1 < x < self.x2) and (self.y1 < y < self.y2) else False
 
     # =================================================================
-    # set_colour ( $colour)
+    # set_colour ( $Colour)
     # =================================================================
     def set_colour(self, colour: str = "mistyrose3"):
-        """Fills the blocks with the specified colour.
+        """Fills the blocks with the specified Colour.
 
-        Colour string can be of type '#rrggbb' or a valid unix colour name.
+        Colour string can be of type '#rrggbb' or a valid unix Colour name.
 
         Parameters:
             colour: default value is 'mistyrose3'.
@@ -191,7 +191,7 @@ class AssignBlockTk:
         return self.remove_colour()
 
     def remove_colour(self):
-        """Removes any colour from the blocks.
+        """Removes any Colour from the blocks.
 
         Returns:
             The modified blocks."""

@@ -294,7 +294,7 @@ class ViewsManager:
 
     def determine_button_colours(self, all_view_choices=None):
         """Finds the highest conflict for each teacher/lab/stream in the array and sets the
-        colour of the button accordingly. """
+        Colour of the button accordingly. """
         if not all_view_choices:
             all_view_choices = self.get_all_scheduables()
 

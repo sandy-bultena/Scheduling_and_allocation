@@ -6,9 +6,7 @@ from ..UsefulClasses.Preferences import Preferences
 
 from .MainPageBaseTk import MainPageBaseTk
 from tkinter import *
-from tkinter import messagebox
 from tkinter import ttk
-from ..Tk.scrolled import Scrolled
 
 BUTTON_WIDTH = 50
 MAX_LEN_OF_DISPLAYED_FILENAME = 25
@@ -72,7 +70,7 @@ class SchedulerTk(MainPageBaseTk):
             justify=RIGHT,
             font=self.fonts['big'],
             borderwidth=0,
-            bg=self.colours['DataBackground'],
+            bg=self.colours.DataBackground,
             command=self._open_schedule,
             width=BUTTON_WIDTH,
             height=3
@@ -87,7 +85,7 @@ class SchedulerTk(MainPageBaseTk):
             text="Create NEW Schedule File",
             font=self.fonts['big'],
             borderwidth=0,
-            bg=self.colours['DataBackground'],
+            bg=self.colours.DataBackground,
             command=self._new_schedule_callback,
             width=BUTTON_WIDTH,
             height=3
@@ -101,7 +99,7 @@ class SchedulerTk(MainPageBaseTk):
             text="Browse for Schedule File",
             font=self.fonts['big'],
             borderwidth=0,
-            bg=self.colours['DataBackground'],
+            bg=self.colours.DataBackground,
             command=self.select_file,
             width=BUTTON_WIDTH,
             height=3
@@ -109,7 +107,7 @@ class SchedulerTk(MainPageBaseTk):
 
         # a growable and shrinkable frame which makes resizing look better
         Frame(
-            option_frame, bg=self.colours['DataBackground']
+            option_frame, bg=self.colours.DataBackground
         ).pack(expand=1, fill=BOTH)
 
         # --------------------------------------------------------------
@@ -201,78 +199,6 @@ class SchedulerTk(MainPageBaseTk):
     # _overview_notebook = None
     # overview_pages: dict[str, Frame] = {}
     #
-    # ========================================================================
-    # write a text overview of schedule, 2 modes.. teacher/course
-    # ========================================================================
-    def draw_overview(self, page_name: str, course_text: tuple[str, ...],
-                      teacher_text: tuple[str, ...]):
-        """
-        Writes the text overview of the schedule to the appropriate GUI_Pages object.
-        :param page_name: name of _notebook tab to draw on.
-        :param course_text: Text describing all the courses.
-        :param teacher_text: Text describing all the teacher_ids' workloads.
-        """
-        f = self.dict_of_frames.get(page_name.lower())
-        if f is None:
-            messagebox.showerror('Draw Overview', "invalid page_name")
-            return
-
-        # --------------------------------------------------------------------
-        # create the gui widgets necessary to write stuff to if they
-        # don't yet exist
-        # --------------------------------------------------------------------
-        if SchedulerTk._overview_notebook is None:
-            SchedulerTk._overview_notebook = ttk.Notebook(f)
-            SchedulerTk._overview_notebook.pack(expand=True, fill=BOTH)
-
-            course_overview_frame = Frame(SchedulerTk._overview_notebook)
-            SchedulerTk._overview_notebook.add(course_overview_frame, text="by Course")
-            self.dict_of_frames['course_overview'] = course_overview_frame
-
-            teacher_overview_frame = Frame(SchedulerTk._overview_notebook)
-            SchedulerTk._overview_notebook.add(teacher_overview_frame, text="by Teacher")
-            self.dict_of_frames['teacher_overview'] = teacher_overview_frame
-
-            s: Scrolled = Scrolled(
-                course_overview_frame,
-                'Text',
-                height=20,
-                width=50,
-                scrollbars='se',
-                wrap=NONE
-            )
-            s.pack(expand=True, fill=BOTH)
-            SchedulerTk._overview_course_textbox = s.widget
-
-            s: Scrolled = Scrolled(
-                teacher_overview_frame,
-                'Text',
-                height=20,
-                width=50,
-                scrollbars='se',
-                wrap=NONE,
-                fg=self.colours["DataForeground"]
-            )
-            s.pack(expand=True, fill=BOTH)
-            SchedulerTk._overview_teacher_textbox = s.widget
-
-        # --------------------------------------------------------------------
-        # write info into appropriate text boxes
-        # --------------------------------------------------------------------
-        SchedulerTk._overview_teacher_textbox.config(state=NORMAL)
-        SchedulerTk._overview_course_textbox.config(state=NORMAL)
-        SchedulerTk._overview_teacher_textbox.delete("1.0", "end")
-        for txt in teacher_text:
-            SchedulerTk._overview_teacher_textbox.insert('end', txt + "\n")
-
-        SchedulerTk._overview_course_textbox.delete("1.0", "end")
-        for txt in course_text:
-            SchedulerTk._overview_course_textbox.insert('end', txt + "\n")
-
-        # make text boxes read-only
-        SchedulerTk._overview_teacher_textbox.config(state=DISABLED)
-        SchedulerTk._overview_course_textbox.config(state=DISABLED)
-
     def get_gui_container(self, page_name: str) -> Optional[Frame]:
         return self.dict_of_frames.get(page_name.lower())
 

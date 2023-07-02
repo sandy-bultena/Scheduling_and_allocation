@@ -61,7 +61,7 @@ from ..Schedule.ScheduleEnums import ViewType
     # ----------------------------------------------------------
     # Draw the teacher blocks on canvas. 
     # Set the type argument to "lab" or "teacher" to change the
-    # colours and the information that is displayed in the 
+    # colors and the information that is displayed in the 
     # blocks.
     # ----------------------------------------------------------
     for blocks in blocks:
@@ -310,7 +310,7 @@ def draw_block(canvas: Canvas, block, scl: dict, type,
         block: Block object.
         scl: Scaling info [dictionary].
         type: Type of view [teacher|blocks|stream] (affects what gets drawn on the blocks).
-        colour: colour of blocks.
+        colour: Colour of blocks.
         block_tag: Integer used to give the drawn blocks a unique tag identifier.
 
     Returns:
@@ -319,13 +319,13 @@ def draw_block(canvas: Canvas, block, scl: dict, type,
         -text: text printed on the blocks.
         -coords: array of canvas coordinates for the blocks.
         -rectangle: the canvas rectangle object.
-        -colour: the colour of the blocks."""
+        -Colour: the Colour of the blocks."""
     scale = scl['scale']
     if not block:
         return
 
     # --------------------------------------------------------------------
-    # set_default_fonts_and_colours the colour and pixel width of edge
+    # set_default_fonts_and_colours the Colour and pixel width of edge
     # --------------------------------------------------------------------
     if not colour:
         colour = colours[type] or colours['teacher']
@@ -395,7 +395,7 @@ def draw_block(canvas: Canvas, block, scl: dict, type,
         'text': text,
         'coords': coords,
         'rectangle': rectangle,
-        'colour': colour
+        'Colour': colour
     }
 
 
@@ -434,22 +434,22 @@ def get_coords(day, start, duration, scl):
 
 
 # =================================================================
-# get_by_id the shades of the colour
+# get_by_id the shades of the Colour
 # =================================================================
 
 def get_colour_shades(colour: str):
-    """Get the shades of the passed colour.
+    """Get the shades of the passed Colour.
 
     Parameters:
-        colour: A hexadecimal colour code.
+        colour: A hexadecimal Colour code.
 
     Returns:
-        Array of colours lighter than passed colour
-        Array of colours darker than passed colour
-        Recommended colour for text if overlaid on colour"""
+        Array of colors lighter than passed Colour
+        Array of colors darker than passed Colour
+        Recommended Colour for text if overlaid on Colour"""
     edge = Edge
 
-    # convert colour to hue, saturation, and light.
+    # convert Colour to hue, saturation, and light.
     (h, s, l) = Colour.hsl(colour)
 
     # Calculate the light/dark changes.
@@ -457,12 +457,12 @@ def get_colour_shades(colour: str):
     light_intensity = (1 - l) * 75 if l > .7 else 30 * .75
     dark_intensity = l * 75 if l < .3 else 30 * .75
 
-    # recommended text colour
+    # recommended text Colour
     textcolour = "black"
     if not Colour.is_light(colour):
         textcolour = "white"
 
-    # create a light/dark gradient of colours.
+    # create a light/dark gradient of colors.
     light = []
     dark = []
 
@@ -525,7 +525,7 @@ B<Parameters>
 
 =item * C<x1,y1,x2,y2,> coordinates of the start and stop position of the line
 
-=item * C<< -fill => "colour", >> the colour of the line (OPTIONAL... default is "black"),
+=item * C<< -fill => "Colour", >> the Colour of the line (OPTIONAL... default is "black"),
 
 =item * C<< -dash => "dash string" >> the type of dash line (OPTIONAL ... default is no dash)
 

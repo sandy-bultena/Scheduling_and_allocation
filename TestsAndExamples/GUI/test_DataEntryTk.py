@@ -10,7 +10,7 @@ from schedule.GUI_Pages.DataEntryTk import DataEntryTk
 from schedule.GUI_Pages.DataEntryTk import DEColumnDescription
 
 
-# TODO: button colour changes don't work on mac, not yet tested on windows
+# TODO: button Colour changes don't work on mac, not yet tested on windows
 
 def main():
     mw = Tk()
@@ -31,12 +31,16 @@ def main():
     de = DataEntryTk(frame,
                      lambda *args: print("delete", [*args]),
                      lambda *args: print("save", [*args]),
-                     bg_colour=colours['DataBackground'],
-                     fg_colour=colours['DataForeground'])
+                     colours,
+                     )
     de.initialize_columns(columns)
     de.refresh(data)
 
-    Button(mw, text="clear", command=lambda *_: de.de.clear_data()).pack()
+    Button(mw, text="clear", command=lambda *_: de.de.clear_data(),
+           bg=colours.ButtonBackground,
+           fg=colours.ButtonForeground,
+           highlightbackground=colours.HighlightBackground,
+           ).pack()
     Button(mw, text="refresh", command=lambda *_: de.refresh(data2)).pack()
     Button(mw, text="get data", command=lambda *_: print(de.get_all_data())).pack()
 

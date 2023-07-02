@@ -215,7 +215,7 @@ class View:
         self._setup_for_assignable_blocks()
 
         # ---------------------------------------------------------------
-        # set_default_fonts_and_colours colour for all buttons on main window, "Schedules" tab
+        # set_default_fonts_and_colours Colour for all buttons on main window, "Schedules" tab
         # ---------------------------------------------------------------
         self._set_view_button_colours()
         if self.views_manager:
@@ -260,7 +260,7 @@ class View:
                     self.gui.canvas.update_idletasks()
 
     def update_for_conflicts(self, type):
-        """Determines conflict status for all GuiBlocks on this view and colours them
+        """Determines conflict status for all GuiBlocks on this view and colors them
         accordingly.
 
         Parameters:
@@ -309,7 +309,7 @@ class View:
         self: View
         self.views_manager.undo(type)
 
-        # Set colour for all buttons on main window, "Schedules" tab.
+        # Set Colour for all buttons on main window, "Schedules" tab.
         self._set_view_button_colours()
 
         # Update status bar.
@@ -488,7 +488,7 @@ class View:
 
     @staticmethod
     def cb_update_after_moving_block(self, block: Block):
-        """Update all views, calculate conflicts and set_default_fonts_and_colours button colours, and set_default_fonts_and_colours the dirty flag.
+        """Update all views, calculate conflicts and set_default_fonts_and_colours button colors, and set_default_fonts_and_colours the dirty flag.
 
         Handles Event: For when a GuiBlock has been dropped, and now it is time to refresh
         everything.
@@ -504,7 +504,7 @@ class View:
         views_manager.update_for_conflicts()
         views_manager.set_dirty()
 
-        # Set colour for all buttons on main window, "Schedules" tab.
+        # Set Colour for all buttons on main window, "Schedules" tab.
         self._set_view_button_colours()
 
         pass
@@ -542,7 +542,7 @@ class View:
         self.gui.setup_assign_blocks(assignable_blocks, self._cb_assign_blocks)
 
     def _get_conflict_info(self) -> list[dict[str, str]]:
-        """What types of conflicts are there? What colours should they be?"""
+        """What types of conflicts are there? What colors should they be?"""
         conflict_info = []
         for c in (ConflictType.TIME_TEACHER, ConflictType.TIME, ConflictType.LUNCH,
                   ConflictType.MINIMUM_DAYS, ConflictType.AVAILABILITY):
@@ -583,7 +583,7 @@ class View:
         """In the main window, in the schedules tab, there are buttons that are used to call up the
         various Schedule Views.
 
-        This function will colour those buttons according to the maximum conflict for that given
+        This function will Colour those buttons according to the maximum conflict for that given
         view."""
         if self.views_manager:
             self.views_manager.determine_button_colours()

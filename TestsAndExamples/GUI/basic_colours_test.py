@@ -6,7 +6,7 @@ sys.path.append(path.dirname(path.dirname(__file__) + "/../../"))
 from schedule.Tk.InitGuiFontsAndColours import set_default_fonts_and_colours
 
 
-# TODO: button colour changes don't work on mac, not yet tested on windows
+# TODO: button Colour changes don't work on mac, not yet tested on windows
 
 def main():
     mw: Toplevel = Tk()

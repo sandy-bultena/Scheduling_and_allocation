@@ -11,10 +11,13 @@ from ..UsefulClasses.Preferences import Preferences
 from ..Presentation.globals import *
 from ..Schedule.ScheduleEnums import ViewType
 from ..Presentation.DataEntry import DataEntry
+from ..Presentation.Overview import Overview
 
 from schedule.UsefulClasses.MenuItem import MenuItem, MenuType, ToolbarItem
 
+
 class GuiContainer(Protocol): ...
+
 
 class GuiMain(Protocol):
     def create_menu_and_toolbars(self, buttons: list[str], toolbar_info: dict[str:ToolbarItem],
@@ -28,8 +31,6 @@ class GuiMain(Protocol):
     def start_event_loop(self): ...
 
     def select_file(self): ...
-
-    def draw_overview(self, page_name: str, course_text: tuple[str], teachers_text: tuple[str]): ...
 
     def create_standard_page(self, notebook_pages_info: Optional[list[NoteBookPageInfo]] = None): ...
 
@@ -49,6 +50,7 @@ class Scheduler:
         self._teachers_de: Optional[DataEntry] = None
         self._streams_de: Optional[DataEntry] = None
         self._labs_de: Optional[DataEntry] = None
+        self._overview: Optional[Overview] = None
 
         self.preferences: Preferences = Preferences()
         # gui is optional for testing purposes
@@ -100,38 +102,6 @@ class Scheduler:
         self.schedule = Schedule()
         self.gui.schedule_filename = ""
         self.gui.create_standard_page(self._required_pages)
-
-    # ==================================================================
-    # update_overview
-    # A text representation of the schedules
-    # ==================================================================
-    def update_overview(self):
-        courses_text: list[str] = list()
-        teachers_text: list[str] = list()
-
-        # no schedule
-        if self.schedule is None:
-            self.gui.draw_overview("Overview",
-                                   ('There is no schedule, please open one',),
-                                   ('There is no schedule, please open one',)
-                                   )
-            return
-
-        # course info
-        if not self.schedule.courses:
-            courses_text.append('No courses defined in this schedule')
-        else:
-            for c in self.schedule.courses:
-                courses_text.append(str(c))
-
-        # teacher info
-        if not self.schedule.teachers:
-            teachers_text.append('No teachers defined in this schedule')
-        else:
-            for t in self.schedule.teachers:
-                teachers_text.append(self.schedule.teacher_details(t))
-
-        self.gui.draw_overview('Overview', tuple(courses_text), tuple(teachers_text))
 
     # ==================================================================
     # define what goes in the menu and _toolbar
@@ -266,6 +236,19 @@ class Scheduler:
     #     gui.draw_view_choices(page_name, all_view_choices, btn_callback)
     #
     #     views_manager.determine_button_colours()
+
+    # ==================================================================
+    # update_overview
+    # A text representation of the schedules
+    # ==================================================================
+    def update_overview(self):
+        if self._overview is None:
+            overview_frame = self.gui.get_gui_container("Overview")
+            self._overview = Overview(overview_frame, self.schedule)
+
+        # reset the schedule object just in case the schedule file has changed
+        self._overview.schedule = self.schedule
+        self._overview.refresh()
 
     # ==================================================================
     # update_edit_teachers

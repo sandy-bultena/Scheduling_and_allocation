@@ -1,47 +1,112 @@
-"""Sets up the standard Tk properties (fonts, colours)"""
+"""Sets up the standard Tk properties (fonts, colors)"""
 
 from __future__ import annotations
-from tkinter import Tk
+from tkinter import Tk, TclError
 from tkinter.font import Font
 import platform
 import re
-from typing import Literal
+from typing import Literal, Optional
 
-import schedule.UsefulClasses.Colour as colour
+import schedule.UsefulClasses.Colour as Colour
 
 operating_system = platform.system().lower()
 
-# old (or maybe new default colours?)
-# _old_default_colours =
-# {  'WorkspaceColour': "#eeeeee",
-#     "WindowForeground": "black",
-#     "SelectedBackground": "#cdefff",
-#     "SelectedForeground": "#0000ff",
-#     "DarkBackground": "#cccccc",
-#     "ButtonBackground": "#abcdef",
-#     "ButtonForeground": "black",
-#     "ActiveBackground": "#89abcd",
-#     "highlightbackground": "#0000ff",
-#     "ButtonHighlightBackground": "#ff0000",
-#     "DataBackground": "white",
-#     "DataForeground": "black",
-#    }
 
-available_colours = Literal[
-    'WorkspaceColour',
-    'WindowForeground',
-    'SelectedBackground',
-    'SelectedForeground',
-    'DarkBackground',
-    'ButtonBackground',
-    'ButtonForeground',
-    'ActiveBackground',
-    'ButtonHighlightBackground',
-    'DataBackground',
-    'DataForeground',
-    'DisabledBackground',
-    'DisabledForeground',
-]
+class TkColours:
+    """Defines colour scheme """
+
+    def __init__(self, tk_root: Optional[Tk] = None, theme='mac', dark=False):
+        # Defaults to MAC Colours
+        window_background_color: Optional[str] = None
+        pressed_button_text_color: Optional[str] = None
+        text_color: Optional[str] = None
+        text_background_color: Optional[str] = None
+        selected_text_background_color: Optional[str] = None
+        selected_text_color: Optional[str] = None
+
+        # ============================================================================
+        # get system colours (mac) ... not sure about if this works on windows
+        # ============================================================================
+        if tk_root:
+            try:
+                (r, g, b) = tk_root.winfo_rgb('systemWindowBackgroundColor')
+                window_background_color = Colour.get_colour_string_from_rgb(r / 65536.0, g / 65536.0, b / 65536.0)
+            except TclError:
+                pass
+
+            try:
+                (r, g, b) = tk_root.winfo_rgb('systemPressedButtonTextColor')
+                pressed_button_text_color = Colour.get_colour_string_from_rgb(r / 65536.0, g / 65536.0, b / 65536.0)
+            except TclError:
+                pass
+
+            try:
+                (r, g, b) = tk_root.winfo_rgb('systemTextColor')
+                text_color = Colour.get_colour_string_from_rgb(r / 65536.0, g / 65536.0, b / 65536.0)
+            except TclError:
+                pass
+
+            try:
+                (r, g, b) = tk_root.winfo_rgb('systemTextBackgroundColor')
+                text_background_color = Colour.get_colour_string_from_rgb(r / 65536.0, g / 65536.0, b / 65536.0)
+            except TclError:
+                pass
+
+            try:
+                (r, g, b) = tk_root.winfo_rgb('systemSelectedTextBackgroundColor')
+                selected_text_background_color = Colour.get_colour_string_from_rgb(r / 65536.0, g / 65536.0,
+                                                                                   b / 65536.0)
+            except TclError:
+                pass
+
+            try:
+                (r, g, b) = tk_root.winfo_rgb('systemSelectedTextColor')
+                selected_text_color = Colour.get_colour_string_from_rgb(r / 65536.0, g / 65536.0, b / 65536.0)
+            except TclError:
+                pass
+
+        # default is mac
+        self.SelectedForeground: str = selected_text_color if selected_text_color else "#000000"
+        self.SelectedBackground: str = selected_text_background_color if selected_text_background_color \
+            else "#eab9ff"
+        self.DataBackground = text_background_color if text_background_color else "#ffffff"
+        self.WorkspaceColour: str = window_background_color if window_background_color else "#eeeeee"
+        self.ButtonPress: str = pressed_button_text_color if pressed_button_text_color else "#ffffff"
+        self.DataForeground = text_color if text_color else "#000000"
+        self.HighlightColor = self.DataForeground
+        self.WindowForeground: str = self.DataForeground
+        self.ButtonBackground: str = self.WorkspaceColour
+        self.ActiveBackground: str = self.WorkspaceColour
+        self.HighlightBackground: str = self.WorkspaceColour
+        self.ButtonForeground: str = "#000000"
+        self.DarkBackground: str = Colour.darken(self.WorkspaceColour, 20)
+        self.DisabledBackground: str = "#a3a3a3"
+        self.DirtyColour: str = "#880000"
+        self.DisabledBackground = "#a3a3a3"
+        self.DisabledForeground = "#000000"
+
+        # ============================================================================
+        # if dark mode, just invert all the colours
+        # ============================================================================
+        if dark:
+            print ("Converting to darkmode")
+            for col in vars(self):
+
+                # Note: button colors don't work on MAC, so skip
+                if re.search("button", col.lower()):
+                    if re.match('darwin', operating_system):
+                        continue
+
+                print(f"{col} was {getattr(self, col)}")
+                h, s, l = Colour.hsl(getattr(self, col))
+                print(f"({h},{s},{l}")
+                l = abs(0.9 * l - 1)
+                print(f"({h},{s},{l}")
+                print(f"... setting {col} to {Colour.get_colour_string_from_hsl(h, s, l)}")
+                setattr(self, col, Colour.get_colour_string_from_hsl(h, s, l))
+
+
+
 
 available_fonts = Literal[
                   'normal',
@@ -52,23 +117,23 @@ available_fonts = Literal[
                   'small':
                   ]
 
-colours: dict[available_colours, str] = dict()
 fonts: dict[available_fonts, Font] = dict()
-
+colours: TkColours = TkColours()
 
 def set_default_fonts_and_colours(mw: Tk, font_size: int = 12, dark_mode: bool = False):
-    global colours
     global fonts
-    colours = _get_system_colours(dark=dark_mode)
-    _set_system_colours(mw, colours)
-    mw.configure(background=colours['WorkspaceColour'])
+    global colours
+    colours = TkColours(mw, dark=dark_mode)
+    set_system_colours(mw, colours)
+    mw.configure(background=colours.WorkspaceColour)
 
     fonts = _define_fonts(mw, font_size)
-    mw.option_add("*Font", fonts['normal'],)
+    mw.option_add("*Font", fonts['normal'], )
     return colours, fonts
 
 
 def _define_fonts(mw: Tk, my_size: int = 12) -> dict[available_fonts, Font]:
+    global fonts
     # define normal font
     size = my_size
     if re.search('win', operating_system):
@@ -90,7 +155,7 @@ def _define_fonts(mw: Tk, my_size: int = 12) -> dict[available_fonts, Font]:
     fixed_font = 'courier new'
 
     # make fonts
-    fonts: [available_fonts, str] = {
+    fonts = {
         'normal': Font(mw, **set_props, weight=normal_weight, size=normal_size, family=normal_font),
         'bold': Font(mw, **set_props, weight=bold_weight, size=normal_size, family=normal_font),
         'big': Font(mw, **set_props, weight=normal_weight, size=bigger_size, family=normal_font),
@@ -105,188 +170,169 @@ def _define_fonts(mw: Tk, my_size: int = 12) -> dict[available_fonts, Font]:
 # =================================================================
 # _get_system_colours
 # =================================================================
-def _get_system_colours(dark: bool = False) -> dict[available_colours, str]:
+def _get_system_colours(root: Optional[Tk] = None, dark: bool = False) -> TkColours:
     """
-    Defines the colours for the Tk app.
-    Does not get the system colours anymore.
+    Defines the colors for the Tk app.
+    Does not get the system colors anymore.
     Times have changed."""
 
-    colours = dict()
-
-    # --------------------------------------------------------------
-    # default colour palette
-    # --------------------------------------------------------------
-    colours['WindowHighlight'] = "#f1efec"
-    colours['WorkspaceColour'] = "#e3e3dd"
-    colours['ButtonBackground'] = "#e3e3dd"
-    colours['DataBackground'] = "#ffffff"
-    colours["unknown1"] = "#68cea600a0e6"
-    colours["unknown2"] = "#8d40ad03c700"
+    global colours
+    colours = TkColours(root)
 
     # --------------------------------------------------------------
     # Invert Colours
     # --------------------------------------------------------------
     if dark:
-        for col in colours:
-            h, s, l = colour.hsl(colours[col])
+        for col in vars(colours):
+            # Note: button colors don't work on MAC, so skip
+            if not re.match('darwin', operating_system):
+                colours.ButtonBackground = colours.WorkspaceColour
+
+            print(f"{col} was {getattr(colours, col)}")
+            h, s, l = Colour.hsl(getattr(colours, col))
+            print(f"({h},{s},{l}")
             l = abs(0.9 * l - 1)
-            colours[col] = colour.get_colour_string_from_hsl(h, s, l)
+            print(f"({h},{s},{l}")
+            print(f"... setting {col} to {Colour.get_colour_string_from_hsl(h, s, l)}")
+            setattr(colours, col, Colour.get_colour_string_from_hsl(h, s, l))
 
     # --------------------------------------------------------------
-    # adjust for possible missing colours
+    # adjust for consistency
     # --------------------------------------------------------------
 
-    # should never happen, but better to be safe
-    if 'WorkspaceColour' not in colours:
-        colours['WorkspaceColour'] = '#FFFFFF'
-
-    # data foreground
-    if 'DataForeground' not in colours:
-        if 'DataBackground' in colours and colour.is_light(colours['DataBackground']):
-            colours['DataForeground'] = "#000000"
-        else:
-            colours['DataForeground'] = '#FFFFFF'
-
-    # a darker/lighter background colour for unused tabs
-    if 'DataBackground' in colours and colour.is_light(colours['DataBackground']):
-        colours['DarkBackground'] = colour.darken(colours['WorkspaceColour'], 10)
+    # a darker/lighter background Colour for unused tabs
+    if Colour.is_light(colours.DataBackground):
+        colours.DarkBackground = Colour.darken(colours.WorkspaceColour, 10)
     else:
-        colours['DarkBackground'] = colour.darken(colours['WorkspaceColour'], -10)
+        colours.DarkBackground = Colour.darken(colours.WorkspaceColour, -10)
 
-    if 'ButtonBackground' not in colours:
-        colours['ButtonBackground'] = colours['WorkspaceColour']
-
-    # a darker/lighter background colour for selections in lists
-    if 'DataBackground' in colours and colour.is_light(colours['DataBackground']):
-        colours['SelectedBackground'] = colour.darken(colours['DataBackground'], 10)
-        colours['SelectedForeground'] = '#000000'
+    # a darker/lighter background Colour for selections in lists
+    if Colour.is_light(colours.DataBackground):
+        colours.SelectedBackground = Colour.darken(colours.DataBackground, 30)
+        colours.DisabledBackground = Colour.darken(colours.DataBackground, 20)
+        colours.SelectedForeground = '#000000'
+        colours.DisabledForeground = '#000000'
     else:
-        colours['SelectedBackground'] = colour.darken(colours['DataBackground'], -10)
-        colours['SelectedForeground'] = '#FFFFFF'
+        colours.SelectedBackground = Colour.darken(colours.DataBackground, -30)
+        colours.DisabledBackground = Colour.darken(colours.DataBackground, -20)
+        colours.SelectedForeground = '#FFFFFF'
+        colours.DisabledForeground = '#FFFFFF'
 
-    # a darker/lighter background colour for disabled widgets
-    if 'DataBackground' in colours and colour.is_light(colours['DataBackground']):
-        colours['DisabledBackground'] = colour.darken(colours['DataBackground'], 20)
-        colours['DisabledForeground'] = '#000000'
+    # default foregrounds (white or black depending on if Colour is dark or not)
+    if Colour.is_light(colours.WorkspaceColour):
+        colours.WindowForeground = '#000000'
     else:
-        colours['DisabledBackground'] = colour.darken(colours['DataBackground'], -20)
-        colours['DisabledForeground'] = '#FFFFFF'
+        colours.WindowForeground = '#FFFFFF'
+        colours.DirtyColour = '#ff0000'
 
-    # mac won't change button colours
-    if re.match('darwin', operating_system):
-        colours['ButtonBackground'] = "#FFFFFF"
-
-    # default foregrounds (white or black depending on if colour is dark or not)
-    if 'WindowForeground' not in colours:
-        if colour.is_light(colours['WorkspaceColour']):
-            colours['WindowForeground'] = '#000000'
-        else:
-            colours['WindowForeground'] = '#FFFFFF'
-
-    if 'ButtonForeground' not in colours:
-        if colour.is_light(colours['ButtonBackground']):
-            colours['ButtonForeground'] = '#000000'
-        else:
-            colours['ButtonForeground'] = '#FFFFFF'
-
-    if colour.is_light(colours['ButtonBackground']):
-        colours['ActiveBackground'] = colour.darken(colours['ButtonBackground'], 10)
+    if Colour.is_light(colours.ButtonBackground):
+        colours.ButtonForeground = '#000000'
+        colours.ActiveBackground = Colour.darken(colours.ButtonBackground, 10)
     else:
-        colours['ActiveBackground'] = colour.lighten(colours['ButtonBackground'], 10)
+        colours.ButtonForeground = '#FFFFFF'
+        colours.ActiveBackground = Colour.lighten(colours.ButtonBackground, 10)
 
     return colours
 
 
 # =================================================================
-# _set_system_colours
+# set_system_colours
 # =================================================================
-def _set_system_colours(mw: Tk, colours: dict[str, str | None]):
-    """Using colour array and main window, set_default_fonts_and_colours up some standard defaults for Tk widgets"""
+def set_system_colours(mw: Tk, colors: TkColours):
+    """Using Colour array and main window, set_default_fonts_and_colours up some standard defaults for Tk widgets"""
 
-    # make sure that all expected key values are at least None to avoid KeyNotFound crashes
-    keys = [
-        'WorkspaceColour',
-        'WindowForeground',
-        'SelectedBackground',
-        'SelectedForeground',
-        'DarkBackground',
-        'ButtonBackground',
-        'ButtonForeground',
-        'ActiveBackground',
-        'ButtonHighlightBackground',
-        'DataBackground',
-        'DataForeground',
-        'DisabledBackground',
-        'DisabledForeground',
+    """
 
-    ]
-    for k in keys:
-        if k not in colours:
-            colours[k] = None
 
+
+
+
+highlightbackground − Background color of the highlight region when the widget has focus.
+
+highlightcolor − Foreground color of the highlight region when the widget has focus.
+
+
+
+"""
     # generic
-    _option_add(mw, "*background", colours['WorkspaceColour'])
-    _option_add(mw, '*background', colours['WorkspaceColour'])
-    _option_add(mw, '*foreground', colours['WindowForeground'])
-    _option_add(mw, '*selectBackground', colours['SelectedBackground'])
-    _option_add(mw, '*selectForeground', colours['SelectedForeground'])
-    _option_add(mw, '*Scrollbar.troughColor', colours['DarkBackground'])
+    #    activebackground − Background color for the widget when the widget is active.
+    #    activeforeground − Foreground color for the widget when the widget is active.
+    #    background − Background color for the widget. This can also be represented as bg.
+    #    disabledforeground − Foreground color for the widget when the widget is disabled.
+    #    highlightbackground − Background color of the highlight region when the widget has focus.
+    #    highlightcolor − Foreground color of the highlight region when the widget has focus.
+    #    foreground − Foreground color for the widget. This can also be represented as fg.
+    #    selectbackground − Background color for the selected items of the widget.
+    #    selectforeground − Foreground color for the selected items of the widget.
+    _option_add(mw, '*activebackground', colors.ActiveBackground)
+    _option_add(mw, '*activeforeground', colors.ButtonPress)
+    _option_add(mw, "*background", colors.WorkspaceColour)
+    _option_add(mw, "*disabledforeground", colors.DisabledForeground)
+    _option_add(mw, "*highlightbackground", colors.HighlightBackground)
+    _option_add(mw, "*highlightcolor", colors.HighlightColor)
+    _option_add(mw, '*foreground', colors.WindowForeground)
+    _option_add(mw, '*selectBackground', colors.SelectedBackground)
+    _option_add(mw, '*selectForeground', colors.SelectedForeground)
+    _option_add(mw, '*troughColor', colors.DarkBackground)
 
     # buttons
-    _option_add(mw, "*Button.background", colours['ButtonBackground'])
-    _option_add(mw, "*Button.foreground", colours['ButtonForeground'])
-    _option_add(mw, "*Button.activeBackground", colours['ActiveBackground'])
-    _option_add(mw, "*Button.activeForeground", colours['ButtonForeground'])
-    _option_add(mw, "*Button.highlightBackground", colours['ButtonHighlightBackground'])
+    _option_add(mw, "*Button.background", colors.ButtonBackground)
+    _option_add(mw, "*Button.foreground", colors.ButtonForeground)
+    _option_add(mw, "*Button.activeBackground", colors.ActiveBackground)
+    _option_add(mw, "*Button.activeForeground", colors.ButtonForeground)
+    _option_add(mw, "*Button.highlightBackground", colors.HighlightBackground)
 
     # radio buttons
-    _option_add(mw, "*Radiobutton.activeBackground", colours['DarkBackground'])
-    _option_add(mw, "*Radiobutton.foreground", colours['WindowForeground'])
-    _option_add(mw, "*Radiobutton.background", colours['WorkspaceColour'])
-    _option_add(mw, "*Radiobutton.highlightBackground", colours['WorkspaceColour'])
-    _option_add(mw, "*Radiobutton.activeForeground", colours['WindowForeground'])
+    _option_add(mw, "*Radiobutton.activeBackground", colors.DarkBackground)
+    _option_add(mw, "*Radiobutton.foreground", colors.WindowForeground)
+    _option_add(mw, "*Radiobutton.background", colors.WorkspaceColour)
+    _option_add(mw, "*Radiobutton.highlightBackground", colors.WorkspaceColour)
+    _option_add(mw, "*Radiobutton.activeForeground", colors.WindowForeground)
     if re.match('windows', operating_system):
-        _option_add(mw, "*Radiobutton.selectColor", colours['DataBackground'])
+        _option_add(mw, "*Radiobutton.selectColor", colors.DataBackground)
 
     # check buttons
-    _option_add(mw, '*Checkbutton.activeBackground', colours['DarkBackground'])
-    _option_add(mw, '*Checkbutton.foreground', colours['WindowForeground'])
-    _option_add(mw, '*Checkbutton.background', colours['WorkspaceColour'])
-    _option_add(mw, '*Checkbutton.activeForeground', colours['WindowForeground'])
-    _option_add(mw, '*Checkbutton.highlightBackground', colours['WorkspaceColour'])
+    _option_add(mw, '*Checkbutton.activeBackground', colors.DarkBackground)
+    _option_add(mw, '*Checkbutton.foreground', colors.WindowForeground)
+    _option_add(mw, '*Checkbutton.background', colors.WorkspaceColour)
+    _option_add(mw, '*Checkbutton.activeForeground', colors.WindowForeground)
+    _option_add(mw, '*Checkbutton.highlightBackground', colors.WorkspaceColour)
     if re.match('windows', operating_system):
-        _option_add(mw, '*Checkbutton.selectColor', colours['DataBackground'])
+        _option_add(mw, '*Checkbutton.selectColor', colors.DataBackground)
 
     # lists and entries
-    _option_add(mw, '*Entry.foreground', colours['DataForeground'])
-    _option_add(mw, '*Entry.background', colours['DataBackground'])
-    _option_add(mw, '*Entry.disabledforeground', colours['DisabledForeground'])
-    _option_add(mw, '*Entry.disabledbackground', colours['DisabledBackground'])
-    _option_add(mw, '*Listbox.foreground', colours['DataForeground'])
-    _option_add(mw, '*Listbox.background', colours['DataBackground'])
-    _option_add(mw, '*BrowseEntry.foreground', colours['DataForeground'])
-    _option_add(mw, '*BrowseEntry.background', colours['DataBackground'])
+    _option_add(mw, '*Entry.foreground', colors.DataForeground)
+    _option_add(mw, '*Entry.background', colors.DataBackground)
+    _option_add(mw, '*Entry.disabledforeground', colors.DisabledForeground)
+    _option_add(mw, '*Entry.disabledbackground', colors.DisabledBackground)
+    _option_add(mw, '*Listbox.foreground', colors.DataForeground)
+    _option_add(mw, '*Listbox.background', colors.DataBackground)
+    _option_add(mw, '*BrowseEntry.foreground', colors.DataForeground)
+    _option_add(mw, '*BrowseEntry.background', colors.DataBackground)
 
     # menu
-    _option_add(mw, '*Menu.activeBackground', colours['DarkBackground'])
-    _option_add(mw, '*Menu.activeForeground', colours['WindowForeground'])
+    _option_add(mw, '*Menu.activeBackground', colors.DarkBackground)
+    _option_add(mw, '*Menu.activeForeground', colors.WindowForeground)
 
     # trees
-    _option_add(mw, '*DynamicTree.foreground', colours['DataForeground'])
-    _option_add(mw, '*DynamicTree.background', colours['DataBackground'])
-    _option_add(mw, '*EasyDir.foreground', colours['DataForeground'])
-    _option_add(mw, '*EasyDir.background', colours['DataBackground'])
+    _option_add(mw, '*DynamicTree.foreground', colors.DataForeground)
+    _option_add(mw, '*DynamicTree.background', colors.DataBackground)
+    _option_add(mw, '*EasyDir.foreground', colors.DataForeground)
+    _option_add(mw, '*EasyDir.background', colors.DataBackground)
 
     # text boxes
-    _option_add(mw, '*Text.foreground', colours['DataForeground'])
-    _option_add(mw, '*Text.background', colours['DataBackground'])
-    _option_add(mw, '*ROText.foreground', colours['DataForeground'])
-    _option_add(mw, '*ROText.background', colours['DataBackground'])
+    _option_add(mw, '*Text.foreground', colors.DataForeground)
+    _option_add(mw, '*Text.background', colors.DataBackground)
+    _option_add(mw, '*ROText.foreground', colors.DataForeground)
+    _option_add(mw, '*ROText.background', colors.DataBackground)
 
     # _notebook
-    _option_add(mw, "*NoteBook.inactiveBackground", colours['DarkBackground'])
-    _option_add(mw, "*NoteBook.background", colours['WorkspaceColour'])
-    _option_add(mw, "*NoteBook.backpagecolour", colours['WorkspaceColour'])
+    _option_add(mw, "*NoteBook.inactiveBackground", colors.DarkBackground)
+    _option_add(mw, "*NoteBook.background", colors.WorkspaceColour)
+    _option_add(mw, "*NoteBook.backpagecolour", colors.WorkspaceColour)
+
+    # other
+    _option_add(mw, '*Scrollbar.troughColor', colors.DarkBackground)
 
 
 def _option_add(mw: Tk, option: str, new_value):

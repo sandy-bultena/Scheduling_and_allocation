@@ -217,10 +217,10 @@ def __new_conflict(conflict_type: ConflictType, conflict_blocks: tuple[Block, ..
 
 
 # --------------------------------------------------------
-# colours
+# colors
 # --------------------------------------------------------
 def colours() -> dict[ConflictType, str]:
-    """ Returns the colours used by each conflict type """
+    """ Returns the colors used by each conflict type """
     return ConflictType.colours()
 
 

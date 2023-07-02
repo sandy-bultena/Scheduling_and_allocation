@@ -7,7 +7,7 @@ This includes:
  * a simple text-only Tooltip class
 
 Updated by Sandy Bultena June 2023
- * added colour options
+ * added Colour options
 
 """
 from tkinter import *

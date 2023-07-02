@@ -152,7 +152,7 @@ class AllocationGridTk:
             me = Entry(mini_frame, **prop)
             me.pack(side='top', expand=0, fill='both')
 
-            # change colour every second merged header
+            # change Colour every second merged header
             if i % 2:
                 me.configure(disabledbackground=header_colour2)
 
@@ -169,7 +169,7 @@ class AllocationGridTk:
                 # widget
                 (se := Entry(hf2, **prop)).pack(side='left')
 
-                # change colour every second merged header
+                # change Colour every second merged header
                 if i % 2:
                     se.configure(disabledbackground=header_colour2)
 
@@ -302,7 +302,7 @@ class AllocationGridTk:
                     self.entry_widgets[row][col] = de
                     self.widgets_row_col[de] = [row, col]
 
-                    # set_default_fonts_and_colours colour in column to make it easier to read
+                    # set_default_fonts_and_colours Colour in column to make it easier to read
                     colour = de.cget('bg')
                     if i % 2:
                         colour = very_light_grey
@@ -363,7 +363,7 @@ class AllocationGridTk:
             for row in range(self.num_rows):
                 widget = self.get_widget(row, col)
 
-                # note... want the widget colour to go back to what it was,
+                # note... want the widget Colour to go back to what it was,
                 # even if the data has changed
                 bg = widget.cget('bg')
                 widget.configure(textvariable=StringVar(value=data_vars[row][col]))
@@ -433,7 +433,7 @@ class AllocationGridTk:
         else:
             w.selection_clear()
 
-        # set_default_fonts_and_colours data colour and totals colour
+        # set_default_fonts_and_colours data Colour and totals Colour
         dcolour = colour or bg_colour
         tcolour = colour
 
@@ -444,23 +444,23 @@ class AllocationGridTk:
         # get_by_id the widget
         r, c = self.get_row_col(w)
 
-        # set_default_fonts_and_colours colours for rows (data)
+        # set_default_fonts_and_colours colors for rows (data)
         col_colour = Colour.add(dcolour, self.column_colours.get(c))
         for row in range(self.num_rows):
             wid = self.get_widget(row, c)
             wid.configure(bg=col_colour)
 
-        # set_default_fonts_and_colours colours for cols (data)
+        # set_default_fonts_and_colours colors for cols (data)
         for col in range(self.num_cols):
             wid = self.get_widget(r, col)
             col_colour = Colour.add(dcolour, self.column_colours.get(col))
             wid.configure(bg=col_colour)
 
-        # set_default_fonts_and_colours colour for row header
+        # set_default_fonts_and_colours Colour for row header
         widget = self.row_header_widgets[r]
         widget.configure(disabledbackground=dcolour)
 
-        # set_default_fonts_and_colours colours for totals row
+        # set_default_fonts_and_colours colors for totals row
         if tcolour:
             tcolour = Colour.add(tcolour, totals_colour)
         else:
@@ -470,7 +470,7 @@ class AllocationGridTk:
             widget = self.totals_widgets[r][col]
             widget.configure(disabledbackground=tcolour)
 
-        # callback (only if data has changed) (indicated by the current colour)
+        # callback (only if data has changed) (indicated by the current Colour)
         if data_changed:
             self.cb_process_data_change(r, c)
 
