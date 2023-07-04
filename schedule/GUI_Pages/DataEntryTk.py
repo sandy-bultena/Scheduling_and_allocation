@@ -25,10 +25,10 @@ class DataEntryTk:
                  parent: Frame,
                  delete_callback: Optional[Callable[[list], None]],
                  save_callback: Optional[Callable[[], None]],
-                 colours: Optional[TkColours],
+                 colours: Optional[TkColours] = None,
                  ):
         if colours is None:
-            colours = TkColours()
+            colours = TkColours(parent.winfo_toplevel())
         self.colours = colours
         self.delete_callback = delete_callback
         self.save_callback = save_callback

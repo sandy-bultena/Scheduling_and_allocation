@@ -89,35 +89,49 @@ class TkColours:
         # if dark mode, just invert all the colours
         # ============================================================================
         if dark:
-            print ("Converting to darkmode")
-            for col in vars(self):
+             for col in vars(self):
 
                 # Note: button colors don't work on MAC, so skip
                 if re.search("button", col.lower()):
                     if re.match('darwin', operating_system):
                         continue
 
-                print(f"{col} was {getattr(self, col)}")
                 h, s, l = Colour.hsl(getattr(self, col))
-                print(f"({h},{s},{l}")
                 l = abs(0.9 * l - 1)
-                print(f"({h},{s},{l}")
-                print(f"... setting {col} to {Colour.get_colour_string_from_hsl(h, s, l)}")
                 setattr(self, col, Colour.get_colour_string_from_hsl(h, s, l))
 
 
+class TkFonts:
+    def __init__(self, mw: Tk, my_size: int = 12):
+        size = my_size
+        if re.search('win', operating_system):
+            size -= 2
+        family = 'arial'
+        if re.search('darwin', operating_system):
+            family = 'lucidia'
+            size += 3
+
+        set_props = {
+            'slant': 'roman', 'underline': 0, 'overstrike': 0
+        }
+
+        normal_weight: Literal['normal'] = 'normal'
+        bold_weight: Literal['bold'] = 'bold'
+        normal_size = size
+        bigger_size = size + 2
+        normal_font = family
+        fixed_font = 'courier new'
+
+        # make fonts
+        self.normal: Font =  Font(mw, **set_props, weight=normal_weight, size=normal_size, family=normal_font)
+        self.bold: Font =  Font(mw, **set_props, weight=bold_weight, size=normal_size, family=normal_font)
+        self.big: Font =  Font(mw, **set_props, weight=normal_weight, size=bigger_size, family=normal_font)
+        self.bigbold: Font = Font(mw, **set_props, weight=bold_weight, size=bigger_size, family=normal_font)
+        self.fixed: Font = Font(mw, **set_props, weight=bold_weight, size=size + 1, family=fixed_font)
+        self.small: Font = Font(mw, **set_props, weight=normal_weight, size=size - 2, family=normal_font)
 
 
-available_fonts = Literal[
-                  'normal',
-                  'bold',
-                  'big',
-                  'bigbold',
-                  'fixed',
-                  'small':
-                  ]
 
-fonts: dict[available_fonts, Font] = dict()
 colours: TkColours = TkColours()
 
 def set_default_fonts_and_colours(mw: Tk, font_size: int = 12, dark_mode: bool = False):
@@ -127,133 +141,18 @@ def set_default_fonts_and_colours(mw: Tk, font_size: int = 12, dark_mode: bool =
     set_system_colours(mw, colours)
     mw.configure(background=colours.WorkspaceColour)
 
-    fonts = _define_fonts(mw, font_size)
-    mw.option_add("*Font", fonts['normal'], )
+    fonts = TkFonts(mw, font_size)
+    mw.option_add("*Font", fonts.normal, )
     return colours, fonts
-
-
-def _define_fonts(mw: Tk, my_size: int = 12) -> dict[available_fonts, Font]:
-    global fonts
-    # define normal font
-    size = my_size
-    if re.search('win', operating_system):
-        size -= 2
-    family = 'arial'
-    if re.search('darwin', operating_system):
-        family = 'lucidia'
-        size += 3
-
-    set_props = {
-        'slant': 'roman', 'underline': 0, 'overstrike': 0
-    }
-
-    normal_weight: Literal['normal'] = 'normal'
-    bold_weight: Literal['bold'] = 'bold'
-    normal_size = size
-    bigger_size = size + 2
-    normal_font = family
-    fixed_font = 'courier new'
-
-    # make fonts
-    fonts = {
-        'normal': Font(mw, **set_props, weight=normal_weight, size=normal_size, family=normal_font),
-        'bold': Font(mw, **set_props, weight=bold_weight, size=normal_size, family=normal_font),
-        'big': Font(mw, **set_props, weight=normal_weight, size=bigger_size, family=normal_font),
-        'bigbold': Font(mw, **set_props, weight=bold_weight, size=bigger_size, family=normal_font),
-        'fixed': Font(mw, **set_props, weight=bold_weight, size=size + 1, family=fixed_font),
-        'small': Font(mw, **set_props, weight=normal_weight, size=size - 2, family=normal_font)
-    }
-
-    return fonts
-
-
-# =================================================================
-# _get_system_colours
-# =================================================================
-def _get_system_colours(root: Optional[Tk] = None, dark: bool = False) -> TkColours:
-    """
-    Defines the colors for the Tk app.
-    Does not get the system colors anymore.
-    Times have changed."""
-
-    global colours
-    colours = TkColours(root)
-
-    # --------------------------------------------------------------
-    # Invert Colours
-    # --------------------------------------------------------------
-    if dark:
-        for col in vars(colours):
-            # Note: button colors don't work on MAC, so skip
-            if not re.match('darwin', operating_system):
-                colours.ButtonBackground = colours.WorkspaceColour
-
-            print(f"{col} was {getattr(colours, col)}")
-            h, s, l = Colour.hsl(getattr(colours, col))
-            print(f"({h},{s},{l}")
-            l = abs(0.9 * l - 1)
-            print(f"({h},{s},{l}")
-            print(f"... setting {col} to {Colour.get_colour_string_from_hsl(h, s, l)}")
-            setattr(colours, col, Colour.get_colour_string_from_hsl(h, s, l))
-
-    # --------------------------------------------------------------
-    # adjust for consistency
-    # --------------------------------------------------------------
-
-    # a darker/lighter background Colour for unused tabs
-    if Colour.is_light(colours.DataBackground):
-        colours.DarkBackground = Colour.darken(colours.WorkspaceColour, 10)
-    else:
-        colours.DarkBackground = Colour.darken(colours.WorkspaceColour, -10)
-
-    # a darker/lighter background Colour for selections in lists
-    if Colour.is_light(colours.DataBackground):
-        colours.SelectedBackground = Colour.darken(colours.DataBackground, 30)
-        colours.DisabledBackground = Colour.darken(colours.DataBackground, 20)
-        colours.SelectedForeground = '#000000'
-        colours.DisabledForeground = '#000000'
-    else:
-        colours.SelectedBackground = Colour.darken(colours.DataBackground, -30)
-        colours.DisabledBackground = Colour.darken(colours.DataBackground, -20)
-        colours.SelectedForeground = '#FFFFFF'
-        colours.DisabledForeground = '#FFFFFF'
-
-    # default foregrounds (white or black depending on if Colour is dark or not)
-    if Colour.is_light(colours.WorkspaceColour):
-        colours.WindowForeground = '#000000'
-    else:
-        colours.WindowForeground = '#FFFFFF'
-        colours.DirtyColour = '#ff0000'
-
-    if Colour.is_light(colours.ButtonBackground):
-        colours.ButtonForeground = '#000000'
-        colours.ActiveBackground = Colour.darken(colours.ButtonBackground, 10)
-    else:
-        colours.ButtonForeground = '#FFFFFF'
-        colours.ActiveBackground = Colour.lighten(colours.ButtonBackground, 10)
-
-    return colours
 
 
 # =================================================================
 # set_system_colours
 # =================================================================
 def set_system_colours(mw: Tk, colors: TkColours):
-    """Using Colour array and main window, set_default_fonts_and_colours up some standard defaults for Tk widgets"""
+    """Using Colour array and main window, set_default_fonts_and_colours up
+    some standard defaults for Tk widgets"""
 
-    """
-
-
-
-
-
-highlightbackground − Background color of the highlight region when the widget has focus.
-
-highlightcolor − Foreground color of the highlight region when the widget has focus.
-
-
-
-"""
     # generic
     #    activebackground − Background color for the widget when the widget is active.
     #    activeforeground − Foreground color for the widget when the widget is active.
@@ -305,6 +204,7 @@ highlightcolor − Foreground color of the highlight region when the widget has 
     _option_add(mw, '*Entry.background', colors.DataBackground)
     _option_add(mw, '*Entry.disabledforeground', colors.DisabledForeground)
     _option_add(mw, '*Entry.disabledbackground', colors.DisabledBackground)
+    _option_add(mw, '*Entry.highlightebackground', colors.WorkspaceColour)
     _option_add(mw, '*Listbox.foreground', colors.DataForeground)
     _option_add(mw, '*Listbox.background', colors.DataBackground)
     _option_add(mw, '*BrowseEntry.foreground', colors.DataForeground)

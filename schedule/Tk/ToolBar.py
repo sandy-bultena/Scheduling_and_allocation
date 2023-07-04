@@ -4,6 +4,7 @@ import os
 from functools import partial
 from ..Tk.idlelib_tooltip import Hovertip
 
+
 # TODO: Standardize the method for cget/configure between TableEntry,
 #       dynamic entry, and ToolBar.  (Best? is DynamicTree)
 
@@ -11,7 +12,7 @@ class ToolBar(Frame):
     def __init__(self, parent, hoverbg=None, buttonbg=None, **kwargs):
         super().__init__(master=parent, **kwargs)
 
-        self.config_options = ['hoverbg', 'buttonbg']
+        self.config_options = ['hoverbg', 'buttonbg', 'buttonfg']
         if hoverbg:
             self.configure(hoverbg=hoverbg)
         if buttonbg:
@@ -72,7 +73,8 @@ class ToolBar(Frame):
         shortcut_key = details.get('shortcut', [])
         disabled = details.get('disabled', False)
         bg = self.cget('buttonbg') if self.cget('buttonbg') else self.cget('bg')
-        hbg = self.cget('hoverbg') if self.cget('hoverbg') else self.cget('bg')
+        fg = self.cget('buttonfg') if self.cget('buttonbg') else self.cget('fg')
+        hbg = self.cget('hoverbg') if self.cget('hoverbg') else self.cget('fg')
 
         # define top level for this frame
         mw = self.master.winfo_toplevel()
@@ -84,7 +86,7 @@ class ToolBar(Frame):
         # NOTE: have to save the image in object instance so that the ref does not get removed
         if btn_width < image.width() or btn_height < image.height():
             image = image.subsample(round(image.width() / btn_width),
-                                              round(image.height() / btn_height))
+                                    round(image.height() / btn_height))
         self.images.append(image)
 
         # add button
@@ -95,9 +97,9 @@ class ToolBar(Frame):
             relief='flat',
             bg=bg,
             activebackground=bg,
-            borderwidth=1,
+            borderwidth=0,
             highlightbackground=bg,
-            highlightcolor=bg,
+            highlightcolor=fg,
             width=20,
             height=20
         )

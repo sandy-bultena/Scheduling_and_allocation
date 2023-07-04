@@ -5,7 +5,8 @@ from os import path
 from schedule.UsefulClasses.MenuItem import MenuItem, MenuType, ToolbarItem
 from ..Tk import FindImages
 from ..Tk.ToolBar import ToolBar
-from ..Tk.InitGuiFontsAndColours import available_colours
+import schedule.Tk.InitGuiFontsAndColours as fas
+
 
 """
 Example::
@@ -86,13 +87,11 @@ def generate_menu(mw, menu_details: list[MenuItem], parent: Menu):
 
 
 def make_toolbar(mw, button_names: list[str], actions: dict[str:ToolbarItem],
-                 colours: dict[available_colours:str] = None) -> ToolBar:
+                 colours: fas.TkColours = fas.TkColours()) -> ToolBar:
     """Create a _toolbar described by the actions"""
     image_dir = FindImages.get_image_dir()
-    if colours is None:
-        colours = dict()
-    bg_colour = colours['WorkspaceColour'] if 'WorkspaceColour' in colours else mw.cget('background')
-    ab_colour = colours['ActiveBackground'] if 'ActiveBackground' in colours else "#89abcd"
+    bg_colour = colours.WorkspaceColour
+    ab_colour = colours.ActiveBackground
     toolbar = ToolBar(mw, buttonbg=bg_colour, hoverbg=ab_colour)
 
     # create all the buttons

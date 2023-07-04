@@ -68,7 +68,7 @@ class SchedulerTk(MainPageBaseTk):
         self.current_file_button = Button(
             option_frame,
             justify=RIGHT,
-            font=self.fonts['big'],
+            font=self.fonts.big,
             borderwidth=0,
             bg=self.colours.DataBackground,
             command=self._open_schedule,
@@ -83,7 +83,7 @@ class SchedulerTk(MainPageBaseTk):
         Button(
             option_frame,
             text="Create NEW Schedule File",
-            font=self.fonts['big'],
+            font=self.fonts.big,
             borderwidth=0,
             bg=self.colours.DataBackground,
             command=self._new_schedule_callback,
@@ -97,7 +97,7 @@ class SchedulerTk(MainPageBaseTk):
         Button(
             option_frame,
             text="Browse for Schedule File",
-            font=self.fonts['big'],
+            font=self.fonts.big,
             borderwidth=0,
             bg=self.colours.DataBackground,
             command=self.select_file,

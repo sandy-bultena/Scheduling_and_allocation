@@ -179,7 +179,7 @@ example::
                 self._horizontal_scrollbar.pack(side=BOTTOM, fill=X)
 
         if 'e' in scrollbars or 'w' in scrollbars:
-            self._vertical_scrollbar = tk.Scrollbar(self, orient=VERTICAL, takefocus=0)
+            self._vertical_scrollbar = tk.Scrollbar(self, orient=VERTICAL, takefocus=0, troughcolor='pink')
             if 'e' in scrollbars:
                 self._vertical_scrollbar.pack(side=RIGHT, fill=Y)
             else:

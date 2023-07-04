@@ -268,7 +268,7 @@ class MainPageBaseTk:
                 title='Open a file',
                 filetypes=filetypes
             )
-        self._open_schedule_callback(filename, "")
+        self._open_schedule_callback(filename)
 
     # ========================================================================
     # read_current_file
@@ -276,4 +276,4 @@ class MainPageBaseTk:
     def _open_schedule(self):
         current_file = self._preferences.current_file()
         if current_file is not None:
-            self._open_schedule_callback(current_file, "")
+            self._open_schedule_callback(current_file)

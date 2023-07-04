@@ -16,7 +16,8 @@ from ..Presentation.Overview import Overview
 from schedule.UsefulClasses.MenuItem import MenuItem, MenuType, ToolbarItem
 
 
-class GuiContainer(Protocol): ...
+class GuiContainer(Protocol):
+    ...
 
 
 class GuiMain(Protocol):
@@ -91,7 +92,7 @@ class Scheduler:
     def select_file(self, *_):
         self.gui.select_file()
 
-    def open_schedule(self, filename: str):
+    def open_schedule(self, filename: str, *_):
         if filename:
             self.preferences.current_file(filename)
         self.schedule = Schedule(filename)

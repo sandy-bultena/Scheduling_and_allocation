@@ -13,3 +13,9 @@ print()
 print ("Text")
 for k in t.keys():
     print(f"{k}:{t.cget(k)}")
+
+d=Entry(mw)
+print()
+print("Entry")
+for k in t.keys():
+    print(f"{k}:{t.cget(k)}")

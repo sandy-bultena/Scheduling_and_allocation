@@ -35,10 +35,6 @@ def open_file(filename, schedule=None):
     main_page.create_standard_page(notebook_info)
 
 
-def _show_overview():
-    main_page.draw_overview("Overview", ("course1", "course2"), ("teacher1", "teacher2"))
-
-
 def get_notebook_info():
     nb1 = NoteBookPageInfo("Schedules", event_handler=lambda *_: print("Schedules called"),
                            frame_callback=lambda *_: print("Schedules frame callback"))

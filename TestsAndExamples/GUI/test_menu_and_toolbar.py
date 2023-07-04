@@ -12,6 +12,7 @@ from schedule.GUI_Pages.MenuAndToolBarTk import make_toolbar, generate_menu
 # =================================================================================================
 
 
+import schedule.Tk.InitGuiFontsAndColours as fac
 def main():
     mw = Tk()
 
@@ -25,7 +26,10 @@ def main():
     # action
     toolbar = make_toolbar(mw, buttons, toolbar_info)
     toolbar.pack(side='top', expand=0, fill='x')
-    toolbar2 = make_toolbar(mw, buttons, toolbar_info, colours={'WorkspaceColour': 'blue', 'ActiveBackground': 'pink'})
+    colours = fac.TkColours(mw,dark=True)
+    colours.ButtonBackground="#ff0000"
+    colours.ButtonForeground="#00ff00"
+    toolbar2 = make_toolbar(mw, buttons, toolbar_info, colours)
     toolbar2.pack(side='top', expand=0, fill='x')
 
     # test (manually)
