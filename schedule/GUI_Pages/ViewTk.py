@@ -5,6 +5,8 @@ from tkinter import *
 from tkinter import ttk
 from typing import Callable, TYPE_CHECKING
 
+from schedule.Schedule.ScheduleEnums import ResourceType
+
 from .AssignBlockTk import AssignBlockTk
 from .ViewBaseTk import ViewBaseTk
 
@@ -44,7 +46,7 @@ class ViewTk(ViewBaseTk):
     # ============================================================================
     # setup_popup_menu("teacher" | "lab" | "stream")
     # ============================================================================
-    def setup_popup_menu(self, type: str, named_schedulables, toggle_movement_cb: Callable,
+    def setup_popup_menu(self, resource_type: ResourceType, named_resources, toggle_movement_cb: Callable,
                          move_block_cb: Callable):
         """Create a popup menu to be used when right-clicking a GuiBlock.
 
@@ -52,14 +54,14 @@ class ViewTk(ViewBaseTk):
         (done in self.redraw()).
 
         Parameters:
-            type: type of View (teacher/lab/stream)
-            named_schedulables: all schedulable objects of this type.
+            resource_type: type of View (teacher/lab/stream)
+            named_resources: all resource objects of this type.
             toggle_movement_cb: callback routine to change a blocks from movable/unmovable.
             move_block_cb: callback routine if blocks is moved from one view to another.
 
         Inputs to Callback:
             - view object
-            - Schedulable object (Teacher / Lab / Stream)"""
+            - resource object (Teacher / Lab / Stream)"""
         view = self.view
 
         # create a menu.
@@ -75,9 +77,9 @@ class ViewTk(ViewBaseTk):
         mm = Menu(pm, tearoff=0)
         pm.add_cascade(menu=mm, label="Move blocks(s) to ")
 
-        for named_schedulable in named_schedulables:
-            mm.add_command(label=named_schedulable.name, command=partial(
-                move_block_cb, view, named_schedulable.object
+        for resource in named_resources:
+            mm.add_command(label=resource.name, command=partial(
+                move_block_cb, view, resource.object
             ))
 
         # save.

@@ -19,7 +19,7 @@ class DynamicTree(ttk.Treeview):
         #                  program will crash
         # ---------------------------------------------------------------
         # this is a table of all the additional options available to
-        # Dynamic tree and the methods used to set_default_fonts_and_colours those options
+        # Dynamic course_ttkTreeView and the methods used to set_default_fonts_and_colours those options
 
         _status_variable: StringVar = StringVar()
         self.__config_specs: dict[str, Callable[[DynamicTree, Any], None]] = {
@@ -30,7 +30,7 @@ class DynamicTree(ttk.Treeview):
         }
 
         # this is a table of all the additional options available to
-        # Dynamic tree, and their default values
+        # Dynamic course_ttkTreeView, and their default values
         self._defaults: dict[str, Callable[[DynamicTree, Any], None]]
         self._defaults = {
             'children': lambda children, selected: None,
@@ -80,7 +80,7 @@ class DynamicTree(ttk.Treeview):
             callback(*args)
 
     # =================================================================================================
-    # sub open_branch -> callback for tree
+    # sub open_branch -> callback for course_ttkTreeView
     # -> dynamically updates the next level of grandchildren, using
     #    callback routine defined by '-children'
     # =================================================================================================
@@ -91,7 +91,7 @@ class DynamicTree(ttk.Treeview):
 '''
 
 # ----------------------------------------------------------------------
-# sub openbranch -> callback for tree
+# sub openbranch -> callback for course_ttkTreeView
 # -> dynamically updates the next level of grandchildren, using
 #    callback routine defined by '-children'
 # ----------------------------------------------------------------------

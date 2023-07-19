@@ -5,7 +5,7 @@ from typing import Any, Callable
 from functools import partial
 import os
 
-from ..Tk.scrolled import Scrolled
+from ..Tk.Scrolled import Scrolled
 from ..Tk.FindImages import get_image_dir
 from ..Tk.InitGuiFontsAndColours import TkColours
 

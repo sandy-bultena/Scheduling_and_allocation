@@ -4,18 +4,6 @@ from os import path
 import sys
 import re
 from functools import partial
-class Foo:
-    def __init__(self, cb:callable):
-        self.cb = cb
-    def run(self):
-        self.cb("abc")
-
-def whatever(*args):
-    print(*args)
-
-foo = Foo(whatever)
-foo.run()
-exit()
 
 def get_parents(tree, tree_item_id: str) -> list[object]:
     return list(__get_parent(tree, tree.parent(tree_item_id)))
@@ -26,9 +14,16 @@ def __get_parent(tree, tree_item_id: str):
         yield tree_item_id
         tree_item_id = tree.parent(tree_item_id)
 
+class StupidThing:
+    def __init__(self,a):
+        self.a = a
+    def wtf(self):
+        print (f"wtf {self.a}")
+    def __str__(self):
+        return f"Stringified {self.a}"
 
 sys.path.append(path.dirname(path.dirname(__file__)))
-from scrolled import Scrolled
+from Scrolled import Scrolled
 
 print(path.dirname(path.dirname(__file__)))
 
@@ -40,17 +35,22 @@ frame = Frame(mw)
 frame.pack(expand=1, fill="both")
 stv = Scrolled(frame, "Treeview")
 stv.pack()
-tv = stv.widget
+tv: ttk.Treeview = stv.widget
+tv.configure(columns=("Object", "Type",), displaycolumns=("Object",))
 
-x = tv.insert("", 'end', text="abc")
-y = tv.insert(x, 'end', text="a")
-z = tv.insert(x, 'end', text='b')
-tv.insert(y, 'end', text="hello")
-tv.insert(y, 'end', text="salut")
-tv.insert(y, 'end', text='bonjour')
-tv.insert(z, 'end', text="hello")
-tv.insert(z, 'end', text="salut")
-tv.insert(z, 'end', text='bonjour')
+x = tv.insert("", 'end', values=(StupidThing(1), "top"),)
+y = tv.insert(x, 'end',  values=(StupidThing(15), "sub"),)
+z = tv.insert(x, 'end', values=(StupidThing(16), "sub"),)
+print("x values are:")
+print("repr of x",repr(tv.item(x)))
+b=tv.item(x)
+b['obj'] = StupidThing(1)
+print(b)
+tv.item(x)["obj"] = StupidThing(1)
+print("tv item x",tv.item(x))
+#for v in tv.item(x)['values']:
+#    print(repr(v))
+
 button = Button(frame, text="Push me", command=lambda: tv.item(y, open=True))
 button.pack(expand=1, fill='y')
 
@@ -60,15 +60,18 @@ def selectItem(e, *args):
     c = tv.identify_row(e.y)
 
     v = tv.item(c)
+    tv.selection_set(c)
     print("getting selection")
-    x = tv.selection()
-    print(f"{x=}")
-    print(f"Focused: {tv.item(x)}")
-    button.configure(text=v['text'])
+    print(f"{v=}")
+    print(f"Focused: {tv.item(c)['values']}")
+    print(tv.item(c)['values'][0])
+    #obj.wtf()
+  #  print(f"values: {tv.item(v).values}")
+  #  button.configure(text=v['text'])
 
 
 for i in range(25):
-    tv.insert(z, 'end', text=i)
+    tv.insert(z, 'end', text=str(StupidThing(i)), values=(StupidThing(i),'sub'))
 tv.item("", open=True)
 tv.bind("<Button-2>", selectItem)
 print(tv.item(z))
@@ -76,6 +79,14 @@ print(x)
 print(tv.item(x))
 print(tv.item(y))
 xr = re.match(r"^=?(\d+)x(\d+)?([+-]\d+[+-]\d+)?$", frame.winfo_toplevel().geometry()).groups()
+
+# does get_children return row-by-row?
+# first insert new item in middle of all the z's, and then get children
+tv.insert(z,15,text=str(StupidThing(101)))
+for kid in tv.get_children(z):
+    print (tv.item(kid)["text"])
+# success :)
+
 
 print(xr)
 print(f"parents = {get_parents(tv, z)}")

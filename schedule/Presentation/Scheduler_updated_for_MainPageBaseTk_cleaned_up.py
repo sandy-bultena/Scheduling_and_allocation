@@ -47,7 +47,7 @@ scenario: Scenario | None = None
 # NOTE: Come back to these later.
 required_pages: list[NoteBookPageInfo]
 # required_pages = [
-#     NoteBookPageInfo("Schedules", update_choices_of_schedulable_views),
+#     NoteBookPageInfo("Schedules", update_choices_of_resource_views),
 #     NoteBookPageInfo("Overview", update_overview),
 #     NoteBookPageInfo("Courses", update_edit_courses),
 #     NoteBookPageInfo("Teachers", update_edit_teachers),
@@ -360,7 +360,7 @@ def save_as_csv():
 
 
 # ==================================================================
-# update_choices_of_schedulable_views
+# update_choices_of_resource_views
 # (what teacher_ids/lab_ids/stream_ids) can we create schedules for?
 # ==================================================================
 def update_choices_of_schedulable_views():
@@ -416,7 +416,7 @@ def update_edit_courses():
 # ==================================================================
 # print_views
 # - print the schedule 'views'
-# - type defines the output type, PDF, Latex
+# - resource_type defines the output resource_type, PDF, Latex
 # ==================================================================
 def print_views(print_type, type):
     global gui

@@ -4,7 +4,7 @@ from tkinter import Canvas
 
 from ..PerlLib import Colour
 from ..Schedule.Block import Block
-from ..Schedule.ScheduleEnums import ViewType
+from ..Schedule.ScheduleEnums import ResourceType
 
 """SYNOPSIS
     
@@ -60,7 +60,7 @@ from ..Schedule.ScheduleEnums import ViewType
 
     # ----------------------------------------------------------
     # Draw the teacher blocks on canvas. 
-    # Set the type argument to "lab" or "teacher" to change the
+    # Set the resource_type argument to "lab" or "teacher" to change the
     # colors and the information that is displayed in the 
     # blocks.
     # ----------------------------------------------------------
@@ -97,11 +97,11 @@ teal = Colour.add(sky_blue, lime_green)
 
 colours: dict[str, str] = {
     'lab': "#cdefab",
-    ViewType.Lab: "#cdefab",
+    ResourceType.Lab: "#cdefab",
     'teacher': "#abcdef",
-    ViewType.Teacher: "#abcdef",
+    ResourceType.Teacher: "#abcdef",
     'stream': teal,
-    ViewType.Stream: teal
+    ResourceType.Stream: teal
 }
 
 
@@ -192,9 +192,9 @@ def draw_background(canvas: Canvas, scl: dict):
 # =================================================================
 # get_block_text
 # =================================================================
-# Todo: Implement the ViewType enum in some capacity.
+# Todo: Implement the ResourceType enum in some capacity.
 def get_block_text(block: Block, scale: float = 1, type="teacher"):
-    """Get the text for a specific type of blocks.
+    """Get the text for a specific resource_type of blocks.
 
     Parameters:
         block: A Block object.
@@ -243,7 +243,7 @@ def get_block_text(block: Block, scale: float = 1, type="teacher"):
         block_teacher = ""
 
         # Don't add teacher_ids if this is a teacher view.
-        if type != "teacher" and type != ViewType.Teacher:
+        if type != "teacher" and type != ResourceType.Teacher:
             for t in teachers:
                 block_teacher = block_teacher + ", ".join(map(t.firstname[0:1], t.lastname[0:1]))
 
@@ -257,7 +257,7 @@ def get_block_text(block: Block, scale: float = 1, type="teacher"):
         # lab_ids/resources (scale < .75)
         # -----------------------------------------------------------
         block_lab = ""
-        if type != "lab" and type != ViewType.Lab:
+        if type != "lab" and type != ResourceType.Lab:
             block_lab = ", ".join(map(lambda l: l.number, labs))
 
             # add ellipsis to end of lab string as necessary
@@ -273,7 +273,7 @@ def get_block_text(block: Block, scale: float = 1, type="teacher"):
 
         # only add stream/text if no teacher_ids or lab_ids,
         # or GuiBlock can fit all info (i.e. duration of 2 hours or more)
-        if (type != "stream" and type != ViewType.Stream) or block_duration >= 2:
+        if (type != "stream" and type != ResourceType.Stream) or block_duration >= 2:
             block_streams = ", ".join(map(lambda s: s.number, streams))
 
             # add ellipsis to end of stream as necessary.
@@ -287,11 +287,11 @@ def get_block_text(block: Block, scale: float = 1, type="teacher"):
     # --------------------------------------------------------------------
 
     block_text = f"{block_num}\n{block_section_name}\n"
-    if (type != "teacher" and type != ViewType.Teacher) and block_teacher:
+    if (type != "teacher" and type != ResourceType.Teacher) and block_teacher:
         block_text += f"{block_teacher}\n"
-    if (type != "lab" and type != ViewType.Lab) and block_lab:
+    if (type != "lab" and type != ResourceType.Lab) and block_lab:
         block_text += f"{block_lab}\n"
-    if (type != "stream" and type != ViewType.Stream) and block_streams:
+    if (type != "stream" and type != ResourceType.Stream) and block_streams:
         block_text += f"{block_streams}\n"
     block_text = block_text.rstrip()
 
@@ -527,7 +527,7 @@ B<Parameters>
 
 =item * C<< -fill => "Colour", >> the Colour of the line (OPTIONAL... default is "black"),
 
-=item * C<< -dash => "dash string" >> the type of dash line (OPTIONAL ... default is no dash)
+=item * C<< -dash => "dash string" >> the resource_type of dash line (OPTIONAL ... default is no dash)
 
 =back
 

@@ -146,7 +146,7 @@ class SchedulerTk(MainPageBaseTk):
     #
     # # endregion
     #
-    # def draw_view_choices(self, default_tab: str, all_scheduables: AllScheduables,
+    # def draw_view_choices(self, default_tab: str, all_resources: AllResources,
     #                       btn_callback: Callable = lambda: None):
     #     """The ViewsManager can create schedule views for all teacher_ids/lab_ids etc.
     #
@@ -157,7 +157,7 @@ class SchedulerTk(MainPageBaseTk):
     #
     #     Parameters:
     #         default_tab: Name of _notebook tab to draw on.
-    #         all_scheduables: A list of schedulable objects (teacher_ids/lab_ids/etc.)
+    #         all_resources: A list of resource objects (teacher_ids/lab_ids/etc.)
     #         btn_callback: A callback function called whenever the ViewsManager is asked to create a
     #         view."""
     #     f = self.pages[default_tab.lower()]
@@ -172,10 +172,10 @@ class SchedulerTk(MainPageBaseTk):
     #     SchedulerTk.frame.pack(expand=1, fill=BOTH)
     #
     #     # TODO: View choice frames have positioning issues due to Scrolled's use of pack. Buttons are not centered.
-    #     for type in all_scheduables.valid_types():
+    #     for resource_type in all_resources.valid_types():
     #         view_choices_frame = LabelFrame(
     #             SchedulerTk.frame,
-    #             text=all_scheduables.by_type(type).title)
+    #             text=all_resources.by_type(resource_type).title)
     #         view_choices_frame.pack(expand=1, fill=BOTH)
     #
     #         view_choices_scrolled_frame = Scrolled(view_choices_frame, 'Frame', scrollbars="osoe")
@@ -188,7 +188,7 @@ class SchedulerTk(MainPageBaseTk):
     #         # Tcl doesn't like it when children of the same notebook use different geometry managers.
     #         views_manager.gui.create_buttons_for_frame(
     #             view_choices_scrolled_frame,
-    #             all_scheduables.by_type(type),
+    #             all_resources.by_type(resource_type),
     #             btn_callback
     #         )
     #

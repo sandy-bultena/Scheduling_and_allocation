@@ -19,7 +19,7 @@ from tkinter import *
 from Pmw.Pmw_2_1_1.lib.PmwDialog import Dialog
 
 from .FontsAndColoursTk import FontsAndColoursTk
-from schedule.Schedule.ScheduleEnums import ViewType
+from schedule.Schedule.ScheduleEnums import ResourceType
 
 # ============================================================================
 # globals
@@ -29,7 +29,7 @@ global big_font
 global bold_font
 global OKAY
 global Type
-Type: ViewType | str
+Type: ResourceType | str
 
 global __setup
 
@@ -52,14 +52,14 @@ class AssignToResourceTk:
     # ============================================================================
     # constructor
     # ============================================================================
-    def __init__(self, type: ViewType | str):
+    def __init__(self, type: ResourceType | str):
         """
         Create an instance of AssignToResourceTk object, but does NOT draw the
         dialog box at this point. This allows the calling function to set_default_fonts_and_colours up the
         callback routines first, as well as the lists for courses, etc.
 
         Parameters:
-            type: The type of schedulable object (Teacher/Lab/Stream).
+            type: The resource_type of schedulable object (Teacher/Lab/Stream).
 
         [Don't use Stream. This GUI_Pages is not set_default_fonts_and_colours up for it.]
         """
@@ -497,7 +497,7 @@ class AssignToResourceTk:
         # teacher
         # -------------------------------------------------------
         global Type
-        if Type != "teacher" and Type != ViewType.Teacher:
+        if Type != "teacher" and Type != ResourceType.Teacher:
             Label(db, text='').grid(row=9, column=0, padx=2, sticky=NSEW)
             self._lbl_teacher_info.grid(row=10, column=0, padx=2, sticky=NSEW)
             self._lbl_teacher.grid(row=11, column=0, padx=2, sticky=NSEW)
@@ -511,7 +511,7 @@ class AssignToResourceTk:
         # -------------------------------------------------------
         # lab
         # -------------------------------------------------------
-        if Type != 'lab' and Type != ViewType.Lab:
+        if Type != 'lab' and Type != ResourceType.Lab:
             Label(db, text='').grid(row=9, padx=2, sticky=NSEW)
             self._lbl_lab_info.grid(row=10, column=0, padx=2, sticky=NSEW)
             self._lbl_lab.grid(row=11, column=0, padx=2, sticky=NSEW)
@@ -613,7 +613,7 @@ class AssignToResourceTk:
         
         Parameters:
             category: Common prefix of the names of the attributes to be created.
-            properties: List of names for attributes of this type. Format is {category}_{properties}
+            properties: List of names for attributes of this resource_type. Format is {category}_{properties}
             default: Common default value for these properties."""
         # NOTE: This was originally a static method in the Perl code, called when this module is
         # imported. I have chosen to make it an instance method because there's no easy way to

@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import itertools
 
-from .ScheduleEnums import ViewType, ConflictType
+from .ScheduleEnums import ResourceType, ConflictType
 from .Block import Block
 
 """ SYNOPSIS/EXAMPLE:
     from Schedule.Conflict import Conflict
 
     blocks = [block1, block2, ...]
-    new_conflict = Conflict(type = ConflictType.MINIMUM_DAYS, blocks = blocks)
+    new_conflict = Conflict(resource_type = ConflictType.MINIMUM_DAYS, blocks = blocks)
 """
 
 ORDER_OF_SEVERITY = [ConflictType.TIME, ConflictType.LUNCH, ConflictType.MINIMUM_DAYS, ConflictType.AVAILABILITY]
@@ -31,7 +31,7 @@ def descriptions() -> dict[ConflictType, str]:
 
 
 # --------------------------------------------------------
-# does the conflict number contain the appropriate specified type
+# does the conflict number contain the appropriate specified resource_type
 # --------------------------------------------------------
 def is_time(conflict_number: int) -> int:
     """does the conflict number include a time conflict?"""
@@ -71,11 +71,11 @@ def is_availability(conflict_number: int) -> int:
 # --------------------------------------------------------
 # most_severe
 # --------------------------------------------------------
-def most_severe(conflict_number: int, view_type: ViewType) -> ConflictType:
+def most_severe(conflict_number: int, view_type: ResourceType) -> ConflictType:
     """
-    Identify the most severe conflict type in a list of conflicts defined by the conflict number
-    - Parameter conflict_number -> defines the types of conflicts. (each bit represents a conflict type)
-    - Parameter view_type -> defines the user's current view. ViewType (enum)
+    Identify the most severe conflict resource_type in a list of conflicts defined by the conflict number
+    - Parameter conflict_number -> defines the types of conflicts. (each bit represents a conflict resource_type)
+    - Parameter view_type -> defines the user's current view. ResourceType (enum)
     """
     severest = None
     sorted_conflicts: list[ConflictType] = ORDER_OF_SEVERITY.copy()
@@ -87,7 +87,7 @@ def most_severe(conflict_number: int, view_type: ViewType) -> ConflictType:
     if conflict_key in ConflictType.__members__:
         sorted_conflicts.insert(0, ConflictType[conflict_key])
 
-    # look for the first match where the bit in conflict_number matches a possible conflict type
+    # look for the first match where the bit in conflict_number matches a possible conflict resource_type
     for conflict in sorted_conflicts:
         if conflict_number & conflict.value:
             severest = conflict
@@ -100,7 +100,7 @@ def most_severe(conflict_number: int, view_type: ViewType) -> ConflictType:
 # get_description_of
 # --------------------------------------------------------
 def get_description_of(conflict_type: ConflictType) -> str:
-    """ Returns the title of the provided conflict type """
+    """ Returns the title of the provided conflict resource_type """
     return descriptions()[conflict_type]
 
 
@@ -158,7 +158,7 @@ def block_conflict(blocks_for_week: tuple[Block, ...], conflict_type: ConflictTy
     calculate if any two blocks overlap each other in time, and then
     assign a TIME conflict, and the specified conflict_type to each block that overlap
     :param blocks_for_week: a list of blocks to check for time overlap
-    :param conflict_type: what conflict type to set_default_fonts_and_colours it to
+    :param conflict_type: what conflict resource_type to set_default_fonts_and_colours it to
     :return: a list of conflicts
     """
     conflicts: list[Conflict] = list()
@@ -220,7 +220,7 @@ def __new_conflict(conflict_type: ConflictType, conflict_blocks: tuple[Block, ..
 # colors
 # --------------------------------------------------------
 def colours() -> dict[ConflictType, str]:
-    """ Returns the colors used by each conflict type """
+    """ Returns the colors used by each conflict resource_type """
     return ConflictType.colours()
 
 
@@ -244,7 +244,7 @@ class Conflict:
     def __init__(self, conflict_type: ConflictType, blocks: tuple[Block, ...]):
         """
         Creates an instance of the Conflict class.
-        - Parameter type -> defines the type of conflict.
+        - Parameter resource_type -> defines the resource_type of conflict.
         - Parameter blocks -> defines the list of blocks involved in the conflict.
         """
         blocks_list = list(blocks)

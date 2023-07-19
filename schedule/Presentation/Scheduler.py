@@ -9,8 +9,8 @@ from ..Schedule.Schedule import Schedule
 from ..UsefulClasses.NoteBookPageInfo import NoteBookPageInfo
 from ..UsefulClasses.Preferences import Preferences
 from ..Presentation.globals import *
-from ..Schedule.ScheduleEnums import ViewType
-from ..Presentation.DataEntry import DataEntry
+from ..Schedule.ScheduleEnums import ResourceType
+from ..Presentation.EditViewTypeObjects import DataEntry
 from ..Presentation.Overview import Overview
 
 from schedule.UsefulClasses.MenuItem import MenuItem, MenuType, ToolbarItem
@@ -20,6 +20,9 @@ class GuiContainer(Protocol):
     ...
 
 
+# #####################################################################################
+# Prototype for the 'gui' support required by the Scheduler class
+# #####################################################################################
 class GuiMain(Protocol):
     def create_menu_and_toolbars(self, buttons: list[str], toolbar_info: dict[str:ToolbarItem],
                                  menu_details: list[MenuItem]): ...
@@ -37,6 +40,10 @@ class GuiMain(Protocol):
 
     def get_gui_container(self, page_name: str) -> Optional[GuiContainer]: ...
 
+
+# #####################################################################################
+# CLASS
+# #####################################################################################
 
 class Scheduler:
     """
@@ -66,7 +73,7 @@ class Scheduler:
         # required notebook pages
         # --------------------------------------------------------------------
         self._required_pages: list[NoteBookPageInfo] = [
-            NoteBookPageInfo("Schedules", self.update_choices_of_schedulable_views),
+            NoteBookPageInfo("Schedules", self.update_choices_of_resource_views),
             NoteBookPageInfo("Overview", self.update_overview),
             NoteBookPageInfo("Courses", self.update_edit_courses),
             NoteBookPageInfo("Teachers", self.update_edit_teachers),
@@ -224,10 +231,10 @@ class Scheduler:
     #
     #
     # # ==================================================================
-    # # update_choices_of_schedulable_views
+    # # update_choices_of_resource_views
     # # (what teacher_ids/lab_ids/stream_ids) can we create schedules for?
     # # ==================================================================
-    def update_choices_of_schedulable_views(self):
+    def update_choices_of_resource_views(self):
         pass
 
     #     global views_manager, gui
@@ -258,7 +265,7 @@ class Scheduler:
     def update_edit_teachers(self):
         if self._teachers_de is None:
             teachers_frame = self.gui.get_gui_container("teachers")
-            self._teachers_de = DataEntry(teachers_frame, ViewType.teacher, self.schedule)
+            self._teachers_de = DataEntry(teachers_frame, ResourceType.teacher, self.schedule)
 
         # reset the schedule object just in case the schedule file has changed
         self._teachers_de.schedule = self.schedule
@@ -271,7 +278,7 @@ class Scheduler:
     def update_edit_streams(self):
         if self._streams_de is None:
             streams_frame = self.gui.get_gui_container("streams")
-            self._streams_de = DataEntry(streams_frame, ViewType.stream, self.schedule)
+            self._streams_de = DataEntry(streams_frame, ResourceType.stream, self.schedule)
 
         # reset the schedule object just in case the schedule file has changed
         self._streams_de.schedule = self.schedule
@@ -284,7 +291,7 @@ class Scheduler:
     def update_edit_labs(self):
         if self._labs_de is None:
             labs_frame = self.gui.get_gui_container("labs")
-            self._labs_de = DataEntry(labs_frame, ViewType.lab, self.schedule)
+            self._labs_de = DataEntry(labs_frame, ResourceType.lab, self.schedule)
 
         # reset the schedule object just in case the schedule file has changed
         self._labs_de.schedule = self.schedule
@@ -294,13 +301,14 @@ class Scheduler:
     # draw_edit_courses
     # - A page where courses can be added/modified or deleted
     # ==================================================================
-    def update_edit_courses(self):
+    def update_edit_courses(self):from schedule.Schedule.ScheduleEnums import ResourceType
+
         pass
 
     # ==================================================================
     # print_views
     # - print the schedule 'views'
-    # - type defines the output type, PDF, Latex
+    # - resource_type defines the output resource_type, PDF, Latex
     # ==================================================================
     def print_views(self, print_type, view_type):
         pass

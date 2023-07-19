@@ -5,7 +5,7 @@ from ..Schedule.Block import Block
 from ..Schedule.Courses import Course
 from ..Schedule.Labs import Lab
 from ..Schedule.Schedule import Schedule
-from ..Schedule.ScheduleEnums import ViewType, WeekDayNumber
+from ..Schedule.ScheduleEnums import ResourceType, WeekDayNumber
 from ..Schedule.Sections import Section
 from ..Schedule.Teachers import Teacher
 
@@ -74,19 +74,19 @@ class AssignToResource:
 
         global Type
         Type = sched.get_view_type_of_object
-        if Type == ViewType.Lab:
+        if Type == ResourceType.Lab:
             global lab
             lab = schedulable
-        elif Type == ViewType.Teacher:
+        elif Type == ResourceType.Teacher:
             global teacher
             teacher = schedulable
-        elif Type == ViewType.Stream or Type is None:
+        elif Type == ResourceType.Stream or Type is None:
             return
 
         # ------------------------------------
         # Create Dialog Box
         # ------------------------------------
-        # ViewType is not a string, so concatenating it with a + fails.
+        # ResourceType is not a string, so concatenating it with a + fails.
         title = f"Assign Block to {Type.name}"
         block_text = f"{AssignToResource.Day_name[day]} at " \
                      f"{AssignToResource._hours_to_string(start)} for {duration} hour(s)"
@@ -214,10 +214,10 @@ class AssignToResource:
         blocks_dict = dict([(b.id, str(b)) for b in blocks])
         gui.set_block_choices(blocks_dict)
 
-        # Set the default teacher for this course/section if this AssignToResource type is
+        # Set the default teacher for this course/section if this AssignToResource resource_type is
         # NOT a teacher.
         global Type
-        if Type == 'teacher' or Type == ViewType.Teacher:
+        if Type == 'teacher' or Type == ResourceType.Teacher:
             return
 
         teachers = section.teacher_ids

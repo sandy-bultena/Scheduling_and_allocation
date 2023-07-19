@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from .GuiBlockTk import GuiBlockTk
 from ..Schedule.Block import Block
 from ..Schedule.ConflictCalculations import Conflict
-from ..Schedule.ScheduleEnums import ViewType, WeekDayNumber
+from ..Schedule.ScheduleEnums import ResourceType, WeekDayNumber
 from ..Export import DrawView
 
 
@@ -203,12 +203,12 @@ class ViewBaseTk:
         guiblock.gui_view.canvas.move(guiblock.group_tag, coords[0] - cur_x_pos,
                                       coords[1] - cur_y_pos)
 
-    def colour_block(self, guiblock: GuiBlockTk, type: ViewType):
+    def colour_block(self, guiblock: GuiBlockTk, type: ResourceType):
         """Colours the blocks according to conflicts.
 
         Parameters:
             guiblock: The guiblock that will be coloured.
-            type: The type of schedulable object that this guiblock is attached to (Teacher/Lab/Stream)"""
+            type: The resource_type of resource object that this guiblock is attached to (Teacher/Lab/Stream)"""
         conflict = Conflict.most_severe(guiblock.block.conflicted_number, type)
 
         # If the blocks is unmovable, then grey it out, and do not change its Colour even if
@@ -370,7 +370,7 @@ class ViewBaseTk:
         self.mw.update_idletasks()
 
     def _create_status_bar(self):
-        """Status bar at the bottom of each View to show current movement type."""
+        """Status bar at the bottom of each View to show current movement resource_type."""
         if hasattr(self, '_status_bar'):
             return
 

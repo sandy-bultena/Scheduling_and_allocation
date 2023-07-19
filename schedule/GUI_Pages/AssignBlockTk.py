@@ -172,7 +172,7 @@ class AssignBlockTk:
     def set_colour(self, colour: str = "mistyrose3"):
         """Fills the blocks with the specified Colour.
 
-        Colour string can be of type '#rrggbb' or a valid unix Colour name.
+        Colour string can be of resource_type '#rrggbb' or a valid unix Colour name.
 
         Parameters:
             colour: default value is 'mistyrose3'.

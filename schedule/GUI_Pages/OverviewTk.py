@@ -1,6 +1,6 @@
 from tkinter import *
 from tkinter import ttk
-from ..Tk.scrolled import Scrolled
+from ..Tk.Scrolled import Scrolled
 
 
 class OverviewTk:

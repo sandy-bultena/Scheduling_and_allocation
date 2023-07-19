@@ -41,7 +41,7 @@ Example::
 
 
 class MenuType:
-    """A pseudo enum to ensure that the MenuItem type is valid"""
+    """A pseudo enum to ensure that the MenuItem resource_type is valid"""
     Command = 'command'
     Separator = 'separator'
     Radiobutton = 'radiobutton'
@@ -50,7 +50,7 @@ class MenuType:
 
 
 class MenuItem:
-    """Define a menu_item (type, options, etc)"""
+    """Define a menu_item (resource_type, options, etc)"""
 
     all_menu_items: dict[str, MenuItem] = dict()
     """a dictionary of all menu_items that were created.  Key is the 'name' property of the menu item"""
@@ -68,7 +68,7 @@ class MenuItem:
         MenuItem.all_menu_items[self.name] = self
 
     def options_dict(self) -> dict[str, str]:
-        """return a dictionary of options, appropriate to the menu type"""
+        """return a dictionary of options, appropriate to the menu resource_type"""
         options = dict()
         if self.menu_type != MenuType.Separator:
             options = {'label': self.label, 'accelerator': self.accelerator,
@@ -78,10 +78,10 @@ class MenuItem:
     def add_child(self, menu_item: MenuItem):
         """add a new menu item as a sub-child of on existing menu item"""
 
-        # if self is not a cascade type menu item, then it should not have
+        # if self is not a cascade resource_type menu item, then it should not have
         # children (i.e. non-cascade menu-items should not be parents)
         if self.menu_type != MenuType.Cascade:
-            msg = f"Menu '{self.name}' is of type '{self.menu_type}' and cannot support children"
+            msg = f"Menu '{self.name}' is of resource_type '{self.menu_type}' and cannot support children"
             raise exceptions.SubMenuError(msg)
 
         # procreate

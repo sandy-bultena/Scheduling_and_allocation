@@ -9,12 +9,12 @@ from ..Schedule.Block import Block
 from ..Schedule.ConflictCalculations import Conflict
 from ..Schedule.Labs import Lab
 from ..Schedule.Schedule import Schedule
-from ..Schedule.ScheduleEnums import ConflictType, ViewType
+from ..Schedule.ScheduleEnums import ConflictType, ResourceType
 from ..Schedule.Streams import Stream
 from ..Schedule.Teachers import Teacher
 from ..Schedule.Undo import Undo
 from ..PerlLib import Colour
-from ..UsefulClasses.AllScheduables import AllScheduables
+from ..UsefulClasses.AllResources import AllResources
 
 
 class View:
@@ -69,7 +69,7 @@ class View:
 
     @property
     def type(self):
-        """Gets/Sets the type of this View object."""
+        """Gets/Sets the resource_type of this View object."""
         return self._type
 
     @type.setter
@@ -129,7 +129,7 @@ class View:
         gui.on_closing = self._cb_close_view
 
         # ---------------------------------------------------------------
-        # type of view depends on which object it is for
+        # resource_type of view depends on which object it is for
         # ---------------------------------------------------------------
         blocks = schedule.get_blocks_for_obj(schedulable_object)
         type = schedule.get_view_type_of_object
@@ -264,7 +264,7 @@ class View:
         accordingly.
 
         Parameters:
-            type: The type of the View. Can be "Teacher", "Lab" or "Stream".
+            type: The resource_type of the View. Can be "Teacher", "Lab" or "Stream".
         """
         guiblocks = self.gui_blocks
 
@@ -416,7 +416,7 @@ class View:
 
     @staticmethod
     def _cb_open_companion_view(self, guiblock: GuiBlockTk):
-        """Based on the type of this view, will open another view which has this Block.
+        """Based on the resource_type of this view, will open another view which has this Block.
 
         lab/stream -> teacher_ids
         teacher_ids -> stream_ids
@@ -434,7 +434,7 @@ class View:
         # in lab or stream, open teacher schedules
         # no teacher schedules, then open other lab schedules
         # ---------------------------------------------------------------
-        if (type == "lab" or type == ViewType.Lab) or (type == "stream" or type == ViewType.Stream):
+        if (type == "lab" or type == ResourceType.Lab) or (type == "stream" or type == ResourceType.Stream):
             teachers = guiblock.block.teacher_ids()
             if len(teachers) > 0:
                 self.views_manager.create_view_containing_block(teachers, self.type)
@@ -447,7 +447,7 @@ class View:
         # in teacher schedule, open lab schedules
         # no lab schedules, then open other teacher schedules
         # ---------------------------------------------------------------
-        elif type == "teacher" or type == ViewType.Teacher:
+        elif type == "teacher" or type == ResourceType.Teacher:
             labs = guiblock.block.lab_ids()
             if len(labs) > 0:
                 self.views_manager.create_view_containing_block(labs, self.type)
@@ -529,7 +529,7 @@ class View:
         type = self.type
 
         # Don't do this for 'stream' types.
-        if type == "stream" or type == ViewType.Stream:
+        if type == "stream" or type == ResourceType.Stream:
             return
 
         # Loop through each half hour time slot, and create and draw AssignBlock for each.
@@ -559,7 +559,7 @@ class View:
         return conflict_info
 
     def _get_named_schedulable_for_popup(self, type):
-        """For this view, find all schedulable objects that are the same type as this view,
+        """For this view, find all schedulable objects that are the same resource_type as this view,
         but not including the schedulable associated with this view.
 
         Parameters:
@@ -568,9 +568,9 @@ class View:
         Returns:
             Array of named objects, with the object being a Teacher/Lab/Stream."""
         # Get all schedulables.
-        all_schedulables = AllScheduables(self.schedule)
+        all_schedulables = AllResources(self.schedule)
 
-        # Get only the schedulables that match the type of this view.
+        # Get only the schedulables that match the resource_type of this view.
         schedulables_by_type = all_schedulables.by_type(type)
 
         # remove the schedulable object that is associated with this view.

@@ -25,7 +25,7 @@ class ExtendedEnum(Enum):
     def validate(cls, user_input):
         # want to allow user to enter a value, for database reasons, but also want to
         # allow it to be an enum, for interface reasons (forces the user to pass
-        # the correct type)
+        # the correct resource_type)
         if isinstance(user_input, cls):
             return user_input.value
         elif user_input in cls.names():
@@ -107,7 +107,7 @@ class ConflictType(ExtendedEnum):
         }
 
 
-class ViewType(ExtendedEnum):
+class ResourceType(ExtendedEnum):
     lab = "Lab"
     teacher = "Teacher"
     stream = "Stream"

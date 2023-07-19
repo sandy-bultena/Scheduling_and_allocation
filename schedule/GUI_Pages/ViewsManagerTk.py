@@ -5,7 +5,7 @@ from tkinter import *
 from ..GUI_Pages.FontsAndColoursTk import FontsAndColoursTk
 from ..PerlLib import Colour
 from ..Schedule.ConflictCalculations import Conflict
-from ..UsefulClasses.ScheduablesByType import ScheduablesByType
+#from ..UsefulClasses.ScheduablesByType import ScheduablesByType
 
 
 class ViewsManagerTk:
@@ -68,17 +68,17 @@ class ViewsManagerTk:
             btn.configure(background=colour,
                           activebackground=active)
 
-    def create_buttons_for_frame(self, frame: Frame, schedulables_by_type: ScheduablesByType,
+    def create_buttons_for_frame(self, frame: Frame, resources_by_type: ScheduablesByType,
                                  command_func):
-        """Populates frame with buttons for all Teachers, Labs, or Streams depending on type,
+        """Populates frame with buttons for all Teachers, Labs, or Streams depending on resource_type,
         in alphabetical order.
 
         Parameters:
             frame: Frame object which will be drawn on.
-            schedulables_by_type: An object that defines everything needed to know what schedulable objects are available.
+            resources_by_type: An object that defines everything needed to know what schedulable objects are available.
             command_func: Callback function to create a view if the button is clicked."""
-        schedulables = schedulables_by_type.named_scheduable_objs
-        type = schedulables_by_type.type
+        schedulables = resources_by_type.named_scheduable_objs
+        type = resources_by_type.type
 
         subframe = frame.Subwidget('Frame')
         # subframe.pack(anchor='center', expand=True)
@@ -98,7 +98,7 @@ class ViewsManagerTk:
             name = named_schedulable_obj.name
 
             # Create the command array reference including the ViewManager, the Teacher/Lab/Stream,
-            # and its type.
+            # and its resource_type.
             command = [command_func, self, name, type]
 
             # Create the button on the frame.

@@ -3,8 +3,8 @@ from typing import Any, Optional
 
 from ..Schedule.Schedule import Schedule
 from ..Presentation.globals import set_dirty_flag
-from ..GUI_Pages.DataEntryTk import DataEntryTk, DEColumnDescription
-from ..Schedule.ScheduleEnums import ViewType
+from ..GUI_Pages.EditViewTypeObjectsTk import DataEntryTk, DEColumnDescription
+from ..Schedule.ScheduleEnums import ResourceType
 
 property_conversions_from_str = {
     "id": lambda x: int(x) if x else 0,
@@ -37,7 +37,7 @@ class DataEntry:
     # =================================================================
     # new
     # =================================================================
-    def __init__(self, frame, view_type: ViewType, schedule: Optional[Schedule], test_gui=None):
+    def __init__(self, frame, view_type: ResourceType, schedule: Optional[Schedule], test_gui=None):
         """
         Creates the basic DataEntry (a simple matrix)
         :param frame: gui container object
@@ -59,7 +59,7 @@ class DataEntry:
         # ---------------------------------------------------------------
         # what are the columns?
         # ---------------------------------------------------------------
-        if self.view_type == ViewType.teacher:
+        if self.view_type == ResourceType.teacher:
             self.column_descriptions = [
                 DEColumnDescription(title="ID", width=4, property="id"),
                 DEColumnDescription(title="First Name", width=20, property="firstname"),
@@ -67,14 +67,14 @@ class DataEntry:
                 DEColumnDescription(title="RT", width=8, property="release"),
             ]
 
-        elif self.view_type is ViewType.lab:
+        elif self.view_type is ResourceType.lab:
             self.column_descriptions = [
                 DEColumnDescription(title="ID", width=4, property="id"),
                 DEColumnDescription(title="Room", width=7, property="number"),
                 DEColumnDescription(title="Description", width=40, property="description"),
             ]
 
-        elif self.view_type is ViewType.stream:
+        elif self.view_type is ResourceType.stream:
             self.column_descriptions = [
                 DEColumnDescription(title="ID", width=4, property="id"),
                 DEColumnDescription(title="Number", width=10, property="number"),
@@ -93,11 +93,11 @@ class DataEntry:
         if self.schedule is None:
             self.gui.refresh(data)
 
-        if self.view_type == ViewType.lab:
+        if self.view_type == ResourceType.lab:
             objs = self.schedule.labs
-        elif self.view_type == ViewType.stream:
+        elif self.view_type == ResourceType.stream:
             objs = self.schedule.streams
-        elif self.view_type == ViewType.teacher:
+        elif self.view_type == ResourceType.teacher:
             objs = self.schedule.teachers
 
         # Create a 2-d array of the data that needs to be displayed.
@@ -118,19 +118,19 @@ class DataEntry:
     # =================================================================
 
     # ------------------------------------------------------------------------
-    # adding a ViewType object to the schedule
+    # adding a ResourceType object to the schedule
     # ------------------------------------------------------------------------
     def __add_obj(self, data: dict):
-        if self.view_type == ViewType.teacher:
+        if self.view_type == ResourceType.teacher:
             teacher = self.schedule.add_teacher(firstname=data["firstname"],
                                                 lastname=data["lastname"])
             teacher.release = data["release"]
 
-        elif self.view_type == ViewType.lab:
+        elif self.view_type == ResourceType.lab:
             self.schedule.add_lab(number=data["number"],
                                   description=data["description"])
 
-        elif self.view_type == ViewType.stream:
+        elif self.view_type == ResourceType.stream:
             self.schedule.add_stream(number=data["number"],
                                      description=data["description"])
 
@@ -195,11 +195,11 @@ class DataEntry:
         while len(self.delete_queue) > 0:
             any_changes = True
             obj = self.delete_queue.pop()
-            if self.view_type == ViewType.teacher:
+            if self.view_type == ResourceType.teacher:
                 self.schedule.remove_teacher(obj)
-            elif self.view_type == ViewType.lab:
+            elif self.view_type == ResourceType.lab:
                 self.schedule.remove_lab(obj)
-            elif self.view_type == ViewType.stream:
+            elif self.view_type == ResourceType.stream:
                 self.schedule.remove_stream(obj)
 
         # if there have been changes, set global dirty flag

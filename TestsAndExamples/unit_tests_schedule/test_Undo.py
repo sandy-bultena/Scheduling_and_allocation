@@ -19,7 +19,7 @@ def test_constructor_created_success():
     origin_start = "start"
     origin_day = "mon"
     origin_obj = 5
-    move_type = "type"
+    move_type = "resource_type"
     new_obj = 6
     u = Undo(block_id, origin_start, origin_day, origin_obj, move_type, new_obj)
     assert u.block_id == block_id

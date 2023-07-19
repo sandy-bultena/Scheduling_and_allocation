@@ -10,7 +10,7 @@ from .Labs import Lab
 from .Streams import Stream
 from .Sections import Section
 from .Block import Block
-from .ScheduleEnums import ViewType, ConflictType
+from .ScheduleEnums import ResourceType, ConflictType
 import schedule.Schedule.exceptions as errors
 
 """ SYNOPSIS/EXAMPLE:
@@ -29,9 +29,9 @@ def _by_number(collection, number):
     return found[0] if found else None
 
 
-def get_view_type_of_object(obj: Teacher | Lab | Stream) -> ViewType | None:
-    """Returns the type of the ViewType object"""
-    for vtype in ViewType:
+def get_view_type_of_object(obj: Teacher | Lab | Stream) -> ResourceType | None:
+    """Returns the resource_type of the ResourceType object"""
+    for vtype in ResourceType:
         my_class = eval(f"{vtype.name}")
         if isinstance(obj, my_class):
             return vtype
@@ -171,13 +171,13 @@ class Schedule:
         """Returns the Section which matches this Section number, if it exists."""
         return self._teachers.get(teacher_id)
 
-    def get_view_type_obj_by_id(self, view_type: ViewType, obj_id: int) -> Optional[Teacher | Stream | Lab]:
+    def get_view_type_obj_by_id(self, view_type: ResourceType, obj_id: int) -> Optional[Teacher | Stream | Lab]:
         """Returns the Section which matches this Section number, if it exists."""
-        if view_type == ViewType.teacher:
+        if view_type == ResourceType.teacher:
             return self._teachers.get(obj_id)
-        elif view_type == ViewType.stream:
+        elif view_type == ResourceType.stream:
             return self._streams.get(obj_id)
-        elif view_type == ViewType.lab:
+        elif view_type == ResourceType.lab:
             return self._labs.get(obj_id)
         return None
 
@@ -298,7 +298,7 @@ class Schedule:
         return tuple(blocks)
 
     def get_blocks_for_obj(self, obj: Teacher | Lab | Stream) -> tuple[Block]:
-        """ Returns a tuple of blocks associated with the specified ViewType object"""
+        """ Returns a tuple of blocks associated with the specified ResourceType object"""
         if isinstance(obj, Teacher):
             return self.get_blocks_for_teacher(obj)
         if isinstance(obj, Lab):
@@ -409,7 +409,7 @@ class Schedule:
                 section.remove_all_labs()
 
     # --------------------------------------------------------
-    # get_by_id blocks info for specified ViewType object
+    # Calculate Conflicts
     # --------------------------------------------------------
 
     def calculate_conflicts(self):

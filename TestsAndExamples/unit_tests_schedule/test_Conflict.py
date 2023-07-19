@@ -7,7 +7,7 @@ import pytest
 import schedule.Schedule.ConflictCalculations as cc
 from schedule.Schedule.Block import Block
 from schedule.Schedule.TimeSlot import TimeSlot
-from schedule.Schedule.ScheduleEnums import ViewType, ConflictType
+from schedule.Schedule.ScheduleEnums import ResourceType, ConflictType
 
 
 class ParentContainer:
@@ -103,50 +103,50 @@ severity_order = cc.ORDER_OF_SEVERITY
 def test_severity_dependent_on_view():
     """if view can have a conflict specific to its view, then it should be the most severe"""
 
-    most_severe: ConflictType = cc.most_severe(ALL_BITS_SET, ViewType.lab)
+    most_severe: ConflictType = cc.most_severe(ALL_BITS_SET, ResourceType.lab)
     assert most_severe == ConflictType.TIME_LAB
 
-    most_severe: ConflictType = cc.most_severe(ALL_BITS_SET, ViewType.stream)
+    most_severe: ConflictType = cc.most_severe(ALL_BITS_SET, ResourceType.stream)
     assert most_severe == ConflictType.TIME_STREAM
 
-    most_severe: ConflictType = cc.most_severe(ALL_BITS_SET, ViewType.teacher)
+    most_severe: ConflictType = cc.most_severe(ALL_BITS_SET, ResourceType.teacher)
     assert most_severe == ConflictType.TIME_TEACHER
 
-    most_severe: ConflictType = cc.most_severe(0, ViewType.teacher)
+    most_severe: ConflictType = cc.most_severe(0, ResourceType.teacher)
     assert most_severe is None
 
-    most_severe: ConflictType = cc.most_severe(0, ViewType.lab)
+    most_severe: ConflictType = cc.most_severe(0, ResourceType.lab)
     assert most_severe is None
 
-    most_severe: ConflictType = cc.most_severe(0, ViewType.stream)
+    most_severe: ConflictType = cc.most_severe(0, ResourceType.stream)
     assert most_severe is None
 
-    most_severe: ConflictType = cc.most_severe(ALL_BITS_SET, ViewType.none)
+    most_severe: ConflictType = cc.most_severe(ALL_BITS_SET, ResourceType.none)
     assert most_severe != ConflictType.TIME_TEACHER and \
            most_severe != ConflictType.TIME_STREAM and \
            most_severe != ConflictType.TIME_LAB
 
 
 def test_severity_view_independent():
-    """Verity that returned conflict type is the most severe"""
+    """Verity that returned conflict resource_type is the most severe"""
 
     num = 0
     for ct in severity_order:
         num = ct.value | num
 
-    most_severe = cc.most_severe(num, ViewType.none)
+    most_severe = cc.most_severe(num, ResourceType.none)
     assert most_severe == severity_order[0]
 
     num = num ^ severity_order[0].value
-    most_severe = cc.most_severe(num, ViewType.none)
+    most_severe = cc.most_severe(num, ResourceType.none)
     assert most_severe == severity_order[1]
 
     num = num ^ severity_order[-1].value
-    most_severe = cc.most_severe(num, ViewType.none)
+    most_severe = cc.most_severe(num, ResourceType.none)
     assert most_severe == severity_order[1]
 
     num = 0
-    most_severe = cc.most_severe(num, ViewType.none)
+    most_severe = cc.most_severe(num, ResourceType.none)
     assert most_severe is None
 
 

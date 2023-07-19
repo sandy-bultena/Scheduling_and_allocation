@@ -135,7 +135,7 @@ example::
         """ constructs scrollbars, widget from widget_type, attaches them appropriately
 
         a frame will be created (self)
-        a widget of widget type will be created inside the frame (self.widget)
+        a widget of widget resource_type will be created inside the frame (self.widget)
         scrollbars will be created as requested (self.horizontal_scrollbar, self.vertical_scrollbar)
         """
         # ----------------------------------------------------------------------------------------

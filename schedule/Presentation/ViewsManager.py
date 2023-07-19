@@ -5,9 +5,9 @@ from ..GUI_Pages.ViewsManagerTk import ViewsManagerTk
 from ..Schedule.Block import Block
 from ..Schedule.ConflictCalculations import Conflict
 from ..Schedule.Schedule import Schedule
-from ..Schedule.ScheduleEnums import ConflictType, ViewType
+from ..Schedule.ScheduleEnums import ConflictType, ResourceType
 from ..Schedule.Undo import Undo
-from ..UsefulClasses.AllScheduables import AllScheduables
+from ..UsefulClasses.AllResources import AllResources
 
 
 class ViewsManager:
@@ -231,7 +231,7 @@ class ViewsManager:
 
         Parameters:
             id: The ID of the view that you want to check on.
-            type: The type of view that you want to check.
+            type: The resource_type of view that you want to check.
 
         Returns:
             The View object if the View is open, False otherwise."""
@@ -285,12 +285,12 @@ class ViewsManager:
             view.update_for_conflicts(view.type)
 
     def get_all_scheduables(self):
-        """Gets a list of all schedulable objects and organizes them by type (teacher/lab/stream).
+        """Gets a list of all schedulable objects and organizes them by resource_type (teacher/lab/stream).
         Contains a list of the schedulable objects, the names to be displayed in the GUI_Pages, etc.
 
         Returns:
             An array of ScheduablesByType."""
-        return AllScheduables(self.schedule)
+        return AllResources(self.schedule)
 
     def determine_button_colours(self, all_view_choices=None):
         """Finds the highest conflict for each teacher/lab/stream in the array and sets the
@@ -335,7 +335,7 @@ class ViewsManager:
     # =================================================================
     # callbacks used by View objects
     # =================================================================
-    def create_view_containing_block(self, schedulable_objs, type: ViewType | str, ob: Block = None):
+    def create_view_containing_block(self, schedulable_objs, type: ResourceType | str, ob: Block = None):
         """Used as a callback function for View objects.
 
         Find a scheduable object(s) in the given list. If the given blocks object is also part of
@@ -351,10 +351,10 @@ class ViewsManager:
         # TODO: Clarify what the hell this is doing, once we are working on the View.pm file
         # I'm beginning to see why.
 
-        if type == 'teacher' or type == ViewType.Teacher:
-            type = ViewType.Lab
+        if type == 'teacher' or type == ResourceType.Teacher:
+            type = ResourceType.Lab
         else:
-            type = ViewType.Teacher
+            type = ResourceType.Teacher
 
         for scheduable_obj in schedulable_objs:
             if not (obj_id and obj_id == scheduable_obj.id):

@@ -89,7 +89,7 @@ class TkColours:
         # if dark mode, just invert all the colours
         # ============================================================================
         if dark:
-             for col in vars(self):
+            for col in vars(self):
 
                 # Note: button colors don't work on MAC, so skip
                 if re.search("button", col.lower()):
@@ -123,16 +123,17 @@ class TkFonts:
         fixed_font = 'courier new'
 
         # make fonts
-        self.normal: Font =  Font(mw, **set_props, weight=normal_weight, size=normal_size, family=normal_font)
-        self.bold: Font =  Font(mw, **set_props, weight=bold_weight, size=normal_size, family=normal_font)
-        self.big: Font =  Font(mw, **set_props, weight=normal_weight, size=bigger_size, family=normal_font)
+        self.normal: Font = Font(mw, **set_props, weight=normal_weight, size=normal_size, family=normal_font)
+        self.bold: Font = Font(mw, **set_props, weight=bold_weight, size=normal_size, family=normal_font)
+        self.big: Font = Font(mw, **set_props, weight=normal_weight, size=bigger_size, family=normal_font)
         self.bigbold: Font = Font(mw, **set_props, weight=bold_weight, size=bigger_size, family=normal_font)
         self.fixed: Font = Font(mw, **set_props, weight=bold_weight, size=size + 1, family=fixed_font)
         self.small: Font = Font(mw, **set_props, weight=normal_weight, size=size - 2, family=normal_font)
 
 
-
 colours: TkColours = TkColours()
+fonts: Optional[TkFonts] = None
+
 
 def set_default_fonts_and_colours(mw: Tk, font_size: int = 12, dark_mode: bool = False):
     global fonts
