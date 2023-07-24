@@ -317,7 +317,7 @@ class View:
 
     @staticmethod
     def _cb_assign_blocks(self, chosen_blocks: list, undef=None):
-        """Give the option of assigning these blocks to a resource (add to course, assign blocks to
+        """Give the option of assigning these blocks to a resource_type (add to course, assign blocks to
         teacher/lab/stream).
 
         Handles Event: AssignBlock objects have been selected.

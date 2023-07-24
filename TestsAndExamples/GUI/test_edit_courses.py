@@ -5,7 +5,6 @@ import sys
 sys.path.append(path.dirname(path.dirname(__file__) + "/../../"))
 
 from schedule.GUI_Pages.EditCoursesTk import EditCoursesTk
-from schedule.GUI_Pages.EditCoursesTk import TreeViewObjectType
 from schedule.Schedule.ScheduleEnums import ResourceType
 
 
@@ -18,6 +17,9 @@ class Nothing:
 
     def __str__(self):
         return str(self.a)
+
+    def __lt__(self,other):
+        return self.a < other.a
 
 
 mw = Tk()
@@ -48,25 +50,18 @@ s4 = Nothing("2B")
 s5 = Nothing("3A")
 s6 = Nothing("3B")
 
-test_page.update_view_type_objects(ResourceType.teacher, [t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12])
-test_page.update_view_type_objects(ResourceType.stream, [s1, s2, s3, s4, s5, s6])
-test_page.update_view_type_objects(ResourceType.lab, [l1, l2, l3, l4])
+test_page.update_resource_type_objects(ResourceType.teacher, [t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12])
+test_page.update_resource_type_objects(ResourceType.stream, [s1, s2, s3, s4, s5, s6])
+test_page.update_resource_type_objects(ResourceType.lab, [l1, l2, l3, l4])
 
 c1 = Nothing("Operating Systems")
-tt1 = TreeViewObjectType(obj=c1, children=[
-    TreeViewObjectType(Nothing("Section 1"), children=[
-        TreeViewObjectType(Nothing("Mon 8am-9am"), children=[
-            TreeViewObjectType(l1), TreeViewObjectType(t2)
-        ])
-    ]),
-    TreeViewObjectType(Nothing("Section 2"), children=[
-        TreeViewObjectType(Nothing("Tue 8am-9am"), children=[
-            TreeViewObjectType(l2), TreeViewObjectType(t3)
-        ])
-    ])
-])
+c1_id = test_page.add_tree_item("", str(c1), c1)
+s1_id = test_page.add_tree_item(c1_id, f"Section 1 ({s1})", Nothing("Section 1"))
+s2_id = test_page.add_tree_item(c1_id, f"Section 2 ({s2})", Nothing("Section 2"))
+b1_id = test_page.add_tree_item(s1_id, "Block 1", Nothing("Block 1"))
+b2_id = test_page.add_tree_item(s1_id, "Block 2", Nothing("Block 2"))
+test_page.add_tree_item(b1_id, "Teacher: "+str(t1), t1)
+test_page.add_tree_item(b1_id, "Lab: "+str(l1), l1)
 
-
-test_page.update_courses_tree([tt1, ])
 
 mw.mainloop()

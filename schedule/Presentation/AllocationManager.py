@@ -14,7 +14,7 @@ from Presentation import NumStudents
 from .EditAllocation import EditAllocation
 from GUI.AllocationManagerTk import AllocationManagerTk
 from PerlLib import Colours
-# from Presentation import DataEntry
+# from Presentation import EditResources
 from UsefulClasses.NoteBookPageInfo import NoteBookPageInfo
 import Presentation.globals as gl
 from Schedule.database.generic_db import REQUIRES_LOGIN, create_db

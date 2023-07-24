@@ -1,14 +1,10 @@
 # COMPLETED
 from __future__ import annotations
-import sys
-from os import path
-
-sys.path.append(path.dirname(path.dirname(__file__)))
-import GUI.NumStudentsTk as gui_form
+import schedule.GUI_Pages.NumStudentsTk as gui_form
 from . import globals
-import Schedule.Schedule as Schedule
-import Schedule.Course as Course
-import Schedule.Section as Section
+import schedule.Schedule as Schedule
+import schedule.Schedule.Courses as Course
+import schedule.Schedule.Sections as Section
 
 
 # =======================================================================================================

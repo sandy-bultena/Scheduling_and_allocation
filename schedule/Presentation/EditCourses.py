@@ -83,7 +83,7 @@ class EditCourses:
 
     def __init__(self, frame, schedule: Optional[Schedule], test_gui=None):
         """
-        Creates the basic DataEntry (a simple matrix)
+        Creates the basic EditResources (a simple matrix)
         :param frame: gui container object
         :param schedule: The Schedule object
         """

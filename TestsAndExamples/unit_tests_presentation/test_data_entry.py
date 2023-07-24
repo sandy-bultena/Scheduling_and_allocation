@@ -3,10 +3,10 @@ import sys
 from os import path
 
 sys.path.append(path.dirname(path.dirname(__file__) + "/../../"))
-from schedule.GUI_Pages.EditViewTypeObjectsTk import DEColumnDescription
+from schedule.GUI_Pages.EditResourcesTk import DEColumnDescription
 from typing import Any
 from schedule.Schedule.Schedule import Schedule
-from schedule.Presentation.EditViewTypeObjects import DataEntry
+from schedule.Presentation.EditResources import EditResources
 from schedule.Schedule.ScheduleEnums import ResourceType
 from schedule.Presentation.globals import *
 
@@ -39,7 +39,7 @@ def test_constructor():
     t2 = schedule.add_teacher("John", "Doe")
     t3 = schedule.add_teacher("Babe", "Ruth")
     gui = Gui()
-    de = DataEntry("", ResourceType.teacher, schedule, gui)
+    de = EditResources("", ResourceType.teacher, schedule, gui)
     assert gui.called_initialize_columns == True
     columns = gui.column_descriptions
     assert columns[0].property == 'id'
@@ -53,7 +53,7 @@ def test_refresh():
     t2 = schedule.add_teacher("John", "Doe")
     t3 = schedule.add_teacher("Babe", "Ruth")
     gui = Gui()
-    de = DataEntry("", ResourceType.teacher, schedule, gui)
+    de = EditResources("", ResourceType.teacher, schedule, gui)
     de.refresh()
     assert gui.called_refresh
     assert len(gui.data) == 3
@@ -68,7 +68,7 @@ def test_handle_empty_rows():
     t2 = schedule.add_teacher("John", "Doe")
     t3 = schedule.add_teacher("Babe", "Ruth")
     gui = Gui()
-    de = DataEntry("", ResourceType.teacher, schedule, gui)
+    de = EditResources("", ResourceType.teacher, schedule, gui)
     de.refresh()
     assert gui.called_refresh
     gui.data.append(["", "", "", ""])
@@ -87,7 +87,7 @@ def test_adding_new_teacher():
     t2 = schedule.add_teacher("John", "Doe")
     t3 = schedule.add_teacher("Babe", "Ruth")
     gui = Gui()
-    de = DataEntry("", ResourceType.teacher, schedule, gui)
+    de = EditResources("", ResourceType.teacher, schedule, gui)
     de.refresh()
     assert gui.called_refresh
     gui.data.append(["", "New", "Teacher", ".21"])
@@ -108,7 +108,7 @@ def test_modifying_teacher():
     t2 = schedule.add_teacher("John", "Doe")
     t3 = schedule.add_teacher("Babe", "Ruth")
     gui = Gui()
-    de = DataEntry("", ResourceType.teacher, schedule, gui)
+    de = EditResources("", ResourceType.teacher, schedule, gui)
     de.refresh()
     assert gui.called_refresh
     gui.data[0][1] = "Janet"

@@ -19,7 +19,7 @@ class DEColumnDescription:
     property: str
 
 
-class DataEntryTk:
+class EditResourcesTk:
 
     def __init__(self,
                  parent: Frame,

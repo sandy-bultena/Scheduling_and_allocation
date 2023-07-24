@@ -10,7 +10,7 @@ from ..UsefulClasses.NoteBookPageInfo import NoteBookPageInfo
 from ..UsefulClasses.Preferences import Preferences
 from ..Presentation.globals import *
 from ..Schedule.ScheduleEnums import ResourceType
-from ..Presentation.EditViewTypeObjects import DataEntry
+from ..Presentation.EditResources import EditResources
 from ..Presentation.Overview import Overview
 
 from schedule.UsefulClasses.MenuItem import MenuItem, MenuType, ToolbarItem
@@ -55,9 +55,9 @@ class Scheduler:
     def __init__(self, gui: Optional[GuiMain] = None):
         self.user_base_dir: Optional[str] = None
         self.schedule: Optional[Schedule] = None
-        self._teachers_de: Optional[DataEntry] = None
-        self._streams_de: Optional[DataEntry] = None
-        self._labs_de: Optional[DataEntry] = None
+        self._teachers_de: Optional[EditResources] = None
+        self._streams_de: Optional[EditResources] = None
+        self._labs_de: Optional[EditResources] = None
         self._overview: Optional[Overview] = None
 
         self.preferences: Preferences = Preferences()
@@ -265,7 +265,7 @@ class Scheduler:
     def update_edit_teachers(self):
         if self._teachers_de is None:
             teachers_frame = self.gui.get_gui_container("teachers")
-            self._teachers_de = DataEntry(teachers_frame, ResourceType.teacher, self.schedule)
+            self._teachers_de = EditResources(teachers_frame, ResourceType.teacher, self.schedule)
 
         # reset the schedule object just in case the schedule file has changed
         self._teachers_de.schedule = self.schedule
@@ -278,7 +278,7 @@ class Scheduler:
     def update_edit_streams(self):
         if self._streams_de is None:
             streams_frame = self.gui.get_gui_container("streams")
-            self._streams_de = DataEntry(streams_frame, ResourceType.stream, self.schedule)
+            self._streams_de = EditResources(streams_frame, ResourceType.stream, self.schedule)
 
         # reset the schedule object just in case the schedule file has changed
         self._streams_de.schedule = self.schedule
@@ -291,7 +291,7 @@ class Scheduler:
     def update_edit_labs(self):
         if self._labs_de is None:
             labs_frame = self.gui.get_gui_container("labs")
-            self._labs_de = DataEntry(labs_frame, ResourceType.lab, self.schedule)
+            self._labs_de = EditResources(labs_frame, ResourceType.lab, self.schedule)
 
         # reset the schedule object just in case the schedule file has changed
         self._labs_de.schedule = self.schedule

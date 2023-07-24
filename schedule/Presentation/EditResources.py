@@ -3,7 +3,7 @@ from typing import Any, Optional
 
 from ..Schedule.Schedule import Schedule
 from ..Presentation.globals import set_dirty_flag
-from ..GUI_Pages.EditViewTypeObjectsTk import DataEntryTk, DEColumnDescription
+from ..GUI_Pages.EditResourcesTk import EditResourcesTk, DEColumnDescription
 from ..Schedule.ScheduleEnums import ResourceType
 
 property_conversions_from_str = {
@@ -27,7 +27,7 @@ def get_set_property(obj, property_name: str, value: Any = None, set_flag=False)
         setattr(obj, property_name, value)
 
 
-class DataEntry:
+class EditResources:
     # =================================================================
     # Class Variables
     # =================================================================
@@ -39,13 +39,13 @@ class DataEntry:
     # =================================================================
     def __init__(self, frame, view_type: ResourceType, schedule: Optional[Schedule], test_gui=None):
         """
-        Creates the basic DataEntry (a simple matrix)
+        Creates the basic EditResources (a simple matrix)
         :param frame: gui container object
         :param view_type: Is it a lab, stream or teacher
         :param schedule: The Schedule object
         """
         if not test_gui:
-            self.gui = DataEntryTk(frame, self._cb_delete_obj, self._cb_save)
+            self.gui = EditResourcesTk(frame, self._cb_delete_obj, self._cb_save)
         else:
             self.gui = test_gui
 
@@ -146,11 +146,11 @@ class DataEntry:
 
         # Just in case saving is already in progress,
         # wait before continuing.
-        if DataEntry.Currently_saving > 2:
+        if EditResources.Currently_saving > 2:
             return  # 2 is too many.
-        if DataEntry.Currently_saving:
+        if EditResources.Currently_saving:
             sleep(2)
-        DataEntry.Currently_saving += 1
+        EditResources.Currently_saving += 1
 
         # Read data from the data object.
         for data in all_data:
@@ -207,7 +207,7 @@ class DataEntry:
             set_dirty_flag()
 
         # all done saving, decrement number of files currently being saved
-        DataEntry.Currently_saving -= 1
+        EditResources.Currently_saving -= 1
         self.refresh()
 
     # =================================================================

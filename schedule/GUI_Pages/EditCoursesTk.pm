@@ -163,7 +163,7 @@ sub add {
 # text style for course for the tree
 # =================================================================
 sub course_style {
-    return $Styles{-course};
+    return $k{-course};
 }
 
 # =================================================================

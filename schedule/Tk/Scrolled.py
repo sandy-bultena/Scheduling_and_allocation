@@ -3,6 +3,7 @@ from tkinter import *
 import tkinter as tk
 from tkinter import ttk
 from functools import partial
+import schedule.Tk as new_tk
 
 import sys
 import traceback
@@ -159,7 +160,15 @@ example::
             try:
                 _tk_widget_type = getattr(ttk, widget_type)
             except AttributeError as e:
-                eprint(e)
+
+                # Note, if getting an personalized widget, then the
+                # module name has to be equal to the name of the class
+                try:
+                    _module_ = getattr(new_tk, widget_type)
+                    _tk_widget_type = getattr(_module_, widget_type)
+                except AttributeError as e:
+                    eprint(e)
+
         # ----------------------------------------------------------------------------------------
         # bail out if user is trying to create 2 scrollbars in the same orientation
         # ----------------------------------------------------------------------------------------

@@ -203,7 +203,7 @@ Example::
         # --------------------------------------------------------------------------------
         # add the grid_row
         # --------------------------------------------------------------------------------
-        # always add new grid_row at the end of the existing DataEntry widget
+        # always add new grid_row at the end of the existing EditResources widget
         grid_row = self.number_of_rows + 1
 
         # for each column, add an entry box

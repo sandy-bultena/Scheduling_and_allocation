@@ -75,7 +75,7 @@ def most_severe(conflict_number: int, view_type: ResourceType) -> ConflictType:
     """
     Identify the most severe conflict resource_type in a list of conflicts defined by the conflict number
     - Parameter conflict_number -> defines the types of conflicts. (each bit represents a conflict resource_type)
-    - Parameter view_type -> defines the user's current view. ResourceType (enum)
+    - Parameter resource_type -> defines the user's current view. ResourceType (enum)
     """
     severest = None
     sorted_conflicts: list[ConflictType] = ORDER_OF_SEVERITY.copy()

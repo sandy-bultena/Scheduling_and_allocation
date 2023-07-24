@@ -154,7 +154,7 @@ class AssignToResource:
         answer = gui.show()  # or "Cancel"
 
         # ------------------------------------
-        # assign blocks to resource
+        # assign blocks to resource_type
         # ------------------------------------
         if answer == "Ok":
             # check if a Block is defined.

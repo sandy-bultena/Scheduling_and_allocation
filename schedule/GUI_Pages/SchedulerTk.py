@@ -157,7 +157,7 @@ class SchedulerTk(MainPageBaseTk):
     #
     #     Parameters:
     #         default_tab: Name of _notebook tab to draw on.
-    #         all_resources: A list of resource objects (teacher_ids/lab_ids/etc.)
+    #         all_resources: A list of resource_type objects (teacher_ids/lab_ids/etc.)
     #         btn_callback: A callback function called whenever the ViewsManager is asked to create a
     #         view."""
     #     f = self.pages[default_tab.lower()]

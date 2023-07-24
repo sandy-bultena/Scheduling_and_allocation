@@ -55,13 +55,13 @@ class ViewTk(ViewBaseTk):
 
         Parameters:
             resource_type: type of View (teacher/lab/stream)
-            named_resources: all resource objects of this type.
+            named_resources: all resource_type objects of this type.
             toggle_movement_cb: callback routine to change a blocks from movable/unmovable.
             move_block_cb: callback routine if blocks is moved from one view to another.
 
         Inputs to Callback:
             - view object
-            - resource object (Teacher / Lab / Stream)"""
+            - resource_type object (Teacher / Lab / Stream)"""
         view = self.view
 
         # create a menu.

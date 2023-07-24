@@ -6,8 +6,8 @@ import sys
 sys.path.append(path.dirname(path.dirname(__file__) + "/../../"))
 
 from schedule.Tk.InitGuiFontsAndColours import set_default_fonts_and_colours
-from schedule.GUI_Pages.EditViewTypeObjectsTk import DataEntryTk
-from schedule.GUI_Pages.EditViewTypeObjectsTk import DEColumnDescription
+from schedule.GUI_Pages.EditResourcesTk import EditResourcesTk
+from schedule.GUI_Pages.EditResourcesTk import DEColumnDescription
 
 
 # TODO: button Colour changes don't work on mac, not yet tested on windows
@@ -28,11 +28,11 @@ def main():
     data = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
     data2 = [[21, 22, 23], [24, 25, 26], [27, 28, 29]]
 
-    de = DataEntryTk(frame,
-                     lambda *args: print("delete", [*args]),
-                     lambda *args: print("save", [*args]),
-                     colours,
-                     )
+    de = EditResourcesTk(frame,
+                         lambda *args: print("delete", [*args]),
+                         lambda *args: print("save", [*args]),
+                         colours,
+                         )
     de.initialize_columns(columns)
     de.refresh(data)
 

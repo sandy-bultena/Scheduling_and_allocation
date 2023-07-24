@@ -27,7 +27,7 @@ class AdvancedTreeview(ttk.Treeview):
                any_object: Optional[Any],
                *,
                index: int | Literal['end'] = 'end', iid: str = None,
-                **options) -> str:
+               **options) -> str:
         """
         override the ttk.treeview.insert command, adding 'any_object' as a new parameter
 
@@ -93,6 +93,13 @@ class AdvancedTreeview(ttk.Treeview):
             if self.exists(iid):
                 self._prune(iid)
                 super().delete(iid)
+
+    def expand_whole_branch(self, tree_id: str):
+        """Opens all the twigs in this branch"""
+        self.item(tree_id, open=True)
+        for twig in self.get_children(tree_id):
+            self.expand_whole_branch(twig)
+
 
     def _prune(self, iid: str):
         """Not only remove the tree branch, but remove the data from tree_objects as well"""

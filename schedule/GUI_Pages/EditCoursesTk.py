@@ -1,11 +1,11 @@
 from __future__ import annotations
+
 from tkinter import *
-from tkinter import ttk
-from typing import Callable, Any, Optional
+from typing import Callable, Any, Optional, Protocol
 
 from ..Tk.Scrolled import Scrolled
-from tkinter.font import Font
 import schedule.Tk.InitGuiFontsAndColours as fac
+from schedule.Tk.AdvancedTreeview import AdvancedTreeview
 from schedule.Schedule.ScheduleEnums import ResourceType
 import re
 
@@ -45,13 +45,18 @@ class EditCoursesTk:
     Text_style_defn: dict[str, str] = {'bg': colours.WorkspaceColour, 'fg': colours.SelectedForeground}
 
     def __init__(self, frame: Frame):
+        if self.Fonts is None:
+            self.Fonts = fac.TkFonts(frame.winfo_toplevel())
+        print(f"Fonts are {self.Fonts}")
+
+        self.resource_Listbox: dict[ResourceType, Listbox] = dict()
         self._frame: Frame = frame
         self._toggle = None
         self._dropped = None
 
-        self.view_type_objects: dict[ResourceType, list[Any]] = dict()
-        for view_type in ResourceType:
-            self.view_type_objects[view_type] = list()
+        self.resource_objects: dict[ResourceType, list[Any]] = dict()
+        for resource_type in ResourceType:
+            self.resource_objects[resource_type] = list()
 
         self.cb_edit_obj: Callable[[Any, id], None] = lambda obj, obj_id: None
         self.cb_new_course: Callable[[str, str], None] = lambda name, description: None
@@ -85,11 +90,13 @@ class EditCoursesTk:
         # ----------------------------------------------------------------
         # make Schedule course_ttkTreeView
         # ----------------------------------------------------------------
-        tree_scrolled: Scrolled = Scrolled(left_panel, 'Treeview', scrollbars='se')
+        tree_scrolled: Scrolled = Scrolled(left_panel, 'AdvancedTreeview', scrollbars='se')
         tree_scrolled.pack(expand=1, fill='both', side='left')
-        self.course_ttkTreeView: ttk.Treeview = tree_scrolled.widget
+        self.course_ttkTreeView: AdvancedTreeview = tree_scrolled.widget
         self.course_ttkTreeView.bind('<Double-1>', self._cmd_edit_selection)
         self.course_ttkTreeView.bind('<Key-Return>', self._cmd_edit_selection)
+        self.course_ttkTreeView.tag_configure("bold", font=self.Fonts.bold)
+        self.course_ttkTreeView.tag_configure("normal", font=self.Fonts.normal)
 
         # ----------------------------------------------------------------
         # make panel for teachers/labs/streams
@@ -109,75 +116,29 @@ class EditCoursesTk:
     # ===================================================================
     # update data
     # ===================================================================
-    def update_view_type_objects(self, view_type: ResourceType, objs: list[Any]):
+    def update_resource_type_objects(self, resource_type: ResourceType, objs: list[Any]):
         """
         Updates the Listbox widget with Labs/Teachers/Streams string representations
-        :param view_type: what view resource_type are you updating?
+        :param resource_type: what view resource_type are you updating?
         :param objs: all the objects that you want in the list
         """
-        widget: Listbox = self.view_type_tk_lists[view_type]
+        widget: Listbox = self.resource_Listbox[resource_type]
+        print(f"{widget=}")
         widget.delete(0, 'end')
-        self.view_type_objects[view_type].clear()
+        self.resource_objects[resource_type].clear()
         for i, obj in enumerate(objs):
             widget.insert('end', str(obj))
-            self.view_type_objects[view_type].append(obj)
+            self.resource_objects[resource_type].append(obj)
 
-    def update_courses_tree(self, objects: list[TreeViewObjectType], parent: str = ""):
-        """
-        Redraws the treeview widget with all the data for each course
-        :param objects: a list of objects, and sub objects
-        :param parent: define which treeview item is the parent, "" is top level
-        """
-        self.course_ttkTreeView.delete(*self.course_ttkTreeView.get_children())
-        self.tree_objects.clear()
-        self._update_courses_tree(objects)
+    def add_tree_item(self, parent: str, name: str, obj: Any) -> str:
+        tag = "bold" if parent is None or parent == "" else "normal"
+        return self.course_ttkTreeView.insert_sorted(parent, obj, text=name, tag=tag)
 
-    def update_single_course(self, tv_course_to_update: TreeViewObjectType):
-        """If course exists, update all streams/teachers, etc"""
+    def remove_tree_item(self, tree_iid: str):
+        return self.course_ttkTreeView.delete(tree_iid)
 
-        course_to_modify = tv_course_to_update.schedule_obj
-        course_specifics = tv_course_to_update.children
-
-        new_tree_id = None
-        for row, tree_id in enumerate(self.course_ttkTreeView.get_children()):
-
-            # does the object already exist in the tree, or do we need to insert?
-            if self.tree_objects[tree_id] == course_to_modify:
-                for branch in self.course_ttkTreeView.get_children(tree_id):
-                    self._prune(tree_id)
-                new_tree_id = tree_id
-                break
-
-            # the course does not exist, so we put it here
-            if self.tree_objects[tree_id] > course_to_modify:
-                new_tree_id = self.course_ttkTreeView.insert("", index=row)
-                break
-
-        # the course does not exist, so we put it here
-        if new_tree_id is None:
-            new_tree_id = self.course_ttkTreeView.insert("", index='end')
-
-        self._update_courses_tree(tv_course_to_update.children, new_tree_id)
-        self._expand_whole_branch(new_tree_id)
-        return
-
-    def _update_courses_tree(self, objects: list[TreeViewObjectType], parent: str = ""):
-        for tv_obj in objects:
-            tree_id = self.course_ttkTreeView.insert(parent, 'end', text=str(tv_obj.schedule_obj))
-            self.tree_objects[tree_id] = tv_obj.schedule_obj
-            self.update_courses_tree(tv_obj.children, tree_id)
-
-    def _prune(self, tree_id: str):
-        """Not only remove the tree branch, but remove the data from tree_objects as well"""
-        for twig in self.course_ttkTreeView.get_children(tree_id):
-            self._prune(twig)
-        self.tree_objects.pop(tree_id, None)
-
-    def _expand_whole_branch(self, tree_id: str):
-        """Opens all the twigs in this branch"""
-        self.course_ttkTreeView.item(tree_id, open=True)
-        for twig in self.course_ttkTreeView.get_children(tree_id):
-            self._expand_whole_branch(twig)
+    def clear_tree(self):
+        return self.course_ttkTreeView.delete(self.course_ttkTreeView.get_children(""))
 
     # ===================================================================
     # create panel for modifying the schedule
@@ -205,18 +166,27 @@ class EditCoursesTk:
         # the scrolled method requires an empty frame, or else, it messes up.
         f = Frame(panel)
         f.grid(column=0, stick='nsew', row=0)
-        s: Scrolled = Scrolled(f, 'Listbox', scrollbars='e')
-        self.view_type_tk_lists[ResourceType.teacher] = s.widget
+        Label(f, text="Teachers",font=self.Fonts.bold).pack()
+        sf = Frame(f)
+        sf.pack(fill='both', expand=1)
+        s: Scrolled = Scrolled(sf, 'Listbox', scrollbars='e')
+        self.resource_Listbox[ResourceType.teacher] = s.widget
 
         f = Frame(panel)
         f.grid(column=0, stick='nsew', row=1)
-        s: Scrolled = Scrolled(f, 'Listbox', scrollbars='e')
-        self.view_type_tk_lists[ResourceType.lab] = s.widget
+        Label(f, text="Labs", font=self.Fonts.bold).pack()
+        sf = Frame(f)
+        sf.pack(fill='both', expand=1)
+        s: Scrolled = Scrolled(sf, 'Listbox', scrollbars='e')
+        self.resource_Listbox[ResourceType.lab] = s.widget
 
         f = Frame(panel)
         f.grid(column=0, stick='nsew', row=2)
-        s: Scrolled = Scrolled(f, 'Listbox', scrollbars='e')
-        self.view_type_tk_lists[ResourceType.stream] = s.widget
+        Label(f, text="Streams", font=self.Fonts.bold).pack()
+        sf = Frame(f)
+        sf.pack(fill='both', expand=1)
+        s: Scrolled = Scrolled(sf, 'Listbox', scrollbars='e')
+        self.resource_Listbox[ResourceType.stream] = s.widget
 
         # self.view_type_tk_lists[ResourceType.teacher].bind('<Double-Button-1>', self._cmd_double_click_teacher)
         #
@@ -224,8 +194,8 @@ class EditCoursesTk:
         # # unbind the motion for general listbox widgets, which interferes
         # # with the drag-drop bindings later on.
         # # ---------------------------------------------------------------
-        # for view_type in ResourceType:
-        #     self.view_type_tk_lists[view_type].bind('<B1-Motion>', None)
+        # for resource_type in ResourceType:
+        #     self.view_type_tk_lists[resource_type].bind('<B1-Motion>', None)
         #
         # # ---------------------------------------------------------------
         # # assign weights to the panel grid
