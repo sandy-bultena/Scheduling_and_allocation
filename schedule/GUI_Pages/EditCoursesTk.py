@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from functools import partial
 from tkinter import *
 from typing import Callable, Any, Optional, Protocol
 
@@ -44,23 +45,34 @@ class EditCoursesTk:
     Fonts: fac.TkFonts = fac.fonts
     Text_style_defn: dict[str, str] = {'bg': colours.WorkspaceColour, 'fg': colours.SelectedForeground}
 
+    # ========================================================================
+    # constructor
+    # ========================================================================
     def __init__(self, frame: Frame):
+
+        # setup fonts if they have not already been setup
         if self.Fonts is None:
             self.Fonts = fac.TkFonts(frame.winfo_toplevel())
-        print(f"Fonts are {self.Fonts}")
 
-        self.resource_Listbox: dict[ResourceType, Listbox] = dict()
-        self._frame: Frame = frame
+        # variables used for drag and drop
         self._toggle = None
         self._dropped = None
 
+        # keep track of widgets and objects for all resources
+        # (teachers/streams/labs)
+        self.resource_Listbox: dict[ResourceType, Listbox] = dict()
         self.resource_objects: dict[ResourceType, list[Any]] = dict()
         for resource_type in ResourceType:
             self.resource_objects[resource_type] = list()
 
+        # call back routines
         self.cb_edit_obj: Callable[[Any, id], None] = lambda obj, obj_id: None
         self.cb_new_course: Callable[[str, str], None] = lambda name, description: None
         self.cb_get_tree_menu: Callable[[Any, id], list] = lambda obj, obj_id: list()
+        # TODO:
+        #   cb_object_dropped_on_tree       (type_of_object_dropped, id_of_dropped_object, tree_path, target_object)
+        #   cb_get_resource_menu_info       (teacher_lab_stream_id, type)
+        #   cb_show_teacher_stat            (teacher_id)
 
         # ----------------------------------------------------------------
         # using grid, create right and left panels
@@ -88,27 +100,19 @@ class EditCoursesTk:
         frame.grid_rowconfigure(0, weight=1)
 
         # ----------------------------------------------------------------
-        # make Schedule course_ttkTreeView
+        # make the gui contents
         # ----------------------------------------------------------------
-        tree_scrolled: Scrolled = Scrolled(left_panel, 'AdvancedTreeview', scrollbars='se')
-        tree_scrolled.pack(expand=1, fill='both', side='left')
-        self.course_ttkTreeView: AdvancedTreeview = tree_scrolled.widget
-        self.course_ttkTreeView.bind('<Double-1>', self._cmd_edit_selection)
-        self.course_ttkTreeView.bind('<Key-Return>', self._cmd_edit_selection)
-        self.course_ttkTreeView.tag_configure("bold", font=self.Fonts.bold)
-        self.course_ttkTreeView.tag_configure("normal", font=self.Fonts.normal)
+        self.course_ttkTreeView = self._make_treeview(left_panel)
+        self._make_resource_list_widgets(right_panel)
+        self._make_button_row(right_panel)
+
+        right_panel.grid_columnconfigure(0, weight=1)
+        right_panel.grid_rowconfigure(0, weight=1)
+        right_panel.grid_rowconfigure(1, weight=2)
+        right_panel.grid_rowconfigure(2, weight=2)
+        right_panel.grid_rowconfigure(3, weight=0)
 
         # ----------------------------------------------------------------
-        # make panel for teachers/labs/streams
-        # ----------------------------------------------------------------
-        self._subdivide_right_panel(right_panel)
-
-        # # -------------------------------
-        # # Right click menu binding
-        # # -------------------------------
-        # self._create_right_click_menu(tree_scrolled)
-        #
-        # # ----------------------------------------------------------------
         # # drag and drop bindings
         # # ----------------------------------------------------------------
         # self._create_drag_drop_objs()
@@ -141,35 +145,34 @@ class EditCoursesTk:
         return self.course_ttkTreeView.delete(self.course_ttkTreeView.get_children(""))
 
     # ===================================================================
+    # make the tree view
+    # ===================================================================
+    def _make_treeview(self, left_panel: Frame):
+        tree_scrolled: Scrolled = Scrolled(left_panel, 'AdvancedTreeview', scrollbars='se')
+        tree_scrolled.pack(expand=1, fill='both', side='left')
+        tv: AdvancedTreeview = tree_scrolled.widget
+        tv.bind('<Double-1>', self._cmd_edit_selection)
+        tv.bind('<Key-Return>', self._cmd_edit_selection)
+        tv.tag_configure("bold", font=self.Fonts.bold)
+        tv.tag_configure("normal", font=self.Fonts.normal)
+        tv.bind('<Button-3>', self._cmd_show_tree_menu())
+        return tv
+
+    # ===================================================================
     # create panel for modifying the schedule
     # ===================================================================
-    def _subdivide_right_panel(self, panel):
-
-        # ---------------------------------------------------------------
-        # button row
-        # ---------------------------------------------------------------
-        button_row = Frame(panel)
-        button_row.grid(column=0, sticky='nsew', row=3)
-
-        # ---------------------------------------------------------------
-        # buttons
-        # ---------------------------------------------------------------
-        btn_new_course = Button(button_row, text="New Course", width=11, command=self.cb_new_course)
-        btn_new_course.pack(side='left')
-
-        btn_edit_selection = Button(button_row, text="Edit Selection", width=11, command=self._cmd_edit_selection)
-        btn_edit_selection.pack(side='left')
-
+    def _make_resource_list_widgets(self, panel):
         # ---------------------------------------------------------------
         # teacher and lab and stream list
         # ---------------------------------------------------------------
         # the scrolled method requires an empty frame, or else, it messes up.
         f = Frame(panel)
         f.grid(column=0, stick='nsew', row=0)
-        Label(f, text="Teachers",font=self.Fonts.bold).pack()
+        Label(f, text="Teachers", font=self.Fonts.bold).pack()
         sf = Frame(f)
         sf.pack(fill='both', expand=1)
         s: Scrolled = Scrolled(sf, 'Listbox', scrollbars='e')
+        s.widget.bind('<Double-Button-1>', self._cmd_double_click_teacher)
         self.resource_Listbox[ResourceType.teacher] = s.widget
 
         f = Frame(panel)
@@ -188,51 +191,43 @@ class EditCoursesTk:
         s: Scrolled = Scrolled(sf, 'Listbox', scrollbars='e')
         self.resource_Listbox[ResourceType.stream] = s.widget
 
-        # self.view_type_tk_lists[ResourceType.teacher].bind('<Double-Button-1>', self._cmd_double_click_teacher)
-        #
-        # # ---------------------------------------------------------------
-        # # unbind the motion for general listbox widgets, which interferes
-        # # with the drag-drop bindings later on.
-        # # ---------------------------------------------------------------
-        # for resource_type in ResourceType:
-        #     self.view_type_tk_lists[resource_type].bind('<B1-Motion>', None)
-        #
-        # # ---------------------------------------------------------------
-        # # assign weights to the panel grid
-        # # ---------------------------------------------------------------
-        panel.grid_columnconfigure(0, weight=1)
-        panel.grid_rowconfigure(0, weight=1)
-        panel.grid_rowconfigure(1, weight=2)
-        panel.grid_rowconfigure(2, weight=2)
-        panel.grid_rowconfigure(3, weight=0)
+        # ---------------------------------------------------------------
+        # 1) unbind the motion for general listbox widgets, which interferes
+        # with the drag-drop bindings later on.
+        # 2) bind the right click button to the 'resource' menu
+        #    based on type
+        # ---------------------------------------------------------------
+        for resource_type in ResourceType:
+            if resource_type not in self.resource_Listbox:
+                continue
+            print(f"Binding for {resource_type=}")
+            self.resource_Listbox[resource_type].bind('<B1-Motion>', None)
+            self.resource_Listbox[resource_type].bind('<Button-2>',
+                                                      lambda e: self._cmd_show_resource_type_menu(resource_type, e))
 
     # ==================================================================
-    # create all the right click menu stuff
+    # make the button row for creating new courses, editing selections, etc
     # ==================================================================
-    def _create_right_click_menu(self, scrolled_tree):
-        # TODO: what is lab_menu and stream_menu for if not saved?
-        lab_menu = Menu(self.view_type_tk_lists[ResourceType.lab], tearoff=0)
-        stream_menu = Menu(self.view_type_tk_lists[ResourceType.stream], tearoff=0)
-
-        for view_type in ResourceType:
-            self.view_type_tk_lists[view_type].bind(
-                '<Button-2>',
-                lambda e: self._cmd_show_view_type_menu(view_type, e))
-
-        self.course_ttkTreeView.bind('<Button-2>', self._cmd_show_tree_menu())
+    def _make_button_row(self, panel: Frame):
+        button_row = Frame(panel)
+        button_row.grid(column=0, sticky='nsew', row=3)
+        btn_new_course = Button(button_row, text="New Course", width=11, command=self.cb_new_course)
+        btn_new_course.pack(side='left')
+        btn_edit_selection = Button(button_row, text="Edit Selection", width=11, command=self._cmd_edit_selection)
+        btn_edit_selection.pack(side='left')
 
     # TODO: create callback routines
-    def _cmd_show_view_type_menu(self, *_):
-        pass
+    def _cmd_show_resource_type_menu(self, *args):
+        print(f"show_resource_type {args}")
 
-    def _cmd_show_tree_menu(self, *_):
-        pass
+    def _cmd_show_tree_menu(self, *args):
+        print(f"show_tree_menu {args}")
 
-    def _cmd_edit_selection(self, *_):
-        pass
+    def _cmd_edit_selection(self, *args):
+        print(f"show_edit_selection {args}")
 
-    def _cmd_double_click_teacher(self, *_):
-        pass
+    def _cmd_double_click_teacher(self, *args):
+        print(f"double click teacher {args}")
 
 
 #     # ==================================================================
