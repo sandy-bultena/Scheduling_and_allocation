@@ -1,14 +1,29 @@
 from __future__ import annotations
 
+import tkinter
 from functools import partial
 from tkinter import *
-from typing import Callable, Any, Optional, Protocol
+from typing import Callable, Any
+import re
 
-from ..Tk.Scrolled import Scrolled
+from schedule.Tk.Scrolled import Scrolled
 import schedule.Tk.InitGuiFontsAndColours as fac
 from schedule.Tk.AdvancedTreeview import AdvancedTreeview
 from schedule.Schedule.ScheduleEnums import ResourceType
-import re
+from schedule.UsefulClasses.MenuItem import MenuItem, MenuType
+from ..GUI_Pages.MenuAndToolBarTk import generate_menu
+
+
+def _default_menu(obj) -> list[MenuItem]:
+    menu = MenuItem(name=str(obj), label=str(obj), menu_type=MenuType.Command, command=lambda: None)
+    return [menu, ]
+
+
+def _default_resource_menu(resource_type: ResourceType, obj) -> list[MenuItem]:
+    menu_title = MenuItem(name=str(resource_type), label=str(resource_type), menu_type=MenuType.Command,
+                          command=lambda: None)
+    menu = MenuItem(name=str(obj), label=str(obj), menu_type=MenuType.Command, command=lambda: None)
+    return [menu_title, menu]
 
 
 # =================================================================
@@ -49,8 +64,9 @@ class EditCoursesTk:
     # constructor
     # ========================================================================
     def __init__(self, frame: Frame):
+        self.frame = frame
 
-        # setup fonts if they have not already been setup
+        # setup fonts if they have not already been set up
         if self.Fonts is None:
             self.Fonts = fac.TkFonts(frame.winfo_toplevel())
 
@@ -66,13 +82,13 @@ class EditCoursesTk:
             self.resource_objects[resource_type] = list()
 
         # call back routines
-        self.cb_edit_obj: Callable[[Any, id], None] = lambda obj, obj_id: None
+        self.cb_edit_obj: Callable[[Any], None] = lambda obj: print(f"Edit {str(obj)}")
         self.cb_new_course: Callable[[str, str], None] = lambda name, description: None
-        self.cb_get_tree_menu: Callable[[Any, id], list] = lambda obj, obj_id: list()
+        self.cb_get_tree_menu: Callable[[Any], list[MenuItem]] = _default_menu
+        self.cb_get_resource_menu: Callable[[ResourceType, Any], list[MenuItem]] = _default_resource_menu
+        self.cb_show_teacher_stat: Callable[[Any], None] = lambda obj: print(f"Teacher stat: {obj}")
         # TODO:
         #   cb_object_dropped_on_tree       (type_of_object_dropped, id_of_dropped_object, tree_path, target_object)
-        #   cb_get_resource_menu_info       (teacher_lab_stream_id, type)
-        #   cb_show_teacher_stat            (teacher_id)
 
         # ----------------------------------------------------------------
         # using grid, create right and left panels
@@ -127,7 +143,6 @@ class EditCoursesTk:
         :param objs: all the objects that you want in the list
         """
         widget: Listbox = self.resource_Listbox[resource_type]
-        print(f"{widget=}")
         widget.delete(0, 'end')
         self.resource_objects[resource_type].clear()
         for i, obj in enumerate(objs):
@@ -155,7 +170,7 @@ class EditCoursesTk:
         tv.bind('<Key-Return>', self._cmd_edit_selection)
         tv.tag_configure("bold", font=self.Fonts.bold)
         tv.tag_configure("normal", font=self.Fonts.normal)
-        tv.bind('<Button-3>', self._cmd_show_tree_menu())
+        tv.bind('<Button-2>', self._cmd_show_tree_menu)
         return tv
 
     # ===================================================================
@@ -200,10 +215,10 @@ class EditCoursesTk:
         for resource_type in ResourceType:
             if resource_type not in self.resource_Listbox:
                 continue
-            print(f"Binding for {resource_type=}")
+            print(f"Binding for type: {resource_type}")
             self.resource_Listbox[resource_type].bind('<B1-Motion>', None)
             self.resource_Listbox[resource_type].bind('<Button-2>',
-                                                      lambda e: self._cmd_show_resource_type_menu(resource_type, e))
+                                                      partial(self._cmd_show_resource_type_menu, resource_type))
 
     # ==================================================================
     # make the button row for creating new courses, editing selections, etc
@@ -216,84 +231,68 @@ class EditCoursesTk:
         btn_edit_selection = Button(button_row, text="Edit Selection", width=11, command=self._cmd_edit_selection)
         btn_edit_selection.pack(side='left')
 
-    # TODO: create callback routines
-    def _cmd_show_resource_type_menu(self, *args):
-        print(f"show_resource_type {args}")
+    # ==================================================================
+    # bound method for right click on resource list
+    # ==================================================================
+    def _cmd_show_resource_type_menu(self, resource_type: ResourceType, e: tkinter.Event):
+        if resource_type is ResourceType.none:
+            return
+        widget: Listbox = self.resource_Listbox[resource_type]
+        index = widget.nearest(e.y)
+        widget.select_clear(0, 'end')
+        widget.selection_set(index, index)
+        obj = self.resource_objects[resource_type][index]
 
-    def _cmd_show_tree_menu(self, *args):
-        print(f"show_tree_menu {args}")
+        # get menu info from callback routine
+        menu = Menu(self.frame.winfo_toplevel(), tearoff=0)
+        menu_details = self.cb_get_resource_menu(resource_type, obj)
+        generate_menu(self.frame.winfo_toplevel(), menu_details, menu)
+        try:
+            menu.tk_popup(e.x_root, e.y_root)
+        finally:
+            menu.grab_release()
 
-    def _cmd_edit_selection(self, *args):
-        print(f"show_edit_selection {args}")
+    # ==================================================================
+    # bound method for right click on tree item
+    # ==================================================================
+    def _cmd_show_tree_menu(self, e: tkinter.Event):
+        tv = self.course_ttkTreeView
 
-    def _cmd_double_click_teacher(self, *args):
-        print(f"double click teacher {args}")
+        # which item was selected?
+        iid = tv.identify_row(e.y)
+        if not iid:
+            return
+        tv.selection_set(iid)
 
+        # get object associated with this item
+        obj = tv.get_obj_from_id(iid)
 
-#     # ==================================================================
-#     # show pop-up course_ttkTreeView menu
-#     # ==================================================================
-#     def _cmd_show_tree_menu(self, e: Event):
-#         course_ttkTreeView: ttk.Treeview = self.course_ttkTreeView
-#
-#         # which entity was selected (based on mouse position), and set_default_fonts_and_colours focus and selection
-#         entity_id = course_ttkTreeView.identify_row(e.y)
-#         if not entity_id:
-#             return
-#         course_ttkTreeView.selection_clear()
-#         course_ttkTreeView.selection_set(entity_id)
-#         course_ttkTreeView.focus(entity_id)
-#
-#         # get_by_id the object and notebook object associated with the selected item,
-#         # if no notebook (i.e. Schedule) we don't need a drop-down menu
-#         parent = self._get_parent(entity_id)
-#         if not parent:
-#             return
-#
-#         # create the drop-down menu
-#         menu_array: list[str] = self.cb_get_tree_menu(self.__tree_objs[entity_id])
-#         tree_menu = Menu(self.course_ttkTreeView, tearoff=0, menuitems=menu_array)
-#         '''
-#     my $menu_array = $self->cb_get_tree_menu->( $obj, $parent_obj, $path );
-#     my $tree_menu = $course_ttkTreeView->Menu( -tearoff => 0, -menuitems => $menu_array );
-#     $tree_menu->post( $x, $y );
-# }
-'''
-
-    def _cmd_show_view_type_menu(self, menu_type: str, e: Event):
-        pass
-
-    def _cmd_double_click_teacher(self, teachers_list: list[object], e: Event):
-        pass
+        # get menu info from callback routine
+        menu = Menu(self.frame.winfo_toplevel(), tearoff=0)
+        menu_details = self.cb_get_tree_menu(obj)
+        generate_menu(self.frame.winfo_toplevel(), menu_details, menu)
+        try:
+            menu.tk_popup(e.x_root, e.y_root)
+        finally:
+            menu.grab_release()
 
     # =================================================================
-    # get_by_id the parents of a particular object
+    # bound method for <Enter> on treeview, or clicking 'Edit Selection' button
     # =================================================================
-    def get_parents(self, tree_item_id: str) -> list[object]:
-        return list(self._get_parent(self.course_ttkTreeView.parent(tree_item_id)))
-
-    def _get_parent(self, tree_item_id: str):
-        while tree_item_id != "":
-            yield tree_item_id
-            tree_item_id = self.course_ttkTreeView.parent(tree_item_id)
-
-    # =================================================================
-    # Callback functions
-    # =================================================================
-    def _cmd_edit_selection(self, *args) -> None:
-        tree_item_id = self.course_ttkTreeView.focus()
-        obj = self.__tree_objs[tree_item_id]
-        self.cb_edit_obj(obj, tree_item_id)
+    def _cmd_edit_selection(self, *_):
+        iid_list = self.course_ttkTreeView.selection()
+        if not iid_list:
+            return
+        obj = self.course_ttkTreeView.get_obj_from_id(iid_list[0])
+        self.cb_edit_obj(obj)
 
     # =================================================================
-    # create all the drag'n'drop stuff
+    # event handler for double clicking a teacher
     # =================================================================
-    def _create_drag_drop_objs(self):
-
-        # -------------------------------------------------------------
-        # drag from teacher_ids/lab_ids to course course_ttkTreeView
-        # -------------------------------------------------------------
-        pass
-
-
-'''
+    def _cmd_double_click_teacher(self, e: tkinter.Event):
+        widget: Listbox = self.resource_Listbox[ResourceType.teacher]
+        index = widget.nearest(e.y)
+        widget.select_clear(0, 'end')
+        widget.selection_set(index, index)
+        obj = self.resource_objects[ResourceType.teacher][index]
+        self.cb_show_teacher_stat(obj)

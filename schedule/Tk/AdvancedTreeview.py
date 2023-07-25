@@ -131,6 +131,4 @@ and/or modified under the terms of the Perl Artistic License
      (see http://www.perl.com/perl/misc/Artistic.html)
 
 =cut
-
-1;
 """

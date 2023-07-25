@@ -12,7 +12,7 @@ mw.geometry("500x300")
 frame = Frame(mw, bg='blue')
 frame.pack(expand=1, fill="both")
 tree = AdvancedTreeview(frame)
-tree.pack(expand=1,fill='both')
+tree.pack(expand=1, fill='both')
 
 
 def clear_tree():

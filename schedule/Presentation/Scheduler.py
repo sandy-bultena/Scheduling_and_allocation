@@ -301,8 +301,7 @@ class Scheduler:
     # draw_edit_courses
     # - A page where courses can be added/modified or deleted
     # ==================================================================
-    def update_edit_courses(self):from schedule.Schedule.ScheduleEnums import ResourceType
-
+    def update_edit_courses(self):
         pass
 
     # ==================================================================
