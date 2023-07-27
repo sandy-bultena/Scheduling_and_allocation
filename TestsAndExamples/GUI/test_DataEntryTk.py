@@ -2,7 +2,6 @@ from functools import partial
 from tkinter import *
 from os import path
 import sys
-
 sys.path.append(path.dirname(path.dirname(__file__) + "/../../"))
 
 from schedule.Tk.InitGuiFontsAndColours import set_default_fonts_and_colours
