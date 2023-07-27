@@ -133,6 +133,8 @@ class DragNDropManager:
         self._drag_indicator = None
         self._currently_dragging = False
         event.widget.configure(cursor=self._default_cursor)
+        event.widget.unbind("<B1-Motion>")
+        event.widget.unbind("<ButtonRelease-1>")
 
 
 # ====================================================================================
@@ -202,25 +204,34 @@ def lb_on_drop(e: tk.Event, info_data: dict, target: tk.Widget):
     messagebox.showinfo(title="Successful Drop", message=f"index {info_data['index']} dropped on {tv.item(iid)}")
 
 
-mw = tk.Tk()
-mw.geometry("300x500+30+40")
-tk.Label(mw, text="Drag from list one onto tree").pack()
+tv: tk.Treeview
 
-lb = tk.Listbox()
-lb.pack()
-lb.insert('end', "one")
-lb.insert('end', "two")
-lb.insert('end', "three")
-lb.insert('end', "four")
 
-tv = ttk.Treeview()
-tv.pack()
-id1 = tv.insert(parent="", index="end", text="Not droppable", open=False)
-id2 = tv.insert(parent=id1, index="end", text="can drop on me location 1", open=False)
-id3 = tv.insert(parent=id2, index="end", text="can drop on me location 2", open=False)
+def main():
+    global tv
+    mw = tk.Tk()
+    mw.geometry("300x500+30+40")
+    tk.Label(mw, text="Drag from list one onto tree").pack()
 
-tk.Button(mw, text="clear selection", command=lambda: tv.selection_clear()).pack()
+    lb = tk.Listbox()
+    lb.pack()
+    lb.insert('end', "one")
+    lb.insert('end', "two")
+    lb.insert('end', "three")
+    lb.insert('end', "four")
 
-dm = DragNDropManager()
-dm.add_draggable(lb, on_start=lb_on_start, on_drop=lb_on_drop, on_drag=lb_on_drag)
-mw.mainloop()
+    tv = ttk.Treeview()
+    tv.pack()
+    id1 = tv.insert(parent="", index="end", text="Not droppable", open=False)
+    id2 = tv.insert(parent=id1, index="end", text="can drop on me location 1", open=False)
+    id3 = tv.insert(parent=id2, index="end", text="can drop on me location 2", open=False)
+
+    tk.Button(mw, text="clear selection", command=lambda: tv.selection_clear()).pack()
+
+    dm = DragNDropManager()
+    dm.add_draggable(lb, on_start=lb_on_start, on_drop=lb_on_drop, on_drag=lb_on_drag)
+    mw.mainloop()
+
+
+if __name__ == "__main__":
+    main()
