@@ -11,6 +11,7 @@ import schedule.Tk.InitGuiFontsAndColours as fac
 from schedule.Tk.AdvancedTreeview import AdvancedTreeview
 from schedule.Schedule.ScheduleEnums import ResourceType
 from schedule.UsefulClasses.MenuItem import MenuItem, MenuType
+from schedule.Tk.DragNDrop import DragNDropManager
 from ..GUI_Pages.MenuAndToolBarTk import generate_menu
 
 
@@ -70,25 +71,23 @@ class EditCoursesTk:
         if self.Fonts is None:
             self.Fonts = fac.TkFonts(frame.winfo_toplevel())
 
-        # variables used for drag and drop
-        self._toggle = None
-        self._dropped = None
-
         # keep track of widgets and objects for all resources
         # (teachers/streams/labs)
         self.resource_Listbox: dict[ResourceType, Listbox] = dict()
         self.resource_objects: dict[ResourceType, list[Any]] = dict()
-        for resource_type in ResourceType:
-            self.resource_objects[resource_type] = list()
+        for rt in ResourceType:
+            self.resource_objects[rt] = list()
 
         # call back routines
         self.cb_edit_obj: Callable[[Any], None] = lambda obj: print(f"Edit {str(obj)}")
-        self.cb_new_course: Callable[[str, str], None] = lambda name, description: None
+        self.cb_new_course: Callable[[], None] = lambda: None
         self.cb_get_tree_menu: Callable[[Any], list[MenuItem]] = _default_menu
         self.cb_get_resource_menu: Callable[[ResourceType, Any], list[MenuItem]] = _default_resource_menu
         self.cb_show_teacher_stat: Callable[[Any], None] = lambda obj: print(f"Teacher stat: {obj}")
-        # TODO:
-        #   cb_object_dropped_on_tree       (type_of_object_dropped, id_of_dropped_object, tree_path, target_object)
+        self.cb_target_is_valid_drop_site: [[ResourceType, Any, Any], bool] = \
+            lambda resource_type, source_obj, target_obj: True
+        self.cb_dropped_resource_onto_course_item: [[ResourceType, Any, Any], None] = \
+            lambda resource_type, source_obj, target_obj: None
 
         # ----------------------------------------------------------------
         # using grid, create right and left panels
@@ -127,11 +126,6 @@ class EditCoursesTk:
         right_panel.grid_rowconfigure(1, weight=2)
         right_panel.grid_rowconfigure(2, weight=2)
         right_panel.grid_rowconfigure(3, weight=0)
-
-        # ----------------------------------------------------------------
-        # # drag and drop bindings
-        # # ----------------------------------------------------------------
-        # self._create_drag_drop_objs()
 
     # ===================================================================
     # update data
@@ -174,7 +168,7 @@ class EditCoursesTk:
         return tv
 
     # ===================================================================
-    # create panel for modifying the schedule
+    # make resource list widgets
     # ===================================================================
     def _make_resource_list_widgets(self, panel):
         # ---------------------------------------------------------------
@@ -207,18 +201,23 @@ class EditCoursesTk:
         self.resource_Listbox[ResourceType.stream] = s.widget
 
         # ---------------------------------------------------------------
-        # 1) unbind the motion for general listbox widgets, which interferes
-        # with the drag-drop bindings later on.
-        # 2) bind the right click button to the 'resource' menu
-        #    based on type
+        # Set up binding for menus and dragging-n-dropping
         # ---------------------------------------------------------------
+        dm = DragNDropManager()
+
         for resource_type in ResourceType:
             if resource_type not in self.resource_Listbox:
                 continue
-            print(f"Binding for type: {resource_type}")
-            self.resource_Listbox[resource_type].bind('<B1-Motion>', None)
-            self.resource_Listbox[resource_type].bind('<Button-2>',
-                                                      partial(self._cmd_show_resource_type_menu, resource_type))
+            dm.add_draggable(self.resource_Listbox[resource_type],
+                             on_start=self._resource_on_start_drag,
+                             on_drop=self._resource_on_drop,
+                             on_drag=self._resource_on_drag)
+
+            self.resource_Listbox[resource_type].bind(
+                '<Button-2>',
+                partial(self._cmd_show_resource_type_menu, resource_type))
+
+            self.resource_Listbox[resource_type].unbind('<Motion>')
 
     # ==================================================================
     # make the button row for creating new courses, editing selections, etc
@@ -226,9 +225,11 @@ class EditCoursesTk:
     def _make_button_row(self, panel: Frame):
         button_row = Frame(panel)
         button_row.grid(column=0, sticky='nsew', row=3)
-        btn_new_course = Button(button_row, text="New Course", width=11, command=self.cb_new_course)
+        btn_new_course = Button(button_row, text="New Course", width=11,
+                                command=lambda *args: self.cb_new_course(*args))
         btn_new_course.pack(side='left')
-        btn_edit_selection = Button(button_row, text="Edit Selection", width=11, command=self._cmd_edit_selection)
+        btn_edit_selection = Button(button_row, text="Edit Selection", width=11,
+                                    command=lambda *args: self._cmd_edit_selection(*args))
         btn_edit_selection.pack(side='left')
 
     # ==================================================================
@@ -295,4 +296,70 @@ class EditCoursesTk:
         widget.select_clear(0, 'end')
         widget.selection_set(index, index)
         obj = self.resource_objects[ResourceType.teacher][index]
+        print("double clicked teacher")
         self.cb_show_teacher_stat(obj)
+
+    # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    # Drag and Drop stuff
+    # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    def _resource_on_start_drag(self, e: Event, info_data: dict) -> str:
+        """Executed if a resource widget is about to be dragged from a resource listbox"""
+
+        # what resource type is it?
+        info_data["resource_type"] = ResourceType.none
+        lb: Listbox = e.widget
+        rtype: ResourceType = ResourceType.none
+        for rt in self.resource_Listbox:
+            if lb == self.resource_Listbox[rt]:
+                rtype = rt
+
+        # select the nearest item in the list
+        index = lb.nearest(e.y)
+        lb.select_clear(0, 'end')
+        lb.selection_set(index, index)
+
+        # save some info for later use
+        info_data["source_obj"] = self.resource_objects[rtype][index]
+        info_data["resource_type"] = rtype
+
+        # return string to be used in the drag indicator
+        return lb.get(index)
+
+    def _resource_on_drag(self, e: Event, info_data: dict, target: Widget) -> bool:
+        """Executed while the resource list object is being dragged around"""
+
+        tv = self.course_ttkTreeView
+        for s_iid in tv.selection():
+            tv.selection_remove(s_iid)
+
+        # a resource widget can only be dropped on the serl.course_ttkTreeView
+        if target == tv:
+
+            # get position of mouse within the treeview widget, and identify item in treeview under mouse
+            tv_y_pos = e.y_root - tv.winfo_rooty()
+            iid = tv.identify_row(tv_y_pos)
+
+            # if we have a valid id...
+            if iid:
+                tv.item(iid, open=True)
+                target_obj = tv.get_obj_from_id(iid)
+                source_obj = info_data["source_obj"]
+                resource_type = info_data["resource_type"]
+
+                # check with 'user' if this is a valid item for dropping source onto target
+                if self.cb_target_is_valid_drop_site(resource_type, source_obj, target_obj):
+                    info_data["target_obj"] = target_obj
+                    tv.selection_set(iid)
+                    return True
+
+        return False
+
+    def _resource_on_drop(self, e: Event, info_data: dict, target: Widget):
+        """Called when a resource item is dropped"""
+
+        if self._resource_on_drag(e, info_data, target):
+            target_obj = info_data["target_obj"]
+            source_obj = info_data["source_obj"]
+            resource_type = info_data["resource_type"]
+            self.cb_dropped_resource_onto_course_item(resource_type, source_obj, target_obj)
