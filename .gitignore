@@ -51,6 +51,8 @@ __pycache__/
 
 # SQLite Databases
 *.sqlite
+*.db
+data/*
 
 # Virtual Environment
 venv/*
