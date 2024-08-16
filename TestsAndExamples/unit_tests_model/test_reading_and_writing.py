@@ -1,0 +1,37 @@
+from __future__ import annotations
+
+from filecmp import cmp
+from os import path
+
+import pytest
+
+from schedule.Model import schedule as s
+
+
+def test_read_write():
+    """stupidest simplest test whatsoever"""
+
+    # logic is that what it reads in is saved in the schedule object, so it should print out the
+    # same info to the output file
+
+    # TODO: not a good test
+    schedule = s.Schedule(path.dirname(__file__) + "/test.csv")
+    teachers_text = list()
+    for t in schedule.teachers:
+        teachers_text.append(schedule.teacher_details(t))
+
+    schedule.write_file(path.dirname(__file__) + "/test_output.csv")
+    assert (cmp(path.dirname(__file__) + "/test.csv", path.dirname(__file__) + "/test_output.csv"))
+
+
+# test_read_write()
+
+
+#schedule = s.Schedule(path.dirname(__file__) + "/test.csv")
+def test_schedule_actually_has_stuff_in_it():
+    """smoke test to see if schedule is actually populated with data - not validating data though"""
+    schedule = s.Schedule(path.dirname(__file__) + "/test.csv")
+    assert len(schedule._teachers) != 0
+    assert len(schedule.courses) != 0
+    assert len(schedule.labs) != 0
+    assert len(schedule._streams) != 0

@@ -2,11 +2,11 @@ from tkinter import *
 from tkinter import ttk
 
 from schedule.Export import DrawView
-from schedule.Schedule.Teachers import Teacher
-from schedule.Schedule.Block import Block
-from schedule.Schedule.ScheduleEnums import WeekDay
-from schedule.Schedule.database import PonyDatabaseConnection
-from schedule.Schedule.database.db_constants import *
+from schedule.Model.teacher import Teacher
+from schedule.Model.Block import Block
+from schedule.Model.ScheduleEnums import WeekDay
+from schedule.Model.database import PonyDatabaseConnection
+from schedule.Model.database.db_constants import *
 
 
 def main():

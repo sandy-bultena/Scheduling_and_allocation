@@ -1,10 +1,10 @@
 from time import sleep
 from typing import Any, Optional
 
-from ..Schedule.Schedule import Schedule
+from ..Model.schedule import Schedule
 from ..Presentation.globals import set_dirty_flag
 from ..GUI_Pages.EditResourcesTk import EditResourcesTk, DEColumnDescription
-from ..Schedule.ScheduleEnums import ResourceType
+from ..Model import ResourceType
 
 property_conversions_from_str = {
     "id": lambda x: int(x) if x else 0,

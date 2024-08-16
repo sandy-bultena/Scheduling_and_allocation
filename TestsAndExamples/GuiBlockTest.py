@@ -5,12 +5,12 @@ from pony.orm import commit, db_session
 from schedule.GUI_Pages.GuiBlockTk import GuiBlockTk
 from schedule.Presentation.View import View
 
-from schedule.Schedule.Schedule import Schedule
-from schedule.Schedule.Teachers import Teacher
-from schedule.Schedule.Block import Block
+from schedule.Model.schedule import Schedule
+from schedule.Model.teacher import Teacher
+from schedule.Model.Block import Block
 
-from schedule.Schedule.database import PonyDatabaseConnection
-from schedule.Schedule.database.db_constants import *
+from schedule.Model.database import PonyDatabaseConnection
+from schedule.Model.database.db_constants import *
 
 
 # ----------------------------------------------------------

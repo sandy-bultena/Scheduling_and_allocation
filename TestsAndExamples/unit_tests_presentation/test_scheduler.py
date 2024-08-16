@@ -7,7 +7,7 @@ from typing import Callable, Optional
 
 from schedule.UsefulClasses import NoteBookPageInfo
 from schedule.Presentation.Scheduler import Scheduler
-from schedule.Schedule.Schedule import Schedule
+from schedule.Model.schedule import Schedule
 from schedule.UsefulClasses.MenuItem import MenuItem, MenuType, ToolbarItem
 
 import pytest

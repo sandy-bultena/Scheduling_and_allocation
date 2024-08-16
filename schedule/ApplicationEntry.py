@@ -7,13 +7,13 @@ import mysql.connector
 import pony.orm
 from pony.orm import Database, db_session, commit, select, flush
 
-import schedule.Schedule.database.PonyDatabaseConnection as PonyDatabaseConnection
+import schedule.Model.database.PonyDatabaseConnection as PonyDatabaseConnection
 from schedule.GuiSchedule.GuiHelpers import display_error_message
 from schedule.GuiSchedule.LoginWindow import LoginWindow
 from schedule.GuiSchedule.GuiHelpers import check_num
 
 
-import Schedule.Schedule as ModelSchedule
+import Model.schedule as ModelSchedule
 
 
 @db_session

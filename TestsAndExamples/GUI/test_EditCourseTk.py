@@ -9,7 +9,7 @@ sys.path.append(path.dirname(path.dirname(__file__) + "/../../"))
 from schedule.UsefulClasses.MenuItem import MenuItem, MenuType
 
 from schedule.GUI_Pages.EditCoursesTk import EditCoursesTk
-from schedule.Schedule.ScheduleEnums import ResourceType
+from schedule.Model.ScheduleEnums import ResourceType
 
 
 # ----------------------------------------------------------------------------

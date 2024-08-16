@@ -1,5 +1,5 @@
-from ..Schedule.Schedule import Schedule
-from ..Schedule.ScheduleEnums import ResourceType
+from ..Model.schedule import Schedule
+from ..Model.ScheduleEnums import ResourceType
 
 # TODO: This code may be unnecessary, but it is certainly no longer working with the code
 #       that has been modified lately

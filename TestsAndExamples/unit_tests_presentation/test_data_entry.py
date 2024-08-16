@@ -5,9 +5,9 @@ from os import path
 sys.path.append(path.dirname(path.dirname(__file__) + "/../../"))
 from schedule.GUI_Pages.EditResourcesTk import DEColumnDescription
 from typing import Any
-from schedule.Schedule.Schedule import Schedule
+from schedule.Model import Schedule
 from schedule.Presentation.EditResources import EditResources
-from schedule.Schedule.ScheduleEnums import ResourceType
+from schedule.Model import ResourceType
 from schedule.Presentation.globals import *
 
 

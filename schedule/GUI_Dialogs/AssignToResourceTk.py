@@ -19,7 +19,7 @@ from tkinter import *
 from Pmw.Pmw_2_1_1.lib.PmwDialog import Dialog
 
 from .FontsAndColoursTk import FontsAndColoursTk
-from schedule.Schedule.ScheduleEnums import ResourceType
+from schedule.Model.ScheduleEnums import ResourceType
 
 # ============================================================================
 # globals

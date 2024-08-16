@@ -5,11 +5,11 @@ from typing import Optional, Protocol
 
 # from .ViewsManager import ViewsManager
 from ..GUI_Pages.SchedulerTk import SchedulerTk
-from ..Schedule.Schedule import Schedule
+from ..Model.schedule import Schedule
 from ..UsefulClasses.NoteBookPageInfo import NoteBookPageInfo
 from ..UsefulClasses.Preferences import Preferences
 from ..Presentation.globals import *
-from ..Schedule.ScheduleEnums import ResourceType
+from ..Model import ResourceType
 from ..Presentation.EditResources import EditResources
 from ..Presentation.Overview import Overview
 
@@ -325,7 +325,8 @@ class Scheduler:
         # if is_data_dirty():
         #     ans = gui.question(
         #         "Unsaved Changes",
-        #         "There are unsaved changes.\nDo you want to save them?" )
+        #         "There are unsaved changes.\nDo you want to save them?"
+        #         )
         #
         #     if ans:
         #         save_schedule()

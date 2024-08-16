@@ -1,0 +1,61 @@
+from __future__ import annotations
+from typing import Generator
+from . import _id_generator_code as id_gen
+from .enums import ResourceType
+
+
+""" SYNOPSIS/EXAMPLE:
+    from Schedule.Stream import Stream
+
+    stream = Stream(number = "P322")
+    
+    all_labs = Stream.list()
+"""
+
+_stream_id_generator: Generator[int, int, None] = id_gen.get_id_generator()
+
+
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# CLASS: _Stream - should never be instantiated directly!
+# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+class Stream:
+    """ Describes a group of students whose classes cannot overlap. """
+
+    # ========================================================
+    # CONSTRUCTOR
+    # ========================================================
+    def __init__(self, number: str = "A", description: str = "", *, stream_id: int = None):
+        """
+        Creates an instance of the Stream class.
+        - Parameter number -> defines the stream number.
+        - Parameter desc -> defines the stream title.
+        """
+        self.number = number
+        self.description = description
+        self.resource_type = ResourceType.stream
+
+        self.__id = id_gen.set_id(_stream_id_generator, stream_id)
+
+    # --------------------------------------------------------
+    # id
+    # --------------------------------------------------------
+    @property
+    def id(self) -> int:
+        """ Gets the id of the Stream. """
+        return self.__id
+
+    # --------------------------------------------------------
+    # conversion to string
+    # --------------------------------------------------------
+    def __str__(self) -> str:
+        """ Returns a text string with the Stream's number """
+        return self.number
+
+    def __repl__(self) -> str:
+        return str(self)
+
+    # ------------------------------------------------------------------------
+    # for sorting
+    # ------------------------------------------------------------------------
+    def __lt__(self, other):
+        return self.number < other.number
