@@ -10,7 +10,7 @@ from schedule.Tk.Scrolled import Scrolled
 import schedule.Tk.InitGuiFontsAndColours as fac
 from schedule.Tk.AdvancedTreeview import AdvancedTreeview
 from schedule.Model.ScheduleEnums import ResourceType
-from schedule.UsefulClasses.MenuItem import MenuItem, MenuType
+from schedule.Tk.MenuItem import MenuItem, MenuType
 from schedule.Tk.DragNDrop import DragNDropManager
 from ..GUI_Pages.MenuAndToolBarTk import generate_menu
 

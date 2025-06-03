@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Generator
+from typing import Generator, Optional
 from . import _id_generator_code as id_gen
 from .enums import ResourceType
 
@@ -35,12 +35,13 @@ class Teacher:
     # -------------------------------------------------------------------
     # constructor
     # --------------------------------------------------------------------
-    def __init__(self, firstname: str, lastname: str, department: str = "", teacher_id: int = None):
+    def __init__(self, firstname: str, lastname: str, department: str = "", teacher_id: Optional[int] = None):
         """Creates a Teacher object.
-        
-        Parameter **firstname:** str -> first name of the teacher.
-        Parameter **lastname:** str -> last name of the teacher.
-        Parameter **dept:** str -> department that this teacher is associated with (optional)"""
+        :param firstname:   first name of the teacher
+        :param lastname:   last name of the teacher
+        :param department:  department that this teacher is associated with
+        :param teacher_id: set the teacher id to this value
+        """
         self.firstname = firstname
         self.lastname = lastname
         self.department = department

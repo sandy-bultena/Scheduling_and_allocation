@@ -163,7 +163,7 @@ class AssignToResource:
                 # If it is, assign all properties to the Block.
                 global Day, Start, Duration, lab, teacher
                 block.day = WeekDayNumber.days_by_number()[Day]
-                block.start = AssignToResource._hours_to_string(Start)
+                block.time_start = AssignToResource._hours_to_string(Start)
                 block.duration = Duration
                 if lab:
                     block.assign_lab_by_id(lab)
@@ -317,7 +317,7 @@ class AssignToResource:
                       Duration, number=section.get_new_number())
         section.add_block(block)
         # NOTE: In the original code, the newly-created blocks was added to the section first,
-        # and then its day, start, and duration properties were set_default_fonts_and_colours. We can't do it that way
+        # and then its day, time_start, and duration properties were set_default_fonts_and_colours. We can't do it that way
         # based on how Block was coded, however.
 
         blocks_arr = section.blocks

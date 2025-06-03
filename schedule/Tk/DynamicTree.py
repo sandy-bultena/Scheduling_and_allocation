@@ -170,7 +170,7 @@ sub selectionSet {
 }
 
 # ======================================================================
-# Expand Tree given a specific node to start from
+# Expand Tree given a specific node to time_start from
 # ======================================================================
 { my $goforit;
   my $treetext;
@@ -229,7 +229,7 @@ sub selectionSet {
 }
 
 # ======================================================================
-# Collapse Tree given a specific node to start from
+# Collapse Tree given a specific node to time_start from
 # ======================================================================
 sub CollapseTree {
     my $self = shift;

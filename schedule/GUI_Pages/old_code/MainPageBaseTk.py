@@ -155,7 +155,7 @@ class MainPageBaseTk:
             self.dict_of_frames = self._create_notebook_pages(notebook, self._notebook_pages_info)
 
     def start_event_loop(self):
-        """start the Tk event main event loop"""
+        """time_start the Tk event main event loop"""
         self._mw.mainloop()
 
     def define_exit_callback(self, exit_cmd=lambda *_: {}):
@@ -173,7 +173,7 @@ class MainPageBaseTk:
         self._mw.protocol("WM_DELETE_WINDOW", self._exit_schedule)
 
         # colors and fonts
-        tk_fonts_and_colours.set_default_fonts_and_colours(self._mw, dark_mode=self.dark_mode)
+        tk_fonts_and_colours.set_default_fonts_and_colours(self._mw, invert=self.dark_mode)
         self.colours = tk_fonts_and_colours.colours
         self.fonts = tk_fonts_and_colours.fonts
 

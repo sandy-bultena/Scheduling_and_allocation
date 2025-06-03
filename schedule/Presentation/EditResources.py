@@ -2,7 +2,7 @@ from time import sleep
 from typing import Any, Optional
 
 from ..Model.schedule import Schedule
-from ..Presentation.globals import set_dirty_flag
+from ..Presentation.dirty_flags import set_dirty_flag
 from ..GUI_Pages.EditResourcesTk import EditResourcesTk, DEColumnDescription
 from ..Model import ResourceType
 

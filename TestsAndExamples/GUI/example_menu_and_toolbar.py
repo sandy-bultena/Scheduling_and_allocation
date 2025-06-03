@@ -1,20 +1,18 @@
-import sys
-
-sys.path.append("../..")
-
 from tkinter import *
-from schedule.UsefulClasses.MenuItem import MenuItem, MenuType, ToolbarItem
-from schedule.GUI_Pages.MenuAndToolBarTk import make_toolbar, generate_menu
-
+from schedule.Tk import MenuItem, MenuType, ToolbarItem, make_toolbar, generate_menu
+from schedule.Tk import set_default_fonts_and_colours
 
 # =================================================================================================
 # Test the GUI_Pages menu and _toolbar creation work as required
 # =================================================================================================
 
 
-import schedule.Tk.InitGuiFontsAndColours as fac
+from schedule.Tk import TkColours, set_default_fonts_and_colours
+
+
 def main():
     mw = Tk()
+    colours, fonts = set_default_fonts_and_colours(mw)
 
     # preparation
     (buttons, toolbar_info, menu_details) = define_inputs()
@@ -26,19 +24,21 @@ def main():
     # action
     toolbar = make_toolbar(mw, buttons, toolbar_info)
     toolbar.pack(side='top', expand=0, fill='x')
-    colours = fac.TkColours(mw,dark=True)
-    colours.ButtonBackground="#ff0000"
-    colours.ButtonForeground="#00ff00"
+    colours = TkColours(mw, invert=False)
+    colours.ButtonBackground = "#ff0000"
+    colours.ButtonForeground = "#00ff00"
     toolbar2 = make_toolbar(mw, buttons, toolbar_info, colours)
     toolbar2.pack(side='top', expand=0, fill='x')
 
     # test (manually)
     Label(mw, anchor='w', text="").pack()
     Label(mw, anchor='w', text="").pack()
-    Label(mw, anchor='w', text= "Verify that there are TWO toolbars").pack(fill='x')
-    Label(mw, anchor='w', text="The top _toolbar should have the same background Colour has the main window").pack(fill='x')
+    Label(mw, anchor='w', text="Verify that there are TWO toolbars").pack(fill='x')
+    Label(mw, anchor='w', text="The top _toolbar should have the same background Colour has the main window").pack(
+        fill='x')
     Label(mw, anchor='w', text="The 2nd _toolbar should have a background Colour of blue").pack(fill='x')
-    Label(mw, anchor='w', text="The 2nd _toolbar buttons should turn pink if mouse if hovered over the button").pack(fill='x')
+    Label(mw, anchor='w', text="The 2nd _toolbar buttons should turn pink if mouse if hovered over the button").pack(
+        fill='x')
     Label(mw, anchor='w', text="*** KNOWN BUG: hoverbg does not work in Tk/Toolbar.py").pack(fill='x')
     Label(mw, text="").pack()
     Label(mw, anchor='w', text='Verify that there are two file menu items, "file" and "print"').pack(fill='x')
@@ -48,9 +48,11 @@ def main():
     Label(mw, anchor='w', text="").pack(fill='x')
     Label(mw, anchor='w', text="Toolbar should have three buttons, with a '|' between open and save").pack(fill='x')
     Label(mw, anchor='w', text="").pack(fill='x')
-    Label(mw, anchor='w', text="Verify that all buttons and menu items print appropriate message to console").pack(fill='x')
+    Label(mw, anchor='w', text="Verify that all buttons and menu items print appropriate message to console").pack(
+        fill='x')
     Label(mw, anchor='w', text="Verify that all menu item shortcut keys work as expected").pack(fill='x')
-    Label(mw, anchor='w', text="If MAC, verify that all menu item 'command'-? shortcut keys work as expected").pack(fill='x')
+    Label(mw, anchor='w', text="If MAC, verify that all menu item 'command'-? shortcut keys work as expected").pack(
+        fill='x')
 
     mw.mainloop()
 

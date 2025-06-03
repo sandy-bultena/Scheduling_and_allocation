@@ -241,7 +241,7 @@ class EditAllocation:
         # update remaining hours for this semester only
         for remaining in self._data_unused_hours(semester).values():
             section = remaining[SECTION_KEY]
-            remaining[VALUE_KEY] = section.hours - section.allocated_hours
+            remaining[VALUE_KEY] = section.hours_since_midnight - section.allocated_hours
 
         # get_by_id totals for all semesters
         for sem in self._semesters:
@@ -290,7 +290,7 @@ class EditAllocation:
         section.set_teacher_allocation(teacher, hours)
 
         self._update_all_CI(semester)
-        self._data_unused_hours(semester)[col][VALUE_KEY] = section.hours - section.allocated_hours
+        self._data_unused_hours(semester)[col][VALUE_KEY] = section.hours_since_midnight - section.allocated_hours
 
         globals.set_dirty_flag()
 

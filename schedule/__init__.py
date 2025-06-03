@@ -1,2 +1,2 @@
-from .UsefulClasses import Colour
+from .Utilities import Colour
 

@@ -8,7 +8,7 @@ from PerlLib import Colour
 class AssignBlockTk:
     """Defines a 1/2 hour blocks of time within a view.
 
-    You can find this time blocks by specifying the x/y canvas coordinates, or by the day, start and
+    You can find this time blocks by specifying the x/y canvas coordinates, or by the day, time_start and
     end time.
 
     The blocks can be coloured, or uncoloured."""
@@ -116,7 +116,7 @@ class AssignBlockTk:
         if not assigned_blocks:
             raise ValueError()
 
-        # make sure we start from the left top towards the bottom right.
+        # make sure we time_start from the left top towards the bottom right.
         if x1 > x2:
             tmp = x1
             x1 = x2

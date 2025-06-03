@@ -6,13 +6,13 @@ from tkinter import *
 from typing import Callable, Any
 import re
 
-from schedule.Tk.Scrolled import Scrolled
-import schedule.Tk.InitGuiFontsAndColours as fac
-from schedule.Tk.AdvancedTreeview import AdvancedTreeview
-from schedule.Model.ScheduleEnums import ResourceType
-from schedule.UsefulClasses.MenuItem import MenuItem, MenuType
-from schedule.Tk.DragNDrop import DragNDropManager
-from ..GUI_Pages.MenuAndToolBarTk import generate_menu
+from schedule.Tk import Scrolled
+from schedule.Tk import InitGuiFontsAndColours as fac
+from schedule.Tk import AdvancedTreeview
+from schedule.Model import ResourceType
+from schedule.Tk import MenuItem, MenuType
+from schedule.Tk import DragNDropManager
+from schedule.Tk import generate_menu
 
 
 def _default_menu(obj) -> list[MenuItem]:

@@ -1,21 +1,18 @@
 from functools import partial
 from tkinter import *
-from os import path
-import sys
-sys.path.append(path.dirname(path.dirname(__file__) + "/../../"))
 
-from schedule.Tk.InitGuiFontsAndColours import set_default_fonts_and_colours
-from schedule.GUI_Pages.EditResourcesTk import EditResourcesTk
-from schedule.GUI_Pages.EditResourcesTk import DEColumnDescription
+from schedule.Tk import set_default_fonts_and_colours
+from schedule.GUI_Pages import EditResourcesTk
+from schedule.GUI_Pages import DEColumnDescription
 
 
 # TODO: button Colour changes don't work on mac, not yet tested on windows
 
 def main():
     mw = Tk()
-    colours, fonts = set_default_fonts_and_colours(mw, dark_mode=True)
-    mw.geometry('400x150')
-    mw.title('Button Background Example')
+    colours, fonts = set_default_fonts_and_colours(mw, invert=True)
+    mw.geometry('400x450')
+    mw.title('Edit Resources Generic')
     frame = Frame(mw)
     frame.pack(expand=1, fill=BOTH)
 

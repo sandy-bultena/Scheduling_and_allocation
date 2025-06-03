@@ -5,7 +5,6 @@ import os
 # TODO: there seems to some unused methods (dirty_set, dirty_unset, is_dirty)
 
 dirty_flag = False
-bin_dir: str = os.path.dirname(os.path.realpath(__file__)) + "/../"
 dirty_flag_changed_cb: callable = lambda *_: None
 
 dirty_set: Callable = lambda *_: None

@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Generator
 
 from . import _id_generator_code as id_gen
-from ._lab_unavailable_time import LabUnavailableTime
+from . import TimeSlot
 from .enums import ResourceType
 
 """ SYNOPSIS/EXAMPLE:
@@ -10,7 +10,7 @@ from .enums import ResourceType
     from Schedule.Lab import Lab
     
     lab = Lab(number = "P322")
-    lab.add_unavailable_time(day = "Mon", start = "3:22", duration = 5)
+    lab.add_unavailable_time(day = "Mon", time_start = "3:22", duration = 5)
 """
 
 _lab_id_generator: Generator[int, int, None] = id_gen.get_id_generator()
@@ -42,7 +42,7 @@ class Lab:
         """Creates and returns a new Lab object."""
         self.number = number
         self.description = description
-        self._unavailable: list[LabUnavailableTime] = list()
+        self._unavailable: list[TimeSlot] = list()
         self.resource_type = ResourceType.lab
 
         self.__id = id_gen.set_id(_lab_id_generator, lab_id)
@@ -58,7 +58,7 @@ class Lab:
     # =================================================
     # add_unavailable_slot
     # =================================================
-    def add_unavailable_slot(self, slot: LabUnavailableTime) -> LabUnavailableTime:
+    def add_unavailable_slot(self, slot: TimeSlot) -> TimeSlot:
         """Adds an existing time slot to this lab's unavailable times."""
         self._unavailable.append(slot)
         return slot
@@ -66,7 +66,7 @@ class Lab:
     # =================================================
     # remove_unavailable_slot
     # =================================================
-    def remove_unavailable_slot(self, slot: LabUnavailableTime) -> Lab:
+    def remove_unavailable_slot(self, slot: TimeSlot) -> Lab:
         """Remove the unavailable time slot from this lab."""
         if slot in self._unavailable:
             self._unavailable.remove(slot)
@@ -76,7 +76,7 @@ class Lab:
     # unavailable
     # =================================================================
     @property
-    def unavailable_slots(self) -> tuple[LabUnavailableTime, ...]:
+    def unavailable_slots(self) -> tuple[TimeSlot, ...]:
         """Returns all immutable list of unavailable time slot objects for this lab."""
         return tuple(set(self._unavailable))
 

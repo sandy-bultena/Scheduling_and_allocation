@@ -143,8 +143,8 @@ our $Height = 11 * 72;     # 11 inches, converted to points
 our $Scale = {
            -xoff  => 1,           # before being scaled by xscl
            -yoff  => 1,           # before being scaled by yscl
-           -xorg  => 0,           # start drawing at this position
-           -yorg  => 100,         # start drawing at this position
+           -xorg  => 0,           # time_start drawing at this position
+           -yorg  => 100,         # time_start drawing at this position
            -xscl  => 84,          # stretch horizontally
            -yscl  => 50,          # stretch vertically
            -scale => 1,           # 1 = 100%.  Text may be modified if scale < 1
@@ -670,7 +670,7 @@ sub _write_block {
     
     $self->createText(
                        $x + $Indent + 7 * $em_normal, $y,
-                       -text   => $block->start . "-" . $block->end,
+                       -text   => $block->time_start . "-" . $block->end,
                        -anchor => "ne",
                        -font   => $f_normal
     );

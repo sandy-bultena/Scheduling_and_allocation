@@ -1,25 +1,21 @@
 from tkinter import *
-from os import path
-import sys
-
-sys.path.append(path.dirname(path.dirname(__file__) + "/../../"))
-from schedule.Tk.InitGuiFontsAndColours import set_default_fonts_and_colours
+from schedule.Tk import set_default_fonts_and_colours
 
 
-# TODO: button Colour changes don't work on mac, not yet tested on windows
+# TODO: background button Colour changes don't work on mac, not yet tested on windows
 
 def main():
-    mw: Toplevel = Tk()
-    colours = set_default_fonts_and_colours(mw, dark_mode=True)
-    mw.geometry('400x150')
+    mw: Tk = Tk()
+    colours = set_default_fonts_and_colours(mw, invert=True)
+    mw.geometry('400x450')
     mw.title('Button Background Example')
 
-    button = Button(mw, text='Submit', bg='blue', fg='white', activebackground="red")
+    button = Button(mw, text='Submit', bg='blue', fg='pink', activebackground="red")
     button.pack()
 
     b1 = Button(mw, width=20, text='Button', bg='red')
     b2 = Text(mw, width=40, height=20)
-    b2.insert('end', 'hello')
+    b2.insert('end', 'background colours of buttons have been set to blue and red')
 
     b1.pack()
     b2.pack()

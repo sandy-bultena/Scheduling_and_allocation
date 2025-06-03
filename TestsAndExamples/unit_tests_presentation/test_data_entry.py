@@ -8,7 +8,7 @@ from typing import Any
 from schedule.Model import Schedule
 from schedule.Presentation.EditResources import EditResources
 from schedule.Model import ResourceType
-from schedule.Presentation.globals import *
+from schedule.Presentation.dirty_flags import *
 
 
 class Gui:

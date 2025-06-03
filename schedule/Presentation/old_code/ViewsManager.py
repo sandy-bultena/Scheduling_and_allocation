@@ -98,7 +98,7 @@ class ViewsManager:
             # --------------------------------------------------------------------
             # make new undo/redo object as necessary
             # --------------------------------------------------------------------
-            redo_or_undo = Undo(block.id, block.start, block.day, action.origin_obj,
+            redo_or_undo = Undo(block.id, block.time_start, block.day, action.origin_obj,
                                 action.move_type, None)
             if type == 'undo':
                 self.add_redo(redo_or_undo)
@@ -110,7 +110,7 @@ class ViewsManager:
             # --------------------------------------------------------------------
             # perform local undo/redo
             # --------------------------------------------------------------------
-            block.start = action.origin_start
+            block.time_start = action.origin_start
             block.day = action.origin_day
 
             # update all views to re-place blocks.
@@ -128,7 +128,7 @@ class ViewsManager:
             # --------------------------------------------------------------------
             # make new undo/redo object as necessary
             # --------------------------------------------------------------------
-            redo_or_undo = Undo(block.id, block.start, block.day, action.new_obj,
+            redo_or_undo = Undo(block.id, block.time_start, block.day, action.new_obj,
                                 action.move_type, action.origin_obj)
             if type == 'undo':
                 self.add_redo(redo_or_undo)

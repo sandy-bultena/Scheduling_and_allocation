@@ -5,12 +5,11 @@ sys.path.append(path.dirname(path.dirname(__file__) + "/../../"))
 
 from typing import Callable, Optional
 
-from schedule.UsefulClasses import NoteBookPageInfo
+from schedule.Utilities import NoteBookPageInfo
 from schedule.Presentation.Scheduler import Scheduler
 from schedule.Model.schedule import Schedule
-from schedule.UsefulClasses.MenuItem import MenuItem, MenuType, ToolbarItem
+from schedule.Tk.MenuItem import MenuItem, MenuType, ToolbarItem
 
-import pytest
 from os import path
 
 schedule_file = path.dirname(__file__) + "/test.csv"

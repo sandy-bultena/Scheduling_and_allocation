@@ -4,7 +4,7 @@ from tkinter import *
 
 from ..GUI_Pages.FontsAndColoursTk import FontsAndColoursTk
 from ..PerlLib import Colour
-from ..Model._conflict_calculations import Conflict
+from ..Model.conflicts import Conflict
 #from ..UsefulClasses.ScheduablesByType import ScheduablesByType
 
 

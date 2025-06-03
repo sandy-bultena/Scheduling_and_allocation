@@ -298,8 +298,8 @@ sub redraw {
     # redraw all guiblocks
     foreach my $b (@blocks) {
 
-        # this makes sure that synced blocks have the same start time
-        $b->start( $b->start );
+        # this makes sure that synced blocks have the same time_start time
+        $b->time_start( $b->time_start );
         $b->day( $b->day );
 
         my $guiblock = GuiBlock->new( $self->type, $self->gui, $b );
@@ -493,12 +493,12 @@ sub _cb_assign_blocks {
     my $chosen_blocks = shift;
 
     #Get the day and time of the chosen blocks
-    my ( $day, $start, $duration ) =
+    my ( $day, $time_start, $duration ) =
       AssignBlockTk->get_day_start_duration($chosen_blocks);
 
     #create the menu to select the block to assign to the timeslot
     AssignToResource->new( $self->gui->mw, $self->schedule, $day,
-                           $start, $duration, $self->scheduable);
+                           $time_start, $duration, $self->scheduable);
 
     #redraw
     $self->redraw();
@@ -577,7 +577,7 @@ sub _cb_move_block_between_scheduable_objects {
 
     # there was a change, redraw all views
     my $undo = Undo->new(
-                          $guiblock->block->id,  $guiblock->block->start,
+                          $guiblock->block->id,  $guiblock->block->time_start,
                           $guiblock->block->day, $self->scheduable,
                           $self->type,           $that_scheduable
     );
@@ -700,7 +700,7 @@ sub _cb_guiblock_has_stopped_moving {
     my ( $self, $guiblock ) = @_;
 
     my $undo =
-      Undo->new( $guiblock->block->id, $guiblock->block->start,
+      Undo->new( $guiblock->block->id, $guiblock->block->time_start,
                  $guiblock->block->day, $self->scheduable,
                  "Day/Time" );
 
@@ -708,7 +708,7 @@ sub _cb_guiblock_has_stopped_moving {
     $self->_snap_gui_block($guiblock);
 
     # don't create undo if moved to starting position
-    if (    $undo->origin_start ne $guiblock->block->start
+    if (    $undo->origin_start ne $guiblock->block->time_start
          || $undo->origin_day ne $guiblock->block->day )
     {
 
@@ -807,9 +807,9 @@ sub _setup_for_assignable_blocks {
     # and create and draw AsignBlock for each
     my @assignable_blocks;
     foreach my $day ( 1 ... 5 ) {
-        foreach my $start ( $Earliest_time * 2 ... ( $Latest_time * 2 ) - 1 ) {
+        foreach my $time_start ( $Earliest_time * 2 ... ( $Latest_time * 2 ) - 1 ) {
             push @assignable_blocks,
-              AssignBlockTk->new( $self, $day, $start / 2 );
+              AssignBlockTk->new( $self, $day, $time_start / 2 );
         }
     }
 

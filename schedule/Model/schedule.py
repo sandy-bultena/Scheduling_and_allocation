@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Optional,  TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 import schedule.exceptions as errors
 
 from .teacher import Teacher
@@ -7,10 +7,9 @@ from .course import Course
 from .lab import Lab
 from .stream import Stream
 from .section import Section
-from ._conflict_calculations import *
+from .conflicts import *
 from .enums import ResourceType, SemesterType
 from .serializor import CSVSerializor as Serializor
-
 
 """ SYNOPSIS/EXAMPLE:
     from Schedule.Schedule import Schedule

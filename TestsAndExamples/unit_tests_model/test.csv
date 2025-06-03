@@ -34,7 +34,7 @@ teacher,6,Voldemort,Voldemort,CompSci,1.0
 ,,DESCRIPTION,OF,FIELDS
 ,id,number,name,semester,needs allocation,COURSE
 ,id,number,name,hours,students,SECTION
-,id,day,start,duration,movable,BLOCK
+,id,day,time_start,duration,movable,BLOCK
 
 course,,350-823,Human Relations,1,0
 

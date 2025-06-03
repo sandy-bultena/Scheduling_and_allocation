@@ -4,7 +4,7 @@ from os import path
 
 sys.path.append(path.dirname(path.dirname(__file__) + "/../../"))
 from schedule.Model import Lab
-from schedule.Model._lab_unavailable_time import LabUnavailableTime
+from schedule.Model.time_slot import TimeSlot
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -52,8 +52,8 @@ def test_descr_setter():
 
 
 def test_add_unavailable():
-    time_slot1 = LabUnavailableTime("wed", "12:30", 3.5, False)
-    time_slot2 = LabUnavailableTime("wed", "12:30", 3.5, False)
+    time_slot1 = TimeSlot("wed", "12:30", 3.5, False)
+    time_slot2 = TimeSlot("wed", "12:30", 3.5, False)
     lab = Lab()
     lab.add_unavailable_slot(time_slot1)
     lab.add_unavailable_slot(time_slot2)
@@ -67,8 +67,8 @@ def test_remove_unavailable_good():
     start = "8:30"
     dur = 2.0
     lab = Lab()
-    t1 = lab.add_unavailable_slot(LabUnavailableTime(day, start, dur))
-    t2 = lab.add_unavailable_slot(LabUnavailableTime(day, start, dur))
+    t1 = lab.add_unavailable_slot(TimeSlot(day, start, dur))
+    t2 = lab.add_unavailable_slot(TimeSlot(day, start, dur))
     lab.remove_unavailable_slot(t1)
     assert len(lab.unavailable_slots) == 1
     assert lab.unavailable_slots[0] == t2
@@ -83,8 +83,8 @@ def test_unavailable():
     start_2 = "10:00"
     dur_2 = 1.5
     lab = Lab()
-    lu1 = lab.add_unavailable_slot(LabUnavailableTime(day_1, start_1, dur_1))
-    lu2 = lab.add_unavailable_slot(LabUnavailableTime(day_2, start_2, dur_2))
+    lu1 = lab.add_unavailable_slot(TimeSlot(day_1, start_1, dur_1))
+    lu2 = lab.add_unavailable_slot(TimeSlot(day_2, start_2, dur_2))
     times = lab.unavailable_slots
     assert len(times) == 2
     assert lu1 in lab.unavailable_slots

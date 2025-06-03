@@ -9,10 +9,10 @@ from ..GuiSchedule.ScheduleSelector import ScheduleSelector
 from ..Model.schedule import Schedule
 from ..Model.database.PonyDatabaseConnection import define_database, Scenario
 from ..Model.database.db_constants import PROVIDER, DB_NAME, CREATE_DB
-from ..UsefulClasses.NoteBookPageInfo import NoteBookPageInfo
-from .globals import *
+from ..Utilities.NoteBookPageInfo import NoteBookPageInfo
+from .dirty_flags import *
 
-from schedule.UsefulClasses.MenuItem import MenuItem, MenuType, ToolbarItem
+from schedule.Tk.MenuItem import MenuItem, MenuType, ToolbarItem
 
 """
 # ==================================================================

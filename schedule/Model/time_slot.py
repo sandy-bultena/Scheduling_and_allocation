@@ -1,314 +1,201 @@
-from __future__ import annotations
-from .enums import WeekDay, WeekDayNumber
-import re
-
 """ SYNOPSIS/EXAMPLE:
 
     from Schedule.Time_slot import TimeSlot
 
-    time_slot = TimeSlot(day = "Wed", start = "9:30", duration = 1.5, movable = True)
+    time_slot = TimeSlot(day = "Wed", time_start = "9:30", duration = 1.5, movable = True)
 """
+
+from __future__ import annotations
+import re
+from .enums import WeekDay
+
+MINUTE_BLOCK_SIZE = 30
+MINIMUM_DURATION = 0.5
+DEFAULT_DAY = WeekDay.Monday
+DEFAULT_START = "8:00"
+DEFAULT_HOURS = 8
+DEFAULT_DURATION = 1.5
+MIN_START_TIME = 8
+MAX_END_TIME = 18
+MAXIMUM_DURATION = 8
+
+
+def get_hour_minutes_from_hours(hours: float) -> (int, int):
+    """converts number of hours (as a float) to integer hour and integer minutes"""
+    hour = int(hours)
+    minute = (hours % 1) * 60
+    return hour, int(minute)
+
+
+def get_string_clock_time(hours: int, minutes: int) -> str:
+    """converts hours and minutes into something that can be used as input to ClockTime"""
+    return f"{hours}:{minutes:02d}"
+
+
+class ClockTime:
+    """
+    Manage time by starting with the string representation
+    """
+
+    def __init__(self, string_time: str):
+        """
+        :param string_time: a string representation of the 24-clock
+        """
+        string_time = string_time.strip()
+
+        if not re.match(r"^[12]?\d:\d{2}$", string_time):
+            string_time = DEFAULT_START
+        hour, minute = (int(x) for x in string_time.split(":"))
+        self.hours = hour + minute / 60
+
+    @property
+    def hour(self) -> int:
+        """number of integer hours for this particular time"""
+        hr, _ = get_hour_minutes_from_hours(self.hours)
+        return hr
+
+    @property
+    def minute(self) -> int:
+        """number of integer minutes for this particular time"""
+        _, m = get_hour_minutes_from_hours(self.hours)
+        return m
+
+    def __sub__(self, other) -> float:
+        return self.hours - other.hours
+
+    def __eq__(self, other):
+        return self.hour == other.hour and self.minute == other.minute
+
+    def __lt__(self, other):
+        return (self.hour, self.minute) < (other.hour, other.minute)
+
+    def __str__(self):
+        return get_string_clock_time(self.hour, self.minute)
 
 
 class TimeSlot:
     """
-    A time slot is specified by a day of the week, start time, length (in hours), and whether     it is allowed to move.
-    
-    Example: The 'Block' object has a time slot used for teaching, whilst a 'Lab' object has a
-    time slot indicating when it is not available.
+    A time slot is specified by a day of the week, time_start time, length (in hours), and whether
+        it is allowed to move.
     """
-    # =================================================================
-    # Class/Global Variables
-    # =================================================================
-    MAX_HOUR_DIV = 2
-    DEFAULT_DAY = WeekDay.Monday.value
-    DEFAULT_START = "8:00"
-    DEFAULT_DURATION = 1.5
 
-    # =================================================================
-    # Constructor
-    # =================================================================
-
-    def __init__(self, day: WeekDay | str = DEFAULT_DAY,
-                 start: str = DEFAULT_START,
+    def __init__(self, day: WeekDay = DEFAULT_DAY,
+                 start: ClockTime = DEFAULT_START,
                  duration: float = DEFAULT_DURATION,
                  movable: bool = True):
         """
-        Creates a new TimeSlot object.
-
-        Parameters:
-        ----------
-
-        day: str
-            'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat' or 'Sun'.
-            Weekday
-            Weekday.Monday, Weekday.Tuesday ...
-        
-        start: str
-            Start time using the 24hr clock (i.e., 1PM is "13:00")
-
-        duration: float
-            How long this class lasts, in hours.
-
-        movable: bool
-            Whether this time_slot can be moved or not.
+        :param day: Day of the week expressed as a string or as a Weekday
+        :param start: Start time using the 24hr clock (i.e., 1PM is "13:00")
+        :param duration: How long this class lasts, in hours.
+        :param movable: Whether this time_slot can be moved or not.
         """
-        # NOTE: Doing this so that day_number will also be set_default_fonts_and_colours
-        #       The order that these are implemented is important
-        # day = TimeSlot.DEFAULT_DAY
-        self.__day_number: int = 0
-        self._start_number: float = 0
-        self.day = day
-        self.start = start
-        self.duration = duration
-        self.movable = movable
-
-    # ====================================
-    # day
-    # ====================================
-    @property
-    def day(self) -> str:
-        """Get/set_default_fonts_and_colours the day of the week for this TimeSlot."""
-        return self.__day
-
-    @day.setter
-    def day(self, new_day: str):
-        try:
-            if isinstance(new_day, str) and len(new_day) == 3:
-                new_day = new_day.lower()
-            self.__day = WeekDay.validate(new_day)
-            self.__day_number = WeekDayNumber[self.__day].value
-
-        # bad inputs, default to default_day
-        except ValueError:
-            self.__day = TimeSlot.DEFAULT_DAY
-            self.__day_number = WeekDayNumber[TimeSlot.DEFAULT_DAY].value
-
-    # ====================================
-    # start
-    # ====================================
-    @property
-    def start(self) -> str:
-        """Get/set_default_fonts_and_colours the start time of the TimeSlot, in 24hr clock."""
-        return self.__start
-
-    @start.setter
-    def start(self, new_value: str):
-        if not re.match("^[12]?[0-9]:(00|15|30|45)$", str(new_value)):
-            new_value = TimeSlot.DEFAULT_START
-
-        self.__start = new_value
-        hour, minute = (int(x) for x in new_value.split(":"))
-        self._start_number = hour + minute / 60
+        self.day: WeekDay = day
+        self.time_start: ClockTime = start
+        self.duration: float = min(max(duration, MINIMUM_DURATION), MAXIMUM_DURATION)
+        self.movable: bool = movable
 
     @property
-    def start_number(self) -> float:
-        return self._start_number
+    def time_end(self) -> ClockTime:
+        hours = self.time_start.hours + self.duration
+        h, m = get_hour_minutes_from_hours(hours)
+        return ClockTime(get_string_clock_time(h, m))
 
-    # ====================================
-    # end
-    # ====================================
-    @property
-    def end(self) -> str:
-        """Gets the TimeSlot's end time in 24-hour clock format."""
-        current_start = self.start_number
-        end = current_start + self.duration
-        hour = f"{int(end)}"
-        minute = f"{int((end * 60) % 60):02d}"
-        return f"{hour}:{minute}"
-
-    # ====================================
-    # duration
-    # ====================================
-    @property
-    def duration(self) -> float:
-        """Gets and sets the length of the TimeSlot, in hours."""
-        return self.__duration
-
-    @duration.setter
-    def duration(self, new_dur: float):
-        """sets duration.  must be a positive number, and in increments of 1/2 hours"""
-        if .5 > new_dur > 0:
-            new_dur = .5
-        else:
-            temp = 2 * (new_dur + 0.249)
-            rounded = int(float(temp) + 0.5)
-            new_dur = rounded / 2
-        # No TimeSlot can be longer than 8 hours.
-        if new_dur > 8:
-            new_dur = 8
-        # TimeSlots can't have a negative duration.
-        if new_dur <= 0:
-            new_dur = TimeSlot.DEFAULT_DURATION
-        self.__duration = new_dur
-
-    # ====================================
-    # day_number
-    # ====================================
-    @property
-    def day_number(self) -> int:
-        """Returns a real number that defines the day of the week, starting from Monday. E.g.,
-        tuesday = 2.0.
-        
-        This info is set_default_fonts_and_colours every time the day property is called. Modifying this property directly
-        does NOT modify the values stored in 'day'.
-        
-        To set_default_fonts_and_colours the day according to the data in this property, use the method snap_to_day()."""
-        return self.__day_number
-
-    # endregion
     # ====================================
     # snap_to_time
     # ====================================
-    def snap_to_time(self, *args: int) -> bool:
+    def snap_to_time(self, round_to: int = MINUTE_BLOCK_SIZE) -> bool:
         """
-        Takes the start number, and converts it to the nearest fraction of an hour (if
-        max_hour_div = 2, then snaps to every 1/2 hour).
-
-        Resets the 'start' property to the new clock time.
-
-        Returns true if the new time is different than the previous time.
+        Forces the stop and time_start time of this time slot to "snap" to
+        the nearest fraction of an hour
+        :Returns: True if the time_start time or duration were modified
         """
-        hour = self._snap_to_time(*args)
-        minute = int((hour - int(hour)) * 60)
-        start = f"{int(hour)}:{minute:02d}"
 
-        changed = False
-        if start != self.start:
-            changed = True
-        self.start = start
-        return changed
+        # it's not movable!
+        if not self.movable:
+            return False
 
-    def _snap_to_time(self, *time: int):
-        # Classes can't start before 8 AM or after 6 PM.
-        min_time = time[0] if len(time) >= 1 else 8
-        max_time = time[1] if len(time) >= 2 else 18
+        # snap to the number of minutes in the block size
+        duration = max(MINIMUM_DURATION, (self.duration / round_to) * round_to)
+        hours = self.time_start.hours
+        hours = max(hours, MIN_START_TIME)
+        if hours + self.duration > MAX_END_TIME:
+            hours = MAX_END_TIME - duration
+        hour, minute = get_hour_minutes_from_hours(hours)
+        minute = round(minute / round_to) * round_to
 
-        TimeSlot.MAX_HOUR_DIV = 1 if TimeSlot.MAX_HOUR_DIV < 1 else TimeSlot.MAX_HOUR_DIV
+        # not changed
+        if (minute == self.time_start.minute
+                and self.time_start.hour == hour
+                and duration == self.duration):
+            return False
 
-        r_hour = self.start_number
+        # update time for time slot
+        self.duration = duration
+        self.time_start = ClockTime(get_string_clock_time(hour, minute))
 
-        # Get hour and fractional hour
-        hour = int(r_hour)
-        frac = r_hour - hour
-
-        # Create array of allowed fractions.
-        fractions = []
-        for i in range(TimeSlot.MAX_HOUR_DIV + 1):
-            fractions.append(i / TimeSlot.MAX_HOUR_DIV)
-
-        # Sort according to which one is closest to our fraction. Based on experiments in the
-        # terminal, this should works while the max_hour_div is 2.
-        sorted_frac = sorted(fractions, key=lambda x: abs(x - frac))
-
-        # add hour fraction to hour.
-        hour = hour + sorted_frac[0]
-
-        # Adjust hour to minimum or maximum if necessary
-        hour = min_time if hour < min_time else hour
-        hour = max_time - self.duration if hour > max_time - self.duration else hour
-
-        return hour
+        return True
 
     # =================================================================
     # snap_to_day
     # =================================================================
-    def snap_to_day(self, *args: int):
+    def snap_to_day(self, fractional_day: float,
+                    min_day: WeekDay = WeekDay.Monday,
+                    max_day: WeekDay = WeekDay.Friday):
         """
-        Takes the start_day and converts it to the nearest day.
-
-        Resets the 'day' property to the appropriate string.
-
+        :param fractional_day: an FLOAT that indicates where the day should be
+        :param min_day: first day of the workweek
+        :param max_day: last day of the workweek
         """
-        day_of_week = self._snap_to_day(*args)
-        self.day = WeekDayNumber(day_of_week).name
-
-    def _snap_to_day(self, *args: int):
-        min_day = args[0] if len(args) >= 1 else 1
-        max_day = args[1] if len(args) >= 2 else 7
-
-        r_day = self.day_number
-
-        day_of_week = r_day if r_day == int(r_day) else int(r_day + 0.5)
-        day_of_week = min_day if not day_of_week else day_of_week
-        day_of_week = max_day if day_of_week > max_day else day_of_week
-        return day_of_week
+        day = round(fractional_day)
+        day = max(min(day, max_day.value), min_day.value)
+        self.day = WeekDay(day)
+        return self.day
 
     # =================================================================
     # conflicts
     # =================================================================
-    def conflicts_time(self, rhs) -> bool:
+    def conflicts_time(self, other: TimeSlot, delta: float = 0.05) -> bool:
         """
-        Tests that the current Time_Slot conflicts with another TimeSlot.
+        Tests if the current Time_Slot conflicts with another TimeSlot.
+        :param other: other timeslot
+        :param delta: the amount of leeway that we are allowing for in floating pt arithmetic
         """
-        # Detect time collisions up to this error factor. It is also useful for graphical applications
-        # that require a small error threshold when moving a blocks into place.
-        delta = 0.05
 
-        # detect date collisions. If the dates differ, there's no conflict, and we can leave.
-        # Otherwise, continue.
-        if abs(self.day_number - rhs.day_number) >= 1 - delta:
+        # detect date collisions.
+        if self.day != other.day:
             return False
 
-        # Calculate the start/end for each blocks with the error factor removed.
-        self_start = self.start_number + delta
-        self_end = self.start_number + self.duration - delta
-        rhs_end = rhs.start_number + rhs.duration - delta
-        rhs_start = rhs.start_number + delta
+        # Calculate the time_start/end for each blocks within error factor.
+        self_start = self.time_start.hours + delta
+        self_end = self.time_start.hours + self.duration - delta
+        other_start = other.time_start.hours + delta
+        other_end = other.time_start.hours + other.duration - delta
 
-        return (self_start < rhs_end) and (rhs_start < self_end)
+        return other_start < self_start < other_end or other_start < self_end < other_end
 
-    @staticmethod
-    def list() -> tuple[TimeSlot, ...]:
-        # return tuple(TimeSlot.__instances.values())
-        pass
+    def __eq__(self, other):
+        return (self.day == other.day
+                and self.time_start == other.time_end
+                and self.duration == other.duration)
 
-    @staticmethod
-    def get(timeslot_id: int) -> TimeSlot:
-        # return TimeSlot.__instances.get_by_id(id)
-        pass
+    def __lt__(self, other):
+        return ((self.day, self.time_start, self.duration) <
+                (other.day, other.time_start, other.duration))
 
-    # =================================================================
-    # save
-    # =================================================================
-    def save(self):
-        """Saves this TimeSlot to the database, updating its corresponding record.
+    def __str__(self):
+        return f"{self.day.value}: {self.time_start} to {self.time_end}"
 
-        Returns the corresponding TimeSlot database entity."""
-        # Let child classes implement
-        # d_slot = dbTimeSlot.get_by_id(
-        #     id=self.__id)  # use the __id so that it refers to the time slot's ID correctly,
-        #                    # not blocks ID (when relevant)
-        # if not d_slot: d_slot = dbTimeSlot(day=self.day, duration=self.duration, start=self.start)
-        # d_slot.day = self.day
-        # d_slot.duration = self.duration
-        # d_slot.start = self.start
-        # d_slot.movable = self.movable
-        # return d_slot
-        pass
-
-    # =================================================================
-    # reset
-    # =================================================================
-    @staticmethod
-    def reset():
-        """Reset the local list of time slots"""
-        TimeSlot.__instances = dict()
+    def __repr__(self):
+        return str(self)
 
 
 # =================================================================
 # footer
 # =================================================================
-'''
-=head1 AUTHOR
-
+__copyright__ = '''
 Sandy Bultena, Ian Clement, Jack Burns
-
-converted to python by Jacob Levy and Evan Laverdiere
-
-=head1 COPYRIGHT
-
 Copyright (c) 2016, Jack Burns, Sandy Bultena, Ian Clement. 
+Copyright (c) 2020, Sandy Bultena
 
 All Rights Reserved.
 

@@ -7,9 +7,9 @@ import csv
 from .time_slot import TimeSlot
 from .enums import ResourceType
 
+# stuff that we need just for type checking, not for actual functionality
 if TYPE_CHECKING:
     from .block import Block
-    from ._lab_unavailable_time import LabUnavailableTime
     from .stream import Stream
     from .section import Section
     from .teacher import Teacher
@@ -63,7 +63,7 @@ class CSVSerializor:
             w.writerow([None, None, 'DESCRIPTION', 'OF', 'FIELDS'])
             w.writerow([None, 'id', 'number', 'name', 'semester', 'needs allocation', 'COURSE'])
             w.writerow([None, 'id', 'number', 'name', 'hours', 'students', 'SECTION'])
-            w.writerow([None, 'id', 'day', 'start', 'duration', 'movable', 'BLOCK'])
+            w.writerow([None, 'id', 'day', 'time_start', 'duration', 'movable', 'BLOCK'])
             w.writerow([])
             for course in sorted(schedule.courses):
                 w.writerow(["course", None, course.number, course.name, course.semester, int(course.needs_allocation)])
@@ -77,7 +77,7 @@ class CSVSerializor:
 
                     for block in section.blocks:
                         w.writerow(["add_block", None, block.day, block.start, block.duration, int(block.movable)])
-                        for teacher in sorted(block.teachers, key=lambda t: t.id):
+                        for teacher in sorted(block.get_teachers, key=lambda t: t.id):
                             w.writerow(["add_block_teacher", teacher.id])
                         for lab in sorted(block.labs, key=lambda ll: ll.id):
                             w.writerow(["add_lab", lab.id])
@@ -118,7 +118,7 @@ class CSVSerializor:
                     current_obj = schedule.add_lab(number=num, description=descr, lab_id=int(lab_id))
                 elif current_obj.resource_type == ResourceType.lab and row[0] == "unavailable":
                     (day, start, duration, movable) = row[1:5]
-                    current_obj.add_unavailable_slot(LabUnavailableTime(
+                    current_obj.add_unavailable_slot(TimeSlot(
                         day=day, start=start, duration=float(duration), movable=bool(int(movable))))
 
                 elif row[0] == 'stream':

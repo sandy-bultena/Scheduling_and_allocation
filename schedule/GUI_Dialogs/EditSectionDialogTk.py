@@ -386,7 +386,7 @@ if __name__ == "__main__":
         # add_stream            -> list of stream_ids should be 3, assigned stream_ids should be 2
         # remove_stream_by_id         -> list of stream_ids should be 3, assigned stream_ids should be 1 (different from starting)
     # _choices options just use hardcoded dummy strings. normally, they should be lists of objects, NOT strings
-        # to start, each dropdown should contain:
+        # to time_start, each dropdown should contain:
             # blocks            -> 2
             # teacher_ids          -> 3
             # assigned teacher_ids -> 1

@@ -1,11 +1,30 @@
+"""SYNOPSIS
+
+    from Schedule.Course import Course
+    from Schedule.Block import Block
+    from Schedule.Section import Section
+    from DaysOfWeek import WeekDays
+
+    blocks = Block(day = WeekDay.Wednesday, time_start = "9:30", duration = 1.5)
+    section = Section(number = 1, hours = 6)
+    course = Course(name = "Basket Weaving", number="420-ABC-DEF")
+
+    course.add_section(section)
+    section.add_block(blocks)
+
+    print("Course consists of the following sections: ")
+    for s in course.sections():
+        # print info about section
+"""
 from __future__ import annotations
-from typing import Generator, TYPE_CHECKING
+from typing import Generator, TYPE_CHECKING, Optional
 
 from ._model_exceptions import InvalidSectionNumberForCourseError
-from . import _id_generator_code as id_gen
 from .enums import SemesterType
 from .section import Section
+from . import id_generator as id_gen
 
+# stuff that we need just for type checking, not for actual functionality
 if TYPE_CHECKING:
     from .block import Block
     from .teacher import Teacher
@@ -14,42 +33,28 @@ if TYPE_CHECKING:
 
 DEFAULT_HOURS: float = 1.5
 
-'''SYNOPSIS
-
-    from Schedule.Course import Course
-    from Schedule.Block import Block
-    from Schedule.Section import Section
-    from DaysOfWeek import WeekDays
-
-    blocks = Block(day = WeekDay.Wednesday, start = "9:30", duration = 1.5)
-    section = Section(number = 1, hours = 6)
-    course = Course(name = "Basket Weaving", number="420-ABC-DEF")
-    
-    course.add_section(section)
-    section.add_block(blocks)
-
-    print("Course consists of the following sections: ")
-    for s in course.sections():
-        # print info about section
-'''
-
-_course_id_generator: Generator[int, int, None] = id_gen.get_id_generator()
+OptionalId = Optional[int]
 
 
 class Course:
     """Describes a distinct course."""
+    course_ids = id_gen.IdGenerator()
 
     # -------------------------------------------------------------------
     # new
     # --------------------------------------------------------------------
-    def __init__(self, number: str = "", name: str = "New Course",
-                 semester: (SemesterType | int) = SemesterType.any, needs_allocation: bool = True,
-                 course_id: int = None):
+    def __init__(self, number: str = "",
+                 name: str = "New Course",
+                 semester: (SemesterType | int) = SemesterType.any,
+                 needs_allocation: bool = True,
+                 course_id: OptionalId = None):
         """Creates and returns a course object.
-
-        Parameter **number**: str -> The alphanumeric course number.
-
-        Parameter **name**: str -> the name of the course."""
+        :param number: Course number
+        :param name: Course name
+        :param semester: Which semester is it taught in
+        :needs_allocation: This requires someone to teach it
+        :course_id: if not specified, will create one as required
+        """
 
         self.number: str = number
         self.name: str = name
@@ -57,7 +62,7 @@ class Course:
         self._sections: set[Section] = set()
         self.semester: int = SemesterType.validate(semester)
 
-        self.__id = id_gen.set_id(_course_id_generator, course_id)
+        self.__id = Course.course_ids.get_new_id(course_id)
 
     # =================================================================
     # id
@@ -208,7 +213,7 @@ class Course:
                 text += f"{b.day} {b.start}, {b.duration} hours\n"
                 text += "\tlab_ids: " + ", ".join([str(lab) for lab in b.labs]) + "\n"
                 text += "\tteacher_ids: "
-                text += ", ".join([str(t) for t in b.teachers])
+                text += ", ".join([str(t) for t in b.get_teachers])
                 text += "\n"
 
         return text
@@ -268,9 +273,6 @@ class Course:
     # =================================================================
     # add_lab
     # =================================================================
-    # =================================================================
-    # stream
-    # =================================================================
     @property
     def labs(self) -> tuple[Lab, ...]:
         """Returns a list of Labs assigned to all Sections of this Course."""
@@ -290,7 +292,7 @@ class Course:
         return self
 
     # =================================================================
-    # assign_stream_by_id
+    # add_stream
     # =================================================================
     def add_stream(self, stream: Stream) -> Course:
         """Assigns a Stream to all Sections of this Course."""

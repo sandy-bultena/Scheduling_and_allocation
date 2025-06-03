@@ -1,5 +1,4 @@
-from __future__ import annotations
-from typing import *
+from typing import Generator
 
 
 def _id_generator():

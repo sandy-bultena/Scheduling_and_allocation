@@ -195,8 +195,8 @@ class View:
 
         # redraw all GuiBlocks.
         for b in blocks:
-            # This makes sure that synced_blocks blocks have the same start time.
-            b.start = b.start
+            # This makes sure that synced_blocks blocks have the same time_start time.
+            b.time_start = b.time_start
             b.day = b.day
 
             gui_block = GuiBlockTk(self.type, self.gui, b)
@@ -384,7 +384,7 @@ class View:
             guiblock.blocks.section.assign_stream_by_id(that_schedulable)
 
         # There was a change, so redraw all the views.
-        undo = Undo(guiblock.blocks.id, guiblock.blocks.start, guiblock.blocks.day,
+        undo = Undo(guiblock.blocks.id, guiblock.blocks.time_start, guiblock.blocks.day,
                     self.schedulable, self.type, that_schedulable)
         self.views_manager.add_undo(undo)
 
@@ -459,7 +459,7 @@ class View:
 
     @staticmethod
     def _cb_guiblock_has_stopped_moving(self, guiblock: GuiBlockTk):
-        """Ensures that the GuiBlock is snapped to an appropriate location (i.e., start/end times
+        """Ensures that the GuiBlock is snapped to an appropriate location (i.e., time_start/end times
         must be on the hour or half-hour).
 
         Updates undo/redo appropriately.
@@ -469,14 +469,14 @@ class View:
         Parameters:
             guiblock: GuiBlock that has been moved."""
         self: View
-        undo = Undo(guiblock.block.id, guiblock.block.start, guiblock.block.day,
+        undo = Undo(guiblock.block.id, guiblock.block.time_start, guiblock.block.day,
                     self.schedulable, "Day/Time", self.schedulable)
 
         # Set guiblock's to new time and day.
         self._snap_gui_block(guiblock)
 
         # Don't create undo if it was moved to the starting position.
-        if undo.origin_start != guiblock.block.start or undo.origin_day != guiblock.block.day:
+        if undo.origin_start != guiblock.block.time_start or undo.origin_day != guiblock.block.day:
             # Add change to undo.
             self.views_manager.add_undo(undo)
 

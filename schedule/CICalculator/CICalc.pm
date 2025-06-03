@@ -122,7 +122,7 @@ sub calculate {
     $self->_set_release( $teacher->release );
 
     debug( "\n\n--------- ",$teacher->firstname," ---------\n" );
-    debug( "\nstart list\n" );
+    debug( "\ntime_start list\n" );
     foreach my $course (@courses) {
         debug( $course->number," ",$course->name,"\n"  );
     }

@@ -84,7 +84,7 @@ sub new {
     # ----------------------------------------------------------------
     # using grid, create right and left panels
     # ----------------------------------------------------------------
-    # always start from scratch (- means we are always up to date)
+    # always time_start from scratch (- means we are always up to date)
     foreach my $sl ( $frame->gridSlaves ) {
         $sl->destroy;
     }

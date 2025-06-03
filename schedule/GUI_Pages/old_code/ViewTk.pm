@@ -537,7 +537,7 @@ sub set_bindings_for_dragging_guiblocks {
     $self->canvas->bind(
         $group_of_canvas_objs,    # objects to bind to
         "<1>",                    # bind event
-        [                         # start of Tk::Callback
+        [                         # time_start of Tk::Callback
            \&_select_guiblock_to_move,    # function ptr
            $guiblock,                     # the object that was bound
            $self,                         # this ViewTk object

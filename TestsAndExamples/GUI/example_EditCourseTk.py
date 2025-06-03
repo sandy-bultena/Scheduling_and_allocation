@@ -1,15 +1,11 @@
 from tkinter import *
 from tkinter import messagebox
-from os import path
-import sys
 from typing import Any
 
 
-sys.path.append(path.dirname(path.dirname(__file__) + "/../../"))
-from schedule.UsefulClasses.MenuItem import MenuItem, MenuType
-
-from schedule.GUI_Pages.EditCoursesTk import EditCoursesTk
-from schedule.Model.ScheduleEnums import ResourceType
+from schedule.Tk import MenuItem, MenuType
+from schedule.GUI_Pages import EditCoursesTk
+from schedule.Model import ResourceType
 
 
 # ----------------------------------------------------------------------------

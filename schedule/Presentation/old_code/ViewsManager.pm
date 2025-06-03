@@ -255,7 +255,7 @@ sub undo {
         # --------------------------------------------------------------------
         # make new undo/redo object as necessary
         # --------------------------------------------------------------------
-        my $redo_or_undo = Undo->new( $block->id, $block->start,
+        my $redo_or_undo = Undo->new( $block->id, $block->time_start,
             $block->day, $action->origin_obj, $action->move_type );
 
         if ( $type eq 'undo' ) {
@@ -270,7 +270,7 @@ sub undo {
         # --------------------------------------------------------------------
         # perform local undo/redo
         # --------------------------------------------------------------------
-        $block->start( $action->origin_start );
+        $block->time_start( $action->origin_start );
         $block->day( $action->origin_day );
 
         # update all views to re-place blocks
@@ -292,7 +292,7 @@ sub undo {
         # make new undo/redo object as necessary
         # --------------------------------------------------------------------
         my $redo_or_undo = Undo->new(
-            $action->block_id, $block->start,      $block->day,
+            $action->block_id, $block->time_start,      $block->day,
             $action->new_obj,  $action->move_type, $action->origin_obj
         );
         if ( $type eq 'undo' ) {
@@ -642,7 +642,7 @@ sub determine_button_colours {
         foreach my $scheduable_obj (@$scheduable_objs) {
             @blocks = $self->schedule->get_blocks_for_obj($scheduable_obj);
 
-            # what is this view's conflict? start with 0
+            # what is this view's conflict? time_start with 0
             my $view_conflict = 0;
 
             # for every block

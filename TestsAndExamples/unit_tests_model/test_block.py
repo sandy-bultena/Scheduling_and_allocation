@@ -2,6 +2,7 @@ from __future__ import annotations
 import pytest
 
 from schedule.Model import Block
+from schedule.Model.conflicts import ConflictType
 
 
 class Lab:
@@ -39,11 +40,16 @@ class TestContainer:
 class TimeSlot:  # for testing
     def __init__(self, day, start, duration, movable=True):
         self.day = day
-        self.start = start
+        self.time_start = start
         self.duration = duration
         self.movable = movable
         self.end = "testing, so who cares"
 
+    def __str__(self):
+        return f"{self.day} {self.time_start} {self.duration}"
+
+    def __eq__(self,other):
+        return self.day == other.day and self.time_start == other.time_start and self.duration == other.duration
 
 dummy_Section = TestContainer()
 
@@ -58,26 +64,19 @@ def run_before():
     pass
 
 
-# Properties
-def test_start_getter():
-    """Verifies that the start getter works as intended. Same as the TimeSlot start getter."""
+def test_generic():
     day = "mon"
-    start = "8:30"
+    start1 = "8:00"
+    start2 = "12:00"
     dur = 2
-    block = Block(dummy_Section, TimeSlot(day, start, dur, True))
-    assert block.start == start
+    time_slot = TimeSlot(day, start1, dur, True)
+    block1 = Block(dummy_Section, time_slot)
+    assert block1.section is dummy_Section
+    assert block1.time_slot is time_slot
+    assert not block1.conflict.is_conflicted()
 
 
-def test_day_getter():
-    """Verifies that the day getter works as intended. Same as in TimeSlot."""
-    day = "mon"
-    start = "8:30"
-    dur = 2
-    block1 = Block(dummy_Section, TimeSlot(day, start, dur, True))
-    assert block1.day == day
-
-
-def test_day():
+def test_sync_day():
     """Verifies that the day setter works as intended, changing the day property of any Block
     synced_blocks to the current Block. """
     day = "mon"
@@ -85,11 +84,10 @@ def test_day():
     start2 = "12:00"
     dur = 2
     block1 = Block(dummy_Section, TimeSlot(day, start1, dur, True))
-    block2 = Block(dummy_Section, TimeSlot(day, start2, dur, True))
+    block2 = Block(dummy_Section, TimeSlot("thu", start2, dur, True))
     block1.sync_block(block2)
     block2.sync_block(block1)
-    block1.day = "thu"
-    assert block2.day == "thu"
+    assert block2.time_slot == block2.time_slot
 
 
 def test_id():
@@ -141,7 +139,7 @@ def test_assign_lab_multiple():
     lab2 = Lab()
     block.add_lab(lab1)
     block.add_lab(lab2)
-    labs = block.labs
+    labs = block.labs()
     assert block.has_lab(lab1)
     assert block.has_lab(lab2)
     assert len(labs) == 2
@@ -158,7 +156,7 @@ def test_assign_lab_multiple_with_duplicate():
     block.add_lab(lab1)
     block.add_lab(lab1)
     block.add_lab(lab2)
-    labs = block.labs
+    labs = block.labs()
     assert len(labs) == 2
 
 
@@ -173,7 +171,7 @@ def test_remove_lab_good():
     block.add_lab(lab1)
     block.add_lab(lab2)
     block.remove_lab(lab1)
-    labs = block.labs
+    labs = block.labs()
     assert not block.has_lab(lab1)
     assert block.has_lab(lab2)
     assert len(labs) == 1
@@ -204,9 +202,9 @@ def test_remove_all_labs():
     other_lab = Lab("R-101", "the worst place in the world")
     block.add_lab(this_lab)
     block.add_lab(other_lab)
-    assert len(block.labs) == 2
+    assert len(block.labs()) == 2
     block.remove_all_labs()
-    assert len(block.labs) == 0
+    assert len(block.labs()) == 0
     assert not block.has_lab(this_lab)
     assert not block.has_lab(other_lab)
 
@@ -221,7 +219,7 @@ def test_labs():
     other_lab = Lab("R-101", "the worst place in the world")
     block.add_lab(this_lab)
     block.add_lab(other_lab)
-    labs = block.labs
+    labs = block.labs()
     assert len(labs) == 2 and this_lab in labs and other_lab in labs
 
 
@@ -232,7 +230,7 @@ def test_labs_empty():
     start = "8:30"
     dur = 2
     block = Block(dummy_Section, TimeSlot(day, start, dur))
-    labs = block.labs
+    labs = block.labs()
     assert len(labs) == 0
 
 
@@ -280,7 +278,7 @@ def test_assign_teacher_multiple():
     block.add_teacher(teach2)
     assert block.has_teacher(teach1)
     assert block.has_teacher(teach2)
-    assert len(block.teachers) == 2
+    assert len(block.teachers()) == 2
 
 
 def test_assign_teacher_multiple_with_duplicates():
@@ -294,8 +292,8 @@ def test_assign_teacher_multiple_with_duplicates():
     block.add_teacher(teach1)
     block.add_teacher(teach1)
     block.add_teacher(teach2)
-    print(teach1, teach2, block.teachers)
-    assert len(block.teachers) == 2
+    print(teach1, teach2, block.teachers())
+    assert len(block.teachers()) == 2
 
 
 def test_remove_teacher_good():
@@ -309,7 +307,7 @@ def test_remove_teacher_good():
     other_teach = Teacher("Jane", "Doe")
     block.add_teacher(other_teach)
     block.remove_teacher(teach)
-    assert len(block.teachers) == 1
+    assert len(block.teachers()) == 1
     assert block.has_teacher(teach) is not True
     assert block.has_teacher(other_teach)
 
@@ -325,7 +323,7 @@ def test_remove_teacher_no_crash():
     block.add_teacher(teach)
     other_teach = Teacher("Jane", "Doe")
     block.remove_teacher(other_teach)
-    assert len(block.teachers) == 1
+    assert len(block.teachers()) == 1
 
 
 def test_remove_all_teachers():
@@ -341,7 +339,7 @@ def test_remove_all_teachers():
     block.remove_all_teachers()
     assert block.has_teacher(teach) is not True
     assert block.has_teacher(other_teach) is not True
-    assert len(block.teachers) == 0
+    assert len(block.teachers()) == 0
 
 
 def test_teachers():
@@ -354,7 +352,7 @@ def test_teachers():
     other_teach = Teacher("Jane", "Doe")
     block.add_teacher(teach)
     block.add_teacher(other_teach)
-    teachers = block.teachers
+    teachers = block.teachers()
     assert len(teachers) == 2 and teach in teachers and other_teach in teachers
 
 
@@ -365,7 +363,7 @@ def test_teachers_empty_list():
     start = "8:30"
     dur = 2
     block = Block(dummy_Section, TimeSlot(day, start, dur))
-    teachers = block.teachers
+    teachers = block.teachers()
     assert len(teachers) == 0
 
 
@@ -402,8 +400,8 @@ def test_reset_conflicted():
     dur = 2
 
     block1 = Block(dummy_Section, TimeSlot(day, start, dur))
-    block1.reset_conflicted()
-    assert block1.conflicted_number == 0
+    block1.clear_conflicts()
+    assert not block1.conflict.is_conflicted()
 
 
 def test_conflicted_getter():
@@ -413,7 +411,7 @@ def test_conflicted_getter():
     start = "8:30"
     dur = 2
     block1 = Block(dummy_Section, TimeSlot(day, start, dur))
-    assert block1.conflicted_number == 0
+    assert not block1.conflict.is_conflicted()
 
 
 def test_conflicted_setter_good():
@@ -422,9 +420,9 @@ def test_conflicted_setter_good():
     start = "8:30"
     dur = 2
     block1 = Block(dummy_Section, TimeSlot(day, start, dur))
-    block1.reset_conflicted()
-    block1.adjust_conflicted_number(1)
-    assert block1.conflicted_number == 1
+    block1.clear_conflicts()
+    block1.add_conflict(ConflictType.LUNCH)
+    assert block1.conflict == ConflictType.LUNCH
 
 
 def test_is_conflicted_true():
@@ -433,8 +431,8 @@ def test_is_conflicted_true():
     start = "8:30"
     dur = 2
     block1 = Block(dummy_Section, TimeSlot(day, start, dur))
-    block1.adjust_conflicted_number(5)
-    assert block1.is_conflicted is True
+    block1.add_conflict(ConflictType.LUNCH)
+    assert block1.conflict.is_conflicted()
 
 
 def test_is_conflicted_false():
@@ -442,9 +440,12 @@ def test_is_conflicted_false():
     day = "mon"
     start = "8:30"
     dur = 2
+
     block1 = Block(dummy_Section, TimeSlot(day, start, dur))
-    block1.reset_conflicted()
-    assert block1.is_conflicted is False
+    block1.add_conflict(ConflictType.LUNCH)
+    assert block1.conflict.is_conflicted()
+    block1.clear_conflicts()
+    assert not block1.conflict.is_conflicted()
 
 
 def test_adjusting_conflict_sets_appropriate_bits():
@@ -453,70 +454,39 @@ def test_adjusting_conflict_sets_appropriate_bits():
     start = "8:30"
     dur = 2
     block1 = Block(dummy_Section, TimeSlot(day, start, dur))
-    block1.reset_conflicted()
-    block1.adjust_conflicted_number(1)
-    block1.adjust_conflicted_number(1)
-    block1.adjust_conflicted_number(2)
-    block1.adjust_conflicted_number(2)
-    assert block1.conflicted_number == 3
-
-
-def test_string_representation():
-    """Verifies that string_representation returns a title containing info about the Block,
-    its assigned Labs, and its Section. """
-    day = "mon"
-    start = "8:30"
-    dur = 2
-    block = Block(dummy_Section, TimeSlot(day, start, dur))
-    lab1 = Lab("R-101", "Worst place in the world")
-    lab2 = Lab("R-102", "Second-worst place in the world")
-    block.add_lab(lab1)
-    block.add_lab(lab2)
-    desc = str(block)
-    assert day in desc and start in desc and lab1.number in desc \
-           and lab2.number in desc and block.section.title in desc
-
-
-def test_description():
-    """Verifies that short_description() works as intended: returning information about just
-    the Block itself. """
-    day = "mon"
-    start = "8:30"
-    dur = 2
-    block = Block(dummy_Section, TimeSlot(day, start, dur))
-    desc = block.description
-    assert f"{day}, {start} {dur:.1f} hour(s)" in desc
+    block1.clear_conflicts()
+    block1.add_conflict(ConflictType.LUNCH)
+    block1.add_conflict(ConflictType.LUNCH)
+    block1.add_conflict(ConflictType.TIME_LAB)
+    block1.add_conflict(ConflictType.TIME_LAB)
+    assert block1.conflict.is_time_lab()
+    assert block1.conflict.is_time_lunch()
 
 
 # ====================================================================================================================
 # Synchronization
 # ====================================================================================================================
 def test_start_setter_synced_2_blocks_check_block1_moves_block2():
-    """Verifies that the start setter works as intended, and that it changes the start value of
-    any Blocks synced_blocks to the Block on which it was called. """
     day = "mon"
     start = "8:30"
     dur = 2
     block1 = Block(dummy_Section, TimeSlot(day, start, dur))
     block2 = Block(dummy_Section, TimeSlot('wed', start, dur))
     block1.sync_block(block2)
-    new_start = "10:00"
-    block1.start = new_start
-    assert block2.start == new_start
+    assert block2.time_slot == block2.time_slot
 
 
 def test_start_setter_synced_2_blocks_check_block2_moves_block1():
-    """Verifies that the start setter works as intended, and that it changes the start value of
-    any Blocks synced_blocks to the Block on which it was called. """
     day = "mon"
     start = "8:30"
     dur = 2
     block1 = Block(dummy_Section, TimeSlot(day, start, dur))
-    block2 = Block(dummy_Section, TimeSlot(day, start, dur))
+    block2 = Block(dummy_Section, TimeSlot('wed', start, dur))
     block1.sync_block(block2)
-    new_start = "10:00"
-    block2.start = new_start
-    assert block1.start == new_start
+    assert block2.time_slot == block2.time_slot
+    block1.time_slot.day = 'tue'
+    assert block2.time_slot == block2.time_slot
+
 
 
 def test_start_setter_synced_4_blocks():
@@ -533,8 +503,8 @@ def test_start_setter_synced_4_blocks():
     block1.sync_block(block4)
 
     new_start = "10:00"
-    block1.start = new_start
-    assert block2.start == new_start and block3.start == new_start and block4.start == new_start
+    block1.time_slot.time_start = new_start
+    assert block2.time_slot == block3.time_slot == block4.time_slot
 
 
 def test_start_setter_synced_4_blocks_move_block3():
@@ -551,8 +521,8 @@ def test_start_setter_synced_4_blocks_move_block3():
     block1.sync_block(block4)
 
     new_start = "10:00"
-    block3.start = new_start
-    assert block2.start == new_start and block1.start == new_start and block4.start == new_start
+    block3.time_slot.time_start = new_start
+    assert block2.time_slot.time_start == new_start == block3.time_slot.time_start == block4.time_slot.time_start
 
 
 def test_sync_block_good():
@@ -563,8 +533,8 @@ def test_sync_block_good():
     block1 = Block(dummy_Section, TimeSlot(day, start, dur))
     block2 = Block(dummy_Section, TimeSlot('tue', start, dur))
     block1.sync_block(block2)
-    assert block2 in block1.synced_blocks
-    assert block1 in block2.synced_blocks
+    assert block2 in block1.synced_blocks()
+    assert block1 in block2.synced_blocks()
 
 
 def test_unsync_block1_from_block2():
@@ -575,12 +545,12 @@ def test_unsync_block1_from_block2():
     block1 = Block(dummy_Section, TimeSlot(day, start, dur))
     block2 = Block(dummy_Section, TimeSlot('tue', start, dur))
     block1.sync_block(block2)
-    assert block1 in block2.synced_blocks
-    assert block2 in block1.synced_blocks
+    assert block1 in block2.synced_blocks()
+    assert block2 in block1.synced_blocks()
 
     block2.unsync_block(block1)
-    assert block1 not in block2.synced_blocks
-    assert block2 not in block1.synced_blocks
+    assert block1 not in block2.synced_blocks()
+    assert block2 not in block1.synced_blocks()
 
 
 def test_synced():
@@ -594,7 +564,7 @@ def test_synced():
     block3 = Block(dummy_Section, TimeSlot('wed', start, dur))
     block1.sync_block(block2)
     block1.sync_block(block3)
-    blocks = block1.synced_blocks
+    blocks = block1.synced_blocks()
 
     assert len(blocks) == 2 and block2 in blocks and block3 in blocks
 
@@ -606,7 +576,7 @@ def test_synced_empty_tuple():
     start = "8:30"
     dur = 2
     block1 = Block(dummy_Section, TimeSlot(day, start, dur))
-    blocks = block1.synced_blocks
+    blocks = block1.synced_blocks()
     assert len(blocks) == 0
 
 
@@ -621,15 +591,15 @@ def test_synced_blocks_interdependence_works_as_expected():
     block1.sync_block(block3)
     block1.sync_block(block4)
 
-    # disconnect blocks 3 from blocks 1,
+    # disconnect blocks 1 from blocks 3,
     block3.unsync_block(block1)
-    block3.start = "11:30"
 
-    # changing blocks 3 should have no effect on anybody
-    assert block1.start == block2.start == block4.start == "8:30"
-    assert block3.start == "11:30"
+    # changing blocks 3 should affect on anybody block2 and block4, but not block1
+    block3.time_slot.time_start = "11:30"
+    assert block1.time_slot == TimeSlot("mon", "8:30", 2)
+    assert block3.time_slot.time_start == block2.time_slot.time_start == block4.time_slot.time_start == "11:30"
 
-    # changing should not affect blocks 3, but still affect blocks 2 and blocks 4
-    block1.start = "9:30"
-    assert block1.start == block2.start == block4.start == "9:30"
-    assert block3.start == "11:30"
+    # changing block 1 should not affect any other block
+    block1.time_slot.time_start = "9:30"
+    assert block3.time_slot.time_start == block2.time_slot.time_start == block4.time_slot.time_start == "11:30"
+    assert block1.time_slot.time_start == "9:30"

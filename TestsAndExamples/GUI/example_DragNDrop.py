@@ -1,10 +1,8 @@
-from os import path
-import sys
-sys.path.append(path.dirname(path.dirname(__file__) + "/../../"))
 
-from schedule.Tk.DragNDrop import DragNDropManager
+from schedule.Tk import DragNDropManager
 import tkinter as tk
 from tkinter import ttk, messagebox
+from schedule.Tk import TkColours, set_default_fonts_and_colours
 
 
 def lb_on_start(e: tk.Event, info_data: dict) -> str:
@@ -73,6 +71,7 @@ def lb_on_drop(e: tk.Event, info_data: dict, target: tk.Widget):
 
 mw = tk.Tk()
 mw.geometry("300x500+30+40")
+#colours, fonts = set_default_fonts_and_colours(mw)
 tk.Label(mw, text="Drag from list one onto tree").pack()
 
 lb = tk.Listbox()

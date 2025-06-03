@@ -7,7 +7,7 @@ import schedule.Tk as new_tk
 
 import sys
 import traceback
-from typing import Any
+from typing import Any, Literal
 
 
 def eprint(*args, **kwargs):
@@ -38,7 +38,7 @@ Options
 
                         'n' is a horizontal scrollbar at the top of the widget
 
-                        'e' is a vertical scrollbar at the right side of the widget
+                        'e' is a vertical scrollbar on the right side of the widget
 
                         you can only have one scrollbar for horizontal and one for vertical
 
@@ -78,7 +78,8 @@ Notes
 
     To access the scrollbars, use self.horizontal_scrollbar and self.vertical_scrollbar
 
-     - scrollbars have been set_default_fonts_and_colours to not take focus, if you want to change that you have to modify
+     - scrollbars have been set_default_fonts_and_colours to not take focus, if you want to
+     change that you have to modify
        the scrollbars after the scrolled widget has been created
 
 
@@ -154,18 +155,20 @@ example::
         # get_by_id the Tk object that needs to be created
         # ----------------------------------------------------------------------------------------
         _tk_widget_type = None
+
+        # looking for a Tk widget
         try:
             _tk_widget_type = getattr(tk, widget_type)
-        except AttributeError as e:
+        except AttributeError:
+
+            # looking for an expanded tk widget from ttk
             try:
                 _tk_widget_type = getattr(ttk, widget_type)
-            except AttributeError as e:
+            except AttributeError:
 
-                # Note, if getting an personalized widget, then the
-                # module name has to be equal to the name of the class
+                # looking for a personalized widget in schedule.Tk
                 try:
-                    _module_ = getattr(new_tk, widget_type)
-                    _tk_widget_type = getattr(_module_, widget_type)
+                    _tk_widget_type = getattr(new_tk, widget_type)
                 except AttributeError as e:
                     eprint(e)
 
@@ -173,9 +176,7 @@ example::
         # bail out if user is trying to create 2 scrollbars in the same orientation
         # ----------------------------------------------------------------------------------------
         if ('e' in scrollbars and 'w' in scrollbars) or ('n' in scrollbars and 's' in scrollbars):
-            _trace = traceback.format_stack()
-            eprint(f"You cannot have two horizontal or two vertical scrollbars ({scrollbars=})\n" +
-                   {_trace})
+            eprint(f"You cannot have two horizontal or two vertical scrollbars ({scrollbars=})")
 
         # ----------------------------------------------------------------------------------------
         # create scrollbars
@@ -212,8 +213,10 @@ example::
             # which is scrollable
             # ----------------------------------------------------------------------------------------
             canvas_args = {}
-            if 'width' in kwargs: canvas_args['width'] = kwargs['width']
-            if 'height' in kwargs: canvas_args['height'] = kwargs['height']
+            if 'width' in kwargs:
+                canvas_args['width'] = kwargs['width']
+            if 'height' in kwargs:
+                canvas_args['height'] = kwargs['height']
             _canvas = Canvas(self, **canvas_args)
             _canvas.pack(side=TOP, fill=BOTH, expand=1)
 
@@ -240,16 +243,16 @@ example::
     # ===============================================================================================================
     # pass on all 'configure' to the scrollable object
     # ===============================================================================================================
-    #def configure(self, **kwargs):
+    # def configure(self, **kwargs):
     #    self._widget.configure(**kwargs)
 
     # ===============================================================================================================
     # if adding things to the frame, we need to update the scrollbars.
     # ... at this point must be done manually from the calling code
     # ===============================================================================================================
-    def update_scrollbars(self,*args,**kwargs):
+    def update_scrollbars(self, *_args, **_kwargs):
         """resets the scrollbars to accommodate changes in the canvas size"""
-        if isinstance(self._scrollable_object,Canvas):
+        if isinstance(self._scrollable_object, Canvas):
             canvas = self._scrollable_object
             canvas.configure(scrollregion=canvas.bbox("all"))
 
@@ -270,7 +273,7 @@ example::
     # ===============================================================================================================
     # scrolling methods
     # ===============================================================================================================
-    def see(self, widget, **kwargs):
+    def see(self, widget, **_kwargs):
         """Adjusts the view so that widget is visible.
 
         Additional parameters in options-value pairs can be passed,
@@ -318,7 +321,8 @@ example::
             Returns a list containing two elements, both of which are real fractions between 0 and 1.
             The first element gives the position of the left of the window, relative to the scrollable object as a whole
             (0.5 means it is halfway through the Frame, for example).
-            The second element gives the position of the right of the window, relative to the scrollable object as a whole.
+            The second element gives the position of the right of the window, relative to the scrollable object
+            as a whole.
 
         Tk Widget defined
             Adjusts the view in the window so that widget is displayed.
@@ -328,7 +332,8 @@ example::
         # make sure idle tasks are finished (includes redrawing of changes in geometry)
         self.update_idletasks()
 
-        if self.horizontal_scrollbar is None: return (0, 1)
+        if self.horizontal_scrollbar is None:
+            return 0, 1
 
         if widget is not None:
             # NOT IMPLEMENTED YET
@@ -340,7 +345,8 @@ example::
             Returns a list containing two elements, both of which are real fractions between 0 and 1.
             The first element gives the position of the top of the window, relative to the scrollable object as a whole
             (0.5 means it is halfway through the Frame, for example).
-            The second element gives the position of the bottom of the window, relative to the scrollable object as a whole.
+            The second element gives the position of the bottom of the window, relative to the scrollable object
+            as a whole.
 
         Tk Widget defined
             Adjusts the view in the window so that widget is displayed.
@@ -377,7 +383,7 @@ example::
 
         return self.vertical_scrollbar.get()
 
-    def xview_scroll(self, number: int, what: str) -> None:
+    def xview_scroll(self, number: int, what: Literal["units", "pages"]) -> None:
         """ Shift the x-view according to NUMBER which is measured in "units" or "pages" (WHAT).
 
         'what' must be  Literal["units", "pages"]
@@ -385,7 +391,7 @@ example::
         if self.vertical_scrollbar is None:
             self._scrollable_object.xview_scroll(number, what)
 
-    def yview_scroll(self, number: int, what: str) -> None:
+    def yview_scroll(self, number: int, what: Literal["units", "pages"]) -> None:
         """ Shift the y-view according to NUMBER which is measured in "units" or "pages" (WHAT).
 
         'what' must be  Literal["units", "pages"]

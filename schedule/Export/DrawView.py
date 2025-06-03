@@ -403,11 +403,11 @@ def draw_block(canvas: Canvas, block, scl: dict, type,
 # coords_to_day_time_duration
 # =================================================================
 def coords_to_day_time_duration(x, y, y2, scl: dict):
-    """Determines the day, start time, and duration based on canvas coordinates.
+    """Determines the day, time_start time, and duration based on canvas coordinates.
 
     Parameters:
         x: x position (determines day).
-        y: y1 position (determines start).
+        y: y1 position (determines time_start).
         y2: y2 position (determines duration).
         scl: Scaling info [dictionary]."""
     day = x / scl['xscl'] - scl['xoff'] + 1 - scl['xorg']
@@ -421,11 +421,11 @@ def coords_to_day_time_duration(x, y, y2, scl: dict):
 # get_coords
 # =================================================================
 def get_coords(day, start, duration, scl):
-    """Determines the canvas coordinates based on day, start time, and duration.
+    """Determines the canvas coordinates based on day, time_start time, and duration.
 
     Parameters:
         day: day of week (1 = Monday)
-        start: start time (24-hour clock)
+        start: time_start time (24-hour clock)
         scl: Scaling info [dictionary]"""
     (x, x2) = _days_x_coords(day, scl['xoff'], scl['xorg'], scl['xscl'])
     (y, y2) = _time_y_coords(start, duration, scl['yoff'], scl['yorg'], scl['yscl'])
@@ -523,7 +523,7 @@ B<Parameters>
 
 =over
 
-=item * C<x1,y1,x2,y2,> coordinates of the start and stop position of the line
+=item * C<x1,y1,x2,y2,> coordinates of the time_start and stop position of the line
 
 =item * C<< -fill => "Colour", >> the Colour of the line (OPTIONAL... default is "black"),
 

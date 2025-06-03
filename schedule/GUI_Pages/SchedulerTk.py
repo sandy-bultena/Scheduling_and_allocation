@@ -2,7 +2,7 @@
 import os.path
 
 from typing import Callable, Optional
-from ..UsefulClasses.Preferences import Preferences
+from ..Utilities.Preferences import Preferences
 
 from .MainPageBaseTk import MainPageBaseTk
 from tkinter import *

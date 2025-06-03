@@ -41,7 +41,7 @@ class CICalc():
         self.release = teacher.release or 0
 
         debug(f"\n\n--------- {teacher.firstname}---------")
-        debug("\nstart list")
+        debug("\ntime_start list")
         for course in courses:
             debug(f"{course.number} {course.name}")
         debug("end list\n")

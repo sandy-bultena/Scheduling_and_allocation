@@ -622,14 +622,14 @@ this time slot
 sub get_coords {
     my $class    = shift;
     my $day      = shift;
-    my $start    = shift;
+    my $time_start    = shift;
     my $duration = shift;
     my $scl      = shift;
 
     my ( $x, $x2 ) =
       _days_x_coords( $day, $scl->{-xoff}, $scl->{-xorg}, $scl->{-xscl} );
     my ( $y, $y2 ) =
-      _time_y_coords( $start,        $duration, $scl->{-yoff},
+      _time_y_coords( $time_start,        $duration, $scl->{-yoff},
                       $scl->{-yorg}, $scl->{-yscl} );
 
     return ( $x, $y, $x2, $y2 );
@@ -691,14 +691,14 @@ sub get_colour_shades {
 # using scale info, get the y limits for a specific time period
 # =================================================================
 sub _time_y_coords {
-    my $start     = shift;
+    my $time_start     = shift;
     my $duration  = shift;
     my $y_offset  = shift;
     my $yorig     = shift;
     my $v_stretch = shift;
 
     $y_offset = $y_offset * $v_stretch + $yorig;
-    my $y = $y_offset + ( $start - $EarliestTime ) * $v_stretch;
+    my $y = $y_offset + ( $time_start - $EarliestTime ) * $v_stretch;
     my $y2 = $duration * $v_stretch + $y - 1;
     return ( $y, $y2 );
 }

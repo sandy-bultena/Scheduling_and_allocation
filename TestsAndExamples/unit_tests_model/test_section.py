@@ -427,12 +427,12 @@ def test_teachers_in_blocks_in_teachers_property():
     assert t1 in s.teachers
     assert t2 in s.teachers
     assert t3 in s.teachers
-    assert t1 in b1.teachers
-    assert t3 in b1.teachers
-    assert t2 in b2.teachers
-    assert t3 in b2.teachers
-    assert len(b1.teachers) == 3
-    assert len(b2.teachers) == 3
+    assert t1 in b1.get_teachers
+    assert t3 in b1.get_teachers
+    assert t2 in b2.get_teachers
+    assert t3 in b2.get_teachers
+    assert len(b1.get_teachers) == 3
+    assert len(b2.get_teachers) == 3
 
 
 # endregion

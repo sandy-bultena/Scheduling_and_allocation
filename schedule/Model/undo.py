@@ -8,9 +8,9 @@
 
     # save blocks[0] before modifying it
     blocks = blocks[0]
-    undos.append(Undo(blocks.id, blocks.start, blocks.day, teacher, "Day/Time", new_association))
+    undos.append(Undo(blocks.id, blocks.time_start, blocks.day, teacher, "Day/Time", new_association))
     # original Perl ver of example code (outdated):
-        # push @undos, Undo->new( $blocks->id, $blocks->start, $blocks->day, $teacher, "Day/Time" );
+        # push @undos, Undo->new( $blocks->id, $blocks->time_start, $blocks->day, $teacher, "Day/Time" );
 """
 
 
@@ -24,12 +24,12 @@ class Undo:
     def __init__(self, block_id: int, origin_start: str, origin_day: str, origin_obj, move_type: str, new_obj):
         """
         Creates an instance of the Undo class.
-        - Parameter block_id -> defines the ID of the Block that was moved.
-        - Parameter origin_start -> defines the time of the Block before the moved.
-        - Parameter origin_day -> defines the day of the Block before the moved.
-        - Parameter origin_obj -> defines the object the Block was associated with before moving. (Teacher/Lab/Stream).
-        - Parameter move_type -> defines the resource_type of movement made (within schedule, across schedules, etc).
-        - Parameter new_obj -> defines the object the Block is associated with after moving (Teacher/Lab/Stream).
+        :param block_id: the ID of the Block that was moved.
+        :param origin_start:  the time of the Block before the moved.
+        :param origin_day:  the day of the Block before the moved.
+        :param origin_obj:  the object the Block was associated with before moving. (Teacher/Lab/Stream).
+        :param move_type:  the resource_type of movement made (within schedule, across schedules, etc).
+        :param new_obj:  the object the Block is associated with after moving (Teacher/Lab/Stream).
         """
         Undo._max_id += 1
         self._id = Undo._max_id

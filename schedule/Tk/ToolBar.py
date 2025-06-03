@@ -1,22 +1,40 @@
-from ..Tk import FindImages
+from typing import Optional
+
+from . import FindImages
 from tkinter import Frame, PhotoImage, Button, Label
 import os
 from functools import partial
-from ..Tk.idlelib_tooltip import Hovertip
+from .idlelib_tooltip import Hovertip
+from .InitGuiFontsAndColours import TkColours
+import os
+
+BUTTON_SIZE=24
+BUTTON_BORDERWIDTH = 1
 
 
 # TODO: Standardize the method for cget/configure between TableEntry,
 #       dynamic entry, and ToolBar.  (Best? is DynamicTree)
 
 class ToolBar(Frame):
-    def __init__(self, parent, hoverbg=None, buttonbg=None, **kwargs):
+    def __init__(self, parent, colours: Optional[TkColours] = None, **kwargs):
         super().__init__(master=parent, **kwargs)
 
-        self.config_options = ['hoverbg', 'buttonbg', 'buttonfg']
-        if hoverbg:
-            self.configure(hoverbg=hoverbg)
-        if buttonbg:
-            self.configure(buttonbg=buttonbg)
+        # define top level for this frame
+        mw = self.master.winfo_toplevel()
+
+        # set up default colours
+        self.mw = mw
+        if colours is not None:
+            self.colours = colours
+        else:
+            self.colours = TkColours(mw)
+
+        self.config_options = ['button_hover_highlight', 'button_highlight', 'button_fg', 'button_bg']
+        self.configure(bg=colours.ButtonBackground)
+        self.configure(button_hover_highlight=colours.ButtonHoverHighlight)
+        self.configure(button_highlight=colours.ButtonHighlight)
+        self.configure(button_bg=colours.ButtonBackground)
+        self.configure(button_fg=colours.ButtonForeground)
 
         self.images = list()
 
@@ -43,6 +61,8 @@ class ToolBar(Frame):
         self.configure(**kwargs)
 
     def cget(self, key):
+        if key in self.config_options:
+            print (f"{key=}")
         return getattr(self, key, None) if key in self.config_options \
             else super().cget(key)
 
@@ -72,12 +92,6 @@ class ToolBar(Frame):
         hint = details.get('hint', '')
         shortcut_key = details.get('shortcut', [])
         disabled = details.get('disabled', False)
-        bg = self.cget('buttonbg') if self.cget('buttonbg') else self.cget('bg')
-        fg = self.cget('buttonfg') if self.cget('buttonbg') else self.cget('fg')
-        hbg = self.cget('hoverbg') if self.cget('hoverbg') else self.cget('fg')
-
-        # define top level for this frame
-        mw = self.master.winfo_toplevel()
 
         # define image
         image = PhotoImage(file=image_file)
@@ -94,16 +108,16 @@ class ToolBar(Frame):
             master=self,
             text=name,
             image=image,
-            relief='flat',
-            bg=bg,
-            activebackground=bg,
-            borderwidth=0,
-            highlightbackground=bg,
-            highlightcolor=fg,
-            width=20,
-            height=20
+            relief='ridge',
+            bg=self.cget("button_bg"),
+            activebackground=self.cget("button_bg"),
+            highlightbackground=self.cget("button_highlight"),
+            fg=self.cget("button_fg"),
+            width=BUTTON_SIZE,
+            height=BUTTON_SIZE,
+            highlightthickness=BUTTON_BORDERWIDTH,
         )
-        b.pack(side='left')
+        b.pack(side='left',ipadx=0, ipady=0)
         self.buttons[name] = b
 
         # weird behaviour, using 'command=' doesn't work, but this does
@@ -115,13 +129,13 @@ class ToolBar(Frame):
 
         # make the button slightly raised when mouse hovers
         # pass image to stop it from being destroyed when this method ends
-        b.bind('<Enter>', partial(button_enter, b, hbg, mw, image), True)
-        b.bind('<Leave>', partial(button_leave, b, bg, mw, image), True)
+        b.bind('<Enter>', partial(button_enter, b, self.cget("button_hover_highlight"), self.mw, image), True)
+        b.bind('<Leave>', partial(button_leave, b, self.cget("button_highlight"), self.mw, image), True)
 
-        # add the bindings for keypresses
+        # add the bindings for key presses
         if shortcut_key:
             for sk in shortcut_key:
-                mw.bind(f"<{sk}>", partial(lambda *_: b.invoke(), b))
+                self.mw.bind(f"<{sk}>", partial(lambda *_: b.invoke(), b))
 
         # disable the button?
         if disabled:
@@ -145,13 +159,11 @@ class ToolBar(Frame):
             self.buttons[name].configure(state='normal' if action else 'disabled')
 
 
-def button_enter(b: Button, hbg, mw, *_):
-    b.configure(relief='raised', width=25, height=25)
-    b.configure(activebackground="#000000")
+def button_enter(b: Button, highlight_color, mw, *_):
+    b.configure(highlightbackground=highlight_color)
     mw.update()
 
 
-def button_leave(b: Button, bg, mw, *_):
-    b.configure(relief='flat', width=20, height=20)
-    b.configure(activebackground=bg)
+def button_leave(b: Button, highlight_color, mw, *_):
+    b.configure(highlightbackground = highlight_color)
     mw.update()

@@ -1,14 +1,10 @@
 from functools import partial
 from tkinter import *
-from os import path
-import sys
+from schedule.Utilities import NoteBookPageInfo
+from schedule.GUI_Pages import MainPageBaseTk
+from schedule.Tk import MenuItem, MenuType, ToolbarItem
+from schedule.Utilities import Preferences
 
-
-sys.path.append(path.dirname(path.dirname(__file__) + "/../../"))
-from schedule.UsefulClasses.NoteBookPageInfo import NoteBookPageInfo
-from schedule.GUI_Pages.MainPageBaseTk import MainPageBaseTk
-from schedule.UsefulClasses.MenuItem import MenuItem, MenuType, ToolbarItem
-from schedule.UsefulClasses.Preferences import Preferences
 
 # TODO: write test for update_for_new_schedule_and_show_page
 
@@ -29,7 +25,8 @@ def main():
     notebook_info = get_notebook_info()
 
     # add a button so that we can switch to the 'standard page'
-    Button(option_frame, text="Goto Standard Page", height=5, width=50, command=partial(switch_to_notebook, main_page, notebook_info)) \
+    Button(option_frame, text="Goto Standard Page", height=5, width=50,
+           command=partial(switch_to_notebook, main_page, notebook_info)) \
         .pack(side='top', fill='y', expand=0)
 
     main_page.define_exit_callback(lambda *_: print("Application exited"))
@@ -150,5 +147,6 @@ def define_inputs():
     menu_items.append(print_menu)
 
     return toolbar_order, toolbar_info, menu_items
+
 
 main()

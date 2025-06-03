@@ -98,14 +98,14 @@ sub new {
 	my $class = shift;
 	my $view  = shift;
 	my $day   = shift;
-	my $start = shift;
+	my $time_start = shift;
 	carp("You need a view!!!") unless $view;
 
 	# ---------------------------------------------------------------
 	# draw 1/2 the block
 	# ---------------------------------------------------------------
 	my $cn = $view->gui->canvas;
-	my @coords = $view->gui->get_time_coords( $day, $start, 1 / 2 );
+	my @coords = $view->gui->get_time_coords( $day, $time_start, 1 / 2 );
 
 	my $r = $cn->createRectangle(
 		@coords,
@@ -126,7 +126,7 @@ sub new {
 	# ---------------------------------------------------------------
 	$self->id($r);
 	$self->day($day);
-	$self->start($start);
+	$self->time_start($time_start);
 	$self->view($view);
 	$self->canvas( $view->gui->canvas );
 
@@ -211,7 +211,7 @@ sub in_range {
 	my $assigned_blocks = shift;
 	die unless $assigned_blocks;
 
-	# make sure start in left top towards bottom right
+	# make sure time_start in left top towards bottom right
 	if ( $x1 > $x2 ) { my $tmp = $x1; $x1 = $x2; $x2 = $tmp; }
 	if ( $y1 > $y2 ) { my $tmp = $y1; $y1 = $y2; $y2 = $tmp; }
 
@@ -251,19 +251,19 @@ sub get_day_start_duration {
     return unless @x;
 
     my $day   = $x[0]->day;
-    my $start = $x[0]->start;
+    my $time_start = $x[0]->time_start;
     my $size  = scalar @x;
 
     foreach my $i ( @x ) {
-        my $temp = $i->start;
-        if ( $temp < $start ) {
-            $start = $temp;
+        my $temp = $i->time_start;
+        if ( $temp < $time_start ) {
+            $time_start = $temp;
         }
     }
 
     # note that each block is a 1/2 hour, so the duration
     # (in hours) would be the number of blocks divided by two
-    return ( $day, $start, $size / 2.0 );
+    return ( $day, $time_start, $size / 2.0 );
 }
 
 
@@ -394,10 +394,10 @@ sub day {
 	return $self->{-day};
 }
 
-sub start {
+sub time_start {
 	my $self = shift;
-	$self->{-start} = shift if @_;
-	return $self->{-start};
+	$self->{-time_start} = shift if @_;
+	return $self->{-time_start};
 }
 
 sub view {

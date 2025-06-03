@@ -38,10 +38,10 @@ class Overview:
                 courses_text.append(str(c))
 
         # teacher info
-        if not self.schedule.teachers:
+        if not self.schedule.get_teachers:
             teachers_text.append('No teachers defined in this schedule')
         else:
-            for t in self.schedule.teachers:
+            for t in self.schedule.get_teachers:
                 teachers_text.append(self.schedule.teacher_details(t))
 
         self.gui.refresh(tuple(courses_text), tuple(teachers_text))

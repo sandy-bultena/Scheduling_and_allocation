@@ -1,6 +1,5 @@
-# COMPLETED
+
 from __future__ import annotations
-from schedule.Exceptions import exceptions
 
 """
 Example::
@@ -82,7 +81,7 @@ class MenuItem:
         # children (i.e. non-cascade menu-items should not be parents)
         if self.menu_type != MenuType.Cascade:
             msg = f"Menu '{self.name}' is of resource_type '{self.menu_type}' and cannot support children"
-            raise exceptions.SubMenuError(msg)
+            raise TypeError(msg)
 
         # procreate
         self.children.append(menu_item)

@@ -5,6 +5,7 @@ from . import _id_generator_code as id_gen
 from .block import Block
 from ._model_exceptions import InvalidHoursForSectionError
 
+# stuff that we need just for type checking, not for actual functionality
 if TYPE_CHECKING:
     from .teacher import Teacher
     from .lab import Lab
@@ -17,7 +18,7 @@ if TYPE_CHECKING:
     from Schedule.Lab import Lab
     from Schedule.Teacher import Teacher
 
-    block = Block(day = "Wed", start = "9:30", duration = 1.5)
+    block = Block(day = "Wed", time_start = "9:30", duration = 1.5)
     section = Section(number = 1, hours = 6)
     course = Course(name = "Basket Weaving")
     teacher = Teacher("Jane", "Doe")
@@ -156,7 +157,7 @@ class Section:
         teachers = set()
         teachers.update(self._teachers)
         for b in self.blocks:
-            teachers.update(b.teachers)
+            teachers.update(b.get_teachers)
 
         return tuple(sorted(teachers))
 

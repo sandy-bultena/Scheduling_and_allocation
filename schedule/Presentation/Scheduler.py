@@ -6,14 +6,14 @@ from typing import Optional, Protocol
 # from .ViewsManager import ViewsManager
 from ..GUI_Pages.SchedulerTk import SchedulerTk
 from ..Model.schedule import Schedule
-from ..UsefulClasses.NoteBookPageInfo import NoteBookPageInfo
-from ..UsefulClasses.Preferences import Preferences
-from ..Presentation.globals import *
+from ..Utilities.NoteBookPageInfo import NoteBookPageInfo
+from ..Utilities.Preferences import Preferences
+from ..Presentation.dirty_flags import *
 from ..Model import ResourceType
 from ..Presentation.EditResources import EditResources
 from ..Presentation.Overview import Overview
 
-from schedule.UsefulClasses.MenuItem import MenuItem, MenuType, ToolbarItem
+from schedule.Tk.MenuItem import MenuItem, MenuType, ToolbarItem
 
 
 class GuiContainer(Protocol):
@@ -45,6 +45,8 @@ class GuiMain(Protocol):
 # CLASS
 # #####################################################################################
 
+DIRECTORY = str
+
 class Scheduler:
     """
     # ==================================================================
@@ -52,8 +54,9 @@ class Scheduler:
     # ==================================================================
     """
 
-    def __init__(self, gui: Optional[GuiMain] = None):
-        self.user_base_dir: Optional[str] = None
+    def __init__(self,  gui: Optional[GuiMain] = None, bin_dir: Optional[DIRECTORY] = None):
+        self.bin_dir: Optional[DIRECTORY] = None
+        self.user_base_dir: Optional[DIRECTORY] = None
         self.schedule: Optional[Schedule] = None
         self._teachers_de: Optional[EditResources] = None
         self._streams_de: Optional[EditResources] = None

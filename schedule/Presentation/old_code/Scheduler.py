@@ -13,7 +13,7 @@ from ..Model.ScheduleEnums import ResourceType
 from ..Presentation.EditResources import EditResources
 from ..Presentation.Overview import Overview
 
-from schedule.UsefulClasses.MenuItem import MenuItem, MenuType, ToolbarItem
+from schedule.Tk.MenuItem import MenuItem, MenuType, ToolbarItem
 
 
 class GuiContainer(Protocol):

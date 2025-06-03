@@ -4,7 +4,7 @@ MOVABLE_TAG_NAME = "movable"
 
 
 def main():
-    mw: Toplevel = Tk()
+    mw: Tk = Tk()
 
     canvas: Canvas = Canvas(mw)
     canvas.pack(expand=1, fill='both')
@@ -20,7 +20,7 @@ def main():
 
 
 def select_gui_block_to_move(canvas: Canvas, event: Event):
-    obj: tuple[int] = canvas.find_withtag('current')
+    obj: tuple[int, ...] = canvas.find_withtag('current')
     tags: tuple[str] = tuple(filter(lambda x: x != MOVABLE_TAG_NAME and x != 'current', canvas.gettags(obj[0])))
     canvas.tag_raise(tags, 'all')
 

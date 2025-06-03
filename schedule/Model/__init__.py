@@ -1,6 +1,6 @@
 from .block import Block
-from .time_slot import TimeSlot
-from .enums import WeekDay, WeekDayNumber, SemesterType, ResourceType, ConflictType
+from .time_slot import TimeSlot, ClockTime
+from .enums import WeekDay, WeekDayNumber, SemesterType, ResourceType
 from .lab import Lab
 from .teacher import Teacher
 from .section import Section

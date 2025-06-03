@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .GuiBlockTk import GuiBlockTk
 from ..Model.Block import Block
-from ..Model._conflict_calculations import Conflict
+from ..Model.conflicts import Conflict
 from ..Model.ScheduleEnums import ResourceType, WeekDayNumber
 from ..Export import DrawView
 
@@ -277,7 +277,7 @@ class ViewBaseTk:
 
         Parameters:
             day: The day.
-            start: The start time of the blocks.
+            start: The time_start time of the blocks.
             duration: Number of hours for this blocks."""
         scl = self.get_scale_info()
         coords = DrawView.get_coords(day, start, duration, scl)

@@ -16,7 +16,7 @@ def run_before():
 def test_properties():
     lu = LabUnavailableTime("wed", "9:30", 2, False)
     assert lu.day == "wed"
-    assert lu.start == "9:30"
+    assert lu.time_start == "9:30"
     assert lu.duration == 2
     assert lu.movable is False
 
@@ -26,5 +26,5 @@ def test_isa_time_slot():
     assert isinstance(lu, TimeSlot)
 
 # ################### Incomplete testing #########################
-# Should verify that setting lu.start behaves the same as TimeSlot, lu.duration is limited to 1/2 hours, etd
+# Should verify that setting lu.time_start behaves the same as TimeSlot, lu.duration is limited to 1/2 hours, etd
 # ################################################################

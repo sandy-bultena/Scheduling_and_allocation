@@ -16,7 +16,7 @@ def run_before_and_after():
 def test_constructor_created_success():
     """Checks that Undo is correctly correctly"""
     block_id = 1
-    origin_start = "start"
+    origin_start = "time_start"
     origin_day = "mon"
     origin_obj = 5
     move_type = "resource_type"

@@ -1,21 +1,24 @@
 """Sets up the standard Tk properties (fonts, colors)"""
 
 from __future__ import annotations
+
+import os
 from tkinter import Tk, TclError
 from tkinter.font import Font
 import platform
 import re
 from typing import Literal, Optional
 
-import schedule.UsefulClasses.Colour as Colour
+import schedule.Utilities.Colour as Colour
 
 operating_system = platform.system().lower()
 
+DEFAULT_FONT_SIZE=14
 
 class TkColours:
     """Defines colour scheme """
 
-    def __init__(self, tk_root: Optional[Tk] = None, theme='mac', dark=False):
+    def __init__(self, tk_root: Optional[Tk] = None, theme='mac', invert=False):
         # Defaults to MAC Colours
         window_background_color: Optional[str] = None
         pressed_button_text_color: Optional[str] = None
@@ -78,17 +81,36 @@ class TkColours:
         self.ButtonBackground: str = self.WorkspaceColour
         self.ActiveBackground: str = self.WorkspaceColour
         self.HighlightBackground: str = self.WorkspaceColour
-        self.ButtonForeground: str = "#000000"
         self.DarkBackground: str = Colour.darken(self.WorkspaceColour, 20)
         self.DisabledBackground: str = "#a3a3a3"
         self.DirtyColour: str = "#880000"
         self.DisabledBackground = "#a3a3a3"
         self.DisabledForeground = "#000000"
+        self.DragNDropForeground = self.WindowForeground
+
+        if os.name == 'darwin':
+            # MAC does not allow you to change the background colour of buttons
+            self.ButtonBackground = "#eeeeee"
+        if Colour.is_light(self.WorkspaceColour):
+            self.DragNDropBackground = Colour.darken(self.WorkspaceColour, 25)
+            self.DragNDropAllowedBackground = Colour.darken(self.WorkspaceColour, 5)
+        else:
+            self.DragNDropBackground = Colour.lighten(self.WorkspaceColour, 25)
+            self.DragNDropAllowedBackground = Colour.lighten(self.WorkspaceColour, 5)
+
+        self.ButtonHighlight = self.ButtonBackground
+        if Colour.is_light(self.ButtonHighlight):
+            self.ButtonHoverHighlight = Colour.darken(self.WorkspaceColour, 25)
+            self.ButtonForeground = "#000000"
+        else:
+            self.ButtonHoverHighlight = Colour.lighten(self.WorkspaceColour, 25)
+            self.ButtonForeground = "#FFFFFF"
+
 
         # ============================================================================
-        # if dark mode, just invert all the colours
+        # if invert mode, just invert all the colours
         # ============================================================================
-        if dark:
+        if invert:
             for col in vars(self):
 
                 # Note: button colors don't work on MAC, so skip
@@ -100,16 +122,22 @@ class TkColours:
                 l = abs(0.9 * l - 1)
                 setattr(self, col, Colour.get_colour_string_from_hsl(h, s, l))
 
+    def __str__(self):
+        str:str = ""
+        for col in vars(self):
+            str += f"{col}: {getattr(self,col)}\n"
+        return str
+
 
 class TkFonts:
-    def __init__(self, mw: Tk, my_size: int = 12):
+    def __init__(self, mw: Tk, my_size: int = DEFAULT_FONT_SIZE):
         size = my_size
-        if re.search('win', operating_system):
-            size -= 2
-        family = 'arial'
         if re.search('darwin', operating_system):
             family = 'lucidia'
             size += 3
+        else:
+            size -= 2
+        family = 'arial'
 
         set_props = {
             'slant': 'roman', 'underline': 0, 'overstrike': 0
@@ -135,10 +163,10 @@ colours: TkColours = TkColours()
 fonts: Optional[TkFonts] = None
 
 
-def set_default_fonts_and_colours(mw: Tk, font_size: int = 12, dark_mode: bool = False):
+def set_default_fonts_and_colours(mw: Tk, font_size: int = DEFAULT_FONT_SIZE, invert: bool = False):
     global fonts
     global colours
-    colours = TkColours(mw, dark=dark_mode)
+    colours = TkColours(mw, invert=invert)
     set_system_colours(mw, colours)
     mw.configure(background=colours.WorkspaceColour)
 

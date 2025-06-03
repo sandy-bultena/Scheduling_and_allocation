@@ -454,11 +454,11 @@ duration => number of hours for this block
 sub get_time_coords {
     my $self     = shift;
     my $day      = shift;
-    my $start    = shift;
+    my $time_start    = shift;
     my $duration = shift;
 
     my $scl = $self->get_scale_info();
-    my @coords = DrawView->get_coords( $day, $start, $duration, $scl );
+    my @coords = DrawView->get_coords( $day, $time_start, $duration, $scl );
 
     if (wantarray) {
         return @coords;

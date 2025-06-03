@@ -1,10 +1,6 @@
 from __future__ import annotations
 from tkinter import *
-from os import path
-import sys
-
-sys.path.append(path.dirname(path.dirname(__file__) + "/../../"))
-from schedule.Tk.AdvancedTreeview import AdvancedTreeview
+from schedule.Tk import AdvancedTreeview
 
 mw = Tk()
 mw.geometry("500x300")
@@ -23,9 +19,9 @@ def clear_tree():
 def test_saving_objs():
     clear_tree()
     assert len(tree._item_to_obj_dict) == 0
-    o1 = SortableObject('hello')
-    o2 = SortableObject('goodbye')
-    o3 = SortableObject('death to all')
+    o1 = 'hello'
+    o2 = 'goodbye'
+    o3 = 'death to all'
     id1 = tree.insert("", any_object=o1, text=str(o1))
     id2 = tree.insert("", any_object=o2, text=str(o2))
     id3 = tree.insert("", any_object=o3, text=str(o3))
@@ -46,9 +42,9 @@ def test_saving_objs():
 def test_deleting_items():
     clear_tree()
     assert len(tree._item_to_obj_dict) == 0
-    o1 = SortableObject('hello')
-    o2 = SortableObject('goodbye')
-    o3 = SortableObject('death to all')
+    o1 = 'hello'
+    o2 = 'goodbye'
+    o3 = 'death to all'
     id1 = tree.insert("", any_object=o1, text=str(o1))
     id2 = tree.insert("", any_object=o2, text=str(o2))
     id3 = tree.insert("", any_object=o3, text=str(o3))
@@ -65,9 +61,9 @@ def test_deleting_items():
 def test_insert_sorted():
     clear_tree()
     assert len(tree._item_to_obj_dict) == 0
-    o1 = SortableObject('hello')
-    o2 = SortableObject('goodbye')
-    o3 = SortableObject('death to all')
+    o1 = 'hello'
+    o2 = 'goodbye'
+    o3 = 'death to all'
 
     id2 = tree.insert_sorted("", any_object=o2, text=str(o2))
     id1 = tree.insert_sorted("", any_object=o1, text=str(o1))
@@ -115,7 +111,3 @@ class SortableObject:
     def __str__(self):
         return self.a
 
-test_saving_objs()
-test_deleting_items()
-test_insert_sorted()
-#test_insert_sorted_but_not_sortable()

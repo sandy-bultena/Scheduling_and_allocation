@@ -1,13 +1,3 @@
-from __future__ import annotations
-from typing import Generator, Any, TYPE_CHECKING
-from . import _id_generator_code as id_gen
-
-if TYPE_CHECKING:
-    from .time_slot import TimeSlot
-    from .lab import Lab
-    from .teacher import Teacher
-    from .section import Section
-
 """ SYNOPSIS:
 
 from Schedule.Course import Course
@@ -15,7 +5,7 @@ from Schedule.Block import Block
 from Schedule.Teacher import Teacher
 from Schedule.Lab import Lab
 
-block = Block(day = "Wed", start = "9:30", duration = 1.5)
+block = Block(day = "Wed", time_start = "9:30", duration = 1.5)
 teacher = Teacher("Jane", "Doe")
 lab = Lab("P327")
 
@@ -28,7 +18,20 @@ block.remove_lab(lab)
 block.labs()
 """
 
-_block_id_generator: Generator[int, Any, None] = id_gen.get_id_generator()
+from __future__ import annotations
+
+import copy
+from typing import TYPE_CHECKING, Optional
+from . import id_generator as id_gen
+from .conflicts import ConflictType
+OptionalId = Optional[int]
+
+# stuff that we need just for type checking, not for actual functionality
+if TYPE_CHECKING:
+    from .time_slot import TimeSlot, ClockTime
+    from .lab import Lab
+    from .teacher import Teacher
+    from .section import Section
 
 
 class Block:
@@ -39,126 +42,51 @@ class Block:
     # =================================================================
     # Class Variables
     # =================================================================
+    block_ids = id_gen.IdGenerator()
 
     # =================================================================
     # Constructor
     # =================================================================
 
-    def __init__(self, section: Section, time_slot: TimeSlot, block_id=None) -> None:
+    def __init__(self, section: Section, time_slot: TimeSlot, block_id: OptionalId = None) -> None:
         """Creates a new Block object.
         """
-        self._sync: list[Block] = list()
+        self._sync: list[Block] = []
         self.section = section
         self.time_slot = time_slot
 
         self._teachers: set[Teacher] = set()
         self._labs: set[Lab] = set()
-        self._conflicted = 0
-        self.__block_id = id_gen.set_id(_block_id_generator, block_id)
-
-    # ------------------------------------------------------------------------
-    # Properties
-    # ------------------------------------------------------------------------
+        self.conflict = ConflictType.NONE
+        self._block_id = Block.block_ids.get_new_id(block_id)
 
     @property
-    def conflicted_number(self) -> int:
-        """Gets conflicted_number field."""
-        return self._conflicted
+    def id(self):
+        """block id"""
+        return self._block_id
 
-    def adjust_conflicted_number(self, new_conflict_number: int):
-        self._conflicted = self.conflicted_number | new_conflict_number
-
-    def reset_conflicted(self):
-        """Resets conflicted_number field."""
-        self._conflicted = 0
-
-    @property
-    def is_conflicted(self) -> bool:
-        """Returns true if there is a conflict with this Block, false otherwise."""
-        return self.conflicted_number != 0
-
-    @property
     def description(self) -> str:
         """Returns text string that describes this Block."""
-        text = f"{self.time_slot.day}, {self.time_slot.start} {self.time_slot.duration:.1f} hour(s)"
-        return text
+        return str(self.time_slot)
 
-    @property
-    def day_number(self) -> int:
-        """Get the day of the week."""
-        return self.time_slot.day_number
-
-    @property
-    def start_number(self) -> float:
-        """Get start time as a float"""
-        return self.time_slot.start_number
-
-    @property
-    def start(self) -> str:
-        """Get/sets start time of the Block, in 24hr clock."""
-        return self.time_slot.start
-
-    @start.setter
-    def start(self, new_start: str):
-        self.time_slot.start = new_start
-
-        # If there are synchronized blocks, we must change them too.
-        # Beware infinite loops!
-        for other in self.synced_blocks:
-            old = other.start
-            if old != self.start:
-                other.start = self.start
-
-    @property
-    def day(self) -> str:
-        """Get/set the day of the block."""
-        return self.time_slot.day
-
-    @day.setter
-    def day(self, new_day: str):
-        self.time_slot.day = new_day
-
-        # If there are synchronized blocks, change them too.
-        # Once again, beware the infinite loop!
-        for other in self.synced_blocks:
-            old = other.day
-            if old != self.day:
-                other.day = self.day
-
-    @property
-    def duration(self) -> float:
-        """Get/set the duration of the block in hours."""
-        return self.time_slot.duration
-
-    @duration.setter
-    def duration(self, new_duration: float):
-        self.time_slot.duration = new_duration
-
-        # If there are synchronized blocks, change them too.
-        # Once again, beware the infinite loop!
-        for other in self.synced_blocks:
-            old = other.duration
-            if old != self.duration:
-                other.duration = self.duration
-
-    @property
     def movable(self) -> bool:
         """Can the block be moved, yes or no"""
         return self.time_slot.movable
 
-    @duration.setter
-    def duration(self, new_movable: bool):
-        self.time_slot.movable = new_movable
+    # ------------------------------------------------------------------------
+    # Conflicts
+    # ------------------------------------------------------------------------
+    def add_conflict(self, conflict: ConflictType):
+        """add a conflict to any pre-existing conflict"""
+        self.conflict |= conflict
 
-    @property
-    def id(self) -> int:
-        """Gets the Block id."""
-        return self.__block_id
+    def clear_conflicts(self):
+        """remove any and all conflicts"""
+        self.conflict = ConflictType.NONE
 
     # ------------------------------------------------------------------------
     # All about labs
     # ------------------------------------------------------------------------
-    @property
     def labs(self) -> tuple[Lab, ...]:
         """Returns an immutable list of the labs assigned to this block."""
         return tuple(self._labs)
@@ -185,7 +113,6 @@ class Block:
     # ------------------------------------------------------------------------
     # All about Teachers
     # ------------------------------------------------------------------------
-    @property
     def teachers(self) -> tuple[Teacher, ...]:
         """Returns an immutable list of the teachers assigned to this block."""
         return tuple(self._teachers)
@@ -212,16 +139,16 @@ class Block:
     # ------------------------------------------------------------------------
     # All about syncing
     # ------------------------------------------------------------------------
-    @property
     def synced_blocks(self) -> tuple[Block, ...]:
         """Returns a tuple of the Blocks which are synced_blocks to this Block."""
         return tuple(self._sync)
 
     def sync_block(self, block: Block) -> Block:
         """The new Block object will be synced_blocks with this one
-        (i.e., changing the start time of this Block will change the start time of the
+        (i.e., changing the time_start time of this Block will change the time_start time of the
         synced_blocks block)."""
         self._sync.append(block)
+        block.time_slot = self.time_slot
         block._sync.append(self)
         return self
 
@@ -230,6 +157,7 @@ class Block:
 
         if block in self._sync:
             self._sync.remove(block)
+            block.time_slot = copy.copy(block.time_slot)
         if self in block._sync:
             block._sync.remove(self)
 
@@ -241,37 +169,35 @@ class Block:
     def __str__(self) -> str:
         """Returns a text string that describes the Block."""
         text = ""
-        text += f"{self.day} {self.start} for {self.duration} hours, in "
-        text += ", ".join(str(lab.number) for lab in self.labs)
+        text += f"{self.time_slot} "
+        text += ", ".join(str(lab.number) for lab in self.labs())
         text += f" for {self.section.title}"
 
         return text
 
     def __repr__(self) -> str:
-        return self.description
+        return self.description()
 
     # ------------------------------------------------------------------------
     # for sorting
     # ------------------------------------------------------------------------
-    def __lt__(self, other):
-        if self.day_number != other.day_number:
-            return self.day_number < other.day_number
-        return self.start_number < other.start_number
+    def __lt__(self, other: Block):
+        return self.time_slot < other.time_slot
 
 
 # =================================================================
 # footer
 # =================================================================
-'''
+__copyright__ = '''
+
 =head1 AUTHOR
 
-Sandy Bultena, Ian Clement, Jack Burns
-
-Translated to Python by Evan Laverdiere
+Sandy Bultena
 
 =head1 COPYRIGHT
 
 Copyright (c) 2016, Jack Burns, Sandy Bultena, Ian Clement. 
+Copyright (c) 2025, Sandy Bultena
 
 All Rights Reserved.
 

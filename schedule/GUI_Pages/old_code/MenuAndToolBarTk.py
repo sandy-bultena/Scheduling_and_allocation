@@ -2,7 +2,7 @@ from tkinter import *
 import re
 from os import path
 
-from schedule.UsefulClasses.MenuItem import MenuItem, MenuType, ToolbarItem
+from schedule.Tk.MenuItem import MenuItem, MenuType, ToolbarItem
 from ..Tk import FindImages
 from ..Tk.ToolBar import ToolBar
 import schedule.Tk.InitGuiFontsAndColours as fas

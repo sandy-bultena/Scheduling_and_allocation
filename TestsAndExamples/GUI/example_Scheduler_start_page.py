@@ -4,10 +4,9 @@ from os import path
 import sys
 from typing import Optional
 
-sys.path.append(path.dirname(path.dirname(__file__) + "/../../"))
 from schedule.GUI_Pages.SchedulerTk import SchedulerTk
-from schedule.UsefulClasses.Preferences import Preferences
-from schedule.UsefulClasses.NoteBookPageInfo import NoteBookPageInfo
+from schedule.Utilities.Preferences import Preferences
+from schedule.Utilities.NoteBookPageInfo import NoteBookPageInfo
 
 main_page: Optional[SchedulerTk] = None
 

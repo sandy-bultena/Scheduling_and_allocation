@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+"""
+MAIN PAGE - Gui entry point to the application(s)
+
+- Forms base class for Scheduler and Allocation applications
+"""
+
 import platform
 from functools import partial
 
@@ -14,11 +20,11 @@ from typing import Callable, Optional, Any
 from schedule.Tk import FindImages
 import schedule.Tk.InitGuiFontsAndColours as tk_fonts_and_colours
 from schedule.Tk.InitGuiFontsAndColours import TkColours
-from ..Presentation import globals
-from ..GUI_Pages.MenuAndToolBarTk import generate_menu, make_toolbar
-from ..UsefulClasses.NoteBookPageInfo import NoteBookPageInfo
-from ..UsefulClasses.MenuItem import MenuItem, ToolbarItem
-from ..UsefulClasses.Preferences import Preferences
+from ..Presentation import dirty_flags
+from schedule.Tk import generate_menu, make_toolbar
+from ..Utilities.NoteBookPageInfo import NoteBookPageInfo
+from schedule.Tk.MenuItem import MenuItem, ToolbarItem
+from ..Utilities.Preferences import Preferences
 
 Operating_system = platform.system().lower()
 
@@ -38,15 +44,23 @@ def _tab_changed(notebook: Notebook, events: dict, *_):
 class MainPageBaseTk:
     """Generic main page for Scheduler and Allocation Manager apps"""
 
+    # ===================================================================================
+    # constructor
+    # ===================================================================================
     def __init__(self, title, preferences: Preferences):
+        # public properties
         self.dark_mode = preferences.dark_mode()
         self.colours: Optional[TkColours] = None
         self.fonts: Optional[dict[tk_fonts_and_colours.available_fonts, Font]] = None
         self.exit_callback: Callable[[], None] = lambda: None
         self.dict_of_frames: dict[str, Frame] = dict()
+        self.logo: Optional[PhotoImage] = None
+
+        # default callbacks
         self._open_schedule_callback: Callable[[Any, str], None] = lambda filename, semester: None
         self._new_schedule_callback: Callable[[], None] = lambda: None
 
+        # private properties
         self._preferences = preferences
         self._standard_page_created: bool = False
         self._wait = None
@@ -57,10 +71,46 @@ class MainPageBaseTk:
         self._default_notebook_page: int = 0
         self._top_level_notebook: Optional[Notebook] = None
 
-        self._initialize_top_window(title)
-        self._dirty_flag_text: StringVar = StringVar(value="")
+        # Create the Tk main window
+        self._create_main_window(title)
+
+        # set the filename so that it can be bound later
         self._schedule_filename: StringVar = StringVar(value="")
 
+    # ===================================================================================
+    # main window
+    # ===================================================================================
+    def _create_main_window(self, title):
+        """Create the top level window, specify fonts and colors"""
+        # create main window and frames
+        self._mw = Tk()
+        self._mw.title(title)
+        self._mw.geometry(f"{WELCOME_HEIGHT}x{WELCOME_WIDTH}")
+
+        # when clicking the 'x' in the corner of the window, call _exit_schedule
+        self._mw.protocol("WM_DELETE_WINDOW", self._exit_schedule)
+
+        # colors and fonts
+        tk_fonts_and_colours.set_default_fonts_and_colours(self._mw, invert=self.dark_mode)
+        self.colours = tk_fonts_and_colours.colours
+        self.fonts = tk_fonts_and_colours.fonts
+
+        # bind the change to the global dirty flag
+        self._dirty_flag_text: StringVar = StringVar(value="")
+        dirty_flags.dirty_flag_changed_cb = lambda: self._dirty_flag_text.set(
+            "NOT SAVED" if dirty_flags.is_data_dirty() else "")
+
+    def start_event_loop(self):
+        """time_start the Tk event main event loop"""
+        self._mw.mainloop()
+
+    def define_exit_callback(self, exit_cmd=lambda *_: {}):
+        """If defined, exit callback will be executed just prior to the call to 'exit'"""
+        self.exit_callback = exit_cmd
+
+    # ===================================================================================
+    # properties
+    # ===================================================================================
     @property
     def schedule_filename(self):
         return self._schedule_filename.get()
@@ -69,6 +119,9 @@ class MainPageBaseTk:
     def schedule_filename(self, value: str):
         self._schedule_filename.set(value)
 
+    # ===================================================================================
+    # menu and toolbars
+    # ===================================================================================
     def create_menu_and_toolbars(self, buttons: list[str], toolbar_info: dict[str:ToolbarItem],
                                  menu_details: list[MenuItem]):
 
@@ -82,6 +135,9 @@ class MainPageBaseTk:
         self._toolbar = make_toolbar(self._mw, buttons, toolbar_info)
         self._toolbar.pack(side='top', expand=0, fill='x')
 
+    # ===================================================================================
+    # status bar
+    # ===================================================================================
     def create_status_bar(self):
         """Create a status bar for current filename and dirty flag"""
         mw = self._mw
@@ -96,6 +152,9 @@ class MainPageBaseTk:
         Label(status_frame, textvariable=self._dirty_flag_text, borderwidth=1, relief='ridge', width=15,
               foreground=self.colours.DirtyColour).pack(side='right', fill='x')
 
+    # ===================================================================================
+    # front page
+    # ===================================================================================
     def create_front_page_base(self, logo: PhotoImage | None = None):
         """Creates the very first page that is shown to the user"""
         mw = self._mw
@@ -126,7 +185,10 @@ class MainPageBaseTk:
 
         return center_frame
 
-    def create_standard_page(self, notebook_pages_info: list[NoteBookPageInfo] | None = None):
+    # ===================================================================================
+    # standard page
+    # ===================================================================================
+    def create_standard_page(self, notebook_pages_info: Optional[list[NoteBookPageInfo] ] = None):
         """Create the 'normal' page after the main page has fulfilled its purpose"""
 
         # if the page is already created, do not recreate it
@@ -148,39 +210,15 @@ class MainPageBaseTk:
         self._notebook_pages_info = notebook_pages_info
 
         # Add notebooks if required
-        if self._notebook_pages_info:
+        if self._notebook_pages_info is not None:
             notebook = Notebook(main_page_frame)
             notebook.pack(expand=1, fill='both')
             self._top_level_notebook = notebook
             self.dict_of_frames = self._create_notebook_pages(notebook, self._notebook_pages_info)
 
-    def start_event_loop(self):
-        """start the Tk event main event loop"""
-        self._mw.mainloop()
-
-    def define_exit_callback(self, exit_cmd=lambda *_: {}):
-        """If defined, exit callback will be executed just prior to the call to 'exit'"""
-        self.exit_callback = exit_cmd
-
-    def _initialize_top_window(self, title):
-        """Create the top level window, specify fonts and colors"""
-        # create main window and frames
-        self._mw = Tk()
-        self._mw.title(title)
-        self._mw.geometry(f"{WELCOME_HEIGHT}x{WELCOME_WIDTH}")
-
-        # when clicking the 'x' in the corner of the window, call _exit_schedule
-        self._mw.protocol("WM_DELETE_WINDOW", self._exit_schedule)
-
-        # colors and fonts
-        tk_fonts_and_colours.set_default_fonts_and_colours(self._mw, dark_mode=self.dark_mode)
-        self.colours = tk_fonts_and_colours.colours
-        self.fonts = tk_fonts_and_colours.fonts
-
-        # bind the change to the global dirty flag
-        globals.dirty_flag_changed_cb = lambda: self._dirty_flag_text.set(
-            "NOT SAVED" if globals.is_data_dirty() else "")
-
+    # ===================================================================================
+    # create notebook pages
+    # ===================================================================================
     def _create_notebook_pages(self, notebook: Notebook, pages_info: list[NoteBookPageInfo],
                                ) -> dict[str, Frame]:
         """
@@ -226,6 +264,9 @@ class MainPageBaseTk:
     #     else:
     #         self.create_standard_page()
 
+    # ===================================================================================
+    # waiting routines
+    # ===================================================================================
     def wait_for_it(self, title, msg):
         self.stop_waiting()
 
@@ -248,7 +289,6 @@ class MainPageBaseTk:
     # ========================================================================
     # choose existing file to read
     # ========================================================================
-
     def select_file(self):
         current_dir = self._preferences.current_dir()
         filetypes = (

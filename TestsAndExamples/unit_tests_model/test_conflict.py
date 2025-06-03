@@ -1,6 +1,6 @@
 import pytest
 
-from schedule.Model import _conflict_calculations as cc
+from schedule.Model import conflicts as cc
 from schedule.Model import Block
 from schedule.Model import TimeSlot
 from schedule.Model import ResourceType, ConflictType

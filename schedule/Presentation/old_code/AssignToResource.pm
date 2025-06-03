@@ -187,7 +187,7 @@ sub _open_dialog {
 
             #if it is, assign all the properties to the block and return
             $Block->day($Day);
-            $Block->start( _hours_to_string($Start) );
+            $Block->time_start( _hours_to_string($Start) );
             $Block->duration($Duration);
             $Block->assign_lab($Lab)         if $Lab;
             $Block->assign_teacher($Teacher) if $Teacher;
@@ -355,7 +355,7 @@ sub _cb_add_new_block {
     $Block = Block->new( -number => $Section->get_new_number );
     $Section->add_block($Block);
     $Block->day($Day);
-    $Block->start( _hours_to_string($Start) );
+    $Block->time_start( _hours_to_string($Start) );
     $Block->duration($Duration);
 
     my @blocks = $Section->blocks;

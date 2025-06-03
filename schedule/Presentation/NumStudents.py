@@ -1,7 +1,7 @@
 # COMPLETED
 from __future__ import annotations
 import schedule.GUI_Pages.NumStudentsTk as gui_form
-from . import globals
+from . import dirty_flags
 import schedule.Model as Schedule
 import schedule.Model.course as Course
 import schedule.Model.section as Section
@@ -14,11 +14,11 @@ def validate_factory(section):
     def validate(entry_input: str):
         if entry_input.isdigit():
             section.num_students = int(entry_input)
-            globals.set_dirty_flag()
+            dirty_flags.set_dirty_flag()
             return True
         if entry_input == "":
             section.num_students = 0
-            globals.set_dirty_flag()
+            dirty_flags.set_dirty_flag()
             return True
         return False
 
