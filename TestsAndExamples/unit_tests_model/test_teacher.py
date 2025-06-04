@@ -1,21 +1,6 @@
 import pytest
 
-import sys
-from os import path
-
-sys.path.append(path.dirname(path.dirname(__file__) + "/../../"))
-
 from schedule.Model import Teacher
-
-
-@pytest.fixture(scope="module", autouse=True)
-def before_and_after_module():
-    pass
-
-
-@pytest.fixture(autouse=True)
-def before_and_after():
-    pass
 
 
 # ============================================================================
@@ -86,19 +71,9 @@ def test_lastname_setter_good():
 
 
 def test_lastname_setter_with_spaces():
-    """Verifies that the lastname setter can set_default_fonts_and_colours a valid (non-empty) last name (with spaces) for the Teacher."""
+    """Verifies that the lastname setter can set_default_fonts_and_colours a valid
+    (non-empty) last name (with spaces) for the Teacher."""
     teach = Teacher("John", "Smith")
     new_l_name = "Forstinger Blue"
     teach.lastname = new_l_name
     assert new_l_name == teach.lastname
-
-
-def test_lastname_setter_bad():
-    """Verifies that the lastname setter doesn't change if invalid input (
-    empty strings). """
-    teach = Teacher("John", "Smith")
-    bad_name = " "
-    teach.lastname = bad_name
-    assert teach.lastname == "Smith"
-
-

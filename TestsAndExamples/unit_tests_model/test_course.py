@@ -23,40 +23,11 @@ class Stream:
 
 
 class Teacher:
+    def __init__(self):
+        self.firstname = ""
+        self.lastname = ""
     def __lt__(self, other: Teacher):
         return True
-
-
-@pytest.fixture(scope="module", autouse=True)
-def before_and_after_module():
-    pass
-
-
-@pytest.fixture(autouse=True)
-def before_and_after():
-    pass
-
-
-def test_id():
-    """Verifies that the id property works as intended."""
-    course = Course()
-    old_id = course.id
-    course = Course()
-    assert course.id == old_id + 1
-
-
-def test_id_with_id_given():
-    """Verifies that the id property works as intended."""
-
-    existing_id = 12
-    course1 = Course(course_id=existing_id)
-    assert course1.id == existing_id
-    course2 = Course()
-    assert course2.id == existing_id + 1
-    course3 = Course(course_id=existing_id - 5)
-    assert course3.id == existing_id - 5
-    course4 = Course()
-    assert course4.id == course2.id + 1
 
 
 def test_full_constructor():
@@ -89,6 +60,7 @@ def test_name_setter():
 def test_number_getter():
     """Verifies that the number getter works as intended."""
     course = Course("420-101")
+    x=course.number
     assert course.number == '420-101'
 
 
@@ -96,7 +68,7 @@ def test_add_section_returns_section():
     """Verifies that add_section returns a section"""
     course_2 = Course("420-101")
     section = course_2.add_section(section_id=1)
-    assert len(course_2.sections) == 1
+    assert len(course_2.sections()) == 1
     assert section.course == course_2
 
 
@@ -105,7 +77,7 @@ def test_add_section_good():
     added to the Section itself. """
     course_2 = Course("420-101")
     section = course_2.add_section(section_id=1)
-    assert len(course_2.sections) == 1
+    assert len(course_2.sections()) == 1
     assert section.course == course_2
 
 
@@ -181,8 +153,8 @@ def test_remove_section_good():
     section1 = course.add_section("a")
     section2 = course.add_section("b")
     course.remove_section(section2)
-    assert len(course.sections) == 1
-    assert course.sections[0].id == section1.id
+    assert len(course.sections()) == 1
+    assert course.sections()[0].id == section1.id
 
 
 def test_sections():
@@ -190,7 +162,7 @@ def test_sections():
     course = Course("abc")
     section1 = course.add_section("420", section_id=1)
     section2 = course.add_section("555", section_id=2)
-    sections = course.sections
+    sections = course.sections()
     assert len(sections) == 2
     assert section1 is not None and section1 in sections
     assert section2 is not None and section2 in sections
@@ -202,7 +174,7 @@ def test_number_of_sections():
     course = Course("abc")
     course.add_section("420", section_id=1)
     course.add_section("555", section_id=2)
-    assert course.number_of_sections == len(course.sections)
+    assert course.number_of_sections() == len(course.sections())
 
 
 def test_sections_for_teacher():
@@ -257,7 +229,7 @@ def test_blocks_good():
     section = course.add_section("420")
     block1 = section.add_block(TimeSlot())
     block2 = section.add_block(TimeSlot())
-    blocks = course.blocks
+    blocks = course.blocks()
     assert len(blocks) == 2 and block1 in blocks and block2 in blocks
 
 
@@ -267,7 +239,7 @@ def test_blocks_bad():
     course = Course("abc")
     course.add_section("420", section_id=1)
     blocks = course.blocks
-    assert len(blocks) == 0
+    assert len(blocks()) == 0
 
 
 def test_str_representation_full():
@@ -290,7 +262,7 @@ def test_streams():
     stream = Stream()
     section.add_stream(stream)
     streams = course.streams
-    assert len(streams) == 1 and stream in streams
+    assert len(streams()) == 1 and stream in streams()
 
 
 def test_streams_empty():
@@ -299,7 +271,7 @@ def test_streams_empty():
     course = Course("abc", "Course 1")
     course.add_section("420", 1.5, "Section 1")
     streams = course.streams
-    assert len(streams) == 0
+    assert len(streams()) == 0
 
 
 def test_has_stream():
@@ -337,9 +309,9 @@ def test_assign_teacher_good():
     teacher = Teacher()
     course.add_teacher(teacher)
     teachers = section1.teachers
-    assert len(teachers) == 1 and teacher in teachers
+    assert len(teachers()) == 1 and teacher in teachers()
     teachers = section2.teachers
-    assert len(teachers) == 1 and teacher in teachers
+    assert len(teachers()) == 1 and teacher in teachers()
 
 
 def test_assign_lab_good():
@@ -352,8 +324,8 @@ def test_assign_lab_good():
     section2.add_block(TimeSlot())
     lab = Lab()
     course.add_lab(lab)
-    assert lab in section.labs
-    assert lab in section2.labs
+    assert lab in section.labs()
+    assert lab in section2.labs()
 
 
 def test_assign_stream_good():
@@ -365,8 +337,8 @@ def test_assign_stream_good():
 
     stream = Stream()
     course.add_stream(stream)
-    assert len(section.streams) == 1 and stream in section.streams
-    assert len(section2.streams) == 1 and stream in section2.streams
+    assert len(section.streams()) == 1 and stream in section.streams()
+    assert len(section2.streams()) == 1 and stream in section2.streams()
 
 
 def test_remove_teacher_good():
@@ -380,7 +352,7 @@ def test_remove_teacher_good():
     course.add_teacher(teacher_1)
     course.add_teacher(teacher_2)
     course.remove_teacher(teacher_1)
-    assert len(course.teachers) == 1 and teacher_1 not in course.teachers
+    assert len(course.teachers()) == 1 and teacher_1 not in course.teachers()
 
 
 def test_remove_all_teachers():
@@ -395,12 +367,12 @@ def test_remove_all_teachers():
     course.add_teacher(teacher_1)
     course.add_teacher(teacher_2)
     course.add_teacher(teacher_3)
-    assert len(section1.teachers) == 3
-    assert len(course.teachers) == 3
+    assert len(section1.teachers()) == 3
+    assert len(course.teachers()) == 3
     course.remove_all_teachers()
-    assert len(course.teachers) == 0
-    assert len(section1.teachers) == 0
-    assert len(section2.teachers) == 0
+    assert len(course.teachers()) == 0
+    assert len(section1.teachers()) == 0
+    assert len(section2.teachers()) == 0
 
 
 def test_remove_stream_good():
@@ -414,7 +386,7 @@ def test_remove_stream_good():
     course.add_stream(stream_1)
     course.add_stream(stream_2)
     course.remove_stream(stream_1)
-    assert len(course.streams) == 1 and stream_1 not in course.streams and stream_2 in course.streams
+    assert len(course.streams()) == 1 and stream_1 not in course.streams() and stream_2 in course.streams()
 
 
 def test_remove_all_streams():
@@ -426,4 +398,4 @@ def test_remove_all_streams():
     course.add_stream(stream_1)
     course.add_stream(stream_2)
     course.remove_all_streams()
-    assert len(course.streams) == 0
+    assert len(course.streams()) == 0

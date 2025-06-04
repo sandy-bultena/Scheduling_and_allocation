@@ -3,7 +3,6 @@ from __future__ import annotations
 from enum import Enum
 from typing import TYPE_CHECKING
 
-
 ''' Not all the classes are enums, but this file contains data that is needed throughout the
 program'''
 
@@ -42,6 +41,17 @@ class WeekDay(Enum):
 
     def __lt__(self, other):
         return self.value < other.value
+
+    @staticmethod
+    def get_from_string(value) -> WeekDay:
+        value = value[0:3].lower()
+        return {"mon": WeekDay.Monday,
+                "tue": WeekDay.Tuesday,
+                "wed": WeekDay.Wednesday,
+                "thu": WeekDay.Thursday,
+                "fri": WeekDay.Friday,
+                "sat": WeekDay.Saturday,
+                "sun": WeekDay.Sunday}.get(value, None)
 
 
 class SemesterType(ExtendedEnum):

@@ -1,8 +1,6 @@
 from __future__ import annotations
 from typing import Generator
-from . import _id_generator_code as id_gen
 from .enums import ResourceType
-
 
 """ SYNOPSIS/EXAMPLE:
     from Schedule.Stream import Stream
@@ -11,8 +9,6 @@ from .enums import ResourceType
     
     all_labs = Stream.list()
 """
-
-_stream_id_generator: Generator[int, int, None] = id_gen.get_id_generator()
 
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -24,25 +20,22 @@ class Stream:
     # ========================================================
     # CONSTRUCTOR
     # ========================================================
-    def __init__(self, number: str = "A", description: str = "", *, stream_id: int = None):
+    def __init__(self, number: str = "A", description: str = ""):
         """
         Creates an instance of the Stream class.
         - Parameter number -> defines the stream number.
         - Parameter desc -> defines the stream title.
         """
-        self.number = number
+        self._number = number
         self.description = description
         self.resource_type = ResourceType.stream
 
-        self.__id = id_gen.set_id(_stream_id_generator, stream_id)
-
     # --------------------------------------------------------
-    # id
+    # unique identifier
     # --------------------------------------------------------
     @property
-    def id(self) -> int:
-        """ Gets the id of the Stream. """
-        return self.__id
+    def number(self) -> str:
+        return self._number
 
     # --------------------------------------------------------
     # conversion to string
@@ -59,3 +52,9 @@ class Stream:
     # ------------------------------------------------------------------------
     def __lt__(self, other):
         return self.number < other.number
+
+    def __eq__(self, other):
+        return self.number == other.number
+
+    def __hash__(self):
+        return hash(self.number)

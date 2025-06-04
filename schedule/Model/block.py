@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import copy
 from typing import TYPE_CHECKING, Optional
-from . import id_generator as id_gen
+from .id_generator import IdGenerator
 from .conflicts import ConflictType
 OptionalId = Optional[int]
 
@@ -42,7 +42,7 @@ class Block:
     # =================================================================
     # Class Variables
     # =================================================================
-    block_ids = id_gen.IdGenerator()
+    block_ids = IdGenerator()
 
     # =================================================================
     # Constructor
@@ -91,20 +91,17 @@ class Block:
         """Returns an immutable list of the labs assigned to this block."""
         return tuple(self._labs)
 
-    def add_lab(self, lab: Lab) -> Block:
+    def add_lab(self, lab: Lab):
         """Assign a new lab, to this block"""
         self._labs.add(lab)
-        return self
 
-    def remove_lab(self, lab: Lab) -> Block:
+    def remove_lab(self, lab: Lab):
         """Removes the specified Lab from this Block."""
         self._labs.discard(lab)
-        return self
 
-    def remove_all_labs(self) -> Block:
+    def remove_all_labs(self):
         """Removes ALL Labs from this Block."""
         self._labs.clear()
-        return self
 
     def has_lab(self, lab: Lab) -> bool:
         """Returns true if the Block has the specified Lab."""
@@ -117,20 +114,17 @@ class Block:
         """Returns an immutable list of the teachers assigned to this block."""
         return tuple(self._teachers)
 
-    def add_teacher(self, teacher: Teacher) -> Block:
+    def add_teacher(self, teacher: Teacher):
         """Assign a new teacher, to this block"""
         self._teachers.add(teacher)
-        return self
 
-    def remove_teacher(self, teacher: Teacher) -> Block:
+    def remove_teacher(self, teacher: Teacher):
         """Removes the specified teacher from this Block."""
         self._teachers.discard(teacher)
-        return self
 
-    def remove_all_teachers(self) -> Block:
+    def remove_all_teachers(self):
         """Removes ALL Teachers from this Block."""
         self._teachers.clear()
-        return self
 
     def has_teacher(self, teacher: Teacher) -> bool:
         """Returns true if the Block has the specified Lab."""
@@ -143,25 +137,24 @@ class Block:
         """Returns a tuple of the Blocks which are synced_blocks to this Block."""
         return tuple(self._sync)
 
-    def sync_block(self, block: Block) -> Block:
+    def sync_block(self, block: Block):
         """The new Block object will be synced_blocks with this one
         (i.e., changing the time_start time of this Block will change the time_start time of the
         synced_blocks block)."""
         self._sync.append(block)
         block.time_slot = self.time_slot
-        block._sync.append(self)
-        return self
+        for b in self._sync:
+            b._sync.append(self)
 
-    def unsync_block(self, block: Block) -> Block:
+    def unsync_block(self, block: Block):
         """Removes syncing of Block from this Block."""
 
+        for b in self._sync:
+            if self in b._sync:
+                b._sync.remove(self)
         if block in self._sync:
             self._sync.remove(block)
             block.time_slot = copy.copy(block.time_slot)
-        if self in block._sync:
-            block._sync.remove(self)
-
-        return self
 
     # ------------------------------------------------------------------------
     # string representation of object
@@ -176,13 +169,16 @@ class Block:
         return text
 
     def __repr__(self) -> str:
-        return self.description()
+        return f"{self.id} - {self.description()}"
 
-    # ------------------------------------------------------------------------
-    # for sorting
-    # ------------------------------------------------------------------------
-    def __lt__(self, other: Block):
+    def __lt__(self,other):
         return self.time_slot < other.time_slot
+
+    def __eq__(self, other):
+        return self.id == other.id
+
+    def __hash__(self):
+        return hash(self._block_id)
 
 
 # =================================================================

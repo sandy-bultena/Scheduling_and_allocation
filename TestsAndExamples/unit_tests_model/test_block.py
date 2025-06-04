@@ -48,8 +48,9 @@ class TimeSlot:  # for testing
     def __str__(self):
         return f"{self.day} {self.time_start} {self.duration}"
 
-    def __eq__(self,other):
+    def __eq__(self, other):
         return self.day == other.day and self.time_start == other.time_start and self.duration == other.duration
+
 
 dummy_Section = TestContainer()
 
@@ -74,6 +75,27 @@ def test_generic():
     assert block1.section is dummy_Section
     assert block1.time_slot is time_slot
     assert not block1.conflict.is_conflicted()
+
+
+def test_hashable():
+    day = "mon"
+    start1 = "8:00"
+    start2 = "12:00"
+    dur = 2
+    time_slot1 = TimeSlot(day, start1, dur, True)
+    block1 = Block(dummy_Section, time_slot1)
+    block2 = Block(dummy_Section, time_slot1)
+    s = {block1, block2}
+    assert len(s) == 2
+
+
+# def test_sortable():
+#     slot1 = TimeSlot(WeekDay.Tuesday, start=ClockTime("13:15"), duration=1.5)
+#     slot2 = TimeSlot(WeekDay.Monday, start=ClockTime("13:15"), duration=1.5)
+#     s = [slot1, slot2]
+#     s.sort()
+#     assert s[0] == slot2
+#     assert s[1] == slot1
 
 
 def test_sync_day():
@@ -486,7 +508,6 @@ def test_start_setter_synced_2_blocks_check_block2_moves_block1():
     assert block2.time_slot == block2.time_slot
     block1.time_slot.day = 'tue'
     assert block2.time_slot == block2.time_slot
-
 
 
 def test_start_setter_synced_4_blocks():

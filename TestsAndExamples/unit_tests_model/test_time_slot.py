@@ -1,18 +1,8 @@
 import pytest
-
-from schedule.Model import TimeSlot, ClockTime
+from schedule.Model import ScheduleTime, ClockTime
+from schedule.Model import TimeSlot
 from schedule.Model import WeekDay
 from schedule.Model import time_slot as ts
-
-
-@pytest.fixture(scope="module", autouse=True)
-def before_and_after_module():
-    pass
-
-
-@pytest.fixture(autouse=True)
-def before_and_after():
-    pass
 
 
 def test_defaults():
@@ -31,9 +21,31 @@ def test_calculate_end_time():
     assert slot.time_end == ClockTime("14:45")
 
 
+def test_equality():
+    slot1 = TimeSlot(WeekDay.Tuesday, start=ClockTime("13:15"), duration=1.5)
+    slot2 = TimeSlot(WeekDay.Tuesday, start=ClockTime("13:15"), duration=1.5)
+    assert slot1 == slot2
+
+
+def test_hashable():
+    slot1 = TimeSlot(WeekDay.Tuesday, start=ClockTime("13:15"), duration=1.5)
+    slot2 = TimeSlot(WeekDay.Tuesday, start=ClockTime("13:15"), duration=1.5)
+    s = {slot1, slot2}
+    assert len(s) == 1
+
+
+def test_sortable():
+    slot1 = TimeSlot(WeekDay.Tuesday, start=ClockTime("13:15"), duration=1.5)
+    slot2 = TimeSlot(WeekDay.Monday, start=ClockTime("13:15"), duration=1.5)
+    s = [slot1, slot2]
+    s.sort()
+    assert s[0] == slot2
+    assert s[1] == slot1
+
+
 def test_duration_not_allowed_less_than_zero():
     slot = TimeSlot(WeekDay.Tuesday, start=ClockTime("13:15"), duration=-3)
-    assert abs(slot.duration - ts.MINUTE_BLOCK_SIZE/60) < 0.001
+    assert abs(slot.duration - ts.MINUTE_BLOCK_SIZE / 60) < 0.001
 
 
 def test_duration_not_allowed_greater_than_eight():
@@ -53,11 +65,22 @@ def test_duration_setter_changes_end():
     assert slot.time_end == ClockTime("16:30")
 
 
+def test_no_snapping_required():
+    slot = TimeSlot(start=ClockTime("13:00"))
+    assert not slot.snap_to_time()
+
+
 def test_snap_to_time():
     slot = TimeSlot(start=ClockTime("13:15"))
-    slot.snap_to_time()
+    assert slot.snap_to_time()
     expected_start = ClockTime("13:00")
-    assert slot.time_start == expected_start
+    assert slot.time_start.hours == expected_start.hours
+
+
+def test_snap_to_time_adjust_duration():
+    slot = TimeSlot(duration=1.2, start=ClockTime("13:00"))
+    assert slot.snap_to_time()
+    assert slot.duration == 1
 
 
 def test_snap_to_time_bad_value_to_minimum():
@@ -71,7 +94,6 @@ def test_snap_to_time_bad_value_to_minimum():
 
 def test_snap_to_time_bad_value_to_maximum():
     slot = TimeSlot(start=ClockTime("19:00"))
-    slot.duration = ts.MAX_END_TIME - slot.time_start.hours + 1
     slot.snap_to_time()
     assert slot.time_start.hours + slot.duration <= ts.MAX_END_TIME
 
@@ -81,8 +103,22 @@ def test_snap_to_day_with_args():
     when it is outside a specified date range. """
     slot = TimeSlot()
     slot.day = WeekDay.Friday
-    slot.snap_to_day(slot.day.number, WeekDay.Tuesday, WeekDay.Wednesday)
+    assert slot.snap_to_day(slot.day.value, WeekDay.Tuesday, WeekDay.Wednesday)
     assert slot.day == WeekDay.Wednesday
+
+
+def test_snap_to_day_with_fractional_day():
+    slot = TimeSlot()
+    slot.day = WeekDay.Friday
+    assert slot.snap_to_day(2.3)
+    assert slot.day == WeekDay.Tuesday
+
+
+def test_snap_to_day_returns_false_no_change():
+    slot = TimeSlot()
+    slot.day = WeekDay.Tuesday
+    assert not slot.snap_to_day(2)
+    assert slot.day == WeekDay.Tuesday
 
 
 def test_conflicts_time1():

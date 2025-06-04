@@ -307,7 +307,7 @@ def _schedule_file_changed(file):
         write_ini()
 
     gui.update_for_new_schedule_and_show_page(
-        pages_lookup['Schedules'].id
+        pages_lookup['Schedules'].number
     )
 
 

@@ -73,7 +73,7 @@ class AssignToResource:
         Duration = duration
 
         global Type
-        Type = sched.get_view_type_of_object
+        Type = sched.get_resource_type
         if Type == ResourceType.Lab:
             global lab
             lab = schedulable
@@ -133,19 +133,19 @@ class AssignToResource:
         lab_names = {}
         sched = AssignToResource.schedule
         for l in sched.labs():
-            lab_names[l.id] = str(l)
+            lab_names[l.number] = str(l)
         gui.set_lab_choices(lab_names)
 
         # teacher_ids
         teacher_names = {}
         for t in sched._teachers():
-            teacher_names[t.id] = str(t)
+            teacher_names[t.number] = str(t)
         gui.set_teacher_choices(teacher_names)
 
         # courses
         course_names = {}
         for course in sched._courses():
-            course_names[course.id] = course.title
+            course_names[course.number] = course.title
         gui.set_course_choices(course_names)
 
         # ------------------------------------
@@ -193,7 +193,7 @@ class AssignToResource:
 
         # What sections are available for this course?
         sections = course.sections()
-        sections_dict = dict([(i.id, str(i)) for i in sections])
+        sections_dict = dict([(i.number, str(i)) for i in sections])
         gui.set_section_choices(sections_dict)
 
     # ----------------------------------------------------------------------------
@@ -211,7 +211,7 @@ class AssignToResource:
 
         # what blocks are available for this course/section?
         blocks = section.blocks
-        blocks_dict = dict([(b.id, str(b)) for b in blocks])
+        blocks_dict = dict([(b.number, str(b)) for b in blocks])
         gui.set_block_choices(blocks_dict)
 
         # Set the default teacher for this course/section if this AssignToResource resource_type is
@@ -277,7 +277,7 @@ class AssignToResource:
             # If not, set_default_fonts_and_colours the section to the first instance of the section with the section name.
             if answer.lower() == 'no':
                 section = sections_arr[0]
-                AssignToResource._cb_section_selected(section.id)
+                AssignToResource._cb_section_selected(section.number)
                 gui.set_section(str(section))
                 return
 
@@ -285,7 +285,7 @@ class AssignToResource:
         # create new section
         # --------------------------------------------------------------------
         section = Section(number=str(course.get_new_number(1)), hours=0.5, name=name, course=course,
-                          schedule_id=AssignToResource.schedule.id)
+                          schedule_id=AssignToResource.schedule.number)
         course.add_section(section)
 
         # --------------------------------------------------------------------
@@ -296,12 +296,12 @@ class AssignToResource:
         sections_dict = {}
         sections_arr = course.sections()
         for i in sections_arr:
-            sections_dict[i.id] = str(i)
+            sections_dict[i.number] = str(i)
 
         gui.set_section_choices(sections_dict)
 
         gui.set_section(str(section))
-        AssignToResource._cb_section_selected(section.id)
+        AssignToResource._cb_section_selected(section.number)
 
     # ----------------------------------------------------------------------------
     # add_new_block
@@ -323,7 +323,7 @@ class AssignToResource:
         blocks_arr = section.blocks
         blocks_dict = {}
         for i in blocks_arr:
-            blocks_dict[i.id] = i.description
+            blocks_dict[i.number] = i.description
         global gui
         gui.set_block_choices(blocks_dict)
         # TODO: Verify whether the called function can accept actual blocks or just strings.
@@ -359,7 +359,7 @@ class AssignToResource:
 
         lab_names = {}
         for l in AssignToResource.schedule.labs():
-            lab_names[l.id] = str(l)
+            lab_names[l.number] = str(l)
         gui.set_lab_choices(lab_names)
         gui.set_lab(str(lab))
 
@@ -392,7 +392,7 @@ class AssignToResource:
 
         teacher_names = {}
         for teach in AssignToResource.schedule._teachers():
-            teacher_names[teach.id] = str(teach)
+            teacher_names[teach.number] = str(teach)
 
         gui.set_teacher_choices(teacher_names)
         gui.set_teacher(str(teacher))

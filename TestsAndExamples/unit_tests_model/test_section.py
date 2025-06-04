@@ -4,10 +4,9 @@ import pytest
 
 from schedule.Model.section import Section
 import schedule.Model.section as sections_module
-from schedule.Model import Block
-from schedule.Model import TimeSlot
+from schedule.Model import Block, WeekDay, ClockTime
+from schedule.Model import TimeSlot, ConflictType
 from schedule.Model import InvalidHoursForSectionError
-import schedule.Model._id_generator_code as id_gen
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -58,7 +57,6 @@ def test_id():
 
 def test_id_with_id_given():
     """Verifies that the id property works as intended."""
-    sections_module._section_id_generator = id_gen.get_id_generator()
 
     existing_id = 12
     section1 = Section(course, section_id=existing_id)
@@ -100,7 +98,7 @@ def test_set_hours_valid():
 
 
 def test_set_hours_invalid():
-    """Checks that invalid hours can't be set_default_fonts_and_colours"""
+    """Checks that invalid hours can't be set"""
     s = Section(course)
     hours = -10
     with pytest.raises(InvalidHoursForSectionError) as e:
@@ -114,9 +112,9 @@ def test_hours_are_block_hours():
     s = Section(course)
     hours = 22
     s.hours = hours
-    block1 = s.add_block(TimeSlot("mon", "9:30", 3))
-    block2 = s.add_block(TimeSlot("mon", "10:30", 3.5))
-    assert s.hours == (block1.duration + block2.duration)
+    block1 = s.add_block(TimeSlot(WeekDay.Monday, ClockTime("9:30"), 3))
+    block2 = s.add_block(TimeSlot(WeekDay.Monday, ClockTime("10:30"), 3.5))
+    assert s.hours == (block1.time_slot.duration + block2.time_slot.duration)
 
 
 def test_cannot_override_block_hours():
@@ -124,10 +122,10 @@ def test_cannot_override_block_hours():
     s = Section(course)
     hours = 22
     s.hours = hours
-    block1 = s.add_block(TimeSlot("mon", "9:30", 3))
-    block2 = s.add_block(TimeSlot("mon", "10:30", 3.5))
+    block1 = s.add_block(TimeSlot(WeekDay.Monday, ClockTime("9:30"), 3))
+    block2 = s.add_block(TimeSlot(WeekDay.Monday, ClockTime("10:30"), 3.5))
     s.hours = hours
-    assert s.hours == (block1.duration + block2.duration)
+    assert s.hours == (block1.time_slot.duration + block2.time_slot.duration)
 
 
 def test_get_title():
@@ -159,17 +157,17 @@ def test_hours_can_be_added():
 def test_added_hours_ignored_if_blocks():
     """Checks that added hours will be ignored if blocks are set_default_fonts_and_colours"""
     s = Section(course)
-    block1 = s.add_block(TimeSlot("mon", "9:30", 3))
-    block2 = s.add_block(TimeSlot("mon", "10:30", 3.5))
+    block1 = s.add_block(TimeSlot(WeekDay.Monday, ClockTime("9:30"), 3))
+    block2 = s.add_block(TimeSlot(WeekDay.Monday, ClockTime("10:30"), 3.5))
     s.add_hours(20)
-    assert s.hours == (block1.duration + block2.duration)
+    assert s.hours == (block1.time_slot.duration + block2.time_slot.duration)
 
 
 def test_is_conflicted_detects_conflicts_correctly():
     """Checks that the is_conflicted method correctly picks up conflicted_number blocks"""
     s = Section(course)
-    block1 = s.add_block(TimeSlot("mon", "10:30", 3))
-    block1.adjust_conflicted_number(1)
+    block1 = s.add_block(TimeSlot(WeekDay.Monday, ClockTime("10:30"), 3))
+    block1.add_conflict(ConflictType.LUNCH)
     assert s.is_conflicted()
 
 
@@ -206,8 +204,8 @@ def test_string_representation_with_no_name():
 def test_add_block_valid():
     """Checks that a valid blocks can be added"""
     s = Section(course)
-    b = s.add_block(TimeSlot('Mon', '13:00', 2))
-    assert b in s.blocks
+    b = s.add_block(TimeSlot(WeekDay.Monday, ClockTime('13:00'), 2))
+    assert b in s.blocks()
 
 
 def test_get_block_by_id_valid():
@@ -231,8 +229,8 @@ def test_remove_block_valid():
     b1 = s.add_block(TimeSlot('Mon', '13:00', 2))
     b2 = s.add_block(TimeSlot('Mon', '13:00', 2))
     s.remove_block(b1)
-    assert b1 not in s.blocks
-    assert b2 in s.blocks
+    assert b1 not in s.blocks()
+    assert b2 in s.blocks()
 
 
 # endregion
@@ -242,29 +240,29 @@ def test_remove_block_valid():
 def test_assign_lab_valid():
     """Checks that a valid lab can be added, if there is a block"""
     s = Section(course)
-    s.add_block(TimeSlot('Mon', '13:00', 2))
+    s.add_block(TimeSlot(WeekDay.Monday, ClockTime('13:00'), 2))
     lab = Lab()
     s.add_lab(lab)
-    assert lab in s.labs
+    assert lab in s.labs()
 
 
 def test_remove_lab_valid():
     """Checks that when passed a valid lab, it will be removed & deleted"""
     s = Section(course)
-    s.add_block(TimeSlot('Mon', '13:00', 2))
+    s.add_block(TimeSlot(WeekDay.Monday, ClockTime('13:00'), 2))
     lab = Lab()
     s.add_lab(lab)
     s.remove_lab(lab)
-    assert lab not in s.labs
+    assert lab not in s.labs()
 
 
 def test_remove_lab_not_there():
     """Checks that when passed not-included lab, it will still be 'removed' """
     s = Section(course)
-    s.add_block(TimeSlot('Mon', '13:00', 2))
+    s.add_block(TimeSlot(WeekDay.Monday, ClockTime('13:00'), 2))
     lab = Lab()
     s.remove_lab(lab)
-    assert lab not in s.labs
+    assert lab not in s.labs()
 
 
 # endregion
@@ -277,7 +275,7 @@ def test_assign_teacher_valid():
     s.hours = 15
     t = Teacher()
     s.add_teacher(t)
-    assert t in s.teachers
+    assert t in s.teachers()
 
 
 def test_get_teacher_allocation_valid():
@@ -312,7 +310,7 @@ def test_section_allocation_hours_total_of_teacher_hours():
     t2 = Teacher()
     s.add_teacher(t2)
     assert s.get_teacher_allocation(t2) == s.hours
-    assert s.allocated_hours == s.get_teacher_allocation(t) + s.get_teacher_allocation(t2)
+    assert s.allocated_hours() == s.get_teacher_allocation(t) + s.get_teacher_allocation(t2)
 
 
 def test_set_teacher_allocation_valid():
@@ -336,7 +334,7 @@ def test_section_allocation_hours_total_of_teacher_hours_after_setting_teacher_a
     s.add_teacher(t2)
     s.set_teacher_allocation(t, 4)
     s.set_teacher_allocation(t2, 5)
-    assert s.allocated_hours == s.get_teacher_allocation(t) + s.get_teacher_allocation(t2)
+    assert s.allocated_hours() == s.get_teacher_allocation(t) + s.get_teacher_allocation(t2)
 
 
 def test_set_teacher_allocation_new_teacher():
@@ -361,7 +359,7 @@ def test_set_teacher_allocation_zero_hours():
     s.set_teacher_allocation(t2, hours)
     assert not s.has_teacher(t)
     assert s.has_teacher(t2)
-    assert s.allocated_hours == s.get_teacher_allocation(t2)
+    assert s.allocated_hours() == s.get_teacher_allocation(t2)
 
 
 def test_get_teacher_allocation_not_teaching():
@@ -398,7 +396,7 @@ def test_remove_teacher_valid():
     s.set_teacher_allocation(t2, hours)
     assert not s.has_teacher(t)
     assert s.has_teacher(t2)
-    assert s.allocated_hours == s.get_teacher_allocation(t2)
+    assert s.allocated_hours() == s.get_teacher_allocation(t2)
 
 
 def test_remove_all_deletes_all_teachers():
@@ -408,14 +406,14 @@ def test_remove_all_deletes_all_teachers():
     s.add_teacher(Teacher())
     s.add_teacher(Teacher())
     s.remove_all_teachers()
-    assert not s.teachers
-    assert s.allocated_hours == 0
+    assert len( s.teachers()) == 0
+    assert s.allocated_hours() == 0
 
 
 def test_teachers_in_blocks_in_teachers_property():
     s = Section(course)
-    b1: Block = s.add_block(TimeSlot("mon", "13:00", 1.5))
-    b2: Block = s.add_block(TimeSlot("mon", "13:00", 1.5))
+    b1: Block = s.add_block(TimeSlot(WeekDay.Monday, ClockTime("13:00"), 1.5))
+    b2: Block = s.add_block(TimeSlot(WeekDay.Monday, ClockTime("13:00"), 1.5))
     t1 = Teacher()
     t2 = Teacher()
     t3 = Teacher()
@@ -423,16 +421,16 @@ def test_teachers_in_blocks_in_teachers_property():
     s.add_teacher(t1)
     s.add_teacher(t2)
 
-    assert len(s.teachers) == 3
-    assert t1 in s.teachers
-    assert t2 in s.teachers
-    assert t3 in s.teachers
-    assert t1 in b1.get_teachers
-    assert t3 in b1.get_teachers
-    assert t2 in b2.get_teachers
-    assert t3 in b2.get_teachers
-    assert len(b1.get_teachers) == 3
-    assert len(b2.get_teachers) == 3
+    assert len(s.teachers()) == 3
+    assert t1 in s.teachers()
+    assert t2 in s.teachers()
+    assert t3 in s.teachers()
+    assert t1 in b1.teachers()
+    assert t3 in b1.teachers()
+    assert t2 in b2.teachers()
+    assert t3 in b2.teachers()
+    assert len(b1.teachers()) == 3
+    assert len(b2.teachers()) == 3
 
 
 # endregion
@@ -444,7 +442,7 @@ def test_assign_stream_valid():
     s = Section(course)
     st = Stream()
     s.add_stream(st)
-    assert st in s.streams
+    assert st in s.streams()
 
 
 def test_has_stream_valid():
@@ -468,7 +466,7 @@ def test_remove_stream_valid():
     st = Stream()
     s.add_stream(st)
     s.remove_stream(st)
-    assert st not in s.streams
+    assert st not in s.streams()
 
 
 def test_remove_stream_not_there():
@@ -476,7 +474,7 @@ def test_remove_stream_not_there():
     s = Section(course)
     st = Stream()
     s.remove_stream(st)
-    assert s not in s.streams
+    assert s not in s.streams()
 
 
 def test_remove_all_deletes_all_streams():
@@ -486,6 +484,6 @@ def test_remove_all_deletes_all_streams():
     s.add_stream(Stream())
     s.add_stream(Stream())
     s.remove_all_streams()
-    assert not s.streams
+    assert not s.streams()
 
 # endregion

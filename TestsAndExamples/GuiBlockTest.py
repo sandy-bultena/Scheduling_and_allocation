@@ -31,7 +31,7 @@ def main():
     # create a Schedule for the Scenario. Create a teacher and
     # add a Block to it.
     # ----------------------------------------------------------
-    my_schedule = Schedule.read_DB(db_schedule.id)
+    my_schedule = Schedule.read_DB(db_schedule.number)
     teacher = Teacher.get_by_name("John", "Smith")
 
     my_view = View(views_manager=None, mw=mw, schedule=my_schedule, schedulable_object=teacher)

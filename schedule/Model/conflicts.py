@@ -4,7 +4,7 @@ Provides classes for managing scheduling conflicts
 from __future__ import annotations
 import itertools
 from enum import Flag
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 from .enums import ResourceType
 from .time_slot import ClockTime
 
@@ -90,7 +90,7 @@ class ConflictType(Flag):
         """does the conflict number include a minimum days conflict?"""
         return ConflictType.AVAILABILITY in self
 
-    def most_severe(self, view_type: Optional[ResourceType] = None) -> ConflictType:
+    def most_severe(self, view_type: ResourceType = ResourceType.none) -> ConflictType:
         """
         Identify the most severe conflict resource_type in a list of conflicts defined by
         the conflict number
@@ -121,8 +121,8 @@ class ConflictType(Flag):
 # =============================================================================
 # Constants
 # =============================================================================
-LUNCH_START: ClockTime = ClockTime("11.00")
-LUNCH_END: ClockTime = ClockTime("14.00")
+LUNCH_START: ClockTime = ClockTime("11:00")
+LUNCH_END: ClockTime = ClockTime("14:00")
 MAX_HOURS_PER_WEEK = 32.5
 ORDER_OF_SEVERITY = [ConflictType.TIME, ConflictType.LUNCH, ConflictType.MINIMUM_DAYS,
                      ConflictType.AVAILABILITY]
@@ -131,17 +131,16 @@ ORDER_OF_SEVERITY = [ConflictType.TIME, ConflictType.LUNCH, ConflictType.MINIMUM
 # --------------------------------------------------------
 # is there a lunch break
 # --------------------------------------------------------
-def lunch_break_conflict(blocks_for_teacher: tuple[Block, ...]) -> list[Conflict]:
+def set_lunch_break_conflicts(blocks_for_teacher: tuple[Block, ...]):
     """
     Is there a lunch break for a teacher on each day
     :param blocks_for_teacher:
     :return: A list of conflicts
     """
-    conflicts: list[Conflict] = []
 
     # collect blocks by day
     blocks_by_day = itertools.groupby(
-        sorted(blocks_for_teacher, key=lambda a: a.time_slot.day), lambda a: a.time_slot.day)
+        sorted(blocks_for_teacher, key=lambda b: b.time_slot.day), lambda b: b.time_slot.day)
 
     for _, blocks_group in blocks_by_day:
         blocks: list[Block] = list(blocks_group)
@@ -159,24 +158,22 @@ def lunch_break_conflict(blocks_for_teacher: tuple[Block, ...]) -> list[Conflict
         lunch_time = False
         for b1, b2 in itertools.pairwise(blocks):
             # break between block
-            start_break = max(b1.start_number + b1.duration, LUNCH_START)
-            end_break = min(b2.start_number, LUNCH_END)
+            start_break = max(b1.time_slot.time_end, LUNCH_START)
+            end_break = min(b2.time_slot.time_start, LUNCH_END)
             if end_break > start_break and end_break - start_break > 0.49:
                 lunch_time = True
                 break
 
         # if no lunch on this day, create a conflict obj and mark blocks as conflicted_number
         if not lunch_time:
-            conflicts.append(__new_conflict(ConflictType.LUNCH, tuple(blocks)))
-
-    return conflicts
+            _mark_block_conflict(ConflictType.LUNCH, tuple(blocks))
 
 
 # --------------------------------------------------------
 # are blocks overlapping in time/stream/lab/teacher
 # --------------------------------------------------------
-def block_conflict(blocks_for_week: tuple[Block, ...],
-                   conflict_type: ConflictType) -> list[Conflict]:
+def set_block_conflicts(blocks_for_week: tuple[Block, ...],
+                        conflict_type: ConflictType):
     """
     calculate if any two blocks overlap each other in time, and then
     assign a TIME conflict, and the specified conflict_type to each block that overlap
@@ -184,62 +181,57 @@ def block_conflict(blocks_for_week: tuple[Block, ...],
     :param conflict_type: what conflict resource_type to set_default_fonts_and_colours it to
     :return: a list of conflicts
     """
-    conflicts: list[Conflict] = []
     blocks_by_day = itertools.groupby(
-        sorted(blocks_for_week, key=lambda a: a.day_number), lambda a: a.day_number)
+        sorted(blocks_for_week, key=lambda a: a.time_slot.day), lambda a: a.time_slot.day)
 
     for _, blocks in blocks_by_day:
         pairs: itertools.combinations[tuple[Block, Block]] = itertools.combinations(blocks, 2)
         for b1, b2 in pairs:
             if b1.time_slot.conflicts_time(b2.time_slot):
-                conflicts.append(__new_conflict(ConflictType.TIME, (b1, b2)))
-                conflicts.append(__new_conflict(conflict_type, (b1, b2)))
-
-    return conflicts
+                _mark_block_conflict(ConflictType.TIME, (b1, b2))
+                _mark_block_conflict(conflict_type, (b1, b2))
 
 
 # --------------------------------------------------------
 # not enough days per week for a teacher
 # --------------------------------------------------------
-def number_of_days_conflict(blocks_for_teacher: tuple[Block, ...]) -> Conflict | None:
+def set_number_of_days_conflict(blocks_for_teacher: tuple[Block, ...]):
     """ collect blocks by day"""
     blocks_by_day = itertools.groupby(sorted(
-        blocks_for_teacher, key=lambda a: a.day_number), lambda a: a.day_number)
+        blocks_for_teacher, key=lambda a: a.time_slot.day), lambda a: a.time_slot.day)
 
     # if < 4 days, create a conflict and mark the blocks as conflicted_number
     if len(tuple(blocks_by_day)) < 4:
-        return __new_conflict(ConflictType.MINIMUM_DAYS, blocks_for_teacher)
-    return None
+        _mark_block_conflict(ConflictType.MINIMUM_DAYS, blocks_for_teacher)
 
 
 # --------------------------------------------------------
 # too many hours for a week availability for a teacher
 # --------------------------------------------------------
-def availability_hours_conflict(blocks_for_teacher: tuple[Block, ...]) -> Conflict | None:
+def set_availability_hours_conflict(blocks_for_teacher: tuple[Block, ...]):
     # collect blocks by day
     blocks_by_day = itertools.groupby(
-        sorted(blocks_for_teacher, key=lambda a: a.day_number), lambda a: a.day_number)
+        sorted(blocks_for_teacher, key=lambda a: a.time_slot.day), lambda a: a.time_slot.day)
 
     # if they have more than 32 hours worth of classes
     availability = 0
     for _, blocks_iter in blocks_by_day:
         blocks = list(blocks_iter)
-        day_start = min(map(lambda b1: b1.start_number, blocks))
-        day_end = max(map(lambda b1: b1.start_number + b1.duration, blocks))
-        if day_end <= day_start:
+        day_start = min(map(lambda b1: b1.time_slot.time_start, blocks))
+        day_end = max(map(lambda b1: b1.time_slot.time_end, blocks))
+        if day_end.hours <= day_start.hours:
             continue
-        availability += day_end - day_start - 0.5
+        availability += day_end.hours - day_start.hours - 0.5
 
     # if over limit, create conflict
     if availability > MAX_HOURS_PER_WEEK:
-        return __new_conflict(ConflictType.AVAILABILITY, tuple(blocks_for_teacher))
+        return _mark_block_conflict(ConflictType.AVAILABILITY, tuple(blocks_for_teacher))
     return None
 
 
-def __new_conflict(conflict_type: ConflictType, conflict_blocks: tuple[Block, ...]) -> Conflict:
+def _mark_block_conflict(conflict_type: ConflictType, conflict_blocks: tuple[Block, ...]):
     for cb in conflict_blocks:
-        cb.adjust_conflicted_number(conflict_type.value)
-    return Conflict(conflict_type, conflict_blocks)
+        cb.conflict = cb.conflict | conflict_type
 
 
 # --------------------------------------------------------
@@ -248,32 +240,3 @@ def __new_conflict(conflict_type: ConflictType, conflict_blocks: tuple[Block, ..
 def colours() -> dict[ConflictType, str]:
     """ Returns the colors used by each conflict resource_type """
     return ConflictType.colours()
-
-
-class Conflict:
-    """
-    Represents a scheduling conflict.
-    """
-
-    # ========================================================
-    # CONSTRUCTOR
-    # ========================================================
-    def __init__(self, conflict_type: ConflictType, blocks: tuple[Block, ...]):
-        """
-        Creates an instance of the Conflict class.
-        - Parameter resource_type -> defines the resource_type of conflict.
-        - Parameter blocks -> defines the list of blocks involved in the conflict.
-        """
-        blocks_list = list(blocks)
-        self.type = conflict_type
-        self.blocks = blocks_list.copy()  # if list is changed, the Conflict won't be
-
-    # --------------------------------------------------------
-    # add_block
-    # --------------------------------------------------------
-    def add_block(self, new_block: Block):
-        """
-        Adds a new affected blocks to the conflict.
-        - Parameter new_block -> the new blocks to be added.
-        """
-        self.blocks.append(new_block)

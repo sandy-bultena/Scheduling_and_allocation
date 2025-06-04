@@ -255,7 +255,7 @@ class View:
                     continue
 
                 # GuiBlock's blocks is the same as the moving blocks?
-                if guiblock.block.id == block.id:
+                if guiblock.block.number == block.number:
                     self.gui.move_block(guiblock)
                     self.gui.canvas.update_idletasks()
 
@@ -384,7 +384,7 @@ class View:
             guiblock.blocks.section.assign_stream_by_id(that_schedulable)
 
         # There was a change, so redraw all the views.
-        undo = Undo(guiblock.blocks.id, guiblock.blocks.time_start, guiblock.blocks.day,
+        undo = Undo(guiblock.blocks.number, guiblock.blocks.time_start, guiblock.blocks.day,
                     self.schedulable, self.type, that_schedulable)
         self.views_manager.add_undo(undo)
 
@@ -469,7 +469,7 @@ class View:
         Parameters:
             guiblock: GuiBlock that has been moved."""
         self: View
-        undo = Undo(guiblock.block.id, guiblock.block.time_start, guiblock.block.day,
+        undo = Undo(guiblock.block.number, guiblock.block.time_start, guiblock.block.day,
                     self.schedulable, "Day/Time", self.schedulable)
 
         # Set guiblock's to new time and day.
@@ -575,7 +575,7 @@ class View:
 
         # remove the schedulable object that is associated with this view.
         named_schedulable_objects = [o for o in schedulables_by_type.named_scheduable_objs
-                                     if o.object.id != self.schedulable.id]
+                                     if o.object.number != self.schedulable.number]
 
         return named_schedulable_objects
 

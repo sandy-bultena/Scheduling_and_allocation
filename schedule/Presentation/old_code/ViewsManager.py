@@ -98,7 +98,7 @@ class ViewsManager:
             # --------------------------------------------------------------------
             # make new undo/redo object as necessary
             # --------------------------------------------------------------------
-            redo_or_undo = Undo(block.id, block.time_start, block.day, action.origin_obj,
+            redo_or_undo = Undo(block.number, block.time_start, block.day, action.origin_obj,
                                 action.move_type, None)
             if type == 'undo':
                 self.add_redo(redo_or_undo)
@@ -128,7 +128,7 @@ class ViewsManager:
             # --------------------------------------------------------------------
             # make new undo/redo object as necessary
             # --------------------------------------------------------------------
-            redo_or_undo = Undo(block.id, block.time_start, block.day, action.new_obj,
+            redo_or_undo = Undo(block.number, block.time_start, block.day, action.new_obj,
                                 action.move_type, action.origin_obj)
             if type == 'undo':
                 self.add_redo(redo_or_undo)
@@ -154,7 +154,7 @@ class ViewsManager:
         block: Block
         blocks = self.schedule.get_blocks_for_obj(obj)
         for b in blocks:
-            if b.id == action.block_id:
+            if b.number == action.block_id:
                 block = b
                 return block
 
@@ -238,7 +238,7 @@ class ViewsManager:
         open_views: dict = self.views()
         for view in open_views.values():
             if view.type == type:
-                if view.schedulable.id == id:
+                if view.schedulable.number == id:
                     return view
 
         return False
@@ -357,7 +357,7 @@ class ViewsManager:
             type = ResourceType.Teacher
 
         for scheduable_obj in schedulable_objs:
-            if not (obj_id and obj_id == scheduable_obj.id):
+            if not (obj_id and obj_id == scheduable_obj.number):
                 self.create_new_view(None, scheduable_obj, type)
 
     def create_new_view(self, undef, scheduable_obj, type):
@@ -370,7 +370,7 @@ class ViewsManager:
             undef: Set None as the first parameter, since this is an unnecessary parameter due to it being a callback function(?)
             scheduable_obj: An object that can have a schedule (teacher/lab/stream).
             type: Type of view to show (teacher/lab/stream)."""
-        open_view: View | False = self.is_open(scheduable_obj.id, type)
+        open_view: View | False = self.is_open(scheduable_obj.number, type)
 
         if not open_view:
             view = View(self, self.gui.mw, self.schedule, scheduable_obj)

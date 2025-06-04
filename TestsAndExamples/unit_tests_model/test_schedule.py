@@ -1,5 +1,6 @@
 import pytest
 
+from schedule.Model import WeekDay, ClockTime
 from schedule.Model.schedule import Schedule
 from schedule.Model.course import Course
 from schedule.Model.teacher import Teacher
@@ -11,16 +12,6 @@ from schedule.Model.time_slot import TimeSlot
 # ============================================================================
 # tests
 # ============================================================================
-@pytest.fixture(scope="module", autouse=True)
-def before_and_after_module():
-    pass
-
-
-@pytest.fixture(autouse=True)
-def before_and_after():
-    pass
-
-
 def test_constructor():
     schedule = Schedule()
     assert isinstance(schedule, Schedule)
@@ -46,10 +37,7 @@ def test_interface():
     assert hasattr(schedule, 'get_stream_by_number')
     assert hasattr(schedule, 'get_teacher_by_name')
 
-    assert hasattr(schedule, 'get_course_by_id')
-    assert hasattr(schedule, 'get_lab_by_id')
-    assert hasattr(schedule, 'get_stream_by_id')
-    assert hasattr(schedule, 'get_teacher_by_id')
+    assert hasattr(schedule, 'get_teacher_by_number')
 
     assert hasattr(schedule, 'remove_teacher')
     assert hasattr(schedule, 'remove_stream')
@@ -82,8 +70,8 @@ def test_add_course():
     assert len(s._courses) == 1
     c2 = s.add_course('420-ABC')
     assert len(s._courses) == 2
-    assert c1.id in s._courses
-    assert c2.id in s._courses
+    assert c1.number in s._courses
+    assert c2.number in s._courses
     assert isinstance(c1, Course)
 
 
@@ -94,8 +82,8 @@ def test_add_stream():
     assert len(s._streams) == 1
     c2 = s.add_stream('4B')
     assert len(s._streams) == 2
-    assert c1.id in s._streams
-    assert c2.id in s._streams
+    assert c1.number in s._streams
+    assert c2.number in s._streams
     assert isinstance(c1, Stream)
 
 
@@ -106,8 +94,8 @@ def test_add_lab():
     assert len(s._labs) == 1
     c2 = s.add_lab('4B')
     assert len(s._labs) == 2
-    assert c1.id in s._labs
-    assert c2.id in s._labs
+    assert c1.number in s._labs
+    assert c2.number in s._labs
     assert isinstance(c1, Lab)
 
 
@@ -118,64 +106,64 @@ def test_add_teacher():
     assert len(s._teachers) == 1
     c2 = s.add_teacher('4B', 'Doe')
     assert len(s._teachers) == 2
-    assert c1.id in s._teachers
-    assert c2.id in s._teachers
+    assert c1.number in s._teachers
+    assert c2.number in s._teachers
     assert isinstance(c1, Teacher)
 
 
 def test_return_courses_as_tuple():
     s = Schedule()
-    assert len(s.courses) == 0
+    assert len(s.courses()) == 0
     o1 = Course('ABC')
-    o2 = Course('ABC')
-    s._courses = {o1.id: o1, o2.id: o2}
-    assert len(s.courses) == 2
-    assert isinstance(s.courses, tuple)
-    assert o1 in s.courses
-    assert o2 in s.courses
+    o2 = Course('ABD')
+    s._courses = {o1.number: o1, o2.number: o2}
+    assert len(s.courses()) == 2
+    assert isinstance(s.courses(), tuple)
+    assert o1 in s.courses()
+    assert o2 in s.courses()
 
 
 def test_return_labs_as_tuple():
     s = Schedule()
-    assert len(s.labs) == 0
+    assert len(s.labs()) == 0
     o1 = Lab('ABC')
-    o2 = Lab('ABC')
-    s._labs = {o1.id: o1, o2.id: o2}
-    assert len(s.labs) == 2
-    assert isinstance(s.labs, tuple)
-    assert o1 in s.labs
-    assert o2 in s.labs
+    o2 = Lab('ABD')
+    s._labs = {o1.number: o1, o2.number: o2}
+    assert len(s.labs()) == 2
+    assert isinstance(s.labs(), tuple)
+    assert o1 in s.labs()
+    assert o2 in s.labs()
 
 
 def test_return_streams_as_tuple():
     s = Schedule()
-    assert len(s.streams) == 0
+    assert len(s.streams()) == 0
     o1 = Stream('ABC')
-    o2 = Stream('ABC')
-    s._streams = {o1.id: o1, o2.id: o2}
-    assert len(s.streams) == 2
-    assert isinstance(s.streams, tuple)
-    assert o1 in s.streams
-    assert o2 in s.streams
+    o2 = Stream('ABD')
+    s._streams = {o1.number: o1, o2.number: o2}
+    assert len(s.streams()) == 2
+    assert isinstance(s.streams(), tuple)
+    assert o1 in s.streams()
+    assert o2 in s.streams()
 
 
 def test_return_teachers_as_tuple():
     s = Schedule()
-    assert len(s.teachers) == 0
+    assert len(s.teachers()) == 0
     o1 = Teacher('ABC', 'Doe')
     o2 = Teacher('ABC', 'Doe')
-    s._teachers = {o1.id: o1, o2.id: o2}
-    assert len(s.teachers) == 2
-    assert isinstance(s.teachers, tuple)
-    assert o1 in s.teachers
-    assert o2 in s.teachers
+    s._teachers = {o1.number: o1, o2.number: o2}
+    assert len(s.teachers()) == 2
+    assert isinstance(s.teachers(), tuple)
+    assert o1 in s.teachers()
+    assert o2 in s.teachers()
 
 
 def test_get_course_by_number():
     s = Schedule()
     o1 = Course('ABC')
     o2 = Course('DEF')
-    s._courses = {o1.id: o1, o2.id: o2}
+    s._courses = {o1.number: o1, o2.number: o2}
     assert o2 == s.get_course_by_number('DEF')
     assert o1 == s.get_course_by_number('ABC')
     assert s.get_course_by_number("boo") is None
@@ -185,7 +173,7 @@ def test_get_lab_by_number():
     s = Schedule()
     o1 = Lab('ABC')
     o2 = Lab('DEF')
-    s._labs = {o1.id: o1, o2.id: o2}
+    s._labs = {o1.number: o1, o2.number: o2}
     assert o2 == s.get_lab_by_number('DEF')
     assert o1 == s.get_lab_by_number('ABC')
     assert s.get_lab_by_number("boo") is None
@@ -195,7 +183,7 @@ def test_get_stream_by_number():
     s = Schedule()
     o1 = Stream('ABC')
     o2 = Stream('DEF')
-    s._streams = {o1.id: o1, o2.id: o2}
+    s._streams = {o1.number: o1, o2.number: o2}
     assert o2 == s.get_stream_by_number('DEF')
     assert o1 == s.get_stream_by_number('ABC')
     assert s.get_stream_by_number("boo") is None
@@ -205,59 +193,28 @@ def test_get_teacher_by_name():
     s = Schedule()
     o1 = Teacher('Jane', 'Doe')
     o2 = Teacher('John', 'Doe')
-    s._teachers = {o1.id: o1, o2.id: o2}
+    s._teachers = {o1.number: o1, o2.number: o2}
     assert o2 == s.get_teacher_by_name('John', 'Doe')
     assert o2 == s.get_teacher_by_name('JoHn', 'dOe')
     assert o1 == s.get_teacher_by_name('Jane', 'Doe')
     assert s.get_teacher_by_name("Jane", "boo") is None
 
 
-def test_get_course_by_id():
-    s = Schedule()
-    o1 = Course('ABC')
-    o2 = Course('DEF')
-    s._courses = {o1.id: o1, o2.id: o2}
-    assert o2 == s.get_course_by_id(o2.id)
-    assert o1 == s.get_course_by_id(o1.id)
-    assert s.get_course_by_id(666666) is None
-
-
-def test_get_lab_by_id():
-    s = Schedule()
-    o1 = Lab('ABC')
-    o2 = Lab('DEF')
-    s._labs = {o1.id: o1, o2.id: o2}
-    assert o2 == s.get_lab_by_id(o2.id)
-    assert o1 == s.get_lab_by_id(o1.id)
-    assert s.get_lab_by_id(666666) is None
-
-
-def test_get_stream_by_id():
-    s = Schedule()
-    o1 = Stream('ABC')
-    o2 = Stream('DEF')
-    s._streams = {o1.id: o1, o2.id: o2}
-    assert o2 == s.get_stream_by_id(o2.id)
-    assert o1 == s.get_stream_by_id(o1.id)
-    assert s.get_stream_by_id(666666) is None
-
-
-
 def test_get_teacher_by_id():
     s = Schedule()
     o1 = Teacher('Jane', 'Doe')
     o2 = Teacher('John', 'Doe')
-    s._teachers = {o1.id: o1, o2.id: o2}
-    assert o2 == s.get_teacher_by_id(o2.id)
-    assert o1 == s.get_teacher_by_id(o1.id)
-    assert s.get_teacher_by_id(666666) is None
+    s._teachers = {o1.number: o1, o2.number: o2}
+    assert o2 == s.get_teacher_by_number(o2.number)
+    assert o1 == s.get_teacher_by_number(o1.number)
+    assert s.get_teacher_by_number("666666") is None
 
 
 def test_remove_course():
     s = Schedule()
     o1 = Course('ABC')
     o2 = Course('DEF')
-    s._courses = {o1.id: o1, o2.id: o2}
+    s._courses = {o1.number: o1, o2.number: o2}
     s.remove_course(o2)
     assert len(s._courses) == 1
     assert o2 not in s._courses.values()
@@ -271,7 +228,7 @@ def test_remove_teacher_simple():
     s = Schedule()
     o1 = Teacher('ABC', 'Doe')
     o2 = Teacher('DEF', 'Doe')
-    s._teachers = {o1.id: o1, o2.id: o2}
+    s._teachers = {o1.number: o1, o2.number: o2}
     s.remove_teacher(o2)
     assert len(s._teachers) == 1
     assert o2 not in s._teachers.values()
@@ -285,7 +242,7 @@ def test_remove_teacher_from_courses():
     s = Schedule()
     o1 = Teacher('ABC', 'Doe')
     o2 = Teacher('DEF', 'Doe')
-    s._teachers = {o1.id: o1, o2.id: o2}
+    s._teachers = {o1.number: o1, o2.number: o2}
 
     c1 = s.add_course("C1")
     c2 = s.add_course("C2")
@@ -299,17 +256,17 @@ def test_remove_teacher_from_courses():
 
     s.remove_teacher(o2)
     assert len(s._teachers) == 1
-    assert o2 not in c1.teachers
-    assert o2 not in c2.teachers
-    assert o1 in c1.teachers
-    assert o1 in c2.teachers
+    assert o2 not in c1.teachers()
+    assert o2 not in c2.teachers()
+    assert o1 in c1.teachers()
+    assert o1 in c2.teachers()
 
 
 def test_remove_lab_simple():
     s = Schedule()
     o1 = Lab('ABC')
     o2 = Lab('DEF')
-    s._labs = {o1.id: o1, o2.id: o2}
+    s._labs = {o1.number: o1, o2.number: o2}
     s.remove_lab(o2)
     assert len(s._labs) == 1
     assert o2 not in s._teachers.values()
@@ -323,37 +280,37 @@ def test_remove_lab_complex():
     s = Schedule()
     o1 = Lab('ABC')
     o2 = Lab('DEF')
-    s._labs = {o1.id: o1, o2.id: o2}
+    s._labs = {o1.number: o1, o2.number: o2}
 
     c1 = s.add_course("C1")
     s1 = c1.add_section("1")
     s2 = c1.add_section("2")
-    b1 = s1.add_block(TimeSlot('mon', '9:00', 1))
-    b2 = s1.add_block(TimeSlot('mon', '10:00', 1))
-    b3 = s2.add_block(TimeSlot('mon', '10:00', 1))
+    b1 = s1.add_block(TimeSlot(WeekDay.get_from_string('MOnday'), ClockTime('9:00'), 1))
+    b2 = s1.add_block(TimeSlot(WeekDay.get_from_string('MONDAY'), ClockTime('10:00'), 1))
+    b3 = s2.add_block(TimeSlot(WeekDay.get_from_string('mon'), ClockTime('10:00'), 1))
     s1.add_lab(o2)
     b3.add_lab(o2)
     c1.add_lab(o1)
 
-    assert o2 in b1.labs
-    assert o2 in b2.labs
-    assert o2 in b3.labs
-    assert o2 in s1.labs
-    assert o2 in s2.labs
+    assert o2 in b1.labs()
+    assert o2 in b2.labs()
+    assert o2 in b3.labs()
+    assert o2 in s1.labs()
+    assert o2 in s2.labs()
     s.remove_lab(o2)
     assert len(s._labs) == 1
-    assert o2 not in b1.labs
-    assert o2 not in b2.labs
-    assert o2 not in b3.labs
-    assert o2 not in s1.labs
-    assert o2 not in s2.labs
+    assert o2 not in b1.labs()
+    assert o2 not in b2.labs()
+    assert o2 not in b3.labs()
+    assert o2 not in s1.labs()
+    assert o2 not in s2.labs()
 
 
 def test_remove_stream_simple():
     s = Schedule()
     o1 = Stream('ABC')
     o2 = Stream('DEF')
-    s._streams = {o1.id: o1, o2.id: o2}
+    s._streams = {o1.number: o1, o2.number: o2}
     s.remove_stream(o2)
     assert len(s._streams) == 1
     assert o2 not in s._streams.values()
@@ -367,7 +324,7 @@ def test_remove_stream_from_courses():
     s = Schedule()
     o1 = Stream('ABC')
     o2 = Stream('DEF')
-    s._streams = {o1.id: o1, o2.id: o2}
+    s._streams = {o1.number: o1, o2.number: o2}
 
     c1 = s.add_course("C1")
     s1 = c1.add_section("1")
@@ -375,14 +332,14 @@ def test_remove_stream_from_courses():
     s1.add_stream(o1)
     s2.add_stream(o2)
 
-    assert o2 not in s1.streams
-    assert o2 in s2.streams
-    assert o2 in c1.streams
+    assert o2 not in s1.streams()
+    assert o2 in s2.streams()
+    assert o2 in c1.streams()
     s.remove_stream(o2)
     assert len(s._streams) == 1
-    assert o2 not in s1.streams
-    assert o2 not in s2.streams
-    assert o2 not in c1.streams
+    assert o2 not in s1.streams()
+    assert o2 not in s2.streams()
+    assert o2 not in c1.streams()
 
 
 def test_get_teachers_assigned_to_any_course():
@@ -390,7 +347,7 @@ def test_get_teachers_assigned_to_any_course():
     o1 = Teacher('ABC', 'Doe')
     o2 = Teacher('DEF', 'Doe')
     o3 = Teacher('XYZ', 'Doe')
-    s._teachers = {o1.id: o1, o2.id: o2, o3.id: o3}
+    s._teachers = {o1.number: o1, o2.number: o2, o3.number: o3}
 
     c1 = s.add_course("C1")
     c2 = s.add_course("C2")
@@ -401,12 +358,12 @@ def test_get_teachers_assigned_to_any_course():
     c1.add_teacher(o2)
     c2.add_teacher(o1)
 
-    assert len(s.teachers) == 3
-    assert o3 in s.teachers
-    assert o3 not in s.get_teachers_assigned_to_any_course
-    assert o2 in s.get_teachers_assigned_to_any_course
-    assert o1 in s.get_teachers_assigned_to_any_course
-    assert len(s.get_teachers_assigned_to_any_course) == 2
+    assert len(s.teachers()) == 3
+    assert o3 in s.teachers()
+    assert o3 not in s.get_teachers_assigned_to_any_course()
+    assert o2 in s.get_teachers_assigned_to_any_course()
+    assert o1 in s.get_teachers_assigned_to_any_course()
+    assert len(s.get_teachers_assigned_to_any_course()) == 2
 
 
 def get_streams_assigned_to_any_course():
@@ -414,7 +371,7 @@ def get_streams_assigned_to_any_course():
     o1 = Stream('ABC')
     o2 = Stream('DEF')
     o3 = Stream('XYZ')
-    s._streams = {o1.id: o1, o2.id: o2, o3.id: o3}
+    s._streams = {o1.number: o1, o2. number: o2, o3.number: o3}
 
     c1 = s.add_course("C1")
     c2 = s.add_course("C2")
@@ -422,12 +379,12 @@ def get_streams_assigned_to_any_course():
     c1.add_stream(o2)
     c2.add_stream(o1)
 
-    assert len(s.streams) == 3
-    assert o3 in s.streams
-    assert o3 not in s.get_streams_assigned_to_any_course
-    assert o2 in s.get_streams_assigned_to_any_course
-    assert o1 in s.get_streams_assigned_to_any_course
-    assert len(s.get_streams_assigned_to_any_course) == 2
+    assert len(s.streams()) == 3
+    assert o3 in s.streams()
+    assert o3 not in s.get_streams_assigned_to_any_course()
+    assert o2 in s.get_streams_assigned_to_any_course()
+    assert o1 in s.get_streams_assigned_to_any_course()
+    assert len(s.get_streams_assigned_to_any_course()) == 2
 
 
 def get_labs_assigned_to_any_course():
@@ -435,7 +392,7 @@ def get_labs_assigned_to_any_course():
     o1 = Lab('ABC')
     o2 = Lab('DEF')
     o3 = Lab('XYZ')
-    s._labs = {o1.id: o1, o2.id: o2, o3.id: o3}
+    s._labs = {o1.number: o1, o2.number: o2, o3.number: o3}
 
     c1 = s.add_course("C1")
     c2 = s.add_course("C2")
@@ -443,12 +400,12 @@ def get_labs_assigned_to_any_course():
     c1.add_lab(o2)
     c2.add_lab(o1)
 
-    assert len(s.labs) == 3
+    assert len(s.labs()) == 3
     assert o3 in s.labs
-    assert o3 not in s.get_labs_assigned_to_any_course
-    assert o2 in s.get_labs_assigned_to_any_course
-    assert o1 in s.get_labs_assigned_to_any_course
-    assert len(s.get_labs_assigned_to_any_course) == 2
+    assert o3 not in s.get_labs_assigned_to_any_course()
+    assert o2 in s.get_labs_assigned_to_any_course()
+    assert o1 in s.get_labs_assigned_to_any_course()
+    assert len(s.get_labs_assigned_to_any_course()) == 2
 
 
 def get_courses_for_teacher():
@@ -456,7 +413,7 @@ def get_courses_for_teacher():
     o1 = Teacher('ABC', 'Doe')
     o2 = Teacher('DEF', 'Doe')
     o3 = Teacher('XYZ', 'Doe')
-    s._teachers = {o1.id: o1, o2.id: o2, o3.id: o3}
+    s._teachers = {o1.number: o1, o2.number: o2, o3.number: o3}
 
     c1 = s.add_course("C1")
     c2 = s.add_course("C2")
@@ -479,7 +436,7 @@ def test_sections():
     s = Schedule()
     o1 = Lab('ABC')
     o2 = Lab('DEF')
-    s._labs = {o1.id: o1, o2.id: o2}
+    s._labs = {o1.number: o1, o2.number: o2}
 
     c1 = s.add_course("C1")
     c2 = s.add_course("C2")
@@ -488,44 +445,46 @@ def test_sections():
     s3 = c2.add_section("1")
     s4 = c2.add_section("2")
 
-    assert len(s.sections) == 4
-    assert s1 in s.sections
-    assert s2 in s.sections
-    assert s3 in s.sections
-    assert s4 in s.sections
+    assert len(s.sections()) == 4
+    assert s1 in s.sections()
+    assert s2 in s.sections()
+    assert s3 in s.sections()
+    assert s4 in s.sections()
 
 
 def test_blocks():
     s = Schedule()
     o1 = Lab('ABC')
     o2 = Lab('DEF')
-    s._labs = {o1.id: o1, o2.id: o2}
+    s._labs = {o1.number: o1, o2.number: o2}
 
     c1 = s.add_course("C1")
     s1 = c1.add_section("1")
     s2 = c1.add_section("2")
-    b1 = s1.add_block(TimeSlot('mon', '9:00', 1))
-    b2 = s1.add_block(TimeSlot('mon', '10:00', 1))
-    b3 = s2.add_block(TimeSlot('mon', '10:00', 1))
+    sections = s.sections()
+    b1 = s1.add_block(TimeSlot(WeekDay.Monday, ClockTime('9:00'), 1))
+    b2 = s1.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
+    b3 = s2.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
 
-    assert len(s.blocks) == 3
-    assert b1 in s.blocks
-    assert b2 in s.blocks
-    assert b3 in s.blocks
+    assert len(s.blocks()) == 3
+    x = s.blocks()
+    assert b1 in s.blocks()
+    assert b2 in s.blocks()
+    assert b3 in s.blocks()
 
 
 def test_get_sections_for_teacher():
     s = Schedule()
     l1 = Lab('ABC')
     l2 = Lab('DEF')
-    s._labs = {l1.id: l1, l2.id: l2}
+    s._labs = {l1.number: l1, l2.number: l2}
     st1 = Stream('ABC')
     st2 = Stream('DEF')
-    s._streams = {st1.id: st1, st2.id: st2}
+    s._streams = {st1.number: st1, st2.number: st2}
     t1 = Teacher("ABC", "Doe")
     t2 = Teacher("DEF", "Doe")
     t3 = Teacher("XYZ", "Doe")
-    s._teachers = {t1.id: t1, t2.id: t2, t3.id: t3}
+    s._teachers = {t1.number: t1, t2.number: t2, t3.number: t3}
 
     c1 = s.add_course("C1")
     c2 = s.add_course("c3")
@@ -534,12 +493,12 @@ def test_get_sections_for_teacher():
     s3 = c2.add_section("1")
     s4 = c2.add_section("2")
 
-    b1 = s1.add_block(TimeSlot('mon', '9:00', 1))
-    b2 = s1.add_block(TimeSlot('mon', '10:00', 1))
-    b3 = s2.add_block(TimeSlot('mon', '10:00', 1))
-    b4 = s3.add_block(TimeSlot('mon', '9:00', 1))
-    b5 = s3.add_block(TimeSlot('mon', '10:00', 1))
-    b6 = s4.add_block(TimeSlot('mon', '10:00', 1))
+    b1 = s1.add_block(TimeSlot(WeekDay.Monday, ClockTime('9:00'), 1))
+    b2 = s1.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
+    b3 = s2.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
+    b4 = s3.add_block(TimeSlot(WeekDay.Monday, ClockTime('9:00'), 1))
+    b5 = s3.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
+    b6 = s4.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
 
     c1.add_teacher(t1)
     c2.add_teacher(t2)
@@ -563,14 +522,14 @@ def test_get_sections_for_stream():
     s = Schedule()
     l1 = Lab('ABC')
     l2 = Lab('DEF')
-    s._labs = {l1.id: l1, l2.id: l2}
+    s._labs = {l1.number: l1, l2.number: l2}
     st1 = Stream('ABC')
     st2 = Stream('DEF')
-    s._streams = {st1.id: st1, st2.id: st2}
+    s._streams = {st1.number: st1, st2.number: st2}
     t1 = Teacher("ABC", "Doe")
     t2 = Teacher("DEF", "Doe")
     t3 = Teacher("XYZ", "Doe")
-    s._teachers = {t1.id: t1, t2.id: t2, t3.id: t3}
+    s._teachers = {t1.number: t1, t2.number: t2, t3.number: t3}
 
     c1 = s.add_course("C1")
     c2 = s.add_course("c3")
@@ -579,12 +538,12 @@ def test_get_sections_for_stream():
     s3 = c2.add_section("1")
     s4 = c2.add_section("2")
 
-    b1 = s1.add_block(TimeSlot('mon', '9:00', 1))
-    b2 = s1.add_block(TimeSlot('mon', '10:00', 1))
-    b3 = s2.add_block(TimeSlot('mon', '10:00', 1))
-    b4 = s3.add_block(TimeSlot('mon', '9:00', 1))
-    b5 = s3.add_block(TimeSlot('mon', '10:00', 1))
-    b6 = s4.add_block(TimeSlot('mon', '10:00', 1))
+    b1 = s1.add_block(TimeSlot(WeekDay.Monday, ClockTime('9:00'), 1))
+    b2 = s1.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
+    b3 = s2.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
+    b4 = s3.add_block(TimeSlot(WeekDay.Monday, ClockTime('9:00'), 1))
+    b5 = s3.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
+    b6 = s4.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
 
     c1.add_teacher(t1)
     c2.add_teacher(t2)
@@ -607,14 +566,14 @@ def test_get_blocks_for_teacher():
     s = Schedule()
     l1 = Lab('ABC')
     l2 = Lab('DEF')
-    s._labs = {l1.id: l1, l2.id: l2}
+    s._labs = {l1.number: l1, l2.number: l2}
     st1 = Stream('ABC')
     st2 = Stream('DEF')
-    s._streams = {st1.id: st1, st2.id: st2}
+    s._streams = {st1.number: st1, st2.number: st2}
     t1 = Teacher("ABC", "Doe")
     t2 = Teacher("DEF", "Doe")
     t3 = Teacher("XYZ", "Doe")
-    s._teachers = {t1.id: t1, t2.id: t2, t3.id: t3}
+    s._teachers = {t1.number: t1, t2.number: t2, t3.number: t3}
 
     c1 = s.add_course("C1")
     c2 = s.add_course("c3")
@@ -623,12 +582,12 @@ def test_get_blocks_for_teacher():
     s3 = c2.add_section("1")
     s4 = c2.add_section("2")
 
-    b1 = s1.add_block(TimeSlot('mon', '9:00', 1))
-    b2 = s1.add_block(TimeSlot('mon', '10:00', 1))
-    b3 = s2.add_block(TimeSlot('mon', '10:00', 1))
-    b4 = s3.add_block(TimeSlot('mon', '9:00', 1))
-    b5 = s3.add_block(TimeSlot('mon', '10:00', 1))
-    b6 = s4.add_block(TimeSlot('mon', '10:00', 1))
+    b1 = s1.add_block(TimeSlot(WeekDay.Monday, ClockTime('9:00'), 1))
+    b2 = s1.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
+    b3 = s2.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
+    b4 = s3.add_block(TimeSlot(WeekDay.Monday, ClockTime('9:00'), 1))
+    b5 = s3.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
+    b6 = s4.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
 
     c1.add_teacher(t1)
     c2.add_teacher(t2)
@@ -653,14 +612,14 @@ def test_get_blocks_in_lab():
     l1 = Lab('ABC')
     l2 = Lab('DEF')
     l3 = Lab('XYZ')
-    s._labs = {l1.id: l1, l2.id: l2}
+    s._labs = {l1.number: l1, l2.number: l2}
     st1 = Stream('ABC')
     st2 = Stream('DEF')
-    s._streams = {st1.id: st1, st2.id: st2}
+    s._streams = {st1.number: st1, st2.number: st2}
     t1 = Teacher("ABC", "Doe")
     t2 = Teacher("DEF", "Doe")
     t3 = Teacher("XYZ", "Doe")
-    s._teachers = {t1.id: t1, t2.id: t2, t3.id: t3}
+    s._teachers = {t1.number: t1, t2.number: t2, t3.number: t3}
 
     c1 = s.add_course("C1")
     c2 = s.add_course("c3")
@@ -669,12 +628,12 @@ def test_get_blocks_in_lab():
     s3 = c2.add_section("1")
     s4 = c2.add_section("2")
 
-    b1 = s1.add_block(TimeSlot('mon', '9:00', 1))
-    b2 = s1.add_block(TimeSlot('mon', '10:00', 1))
-    b3 = s2.add_block(TimeSlot('mon', '10:00', 1))
-    b4 = s3.add_block(TimeSlot('mon', '9:00', 1))
-    b5 = s3.add_block(TimeSlot('mon', '10:00', 1))
-    b6 = s4.add_block(TimeSlot('mon', '10:00', 1))
+    b1 = s1.add_block(TimeSlot(WeekDay.Monday, ClockTime('9:00'), 1))
+    b2 = s1.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
+    b3 = s2.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
+    b4 = s3.add_block(TimeSlot(WeekDay.Monday, ClockTime('9:00'), 1))
+    b5 = s3.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
+    b6 = s4.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
 
     c1.add_teacher(t1)
     c2.add_teacher(t2)
@@ -700,15 +659,15 @@ def test_get_blocks_for_stream():
     l1 = Lab('ABC')
     l2 = Lab('DEF')
     l3 = Lab('XYZ')
-    s._labs = {l1.id: l1, l2.id: l2}
+    s._labs = {l1.number: l1, l2.number: l2}
     st1 = Stream('ABC')
     st2 = Stream('DEF')
     st3 = Stream("XYZ")
-    s._streams = {st1.id: st1, st2.id: st2}
+    s._streams = {st1.number: st1, st2.number: st2}
     t1 = Teacher("ABC", "Doe")
     t2 = Teacher("DEF", "Doe")
     t3 = Teacher("XYZ", "Doe")
-    s._teachers = {t1.id: t1, t2.id: t2, t3.id: t3}
+    s._teachers = {t1.number: t1, t2.number: t2, t3.number: t3}
 
     c1 = s.add_course("C1")
     c2 = s.add_course("c3")
@@ -717,12 +676,12 @@ def test_get_blocks_for_stream():
     s3 = c2.add_section("1")
     s4 = c2.add_section("2")
 
-    b1 = s1.add_block(TimeSlot('mon', '9:00', 1))
-    b2 = s1.add_block(TimeSlot('mon', '10:00', 1))
-    b3 = s2.add_block(TimeSlot('mon', '11:00', 1))
-    b4 = s3.add_block(TimeSlot('tue', '9:00', 1))
-    b5 = s3.add_block(TimeSlot('tue', '10:00', 1))
-    b6 = s4.add_block(TimeSlot('tue', '11:00', 1))
+    b1 = s1.add_block(TimeSlot(WeekDay.Monday, ClockTime('9:00'), 1))
+    b2 = s1.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
+    b3 = s2.add_block(TimeSlot(WeekDay.Monday, ClockTime('11:00'), 1))
+    b4 = s3.add_block(TimeSlot(WeekDay.Tuesday, ClockTime('9:00'), 1))
+    b5 = s3.add_block(TimeSlot(WeekDay.Tuesday, ClockTime('10:00'), 1))
+    b6 = s4.add_block(TimeSlot(WeekDay.Tuesday, ClockTime('11:00'), 1))
 
     c1.add_teacher(t1)
     c2.add_teacher(t2)
@@ -750,15 +709,15 @@ def test_get_blocks_for_obj():
     l1 = Lab('ABC')
     l2 = Lab('DEF')
     l3 = Lab('XYZ')
-    s._labs = {l1.id: l1, l2.id: l2}
+    s._labs = {l1.number: l1, l2.number: l2}
     st1 = Stream('ABC')
     st2 = Stream('DEF')
     st3 = Stream("XYZ")
-    s._streams = {st1.id: st1, st2.id: st2, st3.id: st3}
+    s._streams = {st1.number: st1, st2.number: st2, st3.number: st3}
     t1 = Teacher("ABC", "Doe")
     t2 = Teacher("DEF", "Doe")
     t3 = Teacher("XYZ", "Doe")
-    s._teachers = {t1.id: t1, t2.id: t2, t3.id: t3}
+    s._teachers = {t1.number: t1, t2.number: t2, t3.number: t3}
 
     c1 = s.add_course("C1")
     c2 = s.add_course("c3")
@@ -767,12 +726,12 @@ def test_get_blocks_for_obj():
     s3 = c2.add_section("1")
     s4 = c2.add_section("2")
 
-    b1 = s1.add_block(TimeSlot('mon', '9:00', 1))
-    b2 = s1.add_block(TimeSlot('mon', '10:00', 1))
-    b3 = s2.add_block(TimeSlot('mon', '10:00', 1))
-    b4 = s3.add_block(TimeSlot('mon', '9:00', 1))
-    b5 = s3.add_block(TimeSlot('mon', '10:00', 1))
-    b6 = s4.add_block(TimeSlot('mon', '10:00', 1))
+    b1 = s1.add_block(TimeSlot(WeekDay.Monday, ClockTime('9:00'), 1))
+    b2 = s1.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
+    b3 = s2.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
+    b4 = s3.add_block(TimeSlot(WeekDay.Monday, ClockTime('9:00'), 1))
+    b5 = s3.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
+    b6 = s4.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
 
     c1.add_teacher(t1)
     c2.add_teacher(t2)
@@ -795,15 +754,15 @@ def test_clear_all():
     l1 = Lab('ABC')
     l2 = Lab('DEF')
     l3 = Lab('XYZ')
-    s._labs = {l1.id: l1, l2.id: l2}
+    s._labs = {l1.number: l1, l2.number: l2}
     st1 = Stream('ABC')
     st2 = Stream('DEF')
     st3 = Stream("XYZ")
-    s._streams = {st1.id: st1, st2.id: st2, st3.id: st3}
+    s._streams = {st1.number: st1, st2.number: st2, st3.number: st3}
     t1 = Teacher("ABC", "Doe")
     t2 = Teacher("DEF", "Doe")
     t3 = Teacher("XYZ", "Doe")
-    s._teachers = {t1.id: t1, t2.id: t2, t3.id: t3}
+    s._teachers = {t1.number: t1, t2.number: t2, t3.number: t3}
 
     c1 = s.add_course("C1")
     c2 = s.add_course("c3")
@@ -812,12 +771,12 @@ def test_clear_all():
     s3 = c2.add_section("1")
     s4 = c2.add_section("2")
 
-    b1 = s1.add_block(TimeSlot('mon', '9:00', 1))
-    b2 = s1.add_block(TimeSlot('mon', '10:00', 1))
-    b3 = s2.add_block(TimeSlot('mon', '10:00', 1))
-    b4 = s3.add_block(TimeSlot('mon', '9:00', 1))
-    b5 = s3.add_block(TimeSlot('mon', '10:00', 1))
-    b6 = s4.add_block(TimeSlot('mon', '10:00', 1))
+    b1 = s1.add_block(TimeSlot(WeekDay.Monday, ClockTime('9:00'), 1))
+    b2 = s1.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
+    b3 = s2.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
+    b4 = s3.add_block(TimeSlot(WeekDay.Monday, ClockTime('9:00'), 1))
+    b5 = s3.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
+    b6 = s4.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
 
     c1.add_teacher(t1)
     c2.add_teacher(t2)
@@ -832,9 +791,9 @@ def test_clear_all():
 
     s.clear_all_from_course(c1)
 
-    assert len(c1.teachers) == 0
-    assert len(c1.labs) == 0
-    assert len(c1.streams) == 0
+    assert len(c1.teachers()) == 0
+    assert len(c1.labs()) == 0
+    assert len(c1.streams()) == 0
 
 
 def test_calculate_conflicts():

@@ -58,7 +58,7 @@ class AllocationManagerTk(MainPageBaseTk):
             def _open_button(_semester):
                 sched = select_schedule_callback(_semester)
                 if sched:
-                    _set_file(_semester, sched.id, sched.descr)
+                    _set_file(_semester, sched.number, sched.descr)
 
             Button(choose_frame, text='Open Schedule', font=self.fonts['normal'], borderwidth=0, height=3,
                    bg=self.colours['DataBackground'], command=partial(_open_button, semester))\

@@ -139,13 +139,13 @@ class AssignToResource:
         # teacher_ids
         teacher_names = {}
         for t in sched._teachers():
-            teacher_names[t.id] = str(t)
+            teacher_names[t.number] = str(t)
         gui.set_teacher_choices(teacher_names)
 
         # courses
         course_names = {}
         for course in sched._courses():
-            course_names[course.id] = course.title
+            course_names[course.number] = course.title
         gui.set_course_choices(course_names)
 
         # ------------------------------------
@@ -193,7 +193,7 @@ class AssignToResource:
 
         # What sections are available for this course?
         sections = course.sections()
-        sections_dict = dict([(i.id, str(i)) for i in sections])
+        sections_dict = dict([(i.number, str(i)) for i in sections])
         gui.set_section_choices(sections_dict)
 
     # ----------------------------------------------------------------------------
@@ -211,7 +211,7 @@ class AssignToResource:
 
         # what blocks are available for this course/section?
         blocks = section.blocks
-        blocks_dict = dict([(b.id, str(b)) for b in blocks])
+        blocks_dict = dict([(b.number, str(b)) for b in blocks])
         gui.set_block_choices(blocks_dict)
 
         # Set the default teacher for this course/section if this AssignToResource resource_type is
@@ -323,7 +323,7 @@ class AssignToResource:
         blocks_arr = section.blocks
         blocks_dict = {}
         for i in blocks_arr:
-            blocks_dict[i.id] = i.description
+            blocks_dict[i.number] = i.description
         global gui
         gui.set_block_choices(blocks_dict)
         # TODO: Verify whether the called function can accept actual blocks or just strings.
@@ -392,7 +392,7 @@ class AssignToResource:
 
         teacher_names = {}
         for teach in AssignToResource.schedule._teachers():
-            teacher_names[teach.id] = str(teach)
+            teacher_names[teach.number] = str(teach)
 
         gui.set_teacher_choices(teacher_names)
         gui.set_teacher(str(teacher))

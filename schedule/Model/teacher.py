@@ -1,8 +1,7 @@
 from __future__ import annotations
 from typing import Generator, Optional
-from . import _id_generator_code as id_gen
 from .enums import ResourceType
-
+from .id_generator import IdGenerator
 
 """
 SYNOPSIS
@@ -23,14 +22,10 @@ SYNOPSIS
 
 """
 
-_teacher_id_generator: Generator[int, int, None] = id_gen.get_id_generator()
 
-
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# CLASS: _Teachers - should never be instantiated directly!
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 class Teacher:
     """Describes a teacher."""
+    teacher_ids = IdGenerator()
 
     # -------------------------------------------------------------------
     # constructor
@@ -48,44 +43,18 @@ class Teacher:
         self.release = 0
         self.resource_type = ResourceType.teacher
 
-        self.__id = id_gen.set_id(_teacher_id_generator, teacher_id)
+        self._id = Teacher.teacher_ids.get_new_id(teacher_id)
 
     # =================================================================
-    # id
+    # unique identifier
     # =================================================================
     @property
-    def id(self) -> int:
+    def number(self) -> str:
         """Returns the unique ID for this Teacher."""
-        return self.__id
+        return str(self._id)
 
     # =================================================================
-    # firstname
-    # =================================================================
-    @property
-    def firstname(self) -> str:
-        """Gets and sets the Teacher's name."""
-        return self.__firstname
-
-    @firstname.setter
-    def firstname(self, new_name: str):
-        if new_name and not new_name.isspace():
-            self.__firstname = new_name
-
-    # =================================================================
-    # lastname
-    # =================================================================
-    @property
-    def lastname(self) -> str:
-        """Gets and sets the Teacher's last name."""
-        return self.__lastname
-
-    @lastname.setter
-    def lastname(self, new_name: str):
-        if new_name and not new_name.isspace():
-            self.__lastname = new_name
-
-    # =================================================================
-    # default string
+    # other
     # =================================================================
     def __str__(self) -> str:
         return f"{self.firstname} {self.lastname}"
@@ -93,30 +62,28 @@ class Teacher:
     def __repl__(self) -> str:
         return str(self)
 
-    # ------------------------------------------------------------------------
-    # for sorting
-    # ------------------------------------------------------------------------
     def __lt__(self, other: Teacher) -> bool:
-        if self.lastname != other.lastname:
-            return self.lastname < other.lastname
-        return self.firstname < other.firstname
+        return (self.lastname, self.firstname) < (other.lastname, other.firstname)
 
+    def __eq__(self, other):
+        return self.number == other.number
+
+    def __hash__(self):
+        return hash(self._id)
 
 # =================================================================
 # footer
 # =================================================================
-'''
-1;
+__copyright__ = '''
 
 =head1 AUTHOR
 
 Sandy Bultena, Ian Clement, Jack Burns
 
-Translated to Python by Evan Laverdiere
-
 =head1 COPYRIGHT
 
 Copyright (c) 2016, Jack Burns, Sandy Bultena, Ian Clement. 
+Copyright (c) 2025, Sandy Bultena
 
 All Rights Reserved.
 

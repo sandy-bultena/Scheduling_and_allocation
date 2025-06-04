@@ -348,7 +348,7 @@ def _save_schedule(save_as : int):
 # Use generators to yield the same object; if de doesn't exist then create it, otherwise yield de
 
 def draw_allocation(*_):
-    f = gui.get_notebook_page(pages_lookup["Allocation"].id)
+    f = gui.get_notebook_page(pages_lookup["Allocation"].number)
     de: EditAllocation = None
     while True:
         if de is None:

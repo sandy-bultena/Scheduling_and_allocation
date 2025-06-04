@@ -26,7 +26,7 @@ def _open_schedule(listbox: Listbox, schedule_dict: dict[str, PonyDatabaseConnec
     key = listbox.get(indexes[0])
     db_schedule: PonyDatabaseConnection.Schedule = schedule_dict[key]
     flush()
-    db_id = db_schedule.id
+    db_id = db_schedule.number
     real_schedule: ModelSchedule.Schedule = ModelSchedule.Schedule.read_DB(db_id)
     print(real_schedule)
     pass
