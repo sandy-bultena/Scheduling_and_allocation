@@ -4,7 +4,7 @@ from os import path
 import sys
 from typing import Optional
 
-from schedule.gui_pages.scheduler_tk import SchedulerTk
+from schedule.gui_pages.scheduler_entry_point_tk import SchedulerTk
 from schedule.Utilities.Preferences import Preferences
 from schedule.Utilities.NoteBookPageInfo import NoteBookPageInfo
 

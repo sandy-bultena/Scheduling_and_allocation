@@ -32,7 +32,7 @@ class Preferences:
             self._config['COLOURS']['dark_mode'] = str(dark_mode)
         return self._config['COLOURS'].getboolean('dark_mode')
 
-    def semester(self, semester: VALID_SEMESTER = "fall") -> VALID_SEMESTER:
+    def semester(self, semester: VALID_SEMESTER = None) -> VALID_SEMESTER:
         if semester is not None:
             self._config['MOST_RECENT']['semester'] = semester
         return self._config['MOST_RECENT'].get('semester', "fall")

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import tkinter
 from typing import Callable, Literal, get_args, Any
-from Tk.menu_and_toolbars import MenuItem, MenuType, ToolbarItem
+from schedule.Tk.menu_and_toolbars import MenuItem, MenuType, ToolbarItem
 from functools import partial
 from typing import Protocol
 

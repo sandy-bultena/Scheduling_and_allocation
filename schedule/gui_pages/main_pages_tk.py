@@ -1,5 +1,4 @@
 from __future__ import annotations
-from functools import partial
 
 """
 MAIN PAGE - Gui entry point to the application(s)
@@ -13,7 +12,7 @@ from functools import partial
 from tkinter.ttk import Notebook
 from tkinter import *
 from tkinter import filedialog as fd
-from typing import Callable, Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
 from tkinter.messagebox import showerror, showinfo, askyesnocancel
 
@@ -306,8 +305,14 @@ class MainPageBaseTk:
         filename = select_gui(**kwargs)
         return filename
 
+    # ========================================================================
+    # message boxes
+    # ========================================================================
     def show_error(self, title: str, msg: str, detail: str = ""):
         showerror(title=title, message=msg, detail=detail, icon='error')
 
     def show_message(self, title: str, msg: str, detail: str = ""):
         showinfo(title=title, message=msg, detail=detail, icon='info')
+
+    def ask_yes_no(self, title: str, msg: str, detail: str = ""):
+        return askyesnocancel(title=title, message=msg, detail=detail, icon='info')

@@ -85,11 +85,12 @@ class Scheduler:
         set_menu_event_handler("file_open", self.open_menu_event)
         set_menu_event_handler("file_save", self.save_menu_event)
         set_menu_event_handler("file_save_as", self.save_as_menu_event)
+        set_menu_event_handler("file_exit", self.exit_event)
+        set_main_page_event_handler("file_exit", self.exit_event)
         set_main_page_event_handler("file_open", self.open_menu_event)
         set_main_page_event_handler("file_new", self.new_menu_event)
         set_main_page_event_handler("file_open_previous", self.open_previous_file_event)
         set_main_page_event_handler("semester_change", self.semester_change)
-        set_menu_event_handler("file_exit", self.exit_event)
 
         # TODO
         set_menu_event_handler("print_pdf_teacher", self.menu_ignore)
@@ -201,6 +202,7 @@ class Scheduler:
             return
 
         if filename is None or filename == "":
+            print("Select file to save")
             filename = self.gui.select_file_to_save()
 
         if filename is not None and filename != "":
@@ -212,7 +214,7 @@ class Scheduler:
     # ============================================================================================
     # Event handlers - semester change
     # ============================================================================================
-    def semester_change(self):
+    def semester_change(self, *_):
         self.preferences.semester(self.gui.current_semester)
         self.previous_filename = self.preferences.previous_file()
         self.preferences.save()
@@ -220,13 +222,16 @@ class Scheduler:
     # ============================================================================================
     # Event handlers - exit
     # ============================================================================================
+
     def exit_event(self, _: Event = None):
+        print("in exit event")
         if self.dirty_flag:
-            ans = self.gui.show_message("File", "Save File?")
-            if ans == 'y':
+            ans = self.gui.ask_yes_no("File", "Save File?")
+            if ans:
                 self.save_menu_event()
 
     def menu_ignore(self, _: Event = None):
+        print("still a To Do!!")
         pass
 
     # ==================================================================

@@ -48,6 +48,9 @@ class SchedulerTkTest(SchedulerTk):
         self.called["select_file_to_save"] = True
         return CREATED_SCHEDULE_FILE
 
+    def ask_yes_no(self, title: str, msg: str, detail: str = ""):
+        return True
+
     def create_menu_and_toolbars(*args, **kwargs): ...
 
     def create_front_page(*args, **kwargs): ...
@@ -440,6 +443,7 @@ def test_save_no_filename(gui):
     - asks user for filename
     - dirty flag unset
     """
+    # prepare
     obj = Scheduler(BIN_DIR, gui)
     MAIN_MENU_EVENT_HANDLERS["file_new"]()
     assert obj.schedule_filename == ''
@@ -459,4 +463,62 @@ def test_save_no_filename(gui):
     assert not gui.called.get("show_error", None)
     assert gui.called.get("select_file_to_save", None)
 
-#
+
+# =============================================================================
+# exit
+# =============================================================================
+def test_exit_with_new_schedule(gui):
+    """new schedule, exit
+    - asks user save?
+    - asks user for filename
+    """
+    # prepare
+    obj = Scheduler(BIN_DIR, gui)
+    MAIN_MENU_EVENT_HANDLERS["file_new"]()
+    assert obj.schedule_filename == ''
+    obj.dirty_flag = True
+    try:
+        os.remove(CREATED_SCHEDULE_FILE)
+    except FileNotFoundError:
+        pass
+
+    # execute
+    MAIN_PAGE_EVENT_HANDLERS["file_exit"]()
+
+    # verify
+    assert os.path.exists(CREATED_SCHEDULE_FILE)
+    assert obj.schedule_filename == CREATED_SCHEDULE_FILE
+    assert not gui.called.get("show_error", None)
+    assert gui.called.get("select_file_to_save", None)
+
+
+# =============================================================================
+# changing semesters
+# =============================================================================
+def test_semester_switch(gui):
+    """switch semesters
+    - previous filename is modified
+    """
+
+    # prepare
+    obj = Scheduler(BIN_DIR, gui)
+    obj.preferences.semester("fall")
+    obj.preferences.previous_file("fall.csv")
+    obj.preferences.save()
+    obj.preferences.semester("winter")
+    obj.preferences.previous_file("winter.csv")
+    obj.preferences.save()
+
+    # execute
+    obj.gui.current_semester = "fall"
+    MAIN_PAGE_EVENT_HANDLERS["semester_change"]()
+
+    # validate
+    assert os.path.basename(obj.previous_filename) == "fall.csv"
+
+    # execute
+    obj.gui.current_semester = "winter"
+    MAIN_PAGE_EVENT_HANDLERS["semester_change"]()
+
+    # validate
+    assert os.path.basename(obj.previous_filename) == "winter.csv"

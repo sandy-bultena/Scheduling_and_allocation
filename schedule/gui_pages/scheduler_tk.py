@@ -16,7 +16,7 @@ EVENT_HANDLER_NAMES = Literal[
     "file_open",
     "file_new",
     "file_open_previous",
-    "exit",
+    "file_exit",
     "semester_change"
 ]
 MAIN_PAGE_EVENT_HANDLERS: dict[EVENT_HANDLER_NAMES, Callable[[], None]] = {}
@@ -90,8 +90,11 @@ class SchedulerTk(MainPageBaseTk):
     # ========================================================================
     # override exit event
     # ========================================================================
+    def _exit_schedule(self, *_):
+        self.exit_schedule()
+
     def exit_schedule(self):
-        MAIN_PAGE_EVENT_HANDLERS["exit"]()
+        MAIN_PAGE_EVENT_HANDLERS["file_exit"]()
         super()._exit_schedule()
 
     # ========================================================================
