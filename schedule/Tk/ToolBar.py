@@ -29,12 +29,17 @@ class ToolBar(Frame):
         else:
             self.colours = TkColours(mw)
 
+        # default configuration
         self.config_options = ['button_hover_highlight', 'button_highlight', 'button_fg', 'button_bg']
-        self.configure(bg=colours.ButtonBackground)
+        self.configure(bg=colours.WorkspaceColour)
         self.configure(button_hover_highlight=colours.ButtonHoverHighlight)
-        self.configure(button_highlight=colours.ButtonHighlight)
+        self.configure(button_highlight=colours.WorkspaceColour)
         self.configure(button_bg=colours.ButtonBackground)
         self.configure(button_fg=colours.ButtonForeground)
+
+        # user configuration
+        for k,v in kwargs.items():
+            self.configure(**{k:v})
 
         self.images = list()
 
@@ -61,8 +66,8 @@ class ToolBar(Frame):
         self.configure(**kwargs)
 
     def cget(self, key):
-        if key in self.config_options:
-            print (f"{key=}")
+        # if key in self.config_options:
+        #     print (f"{key=}")
         return getattr(self, key, None) if key in self.config_options \
             else super().cget(key)
 
@@ -112,6 +117,7 @@ class ToolBar(Frame):
             bg=self.cget("button_bg"),
             activebackground=self.cget("button_bg"),
             highlightbackground=self.cget("button_highlight"),
+
             fg=self.cget("button_fg"),
             width=BUTTON_SIZE,
             height=BUTTON_SIZE,

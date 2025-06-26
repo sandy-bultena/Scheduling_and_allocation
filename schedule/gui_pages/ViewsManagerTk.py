@@ -1,0 +1,125 @@
+# COMPLETED
+from functools import partial
+from tkinter import *
+
+from ..gui_pages.FontsAndColoursTk import FontsAndColoursTk
+from ..PerlLib import Colour
+from ..model.conflicts import Conflict
+#from ..UsefulClasses.ScheduablesByType import ScheduablesByType
+
+
+class ViewsManagerTk:
+    def __init__(self, gui):
+        self._main_gui = gui
+        self.main_window = gui.mw
+        self._button_refs: dict[str, Button] = {}
+
+    @property
+    def mw(self):
+        """Gets the MainWindow object."""
+        return self._main_window
+
+    @property
+    def main_window(self):
+        """Gets the MainWindow object."""
+        return self._main_window
+
+    @main_window.setter
+    def main_window(self, value):
+        self._main_window = value
+
+    def add_button_refs(self, btn: Button, obj):
+        """Adds a button reference to the dictionary of all button references and the Object it is associated to.
+
+        Parameters:
+            btn: A button object.
+            obj: A schedulable object (Teacher/Lab/Stream)"""
+        # Save
+        self._button_refs[obj] = btn
+        return self
+
+    def __button_refs(self) -> dict[str, Button]:
+        """Returns a dict of all button dicts."""
+        return self._button_refs
+
+    def reset_button_refs(self):
+        """Resets the dictionary of button references."""
+        self._button_refs.clear()
+
+    def set_button_colour(self, obj, view_conflict):
+        """Sets the Colour of the button which is used to create the view.
+
+        The Colour is dependent on the conflict for this particular view."""
+        # Get the button associated with the current teacher/lab/stream.
+
+        button_pts = self._button_refs
+        btn = button_pts.get(obj)
+
+        # Set button Colour to conflict Colour if there is a conflict.
+        if not hasattr(FontsAndColoursTk, "colors"):
+            # Call this just in case FontsAndColoursTk hasn't been initialized yet. Avoids crashes.
+            FontsAndColoursTk(self.mw)
+
+        colour = FontsAndColoursTk.colours['ButtonBackground']
+        if view_conflict:
+            colour = Conflict.colours()[view_conflict] or 'red'
+        active = Colour.darken(colour, 10)
+        if btn:
+            btn.configure(background=colour,
+                          activebackground=active)
+
+    def create_buttons_for_frame(self, frame: Frame, resources_by_type: ScheduablesByType,
+                                 command_func):
+        """Populates frame with buttons for all Teachers, Labs, or Streams depending on resource_type,
+        in alphabetical order.
+
+        Parameters:
+            frame: Frame object which will be drawn on.
+            resources_by_type: An object that defines everything needed to know what schedulable objects are available.
+            command_func: Callback function to create a view if the button is clicked."""
+        schedulables = resources_by_type.named_scheduable_objs
+        type = resources_by_type.type
+
+        subframe = frame.Subwidget('Frame')
+        # subframe.pack(anchor='center', expand=True)
+        # frame.update_scrollbars()
+
+        row = 0
+        col = 0
+
+        # determine how many buttons should be on one row.
+        arr_size = len(schedulables)
+        divisor = 2
+        if arr_size > 10:
+            divisor = 4
+
+        # For every view choice object...
+        for named_schedulable_obj in schedulables:
+            name = named_schedulable_obj.name
+
+            # Create the command array reference including the ViewManager, the Teacher/Lab/Stream,
+            # and its resource_type.
+            command = [command_func, self, name, type]
+
+            # Create the button on the frame.
+            btn = Button(subframe, text=name, command=partial(
+                command_func, self, named_schedulable_obj.object, type
+            ))
+            btn.grid(row=row, column=col, sticky=NSEW,
+                     ipadx=30, ipady=10)
+            # btn.pack(anchor='center', ipadx=30, ipady=10)
+
+            frame.update_scrollbars()
+
+            # Pass the button reference to the event handler # NOTE: ?
+            command.append(btn)
+
+            # add it to the dict of button references.
+            self.add_button_refs(btn, named_schedulable_obj)
+
+            col += 1
+
+            # Reset to next row.
+            if col >= (arr_size / divisor):
+                row += 1
+                col = 0

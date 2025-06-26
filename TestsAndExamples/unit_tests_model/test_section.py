@@ -2,11 +2,11 @@ from __future__ import annotations
 import re
 import pytest
 
-from schedule.Model.section import Section
-import schedule.Model.section as sections_module
-from schedule.Model import Block, WeekDay, ClockTime
-from schedule.Model import TimeSlot, ConflictType
-from schedule.Model import InvalidHoursForSectionError
+from schedule.model.section import Section
+import schedule.model.section as sections_module
+from schedule.model import Block, WeekDay, ClockTime
+from schedule.model import TimeSlot, ConflictType
+from schedule.model import InvalidHoursForSectionError
 
 
 @pytest.fixture(scope="module", autouse=True)

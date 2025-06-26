@@ -1,12 +1,12 @@
 import pytest
 
-from schedule.Model import WeekDay, ClockTime
-from schedule.Model.schedule import Schedule
-from schedule.Model.course import Course
-from schedule.Model.teacher import Teacher
-from schedule.Model.lab import Lab
-from schedule.Model.stream import Stream
-from schedule.Model.time_slot import TimeSlot
+from schedule.model import WeekDay, ClockTime
+from schedule.model.schedule import Schedule
+from schedule.model.course import Course
+from schedule.model.teacher import Teacher
+from schedule.model.lab import Lab
+from schedule.model.stream import Stream
+from schedule.model.time_slot import TimeSlot
 
 
 # ============================================================================

@@ -5,12 +5,15 @@ import platform
 import re
 from typing import *
 
-valid_semester = Literal['fall', 'summer', 'winter']
+VALID_SEMESTER = Literal['fall', 'summer', 'winter']
+DATA_FILE = "preferences.ini"
+APP_DATA_PATH = None
 
 
 class Preferences:
     def __init__(self):
         self._config: cp.ConfigParser = _read_ini()
+        pass
 
     def home_directory(self):
         operating_system = platform.system().lower()
@@ -18,7 +21,7 @@ class Preferences:
         user_base_dir = None
         if re.match(r'win', operating_system):
             user_base_dir = os.environ['CSIDL_MYDOCUMENTS'] if os.environ['CSIDL_MYDOCUMENTS'] else None
-        elif re.match('darwin', operating_system):
+        elif re.match(r'darwin|posix', operating_system):
             user_base_dir = os.environ['HOME']
         if user_base_dir is not None and os.path.isdir(user_base_dir):
             return user_base_dir
@@ -29,21 +32,12 @@ class Preferences:
             self._config['COLOURS']['dark_mode'] = str(dark_mode)
         return self._config['COLOURS'].getboolean('dark_mode')
 
-    def semester(self, semester: str = None) -> valid_semester | None:
-        if semester is not None and (
-                semester.lower() == 'fall' or semester.lower() == 'winter' or semester.lower() == 'summer'):
-            self._config['MOST_RECENT']['semester'] = semester.lower()
+    def semester(self, semester: VALID_SEMESTER = "fall") -> VALID_SEMESTER:
+        if semester is not None:
+            self._config['MOST_RECENT']['semester'] = semester
+        return self._config['MOST_RECENT'].get('semester', "fall")
 
-        # TODO: still not sure if I am doing literals correctly
-        summer: Literal['summer'] = 'summer'
-        winter: Literal['winter'] = 'winter'
-        fall: Literal['fall'] = 'fall'
-        valid: dict[str, valid_semester] = {'summer': summer, 'winter': winter, 'fall': fall}
-
-        result: valid_semester = valid.get(self._config['MOST_RECENT'].get('semester', None), None)
-        return result
-
-    def current_file(self, file: str | None = None) -> str | None:
+    def previous_file(self, file: str | None = None) -> str | None:
         directory = None
         filename = None
 
@@ -108,10 +102,13 @@ class Preferences:
                 return os.path.realpath(directory)
         return None
 
+    def save(self):
+        _write_ini(self._config)
+
 
 def _read_ini() -> cp.ConfigParser:
     """if the ini file can be found, read it, if the config file cannot be found, use defaults"""
-    ini_file = _get_app_data_location("_preferences.csv")
+    ini_file = _get_app_data_location(DATA_FILE)
     config = cp.ConfigParser()
 
     # ini file exists, read it
@@ -135,6 +132,9 @@ def _read_ini() -> cp.ConfigParser:
 
 
 def _get_app_data_location(ini_file_name: str) -> Optional[str]:
+    global APP_DATA_PATH
+    if APP_DATA_PATH is not None:
+        return APP_DATA_PATH
     operating_system = platform.system().lower()
     sub_dir = "scheduling_and_allocation"
 
@@ -142,24 +142,25 @@ def _get_app_data_location(ini_file_name: str) -> Optional[str]:
     app_dir = None
     if re.match(r'win', operating_system):
         user_base_dir = os.environ['APPDATA'] if os.environ['AppData'] else os.environ['USERPROFILE']
-        app_dir = user_base_dir + "/" + sub_dir
+        app_dir = os.path.join(user_base_dir, sub_dir)
     elif re.search('darwin', operating_system):
         user_base_dir = os.environ['HOME']
-        app_dir = user_base_dir + "/." + sub_dir
+        app_dir = os.path.join(user_base_dir, "." + sub_dir)
 
     if not (app_dir and os.path.exists(app_dir)):
         try:
             os.mkdir(app_dir)
-        except Exception:
+        except FileNotFoundError:
             return None
 
-    ini_file = user_base_dir + sub_dir + "/" + ini_file_name
+    ini_file = os.path.join(user_base_dir, app_dir, ini_file_name)
+    APP_DATA_PATH = ini_file
     return ini_file
 
 
 def _write_ini(config: cp.ConfigParser):
     """write _preferences in a safe place (it's secret, ha! ha!)"""
-    ini_file = _get_app_data_location("_preferences.csv")
+    ini_file = _get_app_data_location(DATA_FILE)
     if ini_file is None:
         return
 

@@ -84,9 +84,9 @@ Example::
     ]
 
     # make a Tk window
-    _mw = Tk()
-    _mw.geometry("500x300")
-    frame = Frame(_mw)
+    mw = Tk()
+    mw.geometry("500x300")
+    frame = Frame(mw)
     frame.pack(expand=1, fill="both")
 
     # add the TableEntry object
@@ -112,7 +112,7 @@ Example::
 
     de.add_empty_row();
 
-    _mw.mainloop()
+    mw.mainloop()
 
     def on_delete(data: list):
         print(f"Deleted row, {data}")

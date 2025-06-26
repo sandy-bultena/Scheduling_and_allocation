@@ -1,4 +1,4 @@
-from schedule.Model.schedule_time import ScheduleTime, ClockTime
+from schedule.model.schedule_time import ScheduleTime, ClockTime
 
 
 def test_schedule_time_properties():

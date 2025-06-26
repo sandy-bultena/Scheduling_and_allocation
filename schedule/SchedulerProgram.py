@@ -1,11 +1,17 @@
 import os
-from Presentation.Scheduler import Scheduler
-
+import sys
 bin_dir: str = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.join(bin_dir, "../"))
+
+from presenter import Scheduler
+
+# bin_dir: str = os.path.dirname(os.path.realpath(__file__))
+# sys.path.append(os.path.join(bin_dir, "../"))
+# print(os.path.join(bin_dir, "../"))
 
 
 def main():
-    Scheduler(bin_dir)
+    Scheduler(bin_dir=bin_dir)
 
 
 if __name__ == "__main__":

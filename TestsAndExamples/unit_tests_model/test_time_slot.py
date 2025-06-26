@@ -1,8 +1,8 @@
 import pytest
-from schedule.Model import ScheduleTime, ClockTime
-from schedule.Model import TimeSlot
-from schedule.Model import WeekDay
-from schedule.Model import time_slot as ts
+from schedule.model import ScheduleTime, ClockTime
+from schedule.model import TimeSlot
+from schedule.model import WeekDay
+from schedule.model import time_slot as ts
 
 
 def test_defaults():

@@ -2,8 +2,8 @@ import pytest
 import sys
 from os import path
 
-from schedule.Model import Lab, WeekDay, ClockTime
-from schedule.Model.time_slot import TimeSlot
+from schedule.model import Lab, WeekDay, ClockTime
+from schedule.model.time_slot import TimeSlot
 
 
 # ============================================================================

@@ -10,10 +10,10 @@ import re
 from typing import Literal, Optional
 
 import schedule.Utilities.Colour as Colour
-
 operating_system = platform.system().lower()
 
-DEFAULT_FONT_SIZE=14
+DEFAULT_FONT_SIZE = 14
+
 
 class TkColours:
     """Defines colour scheme """
@@ -88,9 +88,6 @@ class TkColours:
         self.DisabledForeground = "#000000"
         self.DragNDropForeground = self.WindowForeground
 
-        if os.name == 'darwin':
-            # MAC does not allow you to change the background colour of buttons
-            self.ButtonBackground = "#eeeeee"
         if Colour.is_light(self.WorkspaceColour):
             self.DragNDropBackground = Colour.darken(self.WorkspaceColour, 25)
             self.DragNDropAllowedBackground = Colour.darken(self.WorkspaceColour, 5)
@@ -105,7 +102,6 @@ class TkColours:
         else:
             self.ButtonHoverHighlight = Colour.lighten(self.WorkspaceColour, 25)
             self.ButtonForeground = "#FFFFFF"
-
 
         # ============================================================================
         # if invert mode, just invert all the colours
@@ -122,10 +118,16 @@ class TkColours:
                 l = abs(0.9 * l - 1)
                 setattr(self, col, Colour.get_colour_string_from_hsl(h, s, l))
 
+        if os.name == 'darwin' or os.name == "posix":
+            # MAC does not allow you to change the background colour of buttons
+            self.ButtonForeground = "#000000"
+
+        print(f"inside init_gui_fonts and colours {self.ButtonForeground=}")
+
     def __str__(self):
-        str:str = ""
+        str: str = ""
         for col in vars(self):
-            str += f"{col}: {getattr(self,col)}\n"
+            str += f"{col}: {getattr(self, col)}\n"
         return str
 
 
@@ -133,8 +135,8 @@ class TkFonts:
     def __init__(self, mw: Tk, my_size: int = DEFAULT_FONT_SIZE):
         size = my_size
         if re.search('darwin', operating_system):
-            family = 'lucidia'
-            size += 3
+            family = 'arial'
+            #size += 2
         else:
             size -= 2
         family = 'arial'
@@ -161,6 +163,10 @@ class TkFonts:
 
 colours: TkColours = TkColours()
 fonts: Optional[TkFonts] = None
+
+
+def get_fonts_and_colours():
+    return colours, fonts
 
 
 def set_default_fonts_and_colours(mw: Tk, font_size: int = DEFAULT_FONT_SIZE, invert: bool = False):
@@ -265,6 +271,6 @@ def set_system_colours(mw: Tk, colors: TkColours):
 
 
 def _option_add(mw: Tk, option: str, new_value):
-    """Sets the provided option on _mw. If new_value is none, does nothing"""
+    """Sets the provided option on mw. If new_value is none, does nothing"""
     if new_value:
         mw.option_add(option, new_value)

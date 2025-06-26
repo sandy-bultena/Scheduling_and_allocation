@@ -5,7 +5,7 @@ from os import path
 
 sys.path.append(path.dirname(path.dirname(__file__) + "/../../"))
 
-from schedule.Model.undo import Undo
+from schedule.model.undo import Undo
 
 
 @pytest.fixture(autouse=True)

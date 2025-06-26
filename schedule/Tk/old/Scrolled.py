@@ -90,28 +90,28 @@ example::
         from tkinter import *
         from scrolled import Scrolled
 
-        _mw = Tk()
-        scrolled_listbox = Scrolled(_mw, 'Listbox', scrollbars=E, bg='pink')
+        mw = Tk()
+        scrolled_listbox = Scrolled(mw, 'Listbox', scrollbars=E, bg='pink')
         scrolled_listbox.pack(fill=BOTH, side=TOP, expand=1)
         scrolled_listbox.vertical_scrollbar.configure(width=30)
 
         for i in range(20):
             scrolled_listbox.widget.insert("end", f"entry {i=}")
 
-        _mw.mainloop()
+        mw.mainloop()
 
     Example
         from tkinter import *
         from scrolled import Scrolled
 
-        _mw = Tk()
-        scrolled_frame = Scrolled(_mw, 'Frame', scrollbars=E)
+        mw = Tk()
+        scrolled_frame = Scrolled(mw, 'Frame', scrollbars=E)
         scrolled_frame.pack(fill=BOTH, side=TOP, expand=1)
 
         for i in range(10):
             Button(scrolled_frame.widget,text=f"Button {i}").pack(ipady=10)
 
-        _mw.mainloop()
+        mw.mainloop()
     """
 
     # ==============================================================================================

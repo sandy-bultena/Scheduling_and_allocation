@@ -1,4 +1,4 @@
-from Presentation import AllocationManager
+from presenter import AllocationManager
 
 
 def main():

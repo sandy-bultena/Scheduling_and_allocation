@@ -2,7 +2,7 @@ import re, platform
 import os
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
-from schedule.Presentation import dirty_flags
+from schedule.presenter import dirty_flags
 
 
 def get_image_dir():

@@ -3,8 +3,8 @@ import re
 from tkinter import Canvas
 
 from ..PerlLib import Colour
-from ..Model.Block import Block
-from ..Model.ScheduleEnums import ResourceType
+from ..model.Block import Block
+from ..model.ScheduleEnums import ResourceType
 
 """SYNOPSIS
     

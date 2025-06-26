@@ -1,8 +1,8 @@
 from __future__ import annotations
 import pytest
 
-from schedule.Model import Block
-from schedule.Model.conflicts import ConflictType
+from schedule.model import Block
+from schedule.model.conflicts import ConflictType
 
 
 class Lab:

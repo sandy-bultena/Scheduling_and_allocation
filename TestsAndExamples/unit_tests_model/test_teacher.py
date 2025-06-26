@@ -1,6 +1,6 @@
 import pytest
 
-from schedule.Model import Teacher
+from schedule.model import Teacher
 
 
 # ============================================================================

@@ -1,7 +1,7 @@
 import pytest
-from schedule.Model import conflicts as con
-from schedule.Model import Block, TimeSlot, WeekDay, ClockTime
-from schedule.Model import ResourceType, ConflictType
+from schedule.model import conflicts as con
+from schedule.model import Block, TimeSlot, WeekDay, ClockTime
+from schedule.model import ResourceType, ConflictType
 
 
 class ParentContainer:

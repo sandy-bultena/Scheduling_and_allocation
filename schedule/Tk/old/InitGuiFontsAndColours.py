@@ -237,6 +237,6 @@ def set_system_colours(mw: Tk, colors: TkColours):
 
 
 def _option_add(mw: Tk, option: str, new_value):
-    """Sets the provided option on _mw. If new_value is none, does nothing"""
+    """Sets the provided option on mw. If new_value is none, does nothing"""
     if new_value:
         mw.option_add(option, new_value)

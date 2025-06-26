@@ -1,5 +1,5 @@
 import pytest
-from schedule.Model import Stream
+from schedule.model import Stream
 
 
 @pytest.fixture(scope="module", autouse=True)

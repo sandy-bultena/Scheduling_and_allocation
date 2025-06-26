@@ -5,7 +5,7 @@ from os import path
 
 import pytest
 
-from schedule.Model import schedule as s
+from schedule.model import schedule as s
 
 
 def test_read_write():

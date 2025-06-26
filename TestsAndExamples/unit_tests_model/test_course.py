@@ -4,10 +4,10 @@ from os import path
 import pytest
 
 
-from schedule.Model import Course
-from schedule.Model import SemesterType
-from schedule.Model import TimeSlot
-from schedule.Model import InvalidSectionNumberForCourseError
+from schedule.model import Course
+from schedule.model import SemesterType
+from schedule.model import TimeSlot
+from schedule.model import InvalidSectionNumberForCourseError
 
 sys.path.append(path.dirname(path.dirname(__file__)))
 

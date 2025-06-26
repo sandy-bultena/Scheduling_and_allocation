@@ -120,7 +120,7 @@ sub OpenCmd {
         }
         $i++;
         $$percent_ptr = ($i/@children)*100;
-        $_mw->update() if $_mw;
+        $mw->update() if $mw;
 
         # have grandchildren already been defined?
         next if $self->infoChildren($child);
