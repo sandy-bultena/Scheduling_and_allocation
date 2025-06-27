@@ -3,7 +3,7 @@ import sys
 from os import path
 
 sys.path.append(path.dirname(path.dirname(__file__) + "/../../"))
-from schedule.gui_pages.EditResourcesTk import DEColumnDescription
+from schedule.gui_pages.edit_resources_tk import DEColumnDescription
 from typing import Any
 from schedule.model import Schedule
 from schedule.presenter.edit_resources import EditResources
@@ -34,10 +34,10 @@ class Gui:
 
 def test_constructor():
     schedule = Schedule()
-    t1 = schedule.add_teacher("Jane", "Doe")
+    t1 = schedule.add_update_teacher("Jane", "Doe")
     t1.release = 0
-    t2 = schedule.add_teacher("John", "Doe")
-    t3 = schedule.add_teacher("Babe", "Ruth")
+    t2 = schedule.add_update_teacher("John", "Doe")
+    t3 = schedule.add_update_teacher("Babe", "Ruth")
     gui = Gui()
     de = EditResources("", ResourceType.teacher, schedule, gui)
     assert gui.called_initialize_columns == True
@@ -48,10 +48,10 @@ def test_constructor():
 def test_refresh():
     schedule = Schedule()
     unset_dirty_flag()
-    t1 = schedule.add_teacher("Jane", "Doe")
+    t1 = schedule.add_update_teacher("Jane", "Doe")
     t1.release = 0.3
-    t2 = schedule.add_teacher("John", "Doe")
-    t3 = schedule.add_teacher("Babe", "Ruth")
+    t2 = schedule.add_update_teacher("John", "Doe")
+    t3 = schedule.add_update_teacher("Babe", "Ruth")
     gui = Gui()
     de = EditResources("", ResourceType.teacher, schedule, gui)
     de.refresh()
@@ -63,10 +63,10 @@ def test_handle_empty_rows():
     schedule = Schedule()
     unset_dirty_flag()
     assert not is_data_dirty()
-    t1 = schedule.add_teacher("Jane", "Doe")
+    t1 = schedule.add_update_teacher("Jane", "Doe")
     t1.release = 0.25
-    t2 = schedule.add_teacher("John", "Doe")
-    t3 = schedule.add_teacher("Babe", "Ruth")
+    t2 = schedule.add_update_teacher("John", "Doe")
+    t3 = schedule.add_update_teacher("Babe", "Ruth")
     gui = Gui()
     de = EditResources("", ResourceType.teacher, schedule, gui)
     de.refresh()
@@ -82,10 +82,10 @@ def test_adding_new_teacher():
     schedule = Schedule()
     unset_dirty_flag()
     assert not is_data_dirty()
-    t1 = schedule.add_teacher("Jane", "Doe")
+    t1 = schedule.add_update_teacher("Jane", "Doe")
     t1.release = 0.25
-    t2 = schedule.add_teacher("John", "Doe")
-    t3 = schedule.add_teacher("Babe", "Ruth")
+    t2 = schedule.add_update_teacher("John", "Doe")
+    t3 = schedule.add_update_teacher("Babe", "Ruth")
     gui = Gui()
     de = EditResources("", ResourceType.teacher, schedule, gui)
     de.refresh()
@@ -103,10 +103,10 @@ def test_modifying_teacher():
     schedule = Schedule()
     unset_dirty_flag()
     assert not is_data_dirty()
-    t1 = schedule.add_teacher("Jane", "Doe")
+    t1 = schedule.add_update_teacher("Jane", "Doe")
     t1.release = 0.25
-    t2 = schedule.add_teacher("John", "Doe")
-    t3 = schedule.add_teacher("Babe", "Ruth")
+    t2 = schedule.add_update_teacher("John", "Doe")
+    t3 = schedule.add_update_teacher("Babe", "Ruth")
     gui = Gui()
     de = EditResources("", ResourceType.teacher, schedule, gui)
     de.refresh()

@@ -32,7 +32,7 @@ def main():
     de.initialize_columns(columns)
     de.refresh(data)
 
-    Button(mw, text="clear", command=lambda *_: de.de.clear_data(),
+    Button(mw, text="clear", command=lambda *_: de.data_entry.clear_data(),
            bg=colours.ButtonBackground,
            fg=colours.ButtonForeground,
            highlightbackground=colours.HighlightBackground,

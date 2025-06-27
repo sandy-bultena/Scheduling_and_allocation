@@ -130,7 +130,7 @@ class CSVSerializor:
                 # -------------------------------------------------------------
                 case "lab":
                     (num, descr) = row[1:3]
-                    current_obj = schedule.add_lab(number=num, description=descr)
+                    current_obj = schedule.add_update_lab(number=num, description=descr)
 
                 case "unavailable" if current_obj.resource_type == ResourceType.lab:
                     (day, start, duration, movable) = row[1:5]
@@ -139,7 +139,7 @@ class CSVSerializor:
 
                 case 'stream':
                     (number, descr) = row[1:3]
-                    current_obj = schedule.add_stream(number=number, description=descr)
+                    current_obj = schedule.add_update_stream(number=number, description=descr)
 
                 case 'teacher':
                     (number, fname, lname, dept, release) = row[1:6]
@@ -152,8 +152,8 @@ class CSVSerializor:
                 # -------------------------------------------------------------
                 case 'course':
                     (number, name, semester, allocation) = row[1:5]
-                    course_obj: Course = schedule.add_course(number=number, name=name, semester=SemesterType(int(semester)),
-                                                             needs_allocation=bool(int(allocation)))
+                    course_obj: Course = schedule.add_update_course(number=number, name=name, semester=SemesterType(int(semester)),
+                                                                    needs_allocation=bool(int(allocation)))
 
                 case 'section' if course_obj is not None:
                     (number, name, hours, students) = row[2:6]

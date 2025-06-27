@@ -60,31 +60,72 @@ class Schedule:
 
     # ------------------------------------------------------------------------
     # adding an object to collection
+    # ... if the unique identifier already exists, then update existing object,
+    #     rather than creating a new one
     # ------------------------------------------------------------------------
-    def add_course(self, number: str, name: str = "new Course",
-                   semester: SemesterType = SemesterType.any,
-                   needs_allocation: bool = True) -> Course:
-        """Creates and saves a new Course object."""
-        course: Course = Course(number, name, semester, needs_allocation)
-        self._courses[course.number] = course
-        return course
+    def add_update_course(self, number: str, name: str = "new Course",
+                          semester: SemesterType = SemesterType.any,
+                          needs_allocation: bool = True) -> Course:
+        """Creates or updates a Course object with the unique identifier 'teacher_id'
+        :param number: Unique identifier for the course
+        :param name: Name of the course
+        :param semester: Which semester is this course in
+        :param needs_allocation: Will give allocation to any teacher who teaches this course [True]
+        """
+        original_course: Course = self.get_course_by_number(number)
+        if original_course is None:
+            course: Course = Course(number, name, semester, needs_allocation)
+            self._courses[course.number] = course
+            return course
+        else:
+            original_course.semester = semester
+            original_course.name = name
+            original_course.needs_allocation = needs_allocation
+            return original_course
 
-    def add_stream(self, number: str, description: str = "") -> Stream:
-        """Creates and saves a new Stream object."""
-        stream = Stream(number, description)
-        self._streams[stream.number] = stream
-        return stream
+    def add_update_stream(self, number: str, description: str = "") -> Stream:
+        """Creates or updates a Stream object with the unique identifier 'teacher_id'
+        :param number: Unique identifier for the stream
+        :param description: (optional)
+        """
+        original_stream = self.get_stream_by_number(number)
+        if original_stream is None:
+            stream = Stream(number, description)
+            self._streams[stream.number] = stream
+            return stream
+        else:
+            original_stream.description = description
 
-    def add_lab(self, number: str, description: str = '') -> Lab:
-        """Creates and saves a new Lab object."""
-        lab: Lab = Lab(number, description)
-        self._labs[lab.number] = lab
-        return lab
+    def add_update_lab(self, number: str, description: str = '') -> Lab:
+        """Creates or updates a Lab object with the unique identifier 'teacher_id'
+        :param number: Unique identifier for the lab
+        :param description: (optional)
+        """
+        original_lab = self.get_lab_by_number(number)
+        if original_lab is None:
+            lab: Lab = Lab(number, description)
+            self._labs[lab.number] = lab
+            return lab
+        else:
+            original_lab.description = description
+            return original_lab
 
-    def add_teacher(self, firstname: str, lastname: str, department: str = "", teacher_id: int = None) -> Teacher:
-        teacher = Teacher(firstname, lastname, department, teacher_id=teacher_id)
-        self._teachers[teacher.number] = teacher
-        return teacher
+    def add_update_teacher(self, firstname: str, lastname: str, department: str = "", number: int = None) -> Teacher:
+        """Creates or updates a teacher object with the unique identifier 'teacher_id'
+        :param firstname:
+        :param lastname:
+        :param department: (optional)
+        :param number: (optional) - if not specified, a unique id will be created
+        """
+        original_teacher = self.get_teacher_by_number(number) if number is not None else None
+        if original_teacher is None:
+            teacher = Teacher(firstname, lastname, department, teacher_id=number)
+            self._teachers[teacher.number] = teacher
+            return teacher
+        else:
+            original_teacher.firstname = firstname
+            original_teacher.lastname = lastname
+            original_teacher.department = department
 
     # ------------------------------------------------------------------------
     # returning collections as a tuple (to prevent user from modifying the collection)

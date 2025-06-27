@@ -1,5 +1,5 @@
-from .EditResourcesTk import EditResourcesTk
-from .EditResourcesTk import DEColumnDescription
+from .edit_resources_tk import EditResourcesTk
+from .edit_resources_tk import DEColumnDescription
 from .EditCoursesTk import EditCoursesTk
 from .main_pages_tk import MainPageBaseTk
 from .scheduler_tk import SchedulerTk, set_main_page_event_handler

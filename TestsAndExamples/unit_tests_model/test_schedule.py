@@ -66,9 +66,9 @@ def test_interface():
 def test_add_course():
     s = Schedule()
     assert len(s._courses) == 0
-    c1 = s.add_course('420-DBF')
+    c1 = s.add_update_course('420-DBF')
     assert len(s._courses) == 1
-    c2 = s.add_course('420-ABC')
+    c2 = s.add_update_course('420-ABC')
     assert len(s._courses) == 2
     assert c1.number in s._courses
     assert c2.number in s._courses
@@ -78,9 +78,9 @@ def test_add_course():
 def test_add_stream():
     s = Schedule()
     assert len(s._streams) == 0
-    c1 = s.add_stream('4A')
+    c1 = s.add_update_stream('4A')
     assert len(s._streams) == 1
-    c2 = s.add_stream('4B')
+    c2 = s.add_update_stream('4B')
     assert len(s._streams) == 2
     assert c1.number in s._streams
     assert c2.number in s._streams
@@ -90,9 +90,9 @@ def test_add_stream():
 def test_add_lab():
     s = Schedule()
     assert len(s._labs) == 0
-    c1 = s.add_lab('4A')
+    c1 = s.add_update_lab('4A')
     assert len(s._labs) == 1
-    c2 = s.add_lab('4B')
+    c2 = s.add_update_lab('4B')
     assert len(s._labs) == 2
     assert c1.number in s._labs
     assert c2.number in s._labs
@@ -102,9 +102,9 @@ def test_add_lab():
 def test_add_teacher():
     s = Schedule()
     assert len(s._teachers) == 0
-    c1 = s.add_teacher('4A', 'Doe')
+    c1 = s.add_update_teacher('4A', 'Doe')
     assert len(s._teachers) == 1
-    c2 = s.add_teacher('4B', 'Doe')
+    c2 = s.add_update_teacher('4B', 'Doe')
     assert len(s._teachers) == 2
     assert c1.number in s._teachers
     assert c2.number in s._teachers
@@ -244,8 +244,8 @@ def test_remove_teacher_from_courses():
     o2 = Teacher('DEF', 'Doe')
     s._teachers = {o1.number: o1, o2.number: o2}
 
-    c1 = s.add_course("C1")
-    c2 = s.add_course("C2")
+    c1 = s.add_update_course("C1")
+    c2 = s.add_update_course("C2")
     # NOTE: adding teachers is meaningless unless there are sections in the course
     st1 = c1.add_section("ABC")
     st2 = c2.add_section("DEF")
@@ -282,7 +282,7 @@ def test_remove_lab_complex():
     o2 = Lab('DEF')
     s._labs = {o1.number: o1, o2.number: o2}
 
-    c1 = s.add_course("C1")
+    c1 = s.add_update_course("C1")
     s1 = c1.add_section("1")
     s2 = c1.add_section("2")
     b1 = s1.add_block(TimeSlot(WeekDay.get_from_string('MOnday'), ClockTime('9:00'), 1))
@@ -326,7 +326,7 @@ def test_remove_stream_from_courses():
     o2 = Stream('DEF')
     s._streams = {o1.number: o1, o2.number: o2}
 
-    c1 = s.add_course("C1")
+    c1 = s.add_update_course("C1")
     s1 = c1.add_section("1")
     s2 = c1.add_section("2")
     s1.add_stream(o1)
@@ -349,8 +349,8 @@ def test_get_teachers_assigned_to_any_course():
     o3 = Teacher('XYZ', 'Doe')
     s._teachers = {o1.number: o1, o2.number: o2, o3.number: o3}
 
-    c1 = s.add_course("C1")
-    c2 = s.add_course("C2")
+    c1 = s.add_update_course("C1")
+    c2 = s.add_update_course("C2")
     # NOTE: adding teachers is meaningless unless there are sections in the course
     st1 = c1.add_section("ABC")
     st2 = c2.add_section("DEF")
@@ -373,8 +373,8 @@ def get_streams_assigned_to_any_course():
     o3 = Stream('XYZ')
     s._streams = {o1.number: o1, o2. number: o2, o3.number: o3}
 
-    c1 = s.add_course("C1")
-    c2 = s.add_course("C2")
+    c1 = s.add_update_course("C1")
+    c2 = s.add_update_course("C2")
     c1.add_stream(o1)
     c1.add_stream(o2)
     c2.add_stream(o1)
@@ -394,8 +394,8 @@ def get_labs_assigned_to_any_course():
     o3 = Lab('XYZ')
     s._labs = {o1.number: o1, o2.number: o2, o3.number: o3}
 
-    c1 = s.add_course("C1")
-    c2 = s.add_course("C2")
+    c1 = s.add_update_course("C1")
+    c2 = s.add_update_course("C2")
     c1.add_lab(o1)
     c1.add_lab(o2)
     c2.add_lab(o1)
@@ -415,9 +415,9 @@ def get_courses_for_teacher():
     o3 = Teacher('XYZ', 'Doe')
     s._teachers = {o1.number: o1, o2.number: o2, o3.number: o3}
 
-    c1 = s.add_course("C1")
-    c2 = s.add_course("C2")
-    c3 = s.add_course("C3")
+    c1 = s.add_update_course("C1")
+    c2 = s.add_update_course("C2")
+    c3 = s.add_update_course("C3")
     c1.add_teacher(o1)
     c1.add_teacher(o2)
     c2.add_teacher(o1)
@@ -438,8 +438,8 @@ def test_sections():
     o2 = Lab('DEF')
     s._labs = {o1.number: o1, o2.number: o2}
 
-    c1 = s.add_course("C1")
-    c2 = s.add_course("C2")
+    c1 = s.add_update_course("C1")
+    c2 = s.add_update_course("C2")
     s1 = c1.add_section("1")
     s2 = c1.add_section("2")
     s3 = c2.add_section("1")
@@ -458,7 +458,7 @@ def test_blocks():
     o2 = Lab('DEF')
     s._labs = {o1.number: o1, o2.number: o2}
 
-    c1 = s.add_course("C1")
+    c1 = s.add_update_course("C1")
     s1 = c1.add_section("1")
     s2 = c1.add_section("2")
     sections = s.sections()
@@ -486,8 +486,8 @@ def test_get_sections_for_teacher():
     t3 = Teacher("XYZ", "Doe")
     s._teachers = {t1.number: t1, t2.number: t2, t3.number: t3}
 
-    c1 = s.add_course("C1")
-    c2 = s.add_course("c3")
+    c1 = s.add_update_course("C1")
+    c2 = s.add_update_course("c3")
     s1 = c1.add_section("1")
     s2 = c1.add_section("2")
     s3 = c2.add_section("1")
@@ -531,8 +531,8 @@ def test_get_sections_for_stream():
     t3 = Teacher("XYZ", "Doe")
     s._teachers = {t1.number: t1, t2.number: t2, t3.number: t3}
 
-    c1 = s.add_course("C1")
-    c2 = s.add_course("c3")
+    c1 = s.add_update_course("C1")
+    c2 = s.add_update_course("c3")
     s1 = c1.add_section("1")
     s2 = c1.add_section("2")
     s3 = c2.add_section("1")
@@ -575,8 +575,8 @@ def test_get_blocks_for_teacher():
     t3 = Teacher("XYZ", "Doe")
     s._teachers = {t1.number: t1, t2.number: t2, t3.number: t3}
 
-    c1 = s.add_course("C1")
-    c2 = s.add_course("c3")
+    c1 = s.add_update_course("C1")
+    c2 = s.add_update_course("c3")
     s1 = c1.add_section("1")
     s2 = c1.add_section("2")
     s3 = c2.add_section("1")
@@ -621,8 +621,8 @@ def test_get_blocks_in_lab():
     t3 = Teacher("XYZ", "Doe")
     s._teachers = {t1.number: t1, t2.number: t2, t3.number: t3}
 
-    c1 = s.add_course("C1")
-    c2 = s.add_course("c3")
+    c1 = s.add_update_course("C1")
+    c2 = s.add_update_course("c3")
     s1 = c1.add_section("1")
     s2 = c1.add_section("2")
     s3 = c2.add_section("1")
@@ -669,8 +669,8 @@ def test_get_blocks_for_stream():
     t3 = Teacher("XYZ", "Doe")
     s._teachers = {t1.number: t1, t2.number: t2, t3.number: t3}
 
-    c1 = s.add_course("C1")
-    c2 = s.add_course("c3")
+    c1 = s.add_update_course("C1")
+    c2 = s.add_update_course("c3")
     s1 = c1.add_section("1")
     s2 = c1.add_section("2")
     s3 = c2.add_section("1")
@@ -719,8 +719,8 @@ def test_get_blocks_for_obj():
     t3 = Teacher("XYZ", "Doe")
     s._teachers = {t1.number: t1, t2.number: t2, t3.number: t3}
 
-    c1 = s.add_course("C1")
-    c2 = s.add_course("c3")
+    c1 = s.add_update_course("C1")
+    c2 = s.add_update_course("c3")
     s1 = c1.add_section("1")
     s2 = c1.add_section("2")
     s3 = c2.add_section("1")
@@ -764,8 +764,8 @@ def test_clear_all():
     t3 = Teacher("XYZ", "Doe")
     s._teachers = {t1.number: t1, t2.number: t2, t3.number: t3}
 
-    c1 = s.add_course("C1")
-    c2 = s.add_course("c3")
+    c1 = s.add_update_course("C1")
+    c2 = s.add_update_course("c3")
     s1 = c1.add_section("1")
     s2 = c1.add_section("2")
     s3 = c2.add_section("1")

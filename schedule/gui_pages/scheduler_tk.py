@@ -1,4 +1,3 @@
-# IN PROGRESS
 import os.path
 
 from typing import Callable, Optional, Literal, get_args
@@ -11,6 +10,10 @@ from tkinter import ttk
 
 BUTTON_WIDTH = 50
 MAX_LEN_OF_DISPLAYED_FILENAME = 60
+
+# ============================================================================
+# event handlers
+# ============================================================================
 
 EVENT_HANDLER_NAMES = Literal[
     "file_open",
@@ -28,6 +31,9 @@ def set_main_page_event_handler(name: EVENT_HANDLER_NAMES, handler: Callable[[],
     MAIN_PAGE_EVENT_HANDLERS[name] = handler
 
 
+# ============================================================================
+# class: SchedulerTk
+# ============================================================================
 class SchedulerTk(MainPageBaseTk):
     """
     GUI_Pages Code for the main Scheduling application window. Inherits from MainPageBaseTk.
@@ -117,7 +123,7 @@ class SchedulerTk(MainPageBaseTk):
         radio_winter.grid(row=0, column=1)
 
         # place a watch on changing bound variables
-        self._current_semester.trace('w', MAIN_PAGE_EVENT_HANDLERS["semester_change"]())
+        self._current_semester.trace('w', MAIN_PAGE_EVENT_HANDLERS["semester_change"])
 
         def _previous_file_change_event(*_):
             if self._previous_file != "None":

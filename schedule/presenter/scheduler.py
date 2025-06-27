@@ -46,20 +46,20 @@ class Scheduler:
     def __init__(self, bin_dir: DIRECTORY, gui: Optional[SchedulerTk] = None):
         # self.bin_dir: Optional[DIRECTORY] = None
         # self.user_base_dir: Optional[DIRECTORY] = None
-        # self.schedule: Optional[Schedule] = None
         # self._teachers_de: Optional[EditResources] = None
         # self._streams_de: Optional[EditResources] = None
         # self._labs_de: Optional[EditResources] = None
         # self._overview: Optional[Overview] = None
 
         self.preferences: Preferences = Preferences()
+        self.schedule: Optional[Schedule] = None
+        self.dirty_flag = False
+
         # gui is optional so that we can test the presenter more readily
         if gui:
             self.gui = gui
         else:
             self.gui: SchedulerTk = SchedulerTk('Scheduler', self.preferences, bin_dir)
-        self.schedule: Optional[Schedule] = None
-        self.dirty_flag = False
 
         self._schedule_filename = ""
         self._previous_filename = self.preferences.previous_file()
@@ -100,18 +100,6 @@ class Scheduler:
         set_menu_event_handler("print_latex_teacher", self.menu_ignore)
         set_menu_event_handler("print_latex_lab", self.menu_ignore)
         set_menu_event_handler("print_latex_streams", self.menu_ignore)
-
-        # file_exit: Callable = lambda *_: print("'File/Exit' selected")
-        #
-        # print_pdf_teacher: Callable = lambda *_: print("'Print/Teacher Schedules' selected")
-        # print_pdf_lab: Callable = lambda *_: print("'Print/Lab Schedules' selected")
-        # print_pdf_streams: Callable = lambda *_: print("'Print/Stream Schedules' selected")
-        #
-        # print_text: Callable = lambda *_: print("'Print/Text Output' selected")
-        #
-        # print_latex_teacher: Callable = lambda *_: print("'Print/Teacher Schedules' selected")
-        # print_latex_lab: Callable = lambda *_: print("'Print/Lab Schedules' selected")
-        # print_latex_streams: Callable = lambda *_: print("'Print/Stream Schedules' selected")
 
         (self._toolbar_buttons, self._button_properties, self._menu) = main_menu()
 
@@ -166,7 +154,7 @@ class Scheduler:
     def new_menu_event(self, _: Event = None):
         self.schedule = Schedule()
         self.schedule_filename = ""
-        # self.gui.create_standard_page(self._required_pages)
+        self.gui.create_standard_page(self._required_pages)
         self.dirty_flag = True
 
     def open_menu_event(self, _: Event = None):
@@ -184,7 +172,7 @@ class Scheduler:
                 self.schedule = schedule
                 self.schedule_filename = filename
                 self.dirty_flag = False
-                # self.gui.create_standard_page(self._required_pages)
+                self.gui.create_standard_page(self._required_pages)
 
             except CouldNotReadFileError as e:
                 self.gui.show_error("Read File", str(e))
@@ -350,26 +338,8 @@ class Scheduler:
 #         #
 #         #
 #
-#     # ==================================================================
-#     # exit_schedule
-#     # ==================================================================
-#     def exit_schedule(self):
-#         pass
-#         # global gui
-#         # if is_data_dirty():
-#         #     answer = gui.question("Save Schedule", "Do you want to save changes?")
-#         #     if answer == "Yes":
-#         #         save_schedule()
-#         #     elif answer == "Cancel":
-#         #         return
-#         # _write_ini()
-#         #
-#
 #     """
-#     Rewritten for Python by Evan Laverdiere
-#
-#     Originally written by Sandy Bultena
-#
+#     (c) Sandy Bultena 2025
 #     Copyrighted by the standard GPL License Agreement
 #
 #     All Rights Reserved.
