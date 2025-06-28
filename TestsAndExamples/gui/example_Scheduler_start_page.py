@@ -35,8 +35,8 @@ def open_file(filename, schedule=None):
 
 
 def get_notebook_info():
-    nb1 = NoteBookPageInfo("Schedules", event_handler=lambda *_: print("Schedules called"),
-                           frame_callback=lambda *_: print("Schedules frame callback"))
+    nb1 = NoteBookPageInfo("Schedules", tab_changed_handler=lambda *_: print("Schedules called"),
+                           creation_handler=lambda *_: print("Schedules frame callback"))
 
     nb1.subpages = [
         NoteBookPageInfo("Schedules-3", lambda *_: print("Schedules/Overview/Schedules-3 called")),
@@ -49,8 +49,8 @@ def get_notebook_info():
 
     return [
         nb1,
-        NoteBookPageInfo("Overview", event_handler=_show_overview,
-                         frame_callback=lambda *_: print("Overview frame method called")),
+        NoteBookPageInfo("Overview", tab_changed_handler=_show_overview,
+                         creation_handler=lambda *_: print("Overview frame method called")),
         NoteBookPageInfo("Courses", lambda *_: print("Courses called"), frame_args={'background': 'purple'}, ),
         NoteBookPageInfo("Teachers", lambda *_: print("Teachers called")),
         NoteBookPageInfo("Labs", lambda *_: print("Labs called")),

@@ -83,7 +83,7 @@ class TkColours:
         self.HighlightBackground: str = self.WorkspaceColour
         self.DarkBackground: str = Colour.darken(self.WorkspaceColour, 20)
         self.DisabledBackground: str = "#a3a3a3"
-        self.DirtyColour: str = "#880000"
+        self.DirtyColour: str = "#ff8888"
         self.DisabledBackground = "#a3a3a3"
         self.DisabledForeground = "#000000"
         self.DragNDropForeground = self.WindowForeground

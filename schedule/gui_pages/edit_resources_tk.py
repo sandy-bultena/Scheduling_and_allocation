@@ -34,6 +34,10 @@ class EditResourcesTk:
                  event_save_handler: Callable[[...], None] = lambda *_: None,
                  colours: Optional[TkColours] = None,
                  ):
+        # remove anything that was already in the frame
+        for widget in parent.winfo_children():
+            widget.destroy()
+
         if colours is None:
             colours = TkColours(parent.winfo_toplevel())
         self.colours = colours

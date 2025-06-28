@@ -2,32 +2,24 @@
 from __future__ import annotations
 
 from typing import Optional, TYPE_CHECKING
-# TODO: finish 'exit'
+
+from schedule.presenter.edit_resources import EditResources
 
 # from .ViewsManager import ViewsManager
 # from ..Utilities.Preferences import Preferences
 # from ..Presentation.dirty_flags import *
 # from ..Model import ResourceType
-# from ..Presentation.EditResources import EditResources
 # from ..Presentation.Overview import Overview
 #
 from .menus import set_menu_event_handler, main_menu
 from schedule.Utilities import Preferences
 from schedule.gui_pages import SchedulerTk, set_main_page_event_handler
 from schedule.Utilities.NoteBookPageInfo import NoteBookPageInfo
-from schedule.model import Schedule
+from schedule.model import Schedule, ResourceType
 from schedule.exceptions import CouldNotReadFileError
 
 if TYPE_CHECKING:
     from tkinter import Event
-
-    pass
-    # from .menus import ToolbarItem, MenuItem
-
-    # from .time_slot import TimeSlot, ClockTime
-    # from .lab import Lab
-    # from .teacher import Teacher
-    # from .section import Section
 
 # =====================================================================================
 # CLASS
@@ -46,7 +38,7 @@ class Scheduler:
     def __init__(self, bin_dir: DIRECTORY, gui: Optional[SchedulerTk] = None):
         # self.bin_dir: Optional[DIRECTORY] = None
         # self.user_base_dir: Optional[DIRECTORY] = None
-        # self._teachers_de: Optional[EditResources] = None
+        self._teachers_de: Optional[EditResources] = None
         # self._streams_de: Optional[EditResources] = None
         # self._labs_de: Optional[EditResources] = None
         # self._overview: Optional[Overview] = None
@@ -260,14 +252,13 @@ class Scheduler:
     # - A page where teacher_ids can be added/modified or deleted
     # ==================================================================
     def update_edit_teachers(self):
-        pass
-        # if self._teachers_de is None:
-        #     teachers_frame = self.gui.get_gui_container("teachers")
-        #     self._teachers_de = EditResources(teachers_frame, ResourceType.teacher, self.schedule)
-        #
-        # # reset the schedule object just in case the schedule file has changed
-        # self._teachers_de.schedule = self.schedule
-        # self._teachers_de.refresh()
+        print("in update edit_teachers")
+        teachers_frame = self.gui.get_gui_container("teachers")
+        self._teachers_de = EditResources(self.set_dirty_method, teachers_frame, ResourceType.teacher, self.schedule)
+
+        # reset the schedule object just in case the schedule file has changed
+        self._teachers_de.schedule = self.schedule
+        self._teachers_de.refresh()
 
     # ==================================================================
     # update_edit_streams
@@ -303,44 +294,54 @@ class Scheduler:
     # ==================================================================
     def update_edit_courses(self):
         pass
-#
-#     # ==================================================================
-#     # print_views
-#     # - print the schedule 'views'
-#     # - resource_type defines the output resource_type, PDF, Latex
-#     # ==================================================================
-#     def print_views(self, print_type, view_type):
-#         pass
-#         # global gui
-#         # # --------------------------------------------------------------
-#         # # no schedule yet
-#         # # --------------------------------------------------------------
-#         #
-#         # if not schedule:
-#         #     gui.show_error("Export", "Cannot export - There is no schedule")
-#         #
-#         # # --------------------------------------------------------------
-#         # # cannot print if the schedule is not saved
-#         # # --------------------------------------------------------------
-#         # if is_data_dirty():
-#         #     ans = gui.question(
-#         #         "Unsaved Changes",
-#         #         "There are unsaved changes.\nDo you want to save them?"
-#         #         )
-#         #
-#         #     if ans:
-#         #         save_schedule()
-#         #     else:
-#         #         return
-#         #
-#         # # --------------------------------------------------------------
-#         # # define base file name
-#         # # --------------------------------------------------------------
-#         # # NOTE: Come back to this later.
-#         # pass
-#         #
-#         #
-#
+
+    #
+    #     # ==================================================================
+    #     # print_views
+    #     # - print the schedule 'views'
+    #     # - resource_type defines the output resource_type, PDF, Latex
+    #     # ==================================================================
+    #     def print_views(self, print_type, view_type):
+    #         pass
+    #         # global gui
+    #         # # --------------------------------------------------------------
+    #         # # no schedule yet
+    #         # # --------------------------------------------------------------
+    #         #
+    #         # if not schedule:
+    #         #     gui.show_error("Export", "Cannot export - There is no schedule")
+    #         #
+    #         # # --------------------------------------------------------------
+    #         # # cannot print if the schedule is not saved
+    #         # # --------------------------------------------------------------
+    #         # if is_data_dirty():
+    #         #     ans = gui.question(
+    #         #         "Unsaved Changes",
+    #         #         "There are unsaved changes.\nDo you want to save them?"
+    #         #         )
+    #         #
+    #         #     if ans:
+    #         #         save_schedule()
+    #         #     else:
+    #         #         return
+    #         #
+    #         # # --------------------------------------------------------------
+    #         # # define base file name
+    #         # # --------------------------------------------------------------
+    #         # # NOTE: Come back to this later.
+    #         # pass
+    #         #
+    #         #
+    # ==================================================================
+    # update_edit_teachers
+    # - A page where teacher_ids can be added/modified or deleted
+    # ==================================================================
+    def set_dirty_method(self, value: Optional[bool] = None) -> bool:
+        if value is not None:
+            self.dirty_flag = value
+        return self.dirty_flag
+
+
 #     """
 #     (c) Sandy Bultena 2025
 #     Copyrighted by the standard GPL License Agreement

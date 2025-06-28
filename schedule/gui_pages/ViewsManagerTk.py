@@ -111,7 +111,7 @@ class ViewsManagerTk:
 
             frame.update_scrollbars()
 
-            # Pass the button reference to the event handler # NOTE: ?
+            # Pass the button reference to the event tab_selected_handler # NOTE: ?
             command.append(btn)
 
             # add it to the dict of button references.

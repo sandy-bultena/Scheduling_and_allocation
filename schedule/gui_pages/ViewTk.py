@@ -434,11 +434,11 @@ class ViewTk(ViewBaseTk):
         # ------------------------------------------------------------------------
         # what if we had a mouse up while processing this code?
         # (1) handle the stopped moving functionality
-        # (2) do NOT rebind the motion even handler
+        # (2) do NOT rebind the motion even tab_selected_handler
 
         if not guiblock.is_controlled:
             self._gui_block_has_stopped_moving(view, guiblock, event)
-        # else - rebind the motion event handler
+        # else - rebind the motion event tab_selected_handler
         else:
             self.canvas.bind(
                 "<Motion>",

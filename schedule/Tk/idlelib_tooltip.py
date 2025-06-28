@@ -116,14 +116,14 @@ class OnHoverTooltipBase(TooltipBase):
         super().__del__()
 
     def _show_event(self, event=None):
-        """event handler to display the tooltip"""
+        """event tab_selected_handler to display the tooltip"""
         if self.hover_delay:
             self.schedule()
         else:
             self.showtip()
 
     def _hide_event(self, event=None):
-        """event handler to hide the tooltip"""
+        """event tab_selected_handler to hide the tooltip"""
         self.hidetip()
 
     def schedule(self):

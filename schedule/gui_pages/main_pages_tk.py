@@ -34,10 +34,10 @@ WELCOME_WIDTH = 600
 WELCOME_HEIGHT = 600
 
 
-def _tab_changed(notebook: Notebook, events: dict, *_):
+def _tab_changed(notebook: Notebook, event_handlers: dict, *_):
     """calls the appropriate callback when the tab has changed"""
     index = notebook.index(notebook.select())
-    f = events.get(index, lambda *_: {})
+    f = event_handlers.get(index, lambda *_: {})
     f()
 
 
@@ -62,7 +62,7 @@ class MainPageBaseTk:
         self._preferences = preferences
         self._standard_page_created: bool = False
         self._wait = None
-        self._notebook_pages_info: list[NoteBookPageInfo] | None = None
+        self.notebook_pages_info: list[NoteBookPageInfo] | None = None
         self._front_page_frame: Optional[Frame] = None
         self._toolbar = None
         self._default_notebook_page: int = 0
@@ -188,7 +188,7 @@ class MainPageBaseTk:
         return center_frame
 
     # ===================================================================================
-    # standard page
+    # standard page with notebook
     # ===================================================================================
     def create_standard_page(self, notebook_pages_info: Optional[list[NoteBookPageInfo]] = None):
         """Create the 'normal' page after the main page has fulfilled its purpose"""
@@ -209,14 +209,14 @@ class MainPageBaseTk:
         main_page_frame = Frame(mw, borderwidth=1, relief='ridge')
         main_page_frame.pack(side='top', expand=1, fill='both')
 
-        self._notebook_pages_info = notebook_pages_info
+        self.notebook_pages_info = notebook_pages_info
 
         # Add notebooks if required
-        if self._notebook_pages_info is not None:
+        if self.notebook_pages_info is not None:
             notebook = Notebook(main_page_frame)
             notebook.pack(expand=1, fill='both')
             self._top_level_notebook = notebook
-            self.dict_of_frames = self._create_notebook_pages(notebook, self._notebook_pages_info)
+            self.dict_of_frames = self._create_notebook_pages(notebook, self.notebook_pages_info)
 
     # ===================================================================================
     # create notebook pages
@@ -230,29 +230,38 @@ class MainPageBaseTk:
         :return: a dictionary of frames contained within each Notebook tab
 
         """
-        events: dict[int, callable] = dict()
+        tab_selected_handlers: dict[int, callable] = dict()
         pages: dict[str, Frame] = dict()
 
         for info in pages_info:
+            # create a frame and add to the notebook
             frame = Frame(self.mw, **info.frame_args)
             notebook.add(frame, text=info.name)
-            i = notebook.index(frame)
-            events[i] = info.handler if info.handler else lambda *_: {}
-            pages[info.name.lower()] = frame
-            if info.is_default_page:
-                self._default_notebook_page = i
+            notebook_index = notebook.index(frame)
 
+            # set up the event handlers
+            tab_selected_handlers[notebook_index] = info.tab_selected_handler if info.tab_selected_handler else lambda *_: {}
+
+            # save the notebook frame in dictionary by page name
+            pages[info.name.lower()] = frame
+
+            # set the page that should be shown by default
+            if info.is_default_page:
+                self._default_notebook_page = notebook_index
+
+            # if this notebook page, has sub-pages, then set them up as well
             if info.subpages:
                 sub_page_frame = Notebook(frame)
                 sub_page_frame.pack(expand=1, fill='both')
                 sub_pages = self._create_notebook_pages(sub_page_frame, info.subpages)
                 pages.update(sub_pages)
 
-            if info.frame_callback:
-                info.frame_callback(info.name.lower())
+            # call the 'create handler' for this page
+            if info.creation_handler:
+                info.creation_handler(info.name.lower())
 
         # add the binding for changing of events, and include a list of events for each tab change
-        notebook.bind("<<NotebookTabChanged>>", partial(_tab_changed, notebook, events))
+        notebook.bind("<<NotebookTabChanged>>", partial(_tab_changed, notebook, tab_selected_handlers, pages))
 
         return pages
 

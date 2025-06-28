@@ -180,13 +180,13 @@ sub _gui_block_is_moving {
 
     # what if we had a mouse up while processing this code?
     # (1) handle the stopped moving functionality
-    # (2) do NOT rebind the motion even handler
+    # (2) do NOT rebind the motion even tab_selected_handler
 
     unless ( $guiblock->is_controlled ) {
         _gui_block_has_stopped_moving( $cn, $self, $view, $guiblock );
     }
 
-    # else - rebind the motion event handler
+    # else - rebind the motion event tab_selected_handler
     else {
         $cn->CanvasBind(
                          "<Motion>",
