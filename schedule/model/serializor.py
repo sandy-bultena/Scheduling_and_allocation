@@ -143,7 +143,7 @@ class CSVSerializor:
 
                 case 'teacher':
                     (number, fname, lname, dept, release) = row[1:6]
-                    current_obj: Teacher = schedule.add_teacher(firstname=fname, lastname=lname, department=dept,
+                    current_obj: Teacher = schedule.add_update_teacher(firstname=fname, lastname=lname, department=dept,
                                                                 teacher_id=int(number))
                     current_obj.release = float(release)
 

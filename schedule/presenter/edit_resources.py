@@ -1,212 +1,152 @@
 from time import sleep
-from typing import Any, Optional, TYPE_CHECKING
+from typing import Optional, Callable
 
-from ..model import Schedule
-from ..presenter.dirty_flags import set_dirty_flag
-from ..model import ResourceType
-
-if TYPE_CHECKING:
-    from ..gui_pages.EditResourcesTk import EditResourcesTk, DEColumnDescription
+from schedule.model import Schedule, ResourceType
+from schedule.gui_pages import EditResourcesTk, DEColumnDescription
 
 property_conversions_from_str = {
-    "id": lambda x: int(x) if x else 0,
     "firstname": lambda x: x,
     "lastname": lambda x: x,
     "release": lambda x: float(x) if x else 0,
+    "teacher_id": lambda x: int(x),
+    "description": lambda x: x,
     "number": lambda x: x,
-    "description": lambda x: x
 }
 
 
-def get_set_property(obj, property_name: str, value: Any = None, set_flag=False):
-    """dynamically set attributes and properties"""
-    f = getattr(obj, property_name, None)
-    if f is None:
-        return None
-    if not set_flag:
-        return f
-    else:
-        setattr(obj, property_name, value)
-
-
+# ============================================================================
+# Class Edit Resources
+# ============================================================================
 class EditResources:
-    # =================================================================
-    # Class Variables
-    # =================================================================
-    Id_index = 0
     Currently_saving = 0
 
     # =================================================================
-    # new
+    # constructor
     # =================================================================
-    def __init__(self, frame, view_type: ResourceType, schedule: Optional[Schedule], test_gui=None):
+    def __init__(self,
+                 dirty_flag_method: Callable[[Optional[bool]], bool],
+                 frame,
+                 view_type: ResourceType,
+                 schedule: Optional[Schedule],
+                 gui=None):
         """
         Creates the basic EditResources (a simple matrix)
+        :dirty_flag_method: function that gets/sets the dirty flag
         :param frame: gui container object
         :param view_type: Is it a lab, stream or teacher
         :param schedule: The Schedule object
+        :gui: the gui object that shows data (optional)
         """
-        if not test_gui:
-            self.gui = EditResourcesTk(frame, self._cb_delete_obj, self._cb_save)
+
+        # ----------------------------------------------------------------------------
+        # Resource type specifics
+        # ----------------------------------------------------------------------------
+        match view_type:
+            case ResourceType.teacher:
+                self.column_descriptions: list[DEColumnDescription] = [
+                    DEColumnDescription(title="ID", width=4, property="teacher_id", unique_id=True),
+                    DEColumnDescription(title="First Name", width=20, property="firstname", unique_id=False),
+                    DEColumnDescription(title="Last Name", width=20, property="lastname", unique_id=False),
+                    DEColumnDescription(title="RT", width=8, property="release", unique_id=False),
+                ]
+                self._get_resources = schedule.teachers
+                self._get_resource_by_number = schedule.get_teacher_by_number
+                self._delete_resource = schedule.remove_teacher
+                self._update_resource = schedule.add_update_teacher
+
+            case ResourceType.lab:
+                self.column_descriptions: list[DEColumnDescription] = [
+                    DEColumnDescription(title="Room", width=7, property="number", unique_id=True),
+                    DEColumnDescription(title="Description", width=40, property="description", unique_id=False),
+                ]
+                self._get_resources = schedule.labs
+                self._get_resource_by_number = schedule.get_lab_by_number
+                self._delete_resource = schedule.remove_lab
+                self._update_resource = schedule.add_update_lab
+
+            case ResourceType.stream:
+                self.column_descriptions: list[DEColumnDescription] = [
+                    DEColumnDescription(title="Room", width=7, property="number", unique_id=True),
+                    DEColumnDescription(title="Description", width=40, property="description", unique_id=False),
+                ]
+                self._get_resources = schedule.streams
+                self._get_resource_by_number = schedule.get_stream_by_number
+                self._delete_resource = schedule.remove_stream
+                self._update_resource = schedule.add_update_stream
+
+            case _:
+                self.column_descriptions: list[DEColumnDescription] = [
+                    DEColumnDescription(title="", width=10, property="", unique_id=True),
+                ]
+                self._get_resources = lambda: []
+                self._get_resource_by_number = lambda x: None
+                self._delete_resource = lambda x: None
+                self._update_resource = lambda *args, **kwargs: None
+
+        # ----------------------------------------------------------------------------
+        # other initializations
+        # ----------------------------------------------------------------------------
+        if not gui:
+            self.gui = EditResourcesTk(
+                parent=frame,
+                event_delete_handler=self.delete_obj,
+                event_save_handler=self.save
+            )
         else:
-            self.gui = test_gui
+            self.gui = gui
 
-        self.delete_queue = list()
-        self.view_type = view_type
-        self.schedule = schedule
-        self.column_descriptions: list[DEColumnDescription] = [
-            DEColumnDescription(title="No Schedule", width=40, property="")
-        ]
-
-        # ---------------------------------------------------------------
-        # what are the columns?
-        # ---------------------------------------------------------------
-        if self.view_type == ResourceType.teacher:
-            self.column_descriptions = [
-                DEColumnDescription(title="ID", width=4, property="id"),
-                DEColumnDescription(title="First Name", width=20, property="firstname"),
-                DEColumnDescription(title="Last Name", width=20, property="lastname"),
-                DEColumnDescription(title="RT", width=8, property="release"),
-            ]
-
-        elif self.view_type is ResourceType.lab:
-            self.column_descriptions = [
-                DEColumnDescription(title="ID", width=4, property="id"),
-                DEColumnDescription(title="Room", width=7, property="number"),
-                DEColumnDescription(title="Description", width=40, property="description"),
-            ]
-
-        elif self.view_type is ResourceType.stream:
-            self.column_descriptions = [
-                DEColumnDescription(title="ID", width=4, property="id"),
-                DEColumnDescription(title="Number", width=10, property="number"),
-                DEColumnDescription(title="Name", width=40, property="description"),
-            ]
-
+        self.dirty_flag_method: Callable[[Optional[bool]], bool] = dirty_flag_method
+        self.delete_queue: list = list()
+        self.view_type: ResourceType = view_type
+        self.schedule: Optional[Schedule] = schedule
         self.gui.initialize_columns(self.column_descriptions)
 
     # =================================================================
     # refresh the tables
     # =================================================================
     def refresh(self):
-        objs = tuple()
-        data = list()
+        """update the table to represent the 'new' data"""
 
-        if self.schedule is None:
-            self.gui.refresh(data)
-
-        if self.view_type == ResourceType.lab:
-            objs = self.schedule.labs
-        elif self.view_type == ResourceType.stream:
-            objs = self.schedule.streams
-        elif self.view_type == ResourceType.teacher:
-            objs = self.schedule.teachers
+        # get the data
+        objs = self._get_resources()
 
         # Create a 2-d array of the data that needs to be displayed.
-        for obj in objs:
-            row = list()
-            for column in self.column_descriptions:
-                row.append(str(get_set_property(obj, column.property)))
-            data.append(row)
+        data = [[str(getattr(obj, col.property, None)) for col in self.column_descriptions] for obj in objs]
 
         # refresh the GUI_Pages
         self.gui.refresh(data)
 
         # purge the delete queue
-        self.delete_queue = list()
-
-    # =================================================================
-    # Callbacks
-    # =================================================================
-
-    # ------------------------------------------------------------------------
-    # adding a ResourceType object to the schedule
-    # ------------------------------------------------------------------------
-    def __add_obj(self, data: dict):
-        if self.view_type == ResourceType.teacher:
-            teacher = self.schedule.add_teacher(firstname=data["firstname"],
-                                                lastname=data["lastname"])
-            teacher.release = data["release"]
-
-        elif self.view_type == ResourceType.lab:
-            self.schedule.add_lab(number=data["number"],
-                                  description=data["description"])
-
-        elif self.view_type == ResourceType.stream:
-            self.schedule.add_stream(number=data["number"],
-                                     description=data["description"])
+        self.delete_queue.clear()
 
     # ------------------------------------------------------------------------
     # Save updated data
     # ------------------------------------------------------------------------
-    def _cb_save(self, *_):
+    def save(self, *_):
         """Save any changes that the user entered in the GUI_Pages form."""
-        any_changes = False
 
-        # Get data from the GUI_Pages object.
-        all_data = self.gui.get_all_data()
-
-        # Just in case saving is already in progress,
-        # wait before continuing.
+        # Just in case saving is already in progress, wait before continuing.
         if EditResources.Currently_saving > 2:
             return  # 2 is too many.
         if EditResources.Currently_saving:
             sleep(2)
         EditResources.Currently_saving += 1
 
-        # Read data from the data object.
-        for data in all_data:
-            if not len([x for x in data if x]):
-                continue
+        # Get data from the GUI_Pages object.
+        all_data = self.gui.get_all_data()
+        needs_updating = self._check_for_changed_resources(all_data)
 
-            # --------------------------------------------------------------------
-            # if this row has an ID, then we need to update the
-            # corresponding object
-            # --------------------------------------------------------------------
-            if data[self.Id_index] and data[self.Id_index] != '':
-                obj_id = int(data[self.Id_index])
-                obj = self.schedule.get_view_type_obj_by_id(self.view_type, obj_id)
+        # do we need to change anything?
+        changes = False or self.dirty_flag_method()
+        changes = True if len(needs_updating) else changes
+        changes = True if len(self.delete_queue) else changes
+        self.dirty_flag_method(changes)
 
-                # Loop over each method used to get_by_id info about this object.
-                for col, column in enumerate(self.column_descriptions):
-                    if col == self.Id_index:
-                        continue
-
-                    # check if data has changed
-                    if str(get_set_property(obj, column.property)) != data[col]:
-                        value = property_conversions_from_str[column.property](data[col])
-                        get_set_property(obj, column.property, value, set_flag=True)
-                        any_changes = True
-
-            # --------------------------------------------------------------------
-            # if this row does not have an ID, then we need to create
-            # corresponding object
-            # --------------------------------------------------------------------
-            else:
-                any_changes = True
-                new_data = dict()
-                for col, column in enumerate(self.column_descriptions):
-                    if col == self.Id_index:
-                        continue
-                    new_data[column.property] = property_conversions_from_str[column.property](data[col])
-                self.__add_obj(new_data)
-
-        # ------------------------------------------------------------------------
-        # go through delete queue and apply changes
-        # ------------------------------------------------------------------------
-        while len(self.delete_queue) > 0:
-            any_changes = True
-            obj = self.delete_queue.pop()
-            if self.view_type == ResourceType.teacher:
-                self.schedule.remove_teacher(obj)
-            elif self.view_type == ResourceType.lab:
-                self.schedule.remove_lab(obj)
-            elif self.view_type == ResourceType.stream:
-                self.schedule.remove_stream(obj)
-
-        # if there have been changes, set global dirty flag
-        if any_changes:
-            set_dirty_flag()
+        # Update or add changes.
+        for obj in self.delete_queue:
+            self._delete_resource(obj)
+        for init_arguments in needs_updating:
+            self._update_resource(**init_arguments)
 
         # all done saving, decrement number of files currently being saved
         EditResources.Currently_saving -= 1
@@ -215,23 +155,72 @@ class EditResources:
     # =================================================================
     # delete object
     # =================================================================
-    def _cb_delete_obj(self, row_data: list[str]):
+    def delete_obj(self, data: list[str], *_):
         """Save delete requests, to be processed later."""
         obj = None
-        if row_data[self.Id_index] and row_data[self.Id_index] != '':
-            obj_id = int(row_data[self.Id_index])
-            obj = self.schedule.get_view_type_obj_by_id(self.view_type, obj_id)
+        for index, column in enumerate(self.column_descriptions):
+            if column.unique_id and data[index]:
+                unique_id = property_conversions_from_str[column.property](data[index])
+                obj = self.schedule.get_view_type_obj_by_id(self.view_type, unique_id)
+                break
         if obj:
             self.delete_queue.append(obj)
+
+    # ------------------------------------------------------------------------
+    # Check if any of the resources have been modified
+    # ------------------------------------------------------------------------
+    def _check_for_changed_resources(self, all_data) -> list[dict]:
+        """Go through data that is in gui, and compare to existing objects
+        :return dictionary: key/value pairs required for this resource type's constructor
+        """
+
+        changed_objects: list[dict] = []
+
+        # Read data from the data object (ignore lines with no data in them).
+        for data in (d for d in all_data if len([x for x in d if x])):
+
+            obj = None
+            constructor_inputs = dict()
+
+            # get all inputs required for the constructor
+            for index, column in enumerate(self.column_descriptions):
+                if column.unique_id and data[index]:
+                    unique_id = property_conversions_from_str[column.property](data[index])
+                    obj = self.schedule.get_view_type_obj_by_id(self.view_type, unique_id)
+                    constructor_inputs[column.property] = unique_id
+                elif not column.unique_id:
+                    if index < len(data):
+                        constructor_inputs[column.property] = property_conversions_from_str[column.property](
+                            data[index])
+
+            # if object is modified or new, save constructor inputs
+            if obj is not None and self._object_changed(obj, data):
+                changed_objects.append(constructor_inputs)
+            if obj is None:
+                changed_objects.append(constructor_inputs)
+
+        return changed_objects
+
+    # ------------------------------------------------------------------------
+    # does an object need to be updated?
+    # ------------------------------------------------------------------------
+    def _object_changed(self, obj, data) -> bool:
+        """compares each column data with the attribute for the object and returns true if any of them are different"""
+
+        for col, column in enumerate(self.column_descriptions):
+            if hasattr(obj, column.property):
+                if str(getattr(obj, column.property, None)) != data[col]:
+                    return True
+        return False
 
 
 '''
 =head1 AUTHOR
-Sandy Bultena, Ian Clement, Jack Burns.
+Sandy Bultena
 
 =head1 COPYRIGHT
-Copyright (c) 2020, Jack Burns, Sandy Bultena, Ian Clement. 
 Copyright (c) 2025, Sandy Bultena
+Copyright (c) 2020, Jack Burns, Sandy Bultena, Ian Clement. 
 
 All Rights Reserved.
 This module is free software. It may be used, redistributed

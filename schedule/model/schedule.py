@@ -110,16 +110,16 @@ class Schedule:
             original_lab.description = description
             return original_lab
 
-    def add_update_teacher(self, firstname: str, lastname: str, department: str = "", number: int = None) -> Teacher:
+    def add_update_teacher(self, firstname: str, lastname: str, department: str = "", release:float = 0, teacher_id: int = None) -> Teacher:
         """Creates or updates a teacher object with the unique identifier 'teacher_id'
         :param firstname:
         :param lastname:
         :param department: (optional)
-        :param number: (optional) - if not specified, a unique id will be created
+        :param teacher_id: (optional) - if not specified, a unique id will be created
         """
-        original_teacher = self.get_teacher_by_number(number) if number is not None else None
+        original_teacher = self.get_teacher_by_number(teacher_id) if teacher_id is not None else None
         if original_teacher is None:
-            teacher = Teacher(firstname, lastname, department, teacher_id=number)
+            teacher = Teacher(firstname, lastname, department, release=release, teacher_id=teacher_id)
             self._teachers[teacher.number] = teacher
             return teacher
         else:
@@ -171,16 +171,17 @@ class Schedule:
 
     def get_teacher_by_number(self, teacher_id: str) -> Optional[Teacher]:
         """Returns the teacher which matches this Section number, if it exists."""
+        teacher_id = str(teacher_id)
         return self._teachers.get(teacher_id)
 
     def get_view_type_obj_by_id(self, view_type: ResourceType, obj_id: str) -> Optional[Teacher | Stream | Lab]:
         """Returns the Section which matches this Section number, if it exists."""
         if view_type == ResourceType.teacher:
-            return self._teachers.get(obj_id)
+            return self.get_teacher_by_number(obj_id)
         elif view_type == ResourceType.stream:
-            return self._streams.get(obj_id)
+            return self.get_stream_by_number(obj_id)
         elif view_type == ResourceType.lab:
-            return self._labs.get(obj_id)
+            return self.get_lab_by_number(obj_id)
         return None
 
     # ========================================================================

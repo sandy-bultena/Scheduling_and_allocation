@@ -173,7 +173,7 @@ add_lab,P325
 ,id,allocation
 add_section_teacher,11,6.0
 
-course,420-3D6,Database,1A,1
+course,420-3D6,Database,1,1
 
 section,,1,Section 1,6.0,26
 add_stream,2A

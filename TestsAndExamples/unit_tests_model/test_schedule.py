@@ -22,10 +22,10 @@ def test_interface():
     assert hasattr(schedule, "read_file")
     assert hasattr(schedule, "write_file")
 
-    assert hasattr(schedule, 'add_course')
-    assert hasattr(schedule, 'add_stream')
-    assert hasattr(schedule, 'add_lab')
-    assert hasattr(schedule, 'add_teacher')
+    assert hasattr(schedule, 'add_update_course')
+    assert hasattr(schedule, 'add_update_stream')
+    assert hasattr(schedule, 'add_update_lab')
+    assert hasattr(schedule, 'add_update_teacher')
 
     assert hasattr(schedule, 'labs')
     assert hasattr(schedule, 'courses')
@@ -200,7 +200,7 @@ def test_get_teacher_by_name():
     assert s.get_teacher_by_name("Jane", "boo") is None
 
 
-def test_get_teacher_by_id():
+def test_get_teacher_by_number():
     s = Schedule()
     o1 = Teacher('Jane', 'Doe')
     o2 = Teacher('John', 'Doe')
@@ -208,6 +208,15 @@ def test_get_teacher_by_id():
     assert o2 == s.get_teacher_by_number(o2.number)
     assert o1 == s.get_teacher_by_number(o1.number)
     assert s.get_teacher_by_number("666666") is None
+
+
+def test_get_teacher_by_id():
+    s = Schedule()
+    o1 = Teacher('Jane', 'Doe')
+    o2 = Teacher('John', 'Doe')
+    s._teachers = {o1.number: o1, o2.number: o2}
+    assert o2 == s.get_teacher_by_number(o2._id)
+    assert o1 == s.get_teacher_by_number(o1._id)
 
 
 def test_remove_course():
@@ -371,7 +380,7 @@ def get_streams_assigned_to_any_course():
     o1 = Stream('ABC')
     o2 = Stream('DEF')
     o3 = Stream('XYZ')
-    s._streams = {o1.number: o1, o2. number: o2, o3.number: o3}
+    s._streams = {o1.number: o1, o2.number: o2, o3.number: o3}
 
     c1 = s.add_update_course("C1")
     c2 = s.add_update_course("C2")

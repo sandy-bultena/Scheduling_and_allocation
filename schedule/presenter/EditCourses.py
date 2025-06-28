@@ -190,7 +190,7 @@ sub add_blocks_dialog {
     EditCourses::_refresh_course_gui( $course,
         "Schedule/Course" . $course->id );
 
-    EditCourses::set_dirty();
+    EditCourses::dirty_flag_method();
 }
 
 # =================================================================
@@ -214,7 +214,7 @@ sub add_blocks_to_section {
     # update the guis
     EditCourses::_refresh_section_gui( $section,
         "Schedule/Course" . $course->id . "/Section" . $section->id );
-    EditCourses::set_dirty();
+    EditCourses::dirty_flag_method();
 
 }
 
@@ -238,7 +238,7 @@ sub add_section_dialog {
     EditCourses::_refresh_course_gui( $course,
         "Schedule/Course" . $course->id );
 
-    EditCourses::set_dirty();
+    EditCourses::dirty_flag_method();
 }
 
 # =================================================================
@@ -275,7 +275,7 @@ sub add_sections_with_blocks {
     # update the guis
     EditCourses::_refresh_course_gui( $course,
         "Schedule/Course" . $course->id );
-    EditCourses::set_dirty();
+    EditCourses::dirty_flag_method();
 }
 
 # =================================================================
@@ -287,7 +287,7 @@ sub assign_obj2_to_obj1 {
     my $tree_path = shift;
     $Assign_subs{ $$s_ptr->get_object_type($obj2) }->( $obj1, $obj2 );
     $Refresh_subs{ $$s_ptr->get_object_type($obj1) }->( $obj1, $tree_path );
-    set_dirty();
+    dirty_flag_method();
 }
 
 # =================================================================
@@ -298,7 +298,7 @@ sub clear_all_from_obj1 {
     my $tree_path = shift;
     $Clear_all_subs{ $$s_ptr->get_object_type($obj1) }->($obj1);
     $Refresh_subs{ $$s_ptr->get_object_type($obj1) }->( $obj1, $tree_path );
-    set_dirty();
+    dirty_flag_method();
 }
 
 # =================================================================
@@ -320,7 +320,7 @@ sub edit_block_dialog {
 
     _refresh_course_gui( $course, "Schedule/Course" . $course->id );
 
-    set_dirty();
+    dirty_flag_method();
 }
 
 # =================================================================
@@ -356,7 +356,7 @@ sub remove_all_type_from_obj1 {
     my $tree_path = shift;
     $Remove_all_subs{$resource_type}->($obj1);
     $Refresh_subs{ $$s_ptr->get_object_type($obj1) }->( $obj1, $tree_path );
-    set_dirty();
+    dirty_flag_method();
 }
 
 # =================================================================
@@ -368,7 +368,7 @@ sub remove_obj2_from_obj1 {
     my $tree_path = shift;
     $Remove_subs{ $$s_ptr->get_object_type($obj2) }->( $obj1, $obj2 );
     $Refresh_subs{ $$s_ptr->get_object_type($obj1) }->( $obj1, $tree_path );
-    set_dirty();
+    dirty_flag_method();
 }
 
 # =================================================================
@@ -386,7 +386,7 @@ sub remove_scheduable {
 # =================================================================
 # set dirty flag
 # =================================================================
-sub set_dirty {
+sub dirty_flag_method {
     $$Dirty_ptr = 1;
     $Views_manager->redraw_all_views if $Views_manager;
 }
@@ -529,7 +529,7 @@ sub _cb_object_dropped_on_tree {
     elsif ( $dropped_on_type eq 'course' ) {
         _refresh_course_gui( $dropped_onto_obj, $path, 1 );
     }
-    set_dirty();
+    dirty_flag_method();
 
 }
 

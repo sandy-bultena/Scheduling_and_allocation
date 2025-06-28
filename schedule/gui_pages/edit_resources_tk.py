@@ -12,28 +12,35 @@ object, and can not be edited.
 """
 
 
+# ============================================================================
+# Class for describing properties for each column
+# ============================================================================
 @dataclass
 class DEColumnDescription:
     title: str
     width: int
     property: str
+    unique_id: bool
 
 
+# ============================================================================
+# class: EditResourcesTk
+# ============================================================================
 class EditResourcesTk:
 
     def __init__(self,
                  parent: Frame,
-                 delete_callback: Optional[Callable[[list], None]],
-                 save_callback: Optional[Callable[[], None]],
+                 event_delete_handler: Callable[[list[str], ...], None] = lambda x, *_: None,
+                 event_save_handler: Callable[[...], None] = lambda *_: None,
                  colours: Optional[TkColours] = None,
                  ):
         if colours is None:
             colours = TkColours(parent.winfo_toplevel())
         self.colours = colours
-        self.delete_callback = delete_callback
-        self.save_callback = save_callback
         self.frame = parent
-        self.de: Optional[TableEntry] = None
+        self.data_entry: Optional[TableEntry] = None
+        self.delete_handler = event_delete_handler
+        self.save_handler = event_save_handler
 
     def initialize_columns(self, column_descriptions: list[DEColumnDescription]):
 
@@ -43,43 +50,38 @@ class EditResourcesTk:
             titles.append(cd.title)
             column_widths.append(cd.width)
 
-        if self.de is not None:
-            self.de.destroy()
+        if self.data_entry is not None:
+            self.data_entry.destroy()
 
-        self.de = TableEntry(
+        self.data_entry = TableEntry(
             self.frame,
             rows=1,
             columns=len(column_descriptions),
             titles=titles,
             column_widths=column_widths,
-            delete=self.delete_callback,
+            delete=self.delete_handler,
             colours=self.colours,
         )
-        self.de.pack(side=TOP, expand=True, fill=BOTH)
+        self.data_entry.pack(side=TOP, expand=True, fill=BOTH)
+
         # --------------------------------------------------------------------------
         # NOTE: If weird shit is happening, give up and use a 'Save' button
         # ... clicking the 'Delete' triggers a 'Leave'...
         # --------------------------------------------------------------------------
-        self.de.bind('<Leave>', self.save_callback)
-
-
-        # disable the first columns, but not the rest
-        disabled = [1]
-        disabled.extend([0 for _ in range(1, self.de.number_of_columns)])
-        self.de.configure(disabled=disabled)
+        self.data_entry.bind('<Leave>', func=self.save_handler)
 
     def refresh(self, data: list[list[Any]]):
         """
         refresh the data
         :param data: a list of lists (a 2-d array sort of)
         """
-        self.de.clear_data()
+        self.data_entry.clear_data()
         for row, row_data in enumerate(data):
             for col, cell_data in enumerate(row_data):
-                self.de.put(row, col, str(cell_data))
+                self.data_entry.put(row, col, str(cell_data))
 
-        if self.de.number_of_rows <= len(data):
-            self.de.add_empty_row()
+        if self.data_entry.number_of_rows <= len(data):
+            self.data_entry.add_empty_row()
 
         # stupid Tk won't update image unless I do this.  Oh well, at least it worked
         self.frame.focus_set()
@@ -90,17 +92,19 @@ class EditResourcesTk:
         :return: a list of rows, which is a list of columns with the data
         """
         data: list = list()
-        for row in range(self.de.number_of_rows):
-            data.append(self.de.read_row(row))
+        for row in range(self.data_entry.number_of_rows):
+            data.append(self.data_entry.read_row(row))
         return data
 
 
 """
-=head1 AUTHOR
+=head1 AUTHORS
 
 Sandy Bultena, Ian Clement, Jack Burns
 
 =head1 COPYRIGHT
+
+Copyright (c) 2025, Sandy Bultena
 
 Copyright (c) 2021, Jack Burns, Sandy Bultena, Ian Clement. 
 

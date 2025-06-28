@@ -74,6 +74,9 @@ class MainPageBaseTk:
         # set the filename so that it can be bound later
         self._status_bar_file_info: StringVar = StringVar(value="None")
 
+        # set the dirty text so it can be bound later
+        self._status_bar_dirty: StringVar = StringVar(value="")
+
     # ===================================================================================
     # main window
     # ===================================================================================
@@ -90,11 +93,6 @@ class MainPageBaseTk:
         # colors and fonts
         self.colours, self.fonts = set_default_fonts_and_colours(self.mw, invert=self.dark_mode)
 
-        # bind the change to the global dirty flag
-        self._dirty_flag_text: StringVar = StringVar(value="")
-        # dirty_flags.dirty_flag_changed_cb = lambda: self._dirty_flag_text.set(
-        #     "NOT SAVED" if dirty_flags.is_data_dirty() else "")
-
     def start_event_loop(self):
         """time_start the Tk event main event loop"""
         self.mw.mainloop()
@@ -109,6 +107,14 @@ class MainPageBaseTk:
     @status_bar_file_info.setter
     def status_bar_file_info(self, value: str):
         self._status_bar_file_info.set(value)
+
+    @property
+    def dirty_text(self):
+        return self._status_bar_dirty.get()
+
+    @dirty_text.setter
+    def dirty_text(self, value):
+        self._status_bar_dirty.set(value)
 
     # ===================================================================================
     # menu and toolbars
@@ -141,7 +147,7 @@ class MainPageBaseTk:
               anchor='w',
               ).pack(side='left', expand=1, fill='x')
 
-        Label(status_frame, textvariable=self._dirty_flag_text, borderwidth=1, relief='ridge', width=15,
+        Label(status_frame, textvariable=self._status_bar_dirty, borderwidth=1, relief='ridge', width=15,
               foreground=self.colours.DirtyColour).pack(side='right', fill='x')
 
     # ===================================================================================

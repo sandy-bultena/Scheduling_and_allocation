@@ -10,11 +10,11 @@ from schedule.gui_pages import SchedulerTk, MAIN_PAGE_EVENT_HANDLERS
 from schedule.Utilities import Preferences
 from schedule.presenter.menus import MAIN_MENU_EVENT_HANDLERS
 
-SCHEDULE_FILE = path.dirname(__file__) + "/test.csv"
-PREVIOUS_FILE = path.dirname(__file__) + "/test_prev.csv"
+SCHEDULE_FILE = path.dirname(__file__) + "/data_test.csv"
+PREVIOUS_FILE = path.dirname(__file__) + "/data_test_prev.csv"
 BIN_DIR = path.dirname(__file__) + "/../../schedule"
-BAD_SCHEDULE_FILE = path.dirname(__file__) + "/bad_test.csv"
-CREATED_SCHEDULE_FILE = path.dirname(__file__) + "/new_test.csv"
+BAD_SCHEDULE_FILE = path.dirname(__file__) + "/data_bad_test.csv"
+CREATED_SCHEDULE_FILE = path.dirname(__file__) + "/data_new_test.csv"
 
 # ============================================================================
 # overload the gui
@@ -54,6 +54,8 @@ class SchedulerTkTest(SchedulerTk):
     def create_menu_and_toolbars(*args, **kwargs): ...
 
     def create_front_page(*args, **kwargs): ...
+
+    def create_standard_page(*args, **kwargs): ...
 
     def create_status_bar(*args, **kwargs): ...
 
@@ -503,10 +505,10 @@ def test_semester_switch(gui):
     # prepare
     obj = Scheduler(BIN_DIR, gui)
     obj.preferences.semester("fall")
-    obj.preferences.previous_file("fall.csv")
+    obj.preferences.previous_file("data_fall.csv")
     obj.preferences.save()
     obj.preferences.semester("winter")
-    obj.preferences.previous_file("winter.csv")
+    obj.preferences.previous_file("data_winter.csv")
     obj.preferences.save()
 
     # execute
@@ -514,11 +516,11 @@ def test_semester_switch(gui):
     MAIN_PAGE_EVENT_HANDLERS["semester_change"]()
 
     # validate
-    assert os.path.basename(obj.previous_filename) == "fall.csv"
+    assert os.path.basename(obj.previous_filename) == "data_fall.csv"
 
     # execute
     obj.gui.current_semester = "winter"
     MAIN_PAGE_EVENT_HANDLERS["semester_change"]()
 
     # validate
-    assert os.path.basename(obj.previous_filename) == "winter.csv"
+    assert os.path.basename(obj.previous_filename) == "data_winter.csv"

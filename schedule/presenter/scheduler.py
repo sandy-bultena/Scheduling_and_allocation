@@ -53,7 +53,7 @@ class Scheduler:
 
         self.preferences: Preferences = Preferences()
         self.schedule: Optional[Schedule] = None
-        self.dirty_flag = False
+        self._dirty_flag = False
 
         # gui is optional so that we can test the presenter more readily
         if gui:
@@ -145,7 +145,10 @@ class Scheduler:
     @dirty_flag.setter
     def dirty_flag(self, value):
         if self.gui:
-            self._dirty_flag = value
+            if value:
+                self.gui.dirty_text = "UNSAVED"
+            else:
+                self.gui.dirty_text = ""
         self._dirty_flag = value
 
     # ============================================================================================

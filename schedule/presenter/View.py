@@ -354,7 +354,7 @@ class View:
         self.views_manager.redraw_all_views()
         views_manager = self.views_manager
         if views_manager:
-            self.views_manager.set_dirty(views_manager.dirty_flag)
+            self.views_manager.dirty_flag_method(views_manager.dirty_flag)
 
     def _cb_move_block_between_schedulable_objects(self, that_schedulable: Teacher | Lab | Stream):
         """Moves the selected class(es) from the original Views Teacher/Lab to the Teacher/Lab
@@ -395,7 +395,7 @@ class View:
         self._set_status_undo_info()
 
         # Set the dirty flag, and redraw.
-        self.views_manager.set_dirty()
+        self.views_manager.dirty_flag_method()
         self.views_manager.redraw_all_views()
 
     def _cb_guiblock_is_moving(self, guiblock: GuiBlockTk):
@@ -502,7 +502,7 @@ class View:
         # Calculate new conflicts and update other views to show these conflicts.
         self.schedule.calculate_conflicts()
         views_manager.update_for_conflicts()
-        views_manager.set_dirty()
+        views_manager.dirty_flag_method()
 
         # Set Colour for all buttons on main window, "Schedules" tab.
         self._set_view_button_colours()
