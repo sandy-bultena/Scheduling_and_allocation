@@ -1,5 +1,5 @@
 from ..model.schedule import Schedule
-from ..gui_pages.OverviewTk import OverviewTk
+from ..gui_pages.overview_tk import OverviewTk
 from typing import *
 
 

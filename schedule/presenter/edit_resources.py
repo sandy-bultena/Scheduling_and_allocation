@@ -45,8 +45,8 @@ class EditResources:
             case ResourceType.teacher:
                 self.column_descriptions: list[DEColumnDescription] = [
                     DEColumnDescription(title="ID", width=4, property="teacher_id", unique_id=True),
-                    DEColumnDescription(title="First Name", width=20, property="firstname", unique_id=False),
-                    DEColumnDescription(title="Last Name", width=20, property="lastname", unique_id=False),
+                    DEColumnDescription(title="First Name", width=15, property="firstname", unique_id=False),
+                    DEColumnDescription(title="Last Name", width=15, property="lastname", unique_id=False),
                     DEColumnDescription(title="RT", width=8, property="release", unique_id=False),
                 ]
                 self._get_resources = schedule.teachers
@@ -57,7 +57,7 @@ class EditResources:
             case ResourceType.lab:
                 self.column_descriptions: list[DEColumnDescription] = [
                     DEColumnDescription(title="Room", width=7, property="number", unique_id=True),
-                    DEColumnDescription(title="Description", width=40, property="description", unique_id=False),
+                    DEColumnDescription(title="Description", width=50, property="description", unique_id=False),
                 ]
                 self._get_resources = schedule.labs
                 self._get_resource_by_number = schedule.get_lab_by_number
@@ -67,7 +67,7 @@ class EditResources:
             case ResourceType.stream:
                 self.column_descriptions: list[DEColumnDescription] = [
                     DEColumnDescription(title="Room", width=7, property="number", unique_id=True),
-                    DEColumnDescription(title="Description", width=40, property="description", unique_id=False),
+                    DEColumnDescription(title="Description", width=50, property="description", unique_id=False),
                 ]
                 self._get_resources = schedule.streams
                 self._get_resource_by_number = schedule.get_stream_by_number

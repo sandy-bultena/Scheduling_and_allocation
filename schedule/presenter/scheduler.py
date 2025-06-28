@@ -38,10 +38,6 @@ class Scheduler:
     def __init__(self, bin_dir: DIRECTORY, gui: Optional[SchedulerTk] = None):
         # self.bin_dir: Optional[DIRECTORY] = None
         # self.user_base_dir: Optional[DIRECTORY] = None
-        self._teachers_de: Optional[EditResources] = None
-        # self._streams_de: Optional[EditResources] = None
-        # self._labs_de: Optional[EditResources] = None
-        # self._overview: Optional[Overview] = None
 
         self.preferences: Preferences = Preferences()
         self.schedule: Optional[Schedule] = None
@@ -252,41 +248,30 @@ class Scheduler:
     # - A page where teacher_ids can be added/modified or deleted
     # ==================================================================
     def update_edit_teachers(self):
-        print("in update edit_teachers")
-        teachers_frame = self.gui.get_gui_container("teachers")
-        self._teachers_de = EditResources(self.set_dirty_method, teachers_frame, ResourceType.teacher, self.schedule)
-
-        # reset the schedule object just in case the schedule file has changed
-        self._teachers_de.schedule = self.schedule
-        self._teachers_de.refresh()
+        teachers_frame = self.gui.get_notebook_frame("teachers")
+        data_entry = EditResources(self.set_dirty_method, teachers_frame, ResourceType.teacher, self.schedule)
+        data_entry.schedule = self.schedule
+        data_entry.refresh()
 
     # ==================================================================
     # update_edit_streams
     # - A page where stream_ids can be added/modified or deleted
     # ==================================================================
     def update_edit_streams(self):
-        pass
-        # if self._streams_de is None:
-        #     streams_frame = self.gui.get_gui_container("streams")
-        #     self._streams_de = EditResources(streams_frame, ResourceType.stream, self.schedule)
-        #
-        # # reset the schedule object just in case the schedule file has changed
-        # self._streams_de.schedule = self.schedule
-        # self._streams_de.refresh()
+        streams_frame = self.gui.get_notebook_frame("streams")
+        data_entry = EditResources(self.set_dirty_method, streams_frame, ResourceType.stream, self.schedule)
+        data_entry.schedule = self.schedule
+        data_entry.refresh()
 
     # ==================================================================
     # update_edit_labs
     # - A page where lab_ids can be added/modified or deleted
     # ==================================================================
     def update_edit_labs(self):
-        pass
-        # if self._labs_de is None:
-        #     labs_frame = self.gui.get_gui_container("labs")
-        #     self._labs_de = EditResources(labs_frame, ResourceType.lab, self.schedule)
-        #
-        # # reset the schedule object just in case the schedule file has changed
-        # self._labs_de.schedule = self.schedule
-        # self._labs_de.refresh()
+        labs_frame = self.gui.get_notebook_frame("labs")
+        data_entry = EditResources(self.set_dirty_method, labs_frame, ResourceType.lab, self.schedule)
+        data_entry.schedule = self.schedule
+        data_entry.refresh()
 
     # ==================================================================
     # draw_edit_courses

@@ -19,6 +19,7 @@ from tkinter.messagebox import showerror, showinfo, askyesnocancel
 from schedule.Tk import FindImages
 from schedule.Tk import set_default_fonts_and_colours, TkColours, TkFonts
 from schedule.Tk import generate_menu, make_toolbar
+from schedule.gui_pages.note_book_frame_tk import NoteBookFrame
 from ..Utilities.NoteBookPageInfo import NoteBookPageInfo
 from schedule.Tk import MenuItem, ToolbarItem
 from ..Utilities.Preferences import Preferences
@@ -32,13 +33,6 @@ MAIN_FRAME_HEIGHT = 400
 MAIN_FRAME_WIDTH = 800
 WELCOME_WIDTH = 600
 WELCOME_HEIGHT = 600
-
-
-def _tab_changed(notebook: Notebook, event_handlers: dict, *_):
-    """calls the appropriate callback when the tab has changed"""
-    index = notebook.index(notebook.select())
-    f = event_handlers.get(index, lambda *_: {})
-    f()
 
 
 class MainPageBaseTk:
@@ -60,7 +54,7 @@ class MainPageBaseTk:
 
         # private properties
         self._preferences = preferences
-        self._standard_page_created: bool = False
+        self._notebook_frame: Optional[NoteBookFrame] = None
         self._wait = None
         self.notebook_pages_info: list[NoteBookPageInfo] | None = None
         self._front_page_frame: Optional[Frame] = None
@@ -194,81 +188,25 @@ class MainPageBaseTk:
         """Create the 'normal' page after the main page has fulfilled its purpose"""
 
         # if the page is already created, do not recreate it
-        if self._standard_page_created:
-            if self._top_level_notebook:
-                self._top_level_notebook.select(self._default_notebook_page)
-                self._top_level_notebook.event_generate("<<NotebookTabChanged>>")
+        if self._notebook_frame is not None:
+            if self._notebook_frame.top_level_notebook:
+                self._notebook_frame.top_level_notebook.select(self._default_notebook_page)
+                self._notebook_frame.top_level_notebook.event_generate("<<NotebookTabChanged>>")
                 return
 
         # create the page
-        self._standard_page_created = True
         mw = self.mw
         self._front_page_frame.destroy()
 
         # frame
         main_page_frame = Frame(mw, borderwidth=1, relief='ridge')
         main_page_frame.pack(side='top', expand=1, fill='both')
-
-        self.notebook_pages_info = notebook_pages_info
-
-        # Add notebooks if required
-        if self.notebook_pages_info is not None:
-            notebook = Notebook(main_page_frame)
-            notebook.pack(expand=1, fill='both')
-            self._top_level_notebook = notebook
-            self.dict_of_frames = self._create_notebook_pages(notebook, self.notebook_pages_info)
-
-    # ===================================================================================
-    # create notebook pages
-    # ===================================================================================
-    def _create_notebook_pages(self, notebook: Notebook, pages_info: list[NoteBookPageInfo],
-                               ) -> dict[str, Frame]:
-        """
-        create Notebook with specified pages described by pages_info
-        :param notebook: Notebook object
-        :param pages_info: information about how we want the page to look
-        :return: a dictionary of frames contained within each Notebook tab
-
-        """
-        tab_selected_handlers: dict[int, callable] = dict()
-        pages: dict[str, Frame] = dict()
-
-        for info in pages_info:
-            # create a frame and add to the notebook
-            frame = Frame(self.mw, **info.frame_args)
-            notebook.add(frame, text=info.name)
-            notebook_index = notebook.index(frame)
-
-            # set up the event handlers
-            tab_selected_handlers[notebook_index] = info.tab_selected_handler if info.tab_selected_handler else lambda *_: {}
-
-            # save the notebook frame in dictionary by page name
-            pages[info.name.lower()] = frame
-
-            # set the page that should be shown by default
-            if info.is_default_page:
-                self._default_notebook_page = notebook_index
-
-            # if this notebook page, has sub-pages, then set them up as well
-            if info.subpages:
-                sub_page_frame = Notebook(frame)
-                sub_page_frame.pack(expand=1, fill='both')
-                sub_pages = self._create_notebook_pages(sub_page_frame, info.subpages)
-                pages.update(sub_pages)
-
-            # call the 'create handler' for this page
-            if info.creation_handler:
-                info.creation_handler(info.name.lower())
-
-        # add the binding for changing of events, and include a list of events for each tab change
-        notebook.bind("<<NotebookTabChanged>>", partial(_tab_changed, notebook, tab_selected_handlers, pages))
-
-        return pages
+        self._notebook_frame = NoteBookFrame(self.mw, main_page_frame, notebook_pages_info)
 
     # def update_for_new_schedule_and_show_page(self):
     #     """Reset the GUI_Pages when a new schedule is read."""
     #
-    #     if self._standard_page_created:
+    #     if self._notebook_frame:
     #         if self._top_level_notebook:
     #             self._top_level_notebook.select(self._default_notebook_page)
     #             self._top_level_notebook.event_generate("<<NotebookTabChanged>>")
@@ -320,6 +258,12 @@ class MainPageBaseTk:
         filename = select_gui(**kwargs)
         return filename
 
+    def get_notebook_frame(self, page_name: str) -> Optional[Frame]:
+        """get frame for the notebook page"""
+        if self._notebook_frame is not None:
+            return self._notebook_frame.dict_of_frames.get(page_name.lower())
+        return None
+
     # ========================================================================
     # message boxes
     # ========================================================================
@@ -331,3 +275,4 @@ class MainPageBaseTk:
 
     def ask_yes_no(self, title: str, msg: str, detail: str = ""):
         return askyesnocancel(title=title, message=msg, detail=detail, icon='info')
+

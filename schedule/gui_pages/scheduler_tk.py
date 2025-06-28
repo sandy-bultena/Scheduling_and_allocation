@@ -259,5 +259,3 @@ class SchedulerTk(MainPageBaseTk):
     # _overview_notebook = None
     # overview_pages: dict[str, Frame] = {}
     #
-    def get_gui_container(self, page_name: str) -> Optional[Frame]:
-        return self.dict_of_frames.get(page_name.lower())

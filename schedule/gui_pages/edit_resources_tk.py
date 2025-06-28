@@ -62,7 +62,7 @@ class EditResourcesTk:
             rows=1,
             columns=len(column_descriptions),
             titles=titles,
-            column_widths=column_widths,
+            colwidths=column_widths,
             delete=self.delete_handler,
             colours=self.colours,
         )
