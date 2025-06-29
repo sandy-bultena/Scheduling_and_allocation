@@ -4,19 +4,17 @@ from __future__ import annotations
 from typing import Optional, TYPE_CHECKING
 
 from schedule.presenter.edit_resources import EditResources
+# from schedule.presenter.overview import Overview
 
 # from .ViewsManager import ViewsManager
-# from ..Utilities.Preferences import Preferences
-# from ..Presentation.dirty_flags import *
-# from ..Model import ResourceType
-# from ..Presentation.Overview import Overview
-#
+
 from .menus import set_menu_event_handler, main_menu
 from schedule.Utilities import Preferences
 from schedule.gui_pages import SchedulerTk, set_main_page_event_handler
 from schedule.Utilities.NoteBookPageInfo import NoteBookPageInfo
 from schedule.model import Schedule, ResourceType
 from schedule.exceptions import CouldNotReadFileError
+from ..gui_generics.read_only_text_tk import ReadOnlyText
 
 if TYPE_CHECKING:
     from tkinter import Event
@@ -57,9 +55,11 @@ class Scheduler:
         # --------------------------------------------------------------------
         # required notebook pages
         # --------------------------------------------------------------------
+        by_course_page = NoteBookPageInfo("by Course", self.update_course_text)
+        by_teacher_page = NoteBookPageInfo("by Teacher", self.update_teacher_text)
         self._required_pages: list[NoteBookPageInfo] = [
             NoteBookPageInfo("Schedules", self.update_choices_of_resource_views),
-            NoteBookPageInfo("Overview", self.update_overview),
+            NoteBookPageInfo("Overview", self.update_overview, subpages=[by_course_page, by_teacher_page]),
             NoteBookPageInfo("Courses", self.update_edit_courses),
             NoteBookPageInfo("Teachers", self.update_edit_teachers),
             NoteBookPageInfo("Labs", self.update_edit_labs),
@@ -234,14 +234,34 @@ class Scheduler:
     # A text representation of the schedules
     # ==================================================================
     def update_overview(self):
-        pass
-        # if self._overview is None:
-        #     overview_frame = self.gui.get_gui_container("Overview")
-        #     self._overview = Overview(overview_frame, self.schedule)
-        #
-        # # reset the schedule object just in case the schedule file has changed
-        # self._overview.schedule = self.schedule
-        # self._overview.refresh()
+        self.update_course_text()
+        self.update_teacher_text()
+
+    def update_course_text(self):
+        text: list[str] = list()
+        if self.schedule is None:
+            text.append('There is no schedule, please open one')
+        else:
+            if not self.schedule.courses:
+                text.append('No courses defined in this schedule')
+            else:
+                for c in self.schedule.courses():
+                    text.append(str(c))
+        frame = self.gui.get_notebook_frame("by Course")
+        data_entry = ReadOnlyText(frame, text)
+        data_entry.write(text)
+
+    def update_teacher_text(self):
+        text = []
+        if not self.schedule.teachers:
+            text.append('No teachers defined in this schedule')
+        else:
+            for t in self.schedule.teachers():
+                text.append(self.schedule.teacher_details(t))
+        frame = self.gui.get_notebook_frame("by Teacher")
+        data_entry = ReadOnlyText(frame, text)
+        data_entry.write(text)
+
 
     # ==================================================================
     # update_edit_teachers
