@@ -1,7 +1,12 @@
-from typing import Optional
-from schedule.model import schedule
+from typing import Optional, Callable, Any, TYPE_CHECKING
+
+from schedule.Tk.menu_and_toolbars import MenuItem
+from schedule.model import Schedule, ResourceType, Section, Block, Teacher, Lab, Stream, Course
 from schedule.gui_pages import EditCoursesTk
 
+if TYPE_CHECKING:
+    pass
+#    from schedule.model import Teacher, Lab, Stream
 """
 #!/usr/bin/perl
 use strict;
@@ -79,19 +84,103 @@ data entry object
 
 =cut
 """
-class EditCourses:
+RESOURCE_OBJECT = Teacher | Lab | Stream
+TREE_OBJECT = Any
 
-    def __init__(self, frame, schedule: Optional[Schedule], test_gui=None):
-        """
-        Creates the basic EditResources (a simple matrix)
-        :param frame: gui container object
-        :param schedule: The Schedule object
-        """
-        if not test_gui:
+class EditCourses:
+    """
+    Creates the basic EditResources (a simple matrix)
+    :param frame: gui container object
+    :param schedule: The Schedule object
+    """
+
+    def __init__(self,
+                 dirty_flag_method: Callable[[Optional[bool]], bool],
+                 frame,
+                 schedule: Optional[Schedule],
+                 gui: EditCoursesTk=None):
+
+        print("In EditCourses:", frame)
+        if not gui:
             self.gui = EditCoursesTk(frame)
         else:
-            self.gui = test_gui
+            self.gui = gui
 
+        self.set_dirty_flag = dirty_flag_method
+        self.frame = frame
+        self.schedule = schedule
+        self.tree_ids: dict[str, str] = {}
+
+
+        # ---------------------------------------------------------------------
+        # set all the event required handlers
+        # ---------------------------------------------------------------------
+        self.gui.handler_tree_edit = self.edit_tree_obj
+        self.gui.handler_new_course = self.create_new_course
+        self.gui.handler_tree_create_menu = self.create_tree_menu
+        self.gui.handler_resource_create_menu = self.create_resource_menu
+        self.gui.handler_show_teacher_stat = self.show_teacher_stat
+        self.gui.handler_drag_resource = self.is_valid_drop
+        self.gui.handler_drop_resource = self.object_dropped
+
+        # ---------------------------------------------------------------------
+        # add the resources to the gui
+        # ---------------------------------------------------------------------
+        # self.gui.update_resource_type_objects(ResourceType.teacher, self.schedule.teachers())
+        # self.gui.update_resource_type_objects(ResourceType.lab, self.schedule.labs())
+        # self.gui.update_resource_type_objects(ResourceType.stream, self.schedule.streams())
+
+    def refresh(self):
+        self.gui.clear_tree()
+        self.tree_ids.clear()
+        for course in self.schedule.courses():
+            name = " ".join((course.number, course.name))
+            obj_id = self.gui.add_tree_item("", name, course)
+            self.refresh_course_gui(obj_id, course, True)
+        self.gui.update_resource_type_objects(ResourceType.teacher, self.schedule.teachers())
+        self.gui.update_resource_type_objects(ResourceType.lab, self.schedule.labs())
+        self.gui.update_resource_type_objects(ResourceType.stream, self.schedule.streams())
+
+
+    def refresh_course_gui(self, parent_id, course: Course, hide:bool = True):
+        self.gui.remove_tree_item_children(parent_id)
+        for section in course.sections():
+            name = section.name
+            obj_id = self.gui.add_tree_item(parent_id, name, section, hide)
+            self.refresh_section_gui(obj_id, section, hide)
+
+    def refresh_section_gui(self, parent_id, section: Section, hide: bool = True):
+        self.gui.remove_tree_item_children(parent_id)
+
+        # change the name of the parent text if stream exists for this section
+        name = section.name
+        if len(section.streams()):
+            name += "  (" + ",".join([str(stream) for stream in section.streams()]) + ")"
+            self.gui.update_tree_text(parent_id, name)
+
+        for block in section.blocks():
+            name = "Block:" + block.description()
+            obj_id = self.gui.add_tree_item(parent_id, name, block, hide)
+            self.refresh_block_gui(obj_id, block, hide= True)
+
+    def refresh_block_gui(self, parent_id, block: Block, hide: bool=True):
+        self.gui.remove_tree_item_children(parent_id)
+        for lab in block.labs():
+            self.gui.add_tree_item(parent_id, str(lab), lab, hide)
+        for teacher in block.teachers():
+            self.gui.add_tree_item(parent_id, str(teacher), teacher, hide)
+
+
+
+
+
+    def edit_tree_obj(self, obj: Any): ...
+    def create_new_course(self): ...
+    def create_tree_menu(self, obj: Any) -> list[MenuItem]: ...
+    def create_resource_menu(self, view: ResourceType, obj: RESOURCE_OBJECT) -> list[MenuItem]: ...
+    def show_teacher_stat(self, teacher: ResourceType ): ...
+    def is_valid_drop(self, view: ResourceType, source: RESOURCE_OBJECT, destination: TREE_OBJECT) -> bool: ...
+    def object_dropped(self, view: ResourceType, resource: RESOURCE_OBJECT, obj: TREE_OBJECT): ...
 
 """
 # ===================================================================

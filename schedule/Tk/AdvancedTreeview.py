@@ -63,6 +63,8 @@ class AdvancedTreeview(ttk.Treeview):
                     if any_object < self._item_to_obj_dict[kid_id]:
                         options['index'] = index
                         break
+            except AttributeError:
+                pass
             except TypeError:
                 pass
 

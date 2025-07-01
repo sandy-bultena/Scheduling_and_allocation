@@ -4,7 +4,7 @@ from __future__ import annotations
 from typing import Optional, TYPE_CHECKING
 
 from schedule.presenter.edit_resources import EditResources
-# from schedule.presenter.overview import Overview
+from schedule.presenter.edit_courses import EditCourses
 
 # from .ViewsManager import ViewsManager
 
@@ -296,8 +296,15 @@ class Scheduler:
     # - A page where courses can be added/modified or deleted
     # ==================================================================
     def update_edit_courses(self):
-        pass
+        print( "Update edit courses")
+        edit_course_frame = self.gui.get_notebook_frame("courses")
+        data_entry = EditCourses(self.set_dirty_method, edit_course_frame, self.schedule)
+        data_entry.schedule = self.schedule
+        data_entry.refresh()
 
+
+
+        pass
     #
     #     # ==================================================================
     #     # print_views

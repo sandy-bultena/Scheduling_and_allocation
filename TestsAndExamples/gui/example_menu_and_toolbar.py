@@ -1,7 +1,7 @@
 from tkinter import *
 from schedule.Tk import make_toolbar, generate_menu
 from schedule.Tk import set_default_fonts_and_colours
-from schedule.Tk import MenuItem, MenuType, ToolbarItem
+from schedule.gui_generics.menu_item import MenuItem, MenuType, ToolbarItem
 
 # =================================================================================================
 # Test the GUI_Pages menu and _toolbar creation work as required

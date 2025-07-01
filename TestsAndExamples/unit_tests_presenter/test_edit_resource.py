@@ -7,7 +7,7 @@ from typing import Callable, Any, Optional
 import pytest
 
 from schedule.model import ResourceType, Schedule
-from schedule.presenter import EditResources
+from schedule.presenter.edit_resources import EditResources
 from schedule.gui_pages import EditResourcesTk, DEColumnDescription
 
 SCHEDULE_FILE = path.dirname(__file__) + "/test.csv"

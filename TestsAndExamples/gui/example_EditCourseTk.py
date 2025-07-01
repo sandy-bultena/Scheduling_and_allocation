@@ -3,7 +3,7 @@ from tkinter import messagebox
 from typing import Any
 
 
-from schedule.Tk import MenuItem, MenuType
+from schedule.Tk.menu_and_toolbars import MenuItem, MenuType
 from schedule.gui_pages import EditCoursesTk
 from schedule.model import ResourceType
 
@@ -108,29 +108,30 @@ s4 = Nothing("2B")
 s5 = Nothing("3A")
 s6 = Nothing("3B")
 
-test_page.update_resource_type_objects(ResourceType.teacher, [t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12])
-test_page.update_resource_type_objects(ResourceType.stream, [s1, s2, s3, s4, s5, s6])
-test_page.update_resource_type_objects(ResourceType.lab, [l1, l2, l3, l4])
+# test_page.update_resource_type_objects(ResourceType.teacher, [t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12])
+# test_page.update_resource_type_objects(ResourceType.stream, [s1, s2, s3, s4, s5, s6])
+# test_page.update_resource_type_objects(ResourceType.lab, [l1, l2, l3, l4])
 
-c1 = Nothing("Operating Systems")
-c1_id = test_page.add_tree_item("", str(c1), c1)
-s1_id = test_page.add_tree_item(c1_id, f"Section 1 ({s1})", Nothing("Section 1"))
-s2_id = test_page.add_tree_item(c1_id, f"Section 2 ({s2})", Nothing("Section 2"))
-b1_id = test_page.add_tree_item(s1_id, "Block 1", Nothing("Block 1"))
-b2_id = test_page.add_tree_item(s1_id, "Block 2", Nothing("Block 2"))
-test_page.add_tree_item(b1_id, "Teacher: " + str(t1), t1)
-test_page.add_tree_item(b1_id, "Lab: " + str(l1), l1)
+
+# c1 = Nothing("Operating Systems")
+# c1_id = test_page.add_tree_item("", str(c1), c1)
+# s1_id = test_page.add_tree_item(c1_id, f"Section 1 ({s1})", Nothing("Section 1"))
+# s2_id = test_page.add_tree_item(c1_id, f"Section 2 ({s2})", Nothing("Section 2"))
+# b1_id = test_page.add_tree_item(s1_id, "Block 1", Nothing("Block 1"))
+# b2_id = test_page.add_tree_item(s1_id, "Block 2", Nothing("Block 2"))
+# test_page.add_tree_item(b1_id, "Teacher: " + str(t1), t1)
+# test_page.add_tree_item(b1_id, "Lab: " + str(l1), l1)
 
 # ----------------------------------------------------------------------------
 # add all the callback routines
 # ----------------------------------------------------------------------------
 # call back routines
-test_page.cb_edit_obj = edit_dialog
-test_page.cb_new_course = new_course_dialog
-test_page.cb_get_tree_menu = tree_menu
-test_page.cb_get_resource_menu = resource_menu
-test_page.cb_show_teacher_stat = teacher_stat_dialog
-test_page.cb_target_is_valid_drop_site = valid_drop_site
-test_page.cb_dropped_resource_onto_course_item = item_dropped
+test_page.handler_tree_edit = edit_dialog
+test_page.handler_new_course = new_course_dialog
+test_page.handler_tree_create_menu = tree_menu
+test_page.handler_resource_create_menu = resource_menu
+test_page.handler_show_teacher_stat = teacher_stat_dialog
+test_page.handler_drag_resource = valid_drop_site
+test_page.handler_drop_resource = item_dropped
 
 mw.mainloop()
