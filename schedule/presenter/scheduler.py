@@ -142,17 +142,17 @@ class Scheduler:
     # ============================================================================================
     # Event handlers - file open/close/save/new
     # ============================================================================================
-    def new_menu_event(self, _: Event = None):
+    def new_menu_event(self):
         self.schedule = Schedule()
         self.schedule_filename = ""
         self.gui.create_standard_page(self._required_pages)
         self.dirty_flag = True
 
-    def open_menu_event(self, _: Event = None):
+    def open_menu_event(self):
         filename = self.gui.select_file_to_open()
         self._open_file(filename)
 
-    def open_previous_file_event(self, _: Event = None):
+    def open_previous_file_event(self):
         filename = self.preferences.previous_file()
         self._open_file(filename)
 
@@ -168,10 +168,10 @@ class Scheduler:
             except CouldNotReadFileError as e:
                 self.gui.show_error("Read File", str(e))
 
-    def save_menu_event(self, _: Event = None):
+    def save_menu_event(self):
         self._save_schedule(self.schedule_filename)
 
-    def save_as_menu_event(self, _: Event = None):
+    def save_as_menu_event(self):
         self._save_schedule(None)
 
     def _save_schedule(self, filename: Optional[str]):
@@ -202,8 +202,7 @@ class Scheduler:
     # Event handlers - exit
     # ============================================================================================
 
-    def exit_event(self, _: Event = None):
-        print("in exit event")
+    def exit_event(self):
         if self.dirty_flag:
             ans = self.gui.ask_yes_no("File", "Save File?")
             if ans:
@@ -261,7 +260,6 @@ class Scheduler:
         frame = self.gui.get_notebook_frame("by Teacher")
         data_entry = ReadOnlyText(frame, text)
         data_entry.write(text)
-
 
     # ==================================================================
     # update_edit_teachers
@@ -345,7 +343,6 @@ class Scheduler:
         if value is not None:
             self.dirty_flag = value
         return self.dirty_flag
-
 
 #     """
 #     (c) Sandy Bultena 2025

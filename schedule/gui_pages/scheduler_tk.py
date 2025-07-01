@@ -115,7 +115,7 @@ class SchedulerTk(MainPageBaseTk):
         # --------------------------------------------------------------
         self._current_semester.set(str(semester))
         semester_frame = Frame(option_frame)
-        semester_frame.pack(side=TOP, fill=Y, expand=1)
+        semester_frame.pack(side="top", fill="y", expand=1)
         radio_fall = Radiobutton(semester_frame, text='Fall', variable=self._current_semester, value='fall')
         radio_winter = Radiobutton(semester_frame, text='Winter', variable=self._current_semester, value='winter')
 
@@ -138,7 +138,7 @@ class SchedulerTk(MainPageBaseTk):
         # -------------------------------------------------------------
         self.previous_file_button = Button(
             option_frame,
-            justify=RIGHT,
+            justify="right",
             font=self.fonts.big,
             borderwidth=0,
             background=self.colours.ButtonBackground,
@@ -148,7 +148,7 @@ class SchedulerTk(MainPageBaseTk):
             height=3,
             textvariable=self._previous_file
         )
-        self.previous_file_button.pack(side=TOP, fill=Y, expand=0)
+        self.previous_file_button.pack(side="top", fill="y", expand=0)
 
         # --------------------------------------------------------------
         # create new schedule file option
@@ -163,7 +163,7 @@ class SchedulerTk(MainPageBaseTk):
             command=MAIN_PAGE_EVENT_HANDLERS["file_new"],
             width=BUTTON_WIDTH,
             height=3
-        ).pack(side=TOP, fill=Y, expand=0)
+        ).pack(side="top", fill="y", expand=0)
 
         # --------------------------------------------------------------
         # open schedule file option
@@ -178,12 +178,12 @@ class SchedulerTk(MainPageBaseTk):
             command=MAIN_PAGE_EVENT_HANDLERS["file_open"],
             width=BUTTON_WIDTH,
             height=3
-        ).pack(side=TOP, fill=Y, expand=0)
+        ).pack(side="top", fill="y", expand=0)
 
         # a growable and shrinkable frame which makes resizing look better
         Frame(
             option_frame, background=self.colours.DataBackground
-        ).pack(expand=1, fill=BOTH)
+        ).pack(expand=1, fill="both")
 
         # --------------------------------------------------------------
         # update the current file and/or button
