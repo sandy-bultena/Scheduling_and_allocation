@@ -4,6 +4,7 @@ from schedule.Tk.menu_and_toolbars import MenuItem, MenuType
 from schedule.model import Schedule, ResourceType, Section, Block, Teacher, Lab, Stream, Course
 from schedule.gui_pages import EditCoursesTk
 import schedule.presenter.menus_tree_and_resource_list as menu
+from schedule.presenter.menus_tree_and_resource_list import EditCoursePopupMenuActions
 
 if TYPE_CHECKING:
     pass
@@ -147,19 +148,46 @@ class EditCourses:
 
     def edit_tree_obj(self, obj: Any): ...
     def create_new_course(self): ...
+
     def create_tree_popup(self, selected_obj: Any, parent_object, tree_path:str, tree_parent_path) -> list[MenuItem]:
-        return menu.create_tree_menus(self, selected_obj, parent_object, tree_path, tree_parent_path)
+        popup = EditCoursePopupMenuActions(self, selected_obj, parent_object, tree_path, tree_parent_path)
+        return popup.create_tree_popup_menus()
 
     # =========================================================================
     # Actions
     # =========================================================================
-    # =================================================================
-    # edit course dialog
-    # =================================================================
 
     def edit_course_dialog(self, course):
         #EditCourseDialog->new( $frame, $Schedule, $course );
         pass
+
+    def add_section_dialog(self, course):
+        pass
+    """
+    # =================================================================
+    # add section dialog
+    # =================================================================
+    sub add_section_dialog {
+        my $course      = shift;
+        my $section_num = $course->get_new_number;    # gets a new section id
+        my $section     = Section->new(
+            -number => $section_num,
+            -hours  => 0,
+        );
+        $course->add_section($section);
+        EditCourses::_refresh_course_gui( $course,
+            "Schedule/Course" . $course->id );
+    
+        my ( $section_names, $block_hours ) = AddSectionDialogTk->new($frame);
+        add_sections_with_blocks( $course->id, $section_names, $block_hours );
+    
+        EditCourses::_refresh_course_gui( $course,
+            "Schedule/Course" . $course->id );
+    
+        EditCourses::dirty_flag_method();
+    }
+
+    """
 
     def remove_obj2_from_obj1(self, parent, selected, parent_id):
         obj_type = str(type(selected)).lower()

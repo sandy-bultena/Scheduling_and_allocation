@@ -9,195 +9,152 @@
 # NOTE: this module is dependent on functions in EditCourses
 # ============================================================================
 """
+from __future__ import annotations
 from typing import Any, TYPE_CHECKING
 
 from schedule.Tk import MenuItem, MenuType
-from schedule.gui_pages import EditCoursesTk
 from schedule.model import Course, Teacher, Stream, ResourceType
 
 if TYPE_CHECKING:
     from schedule.presenter.edit_courses import EditCourses
 
+class EditCoursePopupMenuActions:
+    def __init__(self, presenter: EditCourses, selected_object: Any, parent_object: Any, tree_id, tree_parent_id):
+        """
+        :param presenter: The presenter that is handling all the logic
+        :param selected_object: The object that is the target of this menu
+        :param parent_object: The parent of the object (ex. which block this teacher is attached to)
+        :param tree_id: the id of the selected tree object
+        :param parent_tree_id:
 
-#def _edit_course(presenter: EditCourses, menu_list, sel_obj, tree_path):
-def _edit_course(presenter, menu_list, sel_obj, tree_path):
-    """prepare the menu item to edit a course via a gui dialog
+        """
+        self.presenter = presenter
+        self.selected_object = selected_object
+        self.parent_object = parent_object if parent_object is not None else presenter.schedule
+        self.tree_id = tree_id
+        self.tree_parent_id = tree_parent_id
 
-    :param presenter: the instance of the class that actually does the work
-    :param menu_list: a list of current menu items
-    :param sel_obj:  the object to be deleted
-    :param tree_path:
-    :return:
-    """
-    menu_list.append(
-        MenuItem(menu_type=MenuType.Command, label="Edit Course",
-                 command=lambda *_: presenter.edit_course_dialog( sel_obj)
-                 )
-    )
+    def create_tree_popup_menus(self):
+        """create popup menus for trees
 
-def _remove_item(presenter, menu_list, sel_obj, parent_obj, parent_tree_path, text:str):
-    """Create a menu item for removing one object from another
+        menus are dynamic, depending on the current schedule, and what tree item was selected
+        :return: None
+        """
 
-    :param presenter: the instance of the class that actually does the work
-    :param menu_list: a list of current menu items
-    :param sel_obj:  the object to be deleted
-    :param parent_obj: the parent of the selected object
-    :param parent_tree_path: the path/id of the parent of the selected element in the tree
-    :param text: the text used to display on the pop-up menu
-    """
-    menu_list.append(
-        MenuItem(menu_type=MenuType.Command, label=text,
-                 command=lambda *_: presenter.remove_obj2_from_obj1( parent_obj, sel_obj, parent_tree_path) )
-    )
+        menu_list: list[MenuItem] = []
 
-def _needs_allocation(presenter, menu_list, course: Course, tree_path):
-    """create a menu item that will toggle the current allocation flag for a specific course
+        # ------------------------------------------------------------------------
+        # course
+        # ------------------------------------------------------------------------
+        if isinstance(self.selected_object, Course):
+            self._edit_course(menu_list)
+            self._remove_item(menu_list, "Remove Course")
 
-    :param presenter: the instance of the class that actually does the work
-    :param menu_list: a list of current menu items
-    :param course:  the selected course
-    :param tree_path: the path/id of the selected course
-    """
-    if course.needs_allocation:
+            menu_list.append(MenuItem(menu_type=MenuType.Separator))
+
+            self._needs_allocation(menu_list)
+            self._add_section( menu_list)
+            self._add_resource_items(menu_list, ResourceType.teacher)
+            self._add_resource_items(menu_list, ResourceType.lab)
+            self._add_resource_items(menu_list, ResourceType.stream)
+
+            menu_list.append(MenuItem(menu_type=MenuType.Separator))
+
+            self._remove_all_items(menu_list)
+
+        return menu_list
+
+    def _edit_course(self, menu_list: list[MenuItem]):
         menu_list.append(
-            MenuItem(menu_type=MenuType.Command, label="Unset 'needs allocation'",
-                     command=lambda *_: presenter.modify_course_needs_allocation(course, False, tree_path))
+            MenuItem(menu_type=MenuType.Command, label="Edit Course",
+                     command=lambda *_: self.presenter.edit_course_dialog(self.selected_object)
+                     )
         )
-    else:
+
+    def _remove_item( self, menu_list: list[MenuItem], text):
         menu_list.append(
-            MenuItem(menu_type=MenuType.Command, label="Set 'needs allocation'",
-                     command=lambda *_: presenter.modify_course_needs_allocation(course, True, tree_path))
+            MenuItem(menu_type=MenuType.Command, label=text,
+                     command=lambda *_: self.presenter.remove_obj2_from_obj1(self.parent_object, self.selected_object, self.tree_parent_id))
         )
 
-def _add_resource_items(presenter, menu_list, selected_obj, parent_obj, parent_tree_path, view: ResourceType):
-    """make a sub menu with a list of items as menu choices
+    def _needs_allocation(self, menu_list: list[MenuItem]):
+        if self.selected_object.needs_allocation:
+            menu_list.append(
+                MenuItem(menu_type=MenuType.Command, label="Unset 'needs allocation'",
+                         command=lambda *_: self.presenter.modify_course_needs_allocation(self.selected_object, False, self.tree_id))
+            )
+        else:
+            menu_list.append(
+                MenuItem(menu_type=MenuType.Command, label="Set 'needs allocation'",
+                         command=lambda *_: self.presenter.modify_course_needs_allocation(self.selected_object, True, self.tree_id))
+            )
 
-    :param presenter: the instance of the class that actually does the work
-    :param menu_list: a list of current menu items
-    :param selected_obj:  the object to be deleted
-    :param parent_obj: the parent of the selected object
-    :param parent_tree_path: the path/id of the parent of the selected element in the tree
-    :param view: Resource type of object to add
-    """
+    def _add_section(self, menu_list: list[MenuItem]):
+        menu_list.append(
+            MenuItem(menu_type=MenuType.Command, label="Add Sections",
+                     command=lambda *_: self.presenter.add_section_dialog(self.selected_object))
+        )
 
-    match view:
-        case ResourceType.lab:
-            items = [o for o in presenter.schedule.labs() if not selected_obj.has_lab(o)]
-            text = "Add Lab"
-        case ResourceType.teacher:
-            items = [ o for o in presenter.schedule.teachers() if not selected_obj.has_teacher(o)]
-            text = "Add Teacher"
-        case ResourceType.stream:
-            items = [o for o in presenter.schedule.streams() if not selected_obj.has_stream(o)]
-            text = "Add Stream"
-        case _:
-            items = []
-            text = "Add generic item"
+    def _add_resource_items(self, menu_list: list[MenuItem], view: ResourceType):
+        match view:
+            case ResourceType.lab:
+                items = [o for o in self.presenter.schedule.labs() if not self.selected_object.has_lab(o)]
+                text = "Add Lab"
+            case ResourceType.teacher:
+                items = [o for o in self.presenter.schedule.teachers() if not self.selected_object.has_teacher(o)]
+                text = "Add Teacher"
+            case ResourceType.stream:
+                items = [o for o in self.presenter.schedule.streams() if not self.selected_object.has_stream(o)]
+                text = "Add Stream"
+            case _:
+                items = []
+                text = "Add generic item"
 
-    sub_menu = MenuItem(menu_type=MenuType.Cascade, tear_off=False, label=text)
-    for item in items:
-        sub_menu.add_child( MenuItem(menu_type=MenuType.Command, label=str(item),
-                                   command=lambda *_: presenter.assign_selected_to_parent(selected_obj, item, parent_tree_path)
-                                   ))
-    menu_list.append(sub_menu)
+        sub_menu = MenuItem(menu_type=MenuType.Cascade, tear_off=False, label=text)
+        for item in items:
+            sub_menu.add_child(MenuItem(menu_type=MenuType.Command, label=str(item),
+                                        command=lambda *_: self.presenter.assign_selected_to_parent(self.selected_object, item,
+                                                                                               self.tree_parent_id)
+                                        ))
+        menu_list.append(sub_menu)
 
+    def _remove_all_items(self, menu_list: list[MenuItem]):
+        sub_menu = MenuItem(menu_type=MenuType.Cascade, tear_off=False, label="Remove All")
 
-def _add_section(presenter, menu_list, selected_obj, parent_obj, tree_path):
-    """
-
-    :param presenter: the instance of the class that actually does the work
-    :param menu_list: a list of current menu items
-    :param selected_obj:  the object to be deleted
-    :param parent_obj: the parent of the selected object
-    :param tree_path:
-    :return:
-
-        push @$menu,
-      [
-        'command',
-        "Add Sections(s)",
-        -command => [ \&EditCourses::add_section_dialog, $sel_obj, $tree_path ]
-      ];
-
-    """
-
-
-def _remove_all_items(presenter, menu_list, selected_obj, tree_path):
-    """
-
-    :param presenter: the instance of the class that actually does the work
-    :param menu_list: a list of current menu items
-    :param selected_obj:  the object to be deleted
-    :param tree_path: the path/id of the selected course
-    """
-
-    #     def remove_all_types_from_selected_object(self, obj_type, selected_object, selected_id):
-    sub_menu = MenuItem(menu_type=MenuType.Cascade, tear_off=False, label="Remove All")
-    sub_menu.add_child(MenuItem(menu_type=MenuType.Command, label="sections",
-                                command=lambda *_: presenter.remove_all_types_from_selected_object("section",
-                                                                                                   selected_obj,
-                                                                                                   tree_path)
-                                )
-                       )
-    sub_menu.add_child(MenuItem(menu_type=MenuType.Command, label="streams",
-                                command=lambda *_: presenter.remove_all_types_from_selected_object("stream",
-                                                                                                   selected_obj,
-                                                                                                   tree_path)
-                                )
-                       )
-    sub_menu.add_child(MenuItem(menu_type=MenuType.Command, label="labs",
-                                command=lambda *_: presenter.remove_all_types_from_selected_object("lab",
-                                                                                                   selected_obj,
-                                                                                                   tree_path)
-                                )
-                       )
-    sub_menu.add_child(MenuItem(menu_type=MenuType.Command, label="teachers",
-                                command=lambda *_: presenter.remove_all_types_from_selected_object("teacher",
-                                                                                                   selected_obj,
-                                                                                                   tree_path)
-                                )
-                       )
-    menu_list.append(sub_menu)
+        # ------------------------------------------------------------------------------------------------------------
+        # NOTE: do not put the following in a loop, because the closures won't work properly if you do.
+        #       If you don't know what a closure is... https://en.wikipedia.org/wiki/Closure_(computer_programming)
+        # ------------------------------------------------------------------------------------------------------------
+        sub_menu.add_child(MenuItem(menu_type=MenuType.Command, label="sections",
+                                    command=lambda *_: self.presenter.remove_all_types_from_selected_object("section",
+                                                                                                       self.selected_object,
+                                                                                                       self.tree_id)
+                                    )
+                           )
+        sub_menu.add_child(MenuItem(menu_type=MenuType.Command, label="streams",
+                                    command=lambda *_: self.presenter.remove_all_types_from_selected_object("stream",
+                                                                                                       self.selected_object,
+                                                                                                       self.tree_id)
+                                    )
+                           )
+        sub_menu.add_child(MenuItem(menu_type=MenuType.Command, label="labs",
+                                    command=lambda *_: self.presenter.remove_all_types_from_selected_object("lab",
+                                                                                                       self.selected_object,
+                                                                                                       self.tree_id)
+                                    )
+                           )
+        sub_menu.add_child(MenuItem(menu_type=MenuType.Command, label="teachers",
+                                    command=lambda *_: self.presenter.remove_all_types_from_selected_object("teacher",
+                                                                                                       self.selected_object,
+                                                                                                       self.tree_id)
+                                    )
+                           )
+        menu_list.append(sub_menu)
 
 
 def _remove_teachers(presenter, menu, sel_obj, parent_obj, tree_path):...
 def _remove_all(presenter, menu, sel_obj, parent_obj, tree_path):...
 
-def create_tree_menus(presenter, selected_obj: Any, parent_obj: Any, tree_path:str, parent_tree_path:str)->list[MenuItem]:
-    """create popup menus for trees
-
-    menus are dynamic, depending on the current schedule, and what tree item was selected
-    :param presenter: The presenter that is handling all the logic
-    :param selected_obj: The object that is the target of this menu
-    :param parent_obj: The parent of the object (ex. which block this teacher is attached to)
-    :param tree_path: the id of the selected tree object
-    :param parent_tree_path:
-    :return: None
-    """
-
-    menu_list: list[MenuItem] = []
-
-    # ------------------------------------------------------------------------
-    # course
-    # ------------------------------------------------------------------------
-    if isinstance(selected_obj, Course):
-        _edit_course( presenter, menu_list, selected_obj, tree_path )
-        _remove_item( presenter, menu_list, selected_obj, presenter.schedule, parent_tree_path, "Remove Course" )
-
-        menu_list.append(MenuItem(menu_type=MenuType.Separator))
-
-        _needs_allocation(presenter, menu_list, selected_obj, tree_path )
-        _add_section( presenter, menu_list, selected_obj, parent_obj,  parent_tree_path )
-        _add_resource_items(presenter, menu_list, selected_obj, parent_obj, parent_tree_path, ResourceType.teacher)
-        _add_resource_items(presenter, menu_list, selected_obj, parent_obj, parent_tree_path, ResourceType.lab)
-        _add_resource_items(presenter, menu_list, selected_obj, parent_obj, parent_tree_path, ResourceType.stream)
-
-        menu_list.append(MenuItem(menu_type=MenuType.Separator))
-
-        _remove_teachers( presenter, menu_list, selected_obj, parent_obj, tree_path )
-        _remove_all_items( presenter, menu_list, selected_obj, tree_path )
-
-    return menu_list
 """
 sub create_tree_menus {
     $Schedule = shift;
