@@ -8,7 +8,7 @@ import pytest
 from schedule.presenter import Scheduler
 from schedule.gui_pages import SchedulerTk, MAIN_PAGE_EVENT_HANDLERS
 from schedule.Utilities import Preferences
-from schedule.presenter.menus import MAIN_MENU_EVENT_HANDLERS
+from schedule.presenter.menus_main_menu import MAIN_MENU_EVENT_HANDLERS
 
 SCHEDULE_FILE = path.dirname(__file__) + "/data_test.csv"
 PREVIOUS_FILE = path.dirname(__file__) + "/data_test_prev.csv"

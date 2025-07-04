@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     TREE_OBJECT = Any
 
 
-def _default_menu(obj) -> list[MenuItem]:
+def _default_menu(obj, parent_obj, iid, parent_iid) -> list[MenuItem]:
     menu = MenuItem(name=str(obj), label=str(obj), menu_type=MenuType.Command, command=lambda: None)
     return [menu, ]
 
@@ -31,7 +31,6 @@ def _default_resource_menu(resource_type: ResourceType, obj) -> list[MenuItem]:
                           command=lambda: None)
     menu = MenuItem(name=str(obj), label=str(obj), menu_type=MenuType.Command, command=lambda: None)
     return [menu_title, menu]
-
 
 # =================================================================
 # Edit courses GUI_Pages
@@ -43,7 +42,7 @@ class EditCoursesTk:
     event handlers
       1. ``handler_tree_edit``             edit the selected tree object (double click or return)
       2. ``handler_new_course``            create a new course (button)
-      3. ``handler_tree_create_menu``      create a drop-down menu specific to the selected tree object (right click)
+      3. ``handler_tree_create_popup``      create a drop-down menu specific to the selected tree object (right click)
       4. ``handler_resource_create_menu``  create a drop-down menu specific to the selected resource object (right click)
       5. ``handler_show_teacher_stat``     no idea ??
       6. ``handler_drag_resource``         return true/false if dragged object is over a valid drop site
@@ -74,7 +73,7 @@ class EditCoursesTk:
         # ----------------------------------------------------------------
         self.handler_tree_edit: Callable[[TREE_OBJECT], None] = lambda obj: print(f"Edit {str(obj)}")
         self.handler_new_course: Callable[[], None] = lambda: None
-        self.handler_tree_create_menu: Callable[[TREE_OBJECT], list[MenuItem]] = _default_menu
+        self.handler_tree_create_popup: Callable[[TREE_OBJECT, TREE_OBJECT, str, str], list[MenuItem]] = _default_menu
         self.handler_resource_create_menu: Callable[[ResourceType, RESOURCE_OBJECT], list[MenuItem]] = _default_resource_menu
         self.handler_show_teacher_stat: Callable[[RESOURCE_OBJECT], None] = lambda obj: print(f"Teacher stat: {obj}")
         self.handler_drag_resource: Callable[[ResourceType, RESOURCE_OBJECT, TREE_OBJECT ], bool] = \
@@ -142,16 +141,16 @@ class EditCoursesTk:
             widget.insert('end', str(obj))
             self.resource_objects[resource_type].append(obj)
 
-    def add_tree_item(self, parent: str, name: str, child: TREE_OBJECT, hide: bool = True) -> str:
+    def add_tree_item(self, parent_id: str, name: str, child: TREE_OBJECT, hide: bool = True):
         """add an object to the tree, as a child of the parent
         :param parent: an existing tree object that will become the parent of this new child
         :param name: the name of the child
         :param child: the child
         :param hide: hide the children?)
         """
-        tag = "bold" if parent is None or parent == "" else "normal"
-        parent = "" if parent is None else parent
-        return self.course_ttkTreeView.insert_sorted(parent, child, text=name, tag=tag, open = not hide)
+        tag = "bold" if parent_id is None or parent_id == "" else "normal"
+        parent_id = "" if parent_id is None else parent_id
+        self.course_ttkTreeView.insert_sorted(parent_id, child, text=name, tag=tag, open = not hide)
 
     def remove_tree_item(self, tree_iid: str):
         """remove an item from the tree
@@ -231,7 +230,7 @@ class EditCoursesTk:
 
     def _cmd_show_tree_menu(self, e: tkinter.Event):
         """bound method for right click on tree item
-                calls handler: handler_tree_create_menu
+                calls handler: handler_tree_create_popup
         """
 
         tv = self.course_ttkTreeView
@@ -241,13 +240,16 @@ class EditCoursesTk:
         if not iid:
             return
         tv.selection_set(iid)
+        parent_iid = self.tv.parent(iid)
 
         # get object associated with this item
         obj = tv.get_obj_from_id(iid)
+        print("Object is", obj)
+        parent_obj = tv.get_obj_from_id(parent_iid)
 
         # get menu info from callback routine
         menu = Menu(self.frame.winfo_toplevel(), tearoff=0)
-        menu_details = self.handler_tree_create_menu(obj)
+        menu_details = self.handler_tree_create_popup(obj, parent_obj, iid, parent_iid)
         generate_menu(self.frame.winfo_toplevel(), menu_details, menu)
         try:
             menu.tk_popup(e.x_root, e.y_root)

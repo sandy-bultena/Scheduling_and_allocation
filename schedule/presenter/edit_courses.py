@@ -1,91 +1,47 @@
 from typing import Optional, Callable, Any, TYPE_CHECKING
 
-from schedule.Tk.menu_and_toolbars import MenuItem
+from schedule.Tk.menu_and_toolbars import MenuItem, MenuType
 from schedule.model import Schedule, ResourceType, Section, Block, Teacher, Lab, Stream, Course
 from schedule.gui_pages import EditCoursesTk
+import schedule.presenter.menus_tree_and_resource_list as menu
 
 if TYPE_CHECKING:
     pass
 #    from schedule.model import Teacher, Lab, Stream
-"""
-#!/usr/bin/perl
-use strict;
-use warnings;
 
-package EditCourses;
-use FindBin;
-use Carp;
-use lib "$FindBin::Bin/..";
-
-use GUI::EditCoursesTk;
-use Presentation::DynamicMenus;
-use Presentation::EditCourseDialog;
-
-=head1 NAME
-
-EditCourses - provides GUI interface to modify (add/delete) courses 
-
-=head1 VERSION
-
-Version 1.00
-
-=head1 SYNOPSIS
-
-    use Schedule::Schedule;
-    use GuiSchedule::ViewsManager
-    use Tk;
-    use Tk::InitGui;
-    
-    my $Dirtyflag           = 0;
-    my $mw                  = MainWindow->new();
-    my ( $Colours, $Fonts ) = InitGui->set($mw);    
-    my $Schedule = Schedule->read_YAML('myschedule_file.yaml');
-    my $Views_manager         = ViewsManager->new( $mw, \$Dirtyflag, \$Schedule );
-    
-    # create gui for editing courses
-    # NOTE: requires $Views_manager just so that it can update
-    #       the views if data has changed (via the dirty flag)
-    
-    my $de = EditCourses->new( $mw, $Schedule, \$Dirtyflag, $Views_manager )
-
-=head1 DESCRIPTION
-
-Create / Delete courses, assign teachers, labs, etc.
-
-=head1 TODO
-
-Assigning a teacher to a section that has no blocks appears not to
-work, because they are not shown in the course_ttkTreeView.  However, they are there.
-
-=head1 METHODS
-
-=cut
-
-# =================================================================
-# Class/Global Variables
-# =================================================================
-our $Schedule;
-my $Views_manager;
-my $Dirty_ptr;
-my $Gui;
-my $frame;
-
-# =================================================================
-# new_basic
-# =================================================================
-
-=head2 new_basic ()
-
-creates the basic Data Entry (simple matrix)
-
-B<Returns>
-
-data entry object
-
-=cut
-"""
 RESOURCE_OBJECT = Teacher | Lab | Stream
 TREE_OBJECT = Any
+
+# =================================================================
+# model subroutine lookups
+# =================================================================
+REMOVE_SUBS = {
+    "teacher": lambda parent, teacher: parent.remove_teacher(teacher),
+    "lab": lambda parent, lab: parent.remove_lab(lab),
+    "stream": lambda parent, stream: parent.remove_stream(stream),
+    "course": lambda parent, course: parent.remove_course(course),
+    "block": lambda parent, block: parent.remove_block(block),
+    "section": lambda parent, section: parent.remove_section(section),
+}
+REMOVE_ALL_SUBS = {
+    "teacher": lambda parent: parent.remove_all_teachers(),
+    "lab": lambda parent: parent.remove_all_labs(),
+    "stream": lambda parent: parent.remove_all_streams(),
+    "block": lambda parent: parent.remove_all_blocks(),
+    "section": lambda parent: parent.remove_all_sections(),
+}
+REFRESH_SUBS = {
+    "schedule": lambda presenter: presenter.refresh(),
+    "course": lambda presenter, parent_id, obj1:  presenter.refresh_course_gui(parent_id, obj1, True),
+    "block": lambda presenter, parent_id, obj1: presenter.refresh_block(parent_id, obj1, True),
+    "section": lambda presenter, parent_id, obj1: presenter.refresh_section(parent_id, obj1, True),
+}
+ASSIGN_SUBS = {
+    "teacher": lambda parent, teacher: parent.add_teacher(teacher),
+    "lab": lambda parent, lab: parent.add_lab(lab),
+    "stream": lambda parent, stream: parent.add_stream(stream),
+}
+
 
 class EditCourses:
     """
@@ -100,7 +56,6 @@ class EditCourses:
                  schedule: Optional[Schedule],
                  gui: EditCoursesTk=None):
 
-        print("In EditCourses:", frame)
         if not gui:
             self.gui = EditCoursesTk(frame)
         else:
@@ -117,20 +72,15 @@ class EditCourses:
         # ---------------------------------------------------------------------
         self.gui.handler_tree_edit = self.edit_tree_obj
         self.gui.handler_new_course = self.create_new_course
-        self.gui.handler_tree_create_menu = self.create_tree_menu
+        self.gui.handler_tree_create_popup = self.create_tree_popup
         self.gui.handler_resource_create_menu = self.create_resource_menu
         self.gui.handler_show_teacher_stat = self.show_teacher_stat
         self.gui.handler_drag_resource = self.is_valid_drop
         self.gui.handler_drop_resource = self.object_dropped
 
-        # ---------------------------------------------------------------------
-        # add the resources to the gui
-        # ---------------------------------------------------------------------
-        # self.gui.update_resource_type_objects(ResourceType.teacher, self.schedule.teachers())
-        # self.gui.update_resource_type_objects(ResourceType.lab, self.schedule.labs())
-        # self.gui.update_resource_type_objects(ResourceType.stream, self.schedule.streams())
 
     def refresh(self):
+        """ updates the gui will the data from schedule"""
         self.gui.clear_tree()
         self.tree_ids.clear()
         for course in self.schedule.courses():
@@ -143,27 +93,48 @@ class EditCourses:
 
 
     def refresh_course_gui(self, parent_id, course: Course, hide:bool = True):
+        """
+        refresh the contents of the course (sections) on the tree structure
+        :param parent_id: the parent id of the Course tree item
+        :param course:
+        :param hide: leave the parent (and everything under it hidden?)
+        :return:
+        """
         self.gui.remove_tree_item_children(parent_id)
         for section in course.sections():
-            name = section.name
+            name = str(section)
             obj_id = self.gui.add_tree_item(parent_id, name, section, hide)
             self.refresh_section_gui(obj_id, section, hide)
 
     def refresh_section_gui(self, parent_id, section: Section, hide: bool = True):
+        """
+        adds the contents of the section (blocks) on the tree structure
+        :param parent_id: the parent id of the tree item
+        :param section: course section
+        :param hide: leave the parent (and everything under it hidden?)
+        :return:
+        """
         self.gui.remove_tree_item_children(parent_id)
 
         # change the name of the parent text if stream exists for this section
-        name = section.name
+        name = str(section)
         if len(section.streams()):
             name += "  (" + ",".join([str(stream) for stream in section.streams()]) + ")"
             self.gui.update_tree_text(parent_id, name)
 
         for block in section.blocks():
-            name = "Block:" + block.description()
+            name = "Block: " + block.description()
             obj_id = self.gui.add_tree_item(parent_id, name, block, hide)
             self.refresh_block_gui(obj_id, block, hide= True)
 
     def refresh_block_gui(self, parent_id, block: Block, hide: bool=True):
+        """
+        adds the contents of the block (resources) onto the tree structure
+        :param parent_id: the parent id of the tree item
+        :param block: course section block
+        :param hide: leave the parent (and everything under it hidden?)
+        :return:
+        """
         self.gui.remove_tree_item_children(parent_id)
         for lab in block.labs():
             self.gui.add_tree_item(parent_id, str(lab), lab, hide)
@@ -176,51 +147,128 @@ class EditCourses:
 
     def edit_tree_obj(self, obj: Any): ...
     def create_new_course(self): ...
-    def create_tree_menu(self, obj: Any) -> list[MenuItem]: ...
+    def create_tree_popup(self, selected_obj: Any, parent_object, tree_path:str, tree_parent_path) -> list[MenuItem]:
+        return menu.create_tree_menus(self, selected_obj, parent_object, tree_path, tree_parent_path)
+
+    # =========================================================================
+    # Actions
+    # =========================================================================
+    # =================================================================
+    # edit course dialog
+    # =================================================================
+
+    def edit_course_dialog(self, course):
+        #EditCourseDialog->new( $frame, $Schedule, $course );
+        pass
+
+    def remove_obj2_from_obj1(self, parent, selected, parent_id):
+        obj_type = str(type(selected)).lower()
+        key = obj_type.split(".")[-1][0:-2]
+        REMOVE_SUBS[key](parent,selected)
+        if isinstance(parent, Schedule):
+            self.refresh()
+        else:
+            REFRESH_SUBS[key](self,parent_id, parent)
+        self.set_dirty_flag(True)
+
+    def modify_course_needs_allocation(self, course:Course, value: bool, tree_path):
+        course.needs_allocation = value
+        self.refresh_course_gui(tree_path, course)
+        self.set_dirty_flag(True)
+
+    def assign_selected_to_parent(self, parent, selected, parent_id):
+        obj_type = str(type(selected)).lower()
+        key = obj_type.split(".")[-1][0:-2]
+        ASSIGN_SUBS[key](parent,selected)
+        if isinstance(parent, Course):
+            self.refresh()
+        else:
+            REFRESH_SUBS[obj_type](self,parent_id, parent)
+        self.set_dirty_flag(True)
+
+
+    def remove_all_types_from_selected_object(self, obj_type, selected, selected_id):
+        REMOVE_ALL_SUBS[obj_type](selected)
+        obj_type = str(type(selected)).lower()
+        key = obj_type.split(".")[-1][0:-2]
+        REFRESH_SUBS[key](self, selected_id, selected)
+        self.set_dirty_flag(True)
+
+
+
+
+
+
+
+    """
+        sub create_tree_menus {
+
+    # ------------------------------------------------------------------------
+    # course
+    # ------------------------------------------------------------------------
+    if ( $type eq 'course' ) {
+        _edit_course( $menu, $sel_obj, $tree_path );
+        _remove_item( $menu, $sel_obj, $Schedule, $tree_path, "Remove Course" );
+        push @$menu, "separator";
+        _needs_allocation( $menu, $sel_obj, $tree_path );
+        _add_teachers( $menu, $sel_obj, $tree_path );
+        _add_section( $menu, $sel_obj, $tree_path );
+        push @$menu, "separator";
+        _remove_teachers( $menu, $sel_obj, $tree_path );
+        _remove_all( $menu, $sel_obj, $tree_path );
+    }
+
+    # ------------------------------------------------------------------------
+    # section
+    # ------------------------------------------------------------------------
+    elsif ( $type eq 'section' ) {
+        _edit_section( $menu, $sel_obj, $tree_path );
+        _remove_item( $menu, $sel_obj, $par_obj, $tree_path, "Remove Section" );
+        push @$menu, "separator";
+        _add_blocks( $menu, $sel_obj, $tree_path );
+        _add_teachers( $menu, $sel_obj, $tree_path );
+        _add_labs( $menu, $sel_obj, $tree_path );
+        _add_streams( $menu, $sel_obj, $tree_path );
+        push @$menu, "separator";
+        _remove_blocks( $menu, $sel_obj, $tree_path );
+        _remove_teachers( $menu, $sel_obj, $tree_path );
+        _remove_labs( $menu, $sel_obj, $tree_path );
+        _remove_streams( $menu, $sel_obj, $tree_path );
+        _remove_all( $menu, $sel_obj, $tree_path );
+    }
+
+    # ------------------------------------------------------------------------
+    # block
+    # ------------------------------------------------------------------------
+    elsif ( $type eq 'block' ) {
+        _edit_block( $menu, $sel_obj, $par_obj, $tree_path );
+        _remove_item( $menu, $sel_obj, $par_obj, $tree_path, "Remove Block" );
+        _add_teachers( $menu, $sel_obj, $tree_path );
+        _add_labs( $menu, $sel_obj, $tree_path );
+        _remove_teachers( $menu, $sel_obj, $tree_path );
+        _remove_labs( $menu, $sel_obj, $tree_path );
+        _remove_all( $menu, $sel_obj, $tree_path );
+    }
+
+    # ------------------------------------------------------------------------
+    # lab/teacher
+    # ------------------------------------------------------------------------
+    elsif ( $type eq 'teacher' ) {
+        _remove_item( $menu, $sel_obj, $par_obj, $tree_path, "Remove Teacher" );
+    }
+    elsif ( $type eq 'lab' ) {
+        _remove_item( $menu, $sel_obj, $par_obj, $tree_path, "Remove Lab" );
+    }
+    return $menu;
+
+}
+"""
     def create_resource_menu(self, view: ResourceType, obj: RESOURCE_OBJECT) -> list[MenuItem]: ...
     def show_teacher_stat(self, teacher: ResourceType ): ...
     def is_valid_drop(self, view: ResourceType, source: RESOURCE_OBJECT, destination: TREE_OBJECT) -> bool: ...
     def object_dropped(self, view: ResourceType, resource: RESOURCE_OBJECT, obj: TREE_OBJECT): ...
 
 """
-# ===================================================================
-# new
-# ===================================================================
-sub new {
-    my $class = shift;
-    $frame         = shift;
-    $Schedule      = shift;
-    $Dirty_ptr     = shift;
-    $Views_manager = shift;
-
-    $Gui = EditCoursesTk->new($frame);
-
-    # ---------------------------------------------------------------
-    # add "Schedule" to course_ttkTreeView
-    # ---------------------------------------------------------------
-    my $path = '';
-    $Gui->add(
-        "Schedule",
-        -text => 'Schedule',
-        -data => { -obj => $Schedule },
-    );
-    _refresh_schedule_gui();
-
-    # ---------------------------------------------------------------
-    # populate teacher and lab and stream list
-    # ---------------------------------------------------------------
-    _refresh_scheduable_lists();
-
-    # ---------------------------------------------------------------
-    # define event handlers for EditCoursesTk
-    # ---------------------------------------------------------------
-    $Gui->cb_object_dropped_on_tree( \&_cb_object_dropped_on_tree );
-    $Gui->cb_edit_obj( \&_cb_edit_obj );
-    $Gui->cb_new_course( \&_cb_new_course );
-    $Gui->cb_show_teacher_stat( \&_cb_show_teacher_stat );
-    $Gui->cb_get_tree_menu( \&_cb_get_tree_menu );
-    $Gui->cb_get_scheduable_menu_info( \&_cb_get_scheduable_menu );
-}
 
 # ===================================================================
 # method look up tables
@@ -240,14 +288,6 @@ my %Assign_subs = (
     stream  => sub { my $obj = shift; $obj->assign_stream(shift); },
 );
 
-my %Remove_subs = (
-    teacher => sub { my $obj = shift; $obj->remove_teacher(shift); },
-    lab     => sub { my $obj = shift; $obj->remove_lab(shift); },
-    stream  => sub { my $obj = shift; $obj->remove_stream(shift); },
-    course  => sub { my $obj = shift; $obj->courses->remove(shift); },
-    block   => sub { my $obj = shift; $obj->remove_block(shift); },
-    section => sub { my $obj = shift; $obj->remove_section(shift); },
-);
 
 my %Remove_all_subs = (
     teacher => sub { my $obj = shift; $obj->remove_all_teachers(); },
@@ -367,17 +407,6 @@ sub add_sections_with_blocks {
     EditCourses::dirty_flag_method();
 }
 
-# =================================================================
-# assign object 2 to to object 1
-# =================================================================
-sub assign_obj2_to_obj1 {
-    my $obj1      = shift;
-    my $obj2      = shift;
-    my $tree_path = shift;
-    $Assign_subs{ $$s_ptr->get_object_type($obj2) }->( $obj1, $obj2 );
-    $Refresh_subs{ $$s_ptr->get_object_type($obj1) }->( $obj1, $tree_path );
-    dirty_flag_method();
-}
 
 # =================================================================
 # clear all scheduables from object 1
@@ -412,14 +441,6 @@ sub edit_block_dialog {
     dirty_flag_method();
 }
 
-# =================================================================
-# edit course dialog
-# =================================================================
-sub edit_course_dialog {
-
-    my $course = shift;
-    EditCourseDialog->new( $frame, $Schedule, $course );
-}
 
 # =================================================================
 # edit section dialog
@@ -436,17 +457,6 @@ sub edit_section_dialog {
     EditSectionDialog->new( $frame, $Schedule, $course, $section );
 }
 
-# =================================================================
-# remove all specified scheduable types from object 1
-# =================================================================
-sub remove_all_type_from_obj1 {
-    my $obj1      = shift;
-    my $resource_type      = shift;
-    my $tree_path = shift;
-    $Remove_all_subs{$resource_type}->($obj1);
-    $Refresh_subs{ $$s_ptr->get_object_type($obj1) }->( $obj1, $tree_path );
-    dirty_flag_method();
-}
 
 # =================================================================
 # remove object2 from object 1
@@ -470,14 +480,6 @@ sub remove_scheduable {
     $Schedule->remove_lab($obj)     if ( $resource_type eq 'lab' );
     $Schedule->remove_stream($obj)  if ( $resource_type eq 'stream' );
     _refresh_schedule_gui();
-}
-
-# =================================================================
-# set dirty flag
-# =================================================================
-sub dirty_flag_method {
-    $$Dirty_ptr = 1;
-    $Views_manager->redraw_all_views if $Views_manager;
 }
 
 # ===================================================================
@@ -622,168 +624,6 @@ sub _cb_object_dropped_on_tree {
 
 }
 
-#===============================================================
-# Show Teacher Stats
-#===============================================================
-
-sub _cb_show_teacher_stat {
-    my $id      = shift;
-    my $teacher = $Schedule->teachers->get($id);
-    $Gui->show_message( "$teacher", $Schedule->teacher_stat($teacher) );
-}
-
-# ===================================================================
-# labs/teachers/streams list
-# ===================================================================
-sub _refresh_scheduable_lists {
-
-    my @teacher;
-    foreach
-      my $teacher ( sort { &_sort_by_teacher_name } $Schedule->teachers->list )
-    {
-        push @teacher, { -id => $teacher->id, -name => "$teacher" };
-    }
-    $Gui->set_teachers( \@teacher );
-
-    my @labs;
-    foreach my $lab ( sort { &_sort_by_alphabet } $Schedule->labs->list ) {
-        push @labs, { -id => $lab->id, -name => "$lab" };
-    }
-    $Gui->set_labs( \@labs );
-
-    my @streams;
-    foreach my $stream ( sort { &_sort_by_alphabet } $Schedule->streams->list )
-    {
-        push @streams, { -id => $stream->id, -name => "$stream" };
-    }
-    $Gui->set_streams( \@streams );
-}
-
-# ===================================================================
-# refresh Schedule
-# ===================================================================
-sub _refresh_schedule_gui {
-    my $path = "Schedule";
-    $Gui->delete( 'offsprings', $path );
-
-    # refresh course_ttkTreeView
-    foreach my $course ( sort { &_sort_by_alphabet } $Schedule->courses->list )
-    {
-        my $c_id    = "Course" . $course->id;
-        my $newpath = "Schedule/$c_id";
-        $Gui->add(
-            $newpath,
-            -text     => $course->number . "\t" . $course->name,
-            -data     => { -obj => $course },
-            -style    => $Gui->course_style,
-            -itemtype => 'text',
-        );
-        _refresh_course_gui( $course, $newpath );
-    }
-
-    # refresh lists
-    _refresh_scheduable_lists();
-
-}
-
-# ===================================================================
-# refresh course branch
-# ===================================================================
-sub _refresh_course_gui {
-    my $course   = shift;
-    my $path     = shift;
-    my $not_hide = shift;
-    $Gui->delete( 'offsprings', $path );
-
-    # add all the sections for each course
-    foreach my $s ( sort { &_sort_by_number } $course->sections ) {
-        my $s_id     = "Section" . $s->id;
-        my $new_path = "$path/$s_id";
-        my $text     = "$s";
-        $Gui->add(
-            $new_path,
-            -text => $text,
-            -data => { -obj => $s }
-        );
-        _refresh_section_gui( $s, $new_path, $not_hide );
-    }
-
-}
-
-# ===================================================================
-# refresh section branch
-# ===================================================================
-sub _refresh_section_gui {
-    my $section  = shift;
-    my $path     = shift;
-    my $not_hide = shift;
-    $Gui->delete( 'offsprings', $path );
-
-    my $text = "$section";
-    if ( @{ $section->streams } ) {
-        $text = $text . " (" . join( ",", $section->streams ) . ")";
-    }
-    $Gui->update_tree_text( $path, $text );
-
-    # add all the blocks for this section
-    foreach my $bl ( sort { &_sort_by_block_id } $section->blocks ) {
-        my $b_id     = "Block" . $bl->id;
-        my $new_path = "$path/$b_id";
-
-        $Gui->add(
-            $new_path,
-            -text => $bl->short_description,
-            -data => { -obj => $bl }
-        );
-
-        _refresh_block_gui( $bl, $new_path, $not_hide );
-    }
-
-}
-
-# ===================================================================
-# refresh block branch
-# ===================================================================
-sub _refresh_block_gui {
-    my $bl       = shift;
-    my $path     = shift;
-    my $not_hide = shift;
-    $Gui->delete( 'offsprings', $path );
-
-    # add all the teachers for this block
-    foreach my $t ( sort { &_sort_by_teacher_name } $bl->teachers ) {
-        _add_teacher_to_gui( $t, $path, $not_hide );
-    }
-
-    # add all the labs for this block
-    foreach my $l ( sort { &_sort_by_alphabet } $bl->labs ) {
-        _add_lab_to_gui( $l, $path, $not_hide );
-    }
-
-    #$course_ttkTreeView->hide( 'entry', $path ) unless $not_hide;
-    #$course_ttkTreeView->autosetmode();
-}
-
-###################################################################
-# sorting subs
-###################################################################
-sub _sort_by_number { $a->number <=> $b->number }
-
-sub _sort_by_alphabet { $a->number cmp $b->number }
-
-sub _sort_by_block_time {
-    $a->day_number <=> $b->day_number
-      || $a->start_number <=> $b->start_number;
-}
-
-sub _sort_by_block_id {
-    $a->number <=> $b->number;
-}
-
-sub _sort_by_teacher_name {
-    $a->firstname cmp $b->firstname
-      || $a->lastname cmp $b->lastname;
-}
 
 # =================================================================
 # footer

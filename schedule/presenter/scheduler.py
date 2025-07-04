@@ -8,7 +8,7 @@ from schedule.presenter.edit_courses import EditCourses
 
 # from .ViewsManager import ViewsManager
 
-from .menus import set_menu_event_handler, main_menu
+from .menus_main_menu import set_menu_event_handler, main_menu
 from schedule.Utilities import Preferences
 from schedule.gui_pages import SchedulerTk, set_main_page_event_handler
 from schedule.Utilities.NoteBookPageInfo import NoteBookPageInfo

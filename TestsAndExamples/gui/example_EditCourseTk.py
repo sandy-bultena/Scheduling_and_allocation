@@ -128,7 +128,7 @@ s6 = Nothing("3B")
 # call back routines
 test_page.handler_tree_edit = edit_dialog
 test_page.handler_new_course = new_course_dialog
-test_page.handler_tree_create_menu = tree_menu
+test_page.handler_tree_create_popup = tree_menu
 test_page.handler_resource_create_menu = resource_menu
 test_page.handler_show_teacher_stat = teacher_stat_dialog
 test_page.handler_drag_resource = valid_drop_site

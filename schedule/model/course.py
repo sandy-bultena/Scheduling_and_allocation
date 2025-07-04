@@ -136,6 +136,11 @@ class Course:
         sections = sorted(self.sections(), key=lambda s: s.number)
         return sections[-1].number if len(sections) > 0 else 0
 
+    def remove_all_sections(self):
+        """remove all sections in this course"""
+        for section in self.sections():
+            self.remove_section(section)
+
     # =================================================================
     # blocks
     # =================================================================
@@ -145,6 +150,127 @@ class Course:
         for section in self.sections():
             blocks.extend(section.blocks())
         return tuple(sorted(set(blocks)))
+
+    # =================================================================
+    # teachers
+    # =================================================================
+    def teachers(self) -> tuple[Teacher, ...]:
+        """Returns a list of the Teachers assigned to all Sections of this Course."""
+
+        teachers: list[Teacher] = list()
+        for section in self.sections():
+            teachers.extend(section.teachers())
+        return tuple(sorted(set(teachers), key=lambda x: (x.lastname, x.firstname)))
+
+    def has_teacher(self, teacher: Teacher) -> bool:
+        """Returns true if the passed Teacher is assigned to this Course."""
+        return teacher in self.teachers()
+
+    def add_teacher(self, teacher: Teacher) -> Teacher:
+        """Assigns a Teacher to all Sections of this Course."""
+
+        for section in self.sections():
+            section.add_teacher(teacher)
+        return teacher
+
+    def remove_teacher(self, teacher: Teacher):
+        """Removes the passed Teacher from all Sections/Blocks in this Course."""
+        for section in self.sections():
+            section.remove_teacher(teacher)
+
+    def remove_all_teachers(self):
+        """Removes all Teachers from all Sections/Blocks in this Course."""
+        for teacher in self.teachers():
+            self.remove_teacher(teacher)
+
+
+    # =================================================================
+    # stream
+    # =================================================================
+    def streams(self) -> tuple[Stream, ...]:
+        """Returns a list of Streams assigned to all Sections of this Course."""
+
+        streams: list[Stream] = list()
+        for section in self.sections():
+            streams.extend(section.streams())
+        return tuple(sorted(set(streams)))
+
+    def has_stream(self, stream: Stream) -> bool:
+        """Returns true if this Course has the specified Stream."""
+        return stream in self.streams()
+
+    def add_stream(self, stream: Stream) -> Stream:
+        """Assigns a Stream to all Sections of this Course."""
+        if stream:
+            for section in self.sections():
+                section.add_stream(stream)
+
+        return stream
+
+    def remove_stream(self, stream: Stream):
+        """Removes the specified Stream from this Course."""
+        for section in self.sections():
+            section.remove_stream(stream)
+
+    def remove_all_streams(self):
+        """Removes all Streams from all Sections of this Course."""
+        for stream in self.streams():
+            self.remove_stream(stream)
+
+
+
+    # =================================================================
+    # labs
+    # =================================================================
+    def labs(self) -> tuple[Lab, ...]:
+        """Returns a list of Labs assigned to all Sections of this Course."""
+
+        lab_list: list[Lab] = []
+
+        for section in self.sections():
+            for block in section.blocks():
+                lab_list.extend(block.labs())
+        return tuple(sorted(set(lab_list)))
+
+    def add_lab(self, lab: Lab) -> Lab:
+        """Assigns a Lab to all Sections of this Course."""
+
+        for section in self.sections():
+            section.add_lab(lab)
+        return lab
+
+    def has_lab(self, lab: Lab):
+        """Does this course have this lab in any of its sections/blocks?"""
+        return lab in self.labs()
+
+    def remove_lab(self, lab: Lab):
+        for section in self.sections():
+            section.remove_lab(lab)
+
+    def remove_all_labs(self):
+        for lab in self.labs():
+            self.remove_lab(lab)
+
+    # =================================================================
+    # Get unused section number
+    # =================================================================
+    def get_new_number(self, number: int = 1) -> int:
+        """Returns the first unused Section Number."""
+        while self.get_section_by_number(str(number)):
+            number += 1
+        return number
+
+    # ------------------------------------------------------------------------
+    # for sorting
+    # ------------------------------------------------------------------------
+    def __lt__(self, other):
+        return self.number < other.number
+
+    def __hash__(self):
+        return hash(self._number)
+
+    def __eq__(self, other):
+        return self.number == other.number
 
     # =================================================================
     # string representation of the object
@@ -178,132 +304,6 @@ class Course:
     def __repr__(self) -> str:
         return self.title
 
-    # =================================================================
-    # teachers
-    # =================================================================
-    def teachers(self) -> tuple[Teacher, ...]:
-        """Returns a list of the Teachers assigned to all Sections of this Course."""
-
-        teachers: list[Teacher] = list()
-        for section in self.sections():
-            teachers.extend(section.teachers())
-        return tuple(sorted(set(teachers), key=lambda x: (x.lastname, x.firstname)))
-
-    def has_teacher(self, teacher: Teacher) -> bool:
-        """Returns true if the passed Teacher is assigned to this Course."""
-        return teacher in self.teachers()
-
-    # =================================================================
-    # stream
-    # =================================================================
-    def streams(self) -> tuple[Stream, ...]:
-        """Returns a list of Streams assigned to all Sections of this Course."""
-
-        streams: list[Stream] = list()
-        for section in self.sections():
-            streams.extend(section.streams())
-        return tuple(sorted(set(streams)))
-
-    # =================================================================
-    # has_stream_with_id
-    # =================================================================
-    def has_stream(self, stream: Stream) -> bool:
-        """Returns true if this Course has the specified Stream."""
-        return stream in self.streams()
-
-    # =================================================================
-    # assign_teacher_by_id
-    # =================================================================
-    def add_teacher(self, teacher: Teacher) -> Teacher:
-        """Assigns a Teacher to all Sections of this Course."""
-
-        for section in self.sections():
-            section.add_teacher(teacher)
-        return teacher
-
-    # =================================================================
-    # add_lab
-    # =================================================================
-    def labs(self) -> tuple[Lab, ...]:
-        """Returns a list of Labs assigned to all Sections of this Course."""
-
-        lab_list: list[Lab] = []
-
-        for section in self.sections():
-            for block in section.blocks():
-                lab_list.extend(block.labs())
-        return tuple(sorted(set(lab_list)))
-
-    def add_lab(self, lab: Lab) -> Lab:
-        """Assigns a Lab to all Sections of this Course."""
-
-        for section in self.sections():
-            section.add_lab(lab)
-        return lab
-
-    # =================================================================
-    # add_stream
-    # =================================================================
-    def add_stream(self, stream: Stream) -> Stream:
-        """Assigns a Stream to all Sections of this Course."""
-        if stream:
-            for section in self.sections():
-                section.add_stream(stream)
-
-        return stream
-
-    # =================================================================
-    # remove_teacher
-    # =================================================================
-    def remove_teacher(self, teacher: Teacher):
-        """Removes the passed Teacher from all Sections/Blocks in this Course."""
-        for section in self.sections():
-            section.remove_teacher(teacher)
-
-    # =================================================================
-    # remove_all_teachers
-    # =================================================================
-    def remove_all_teachers(self):
-        """Removes all Teachers from all Sections/Blocks in this Course."""
-        for teacher in self.teachers():
-            self.remove_teacher(teacher)
-
-    # =================================================================
-    # remove_stream_by_id
-    # =================================================================
-    def remove_stream(self, stream: Stream):
-        """Removes the specified Stream from this Course."""
-        for section in self.sections():
-            section.remove_stream(stream)
-
-    # =================================================================
-    # remove_all_streams
-    # =================================================================
-    def remove_all_streams(self):
-        """Removes all Streams from all Sections of this Course."""
-        for stream in self.streams():
-            self.remove_stream(stream)
-
-    # =================================================================
-    # Get unused section number
-    # =================================================================
-    def get_new_number(self, number: int = 1) -> int:
-        """Returns the first unused Section Number."""
-        while self.get_section_by_number(str(number)):
-            number += 1
-        return number
-
-    # ------------------------------------------------------------------------
-    # for sorting
-    # ------------------------------------------------------------------------
-    def __lt__(self, other):
-        return self.number < other.number
-
-    def __hash__(self):
-        return hash(self._number)
-
-    def __eq__(self, other):
-        return self.number == other.number
 
 
 # =================================================================
