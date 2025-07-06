@@ -10,23 +10,34 @@
 # ============================================================================
 """
 from __future__ import annotations
-from typing import Any, TYPE_CHECKING
+
+from typing import TYPE_CHECKING
 
 from schedule.Tk import MenuItem, MenuType
-from schedule.model import Course, Teacher, Stream, ResourceType
+from schedule.model import Course, Teacher, ResourceType, Section, Block, Lab
 
 if TYPE_CHECKING:
     from schedule.presenter.edit_courses import EditCourses
 
+
+# ====================================================================================================================
+# Creates all the pop menu items, and their sub-menus if required
+# ... each menu type will then call the appropriate 'presenter' code that will manage the modifications to the
+#     tree/list menus in the EditCourse gui
+# ====================================================================================================================
 class EditCoursePopupMenuActions:
-    def __init__(self, presenter: EditCourses, selected_object: Any, parent_object: Any, tree_id, tree_parent_id):
+    """Creates all the pop menu items, dependent on the selected object, and their sub-menus if required
+
+        Each menu type will then call the appropriate 'presenter' code that will manage the modifications to the
+        tree/list menus in the EditCourse gui
+    """
+    def __init__(self, presenter: EditCourses, selected_object, parent_object, tree_id: str, tree_parent_id: str):
         """
         :param presenter: The presenter that is handling all the logic
         :param selected_object: The object that is the target of this menu
         :param parent_object: The parent of the object (ex. which block this teacher is attached to)
         :param tree_id: the id of the selected tree object
-        :param parent_tree_id:
-
+        :param tree_parent_id: the id of the selected tree object
         """
         self.presenter = presenter
         self.selected_object = selected_object
@@ -34,18 +45,20 @@ class EditCoursePopupMenuActions:
         self.tree_id = tree_id
         self.tree_parent_id = tree_parent_id
 
+    # ================================================================================================================
+    # Create pop up menu based on the selected object
+    # ================================================================================================================
     def create_tree_popup_menus(self):
         """create popup menus for trees
 
         menus are dynamic, depending on the current schedule, and what tree item was selected
-        :return: None
         """
 
         menu_list: list[MenuItem] = []
 
-        # ------------------------------------------------------------------------
+        # ------------------------------------------------------------------------------------------------------------
         # course
-        # ------------------------------------------------------------------------
+        # ------------------------------------------------------------------------------------------------------------
         if isinstance(self.selected_object, Course):
             self._edit_course(menu_list)
             self._remove_item(menu_list, "Remove Course")
@@ -53,30 +66,111 @@ class EditCoursePopupMenuActions:
             menu_list.append(MenuItem(menu_type=MenuType.Separator))
 
             self._needs_allocation(menu_list)
-            self._add_section( menu_list)
-            self._add_resource_items(menu_list, ResourceType.teacher)
-            self._add_resource_items(menu_list, ResourceType.lab)
-            self._add_resource_items(menu_list, ResourceType.stream)
 
             menu_list.append(MenuItem(menu_type=MenuType.Separator))
 
-            self._remove_all_items(menu_list)
+            self._add_section( menu_list)
+            self.sub_menu_add_items(menu_list, ResourceType.teacher)
+            self.sub_menu_add_items(menu_list, ResourceType.lab)
+            self.sub_menu_add_items(menu_list, ResourceType.stream)
+
+            menu_list.append(MenuItem(menu_type=MenuType.Separator))
+
+            self._remove_all_items(menu_list, "course")
+
+        # ------------------------------------------------------------------------------------------------------------
+        # section
+        # ------------------------------------------------------------------------------------------------------------
+        if isinstance(self.selected_object, Section):
+            self._edit_section(menu_list)
+            self._remove_item(menu_list, "Remove Section")
+
+            menu_list.append(MenuItem(menu_type=MenuType.Separator))
+
+            self._add_blocks(menu_list)
+            self.sub_menu_add_items(menu_list, ResourceType.teacher)
+            self.sub_menu_add_items(menu_list, ResourceType.lab)
+            self.sub_menu_add_items(menu_list, ResourceType.stream)
+
+            menu_list.append(MenuItem(menu_type=MenuType.Separator))
+            self.sub_menu_remove_items(menu_list, ResourceType.teacher)
+            self.sub_menu_remove_items(menu_list, ResourceType.lab)
+            self.sub_menu_remove_items(menu_list, ResourceType.stream)
+            self._remove_all_items(menu_list, "section")
+
+        # ------------------------------------------------------------------------------------------------------------
+        # block
+        # ------------------------------------------------------------------------------------------------------------
+        if isinstance(self.selected_object, Block):
+            self._edit_block(menu_list)
+            self._remove_item(menu_list, "Remove Block")
+
+            menu_list.append(MenuItem(menu_type=MenuType.Separator))
+
+            self.sub_menu_add_items(menu_list, ResourceType.teacher)
+            self.sub_menu_add_items(menu_list, ResourceType.lab)
+            self.sub_menu_add_items(menu_list, ResourceType.stream)
+
+            menu_list.append(MenuItem(menu_type=MenuType.Separator))
+            self.sub_menu_remove_items(menu_list, ResourceType.teacher)
+            self.sub_menu_remove_items(menu_list, ResourceType.lab)
+            self.sub_menu_remove_items(menu_list, ResourceType.stream)
+            self._remove_all_items(menu_list, "block")
+
+        # ------------------------------------------------------------------------------------------------------------
+        # lab/teacher
+        # ------------------------------------------------------------------------------------------------------------
+        if isinstance(self.selected_object, Teacher):
+            self._remove_item(menu_list, "Remove Teacher")
+        if isinstance(self.selected_object, Lab):
+            self._remove_item(menu_list, "Remove Lab")
 
         return menu_list
 
-    def _edit_course(self, menu_list: list[MenuItem]):
+    # ================================================================================================================
+    # Private methods that create the MenuList items
+    # ================================================================================================================
+
+    def _edit_block(self, menu_list: list[MenuItem]):
         menu_list.append(
-            MenuItem(menu_type=MenuType.Command, label="Edit Course",
-                     command=lambda *_: self.presenter.edit_course_dialog(self.selected_object)
+            MenuItem(menu_type=MenuType.Command, label="Edit Block",
+                     command=lambda *_: self.presenter.edit_block_dialog(self.selected_object)
                      )
         )
 
+    # ------------------------------------------------------------------------------------------------------------
+    def _add_blocks(self, menu_list: list[MenuItem]):
+        menu_list.append(
+            MenuItem(menu_type=MenuType.Command, label="Add Blocks",
+                     command=lambda *_: self.presenter.add_blocks_dialog(self.selected_object, self.tree_id)
+                     )
+
+        )
+
+    # ------------------------------------------------------------------------------------------------------------
+    def _edit_section(self, menu_list: list[MenuItem]):
+        menu_list.append(
+            MenuItem(menu_type=MenuType.Command, label="Edit Section",
+                     command=lambda *_: self.presenter.edit_section_dialog(self.selected_object, self.tree_id)
+                     )
+        )
+
+    # ------------------------------------------------------------------------------------------------------------
+    def _edit_course(self, menu_list: list[MenuItem]):
+        menu_list.append(
+            MenuItem(menu_type=MenuType.Command, label="Edit Course",
+                     command=lambda *_: self.presenter.edit_course_dialog(self.selected_object, self.tree_id)
+                     )
+        )
+
+    # ------------------------------------------------------------------------------------------------------------
     def _remove_item( self, menu_list: list[MenuItem], text):
         menu_list.append(
             MenuItem(menu_type=MenuType.Command, label=text,
-                     command=lambda *_: self.presenter.remove_obj2_from_obj1(self.parent_object, self.selected_object, self.tree_parent_id))
+                     command=lambda *_: self.presenter.remove_selected_from_parent(self.parent_object, self.selected_object, self.tree_parent_id))
         )
 
+    # ------------------------------------------------------------------------------------------------------------
     def _needs_allocation(self, menu_list: list[MenuItem]):
         if self.selected_object.needs_allocation:
             menu_list.append(
@@ -89,13 +183,14 @@ class EditCoursePopupMenuActions:
                          command=lambda *_: self.presenter.modify_course_needs_allocation(self.selected_object, True, self.tree_id))
             )
 
+    # ------------------------------------------------------------------------------------------------------------
     def _add_section(self, menu_list: list[MenuItem]):
-        menu_list.append(
-            MenuItem(menu_type=MenuType.Command, label="Add Sections",
-                     command=lambda *_: self.presenter.add_section_dialog(self.selected_object))
+        menu_list.append(MenuItem(menu_type=MenuType.Command, label="Add Sections",
+                     command=lambda *_: self.presenter.add_section_dialog(self.selected_object, self.tree_id))
         )
 
-    def _add_resource_items(self, menu_list: list[MenuItem], view: ResourceType):
+    # ------------------------------------------------------------------------------------------------------------
+    def sub_menu_add_items(self, menu_list: list[MenuItem], view: ResourceType):
         match view:
             case ResourceType.lab:
                 items = [o for o in self.presenter.schedule.labs() if not self.selected_object.has_lab(o)]
@@ -111,32 +206,70 @@ class EditCoursePopupMenuActions:
                 text = "Add generic item"
 
         sub_menu = MenuItem(menu_type=MenuType.Cascade, tear_off=False, label=text)
+
+        # need to define new sub in each iteration, because otherwise the closures will get messed up
+        # ... do NOT use lambda's in a loop, we need to bind the individual 'item' in loop rather than its last value
+        # ... https://stackoverflow.com/questions/54288926/python-loops-and-closures
+        for item in items:
+            def f(item_closure= item):
+                return  self.presenter.assign_selected_to_parent(self.selected_object, item_closure,
+                                                                                               self.tree_parent_id)
+            sub_menu.add_child(MenuItem(menu_type=MenuType.Command, label=str(item), command=f))
+        menu_list.append(sub_menu)
+
+    # ------------------------------------------------------------------------------------------------------------
+    def sub_menu_remove_items(self, menu_list: list[MenuItem], view: ResourceType):
+        match view:
+            case ResourceType.lab:
+                items = [o for o in self.presenter.schedule.labs() if self.selected_object.has_lab(o)]
+                text = "Remove Lab"
+            case ResourceType.teacher:
+                items = [o for o in self.presenter.schedule.teachers() if self.selected_object.has_teacher(o)]
+                text = "Remove Teacher"
+            case ResourceType.stream:
+                items = [o for o in self.presenter.schedule.streams() if not self.selected_object.has_stream(o)]
+                text = "Remove Stream"
+            case _:
+                items = []
+                text = "Remove generic item"
+
+        sub_menu = MenuItem(menu_type=MenuType.Cascade, tear_off=False, label=text)
         for item in items:
             sub_menu.add_child(MenuItem(menu_type=MenuType.Command, label=str(item),
-                                        command=lambda *_: self.presenter.assign_selected_to_parent(self.selected_object, item,
+                                        command=lambda *_: self.presenter.remove_selected_from_parent(self.selected_object, item,
                                                                                                self.tree_parent_id)
                                         ))
         menu_list.append(sub_menu)
 
-    def _remove_all_items(self, menu_list: list[MenuItem]):
+    # ------------------------------------------------------------------------------------------------------------
+    def _remove_all_items(self, menu_list: list[MenuItem], parent_type):
         sub_menu = MenuItem(menu_type=MenuType.Cascade, tear_off=False, label="Remove All")
 
-        # ------------------------------------------------------------------------------------------------------------
         # NOTE: do not put the following in a loop, because the closures won't work properly if you do.
         #       If you don't know what a closure is... https://en.wikipedia.org/wiki/Closure_(computer_programming)
-        # ------------------------------------------------------------------------------------------------------------
-        sub_menu.add_child(MenuItem(menu_type=MenuType.Command, label="sections",
-                                    command=lambda *_: self.presenter.remove_all_types_from_selected_object("section",
-                                                                                                       self.selected_object,
-                                                                                                       self.tree_id)
-                                    )
+        if parent_type == "course":
+            sub_menu.add_child(MenuItem(menu_type=MenuType.Command, label="sections",
+                                        command=lambda *_: self.presenter.remove_all_types_from_selected_object("section",
+                                                                                                           self.selected_object,
+                                                                                                           self.tree_id)
+                                        )
                            )
-        sub_menu.add_child(MenuItem(menu_type=MenuType.Command, label="streams",
-                                    command=lambda *_: self.presenter.remove_all_types_from_selected_object("stream",
-                                                                                                       self.selected_object,
-                                                                                                       self.tree_id)
-                                    )
+
+        if parent_type == "section":
+            sub_menu.add_child(MenuItem(menu_type=MenuType.Command, label="blocks",
+                                        command=lambda *_: self.presenter.remove_all_types_from_selected_object("block",
+                                                                                                           self.selected_object,
+                                                                                                           self.tree_id)
+                                        )
                            )
+
+        if parent_type == "course" or parent_type == "section":
+            sub_menu.add_child(MenuItem(menu_type=MenuType.Command, label="streams",
+                                        command=lambda *_: self.presenter.remove_all_types_from_selected_object("stream",
+                                                                                                           self.selected_object,
+                                                                                                           self.tree_id)
+                                        )
+                               )
         sub_menu.add_child(MenuItem(menu_type=MenuType.Command, label="labs",
                                     command=lambda *_: self.presenter.remove_all_types_from_selected_object("lab",
                                                                                                        self.selected_object,
@@ -152,63 +285,8 @@ class EditCoursePopupMenuActions:
         menu_list.append(sub_menu)
 
 
-def _remove_teachers(presenter, menu, sel_obj, parent_obj, tree_path):...
-def _remove_all(presenter, menu, sel_obj, parent_obj, tree_path):...
 
 """
-sub create_tree_menus {
-    $Schedule = shift;
-    my $sel_obj   = shift;    # selected object
-    my $par_obj   = shift;    # parent object
-    my $tree_path = shift;    # tree path (i.e. parent.child)
-
-    my $type = $Schedule->get_object_type($sel_obj);
-    my $menu = [];
-
-    # ------------------------------------------------------------------------
-    # section
-    # ------------------------------------------------------------------------
-    elsif ( $type eq 'section' ) {
-        _edit_section( $menu, $sel_obj, $tree_path );
-        _remove_item( $menu, $sel_obj, $par_obj, $tree_path, "Remove Section" );
-        push @$menu, "separator";
-        _add_blocks( $menu, $sel_obj, $tree_path );
-        _add_teachers( $menu, $sel_obj, $tree_path );
-        _add_labs( $menu, $sel_obj, $tree_path );
-        _add_streams( $menu, $sel_obj, $tree_path );
-        push @$menu, "separator";
-        _remove_blocks( $menu, $sel_obj, $tree_path );
-        _remove_teachers( $menu, $sel_obj, $tree_path );
-        _remove_labs( $menu, $sel_obj, $tree_path );
-        _remove_streams( $menu, $sel_obj, $tree_path );
-        _remove_all( $menu, $sel_obj, $tree_path );
-    }
-
-    # ------------------------------------------------------------------------
-    # block
-    # ------------------------------------------------------------------------
-    elsif ( $type eq 'block' ) {
-        _edit_block( $menu, $sel_obj, $par_obj, $tree_path );
-        _remove_item( $menu, $sel_obj, $par_obj, $tree_path, "Remove Block" );
-        _add_teachers( $menu, $sel_obj, $tree_path );
-        _add_labs( $menu, $sel_obj, $tree_path );
-        _remove_teachers( $menu, $sel_obj, $tree_path );
-        _remove_labs( $menu, $sel_obj, $tree_path );
-        _remove_all( $menu, $sel_obj, $tree_path );
-    }
-
-    # ------------------------------------------------------------------------
-    # lab/teacher
-    # ------------------------------------------------------------------------
-    elsif ( $type eq 'teacher' ) {
-        _remove_item( $menu, $sel_obj, $par_obj, $tree_path, "Remove Teacher" );
-    }
-    elsif ( $type eq 'lab' ) {
-        _remove_item( $menu, $sel_obj, $par_obj, $tree_path, "Remove Lab" );
-    }
-    return $menu;
-
-}
 
 # ============================================================================
 # create popup menus for streams/labs/teacher
@@ -315,185 +393,5 @@ sub show_scheduable_menu {
     return $menu;
 }
 
-# --------------------------------------------------------------------
-# add blocks,
-# --------------------------------------------------------------------
-sub _add_blocks {
-    my $menu      = shift;
-    my $sel_obj   = shift;
-    my $tree_path = shift;
-
-    push @$menu,
-      [
-        'command',
-        "Add Blocks",
-        -command => [ \&EditCourses::add_blocks_dialog, $sel_obj, $tree_path ]
-      ];
-}
-
-
-
-# --------------------------------------------------------------------
-# edit block
-# --------------------------------------------------------------------
-sub _edit_block {
-    my $menu      = shift;
-    my $sel_obj   = shift;
-    my $par_obj   = shift;
-    my $tree_path = shift;
-
-    push @$menu,
-      [
-        'command',
-        "Edit Block",
-        -command =>
-          [ \&EditCourses::edit_block_dialog, $sel_obj, $tree_path ]
-      ];
-}
-
-# --------------------------------------------------------------------
-# edit course
-# --------------------------------------------------------------------
-
-# --------------------------------------------------------------------
-# edit section
-# --------------------------------------------------------------------
-sub _edit_section {
-    my $menu      = shift;
-    my $sel_obj   = shift;
-    my $tree_path = shift;
-
-    push @$menu,
-      [
-        'command',
-        "Edit Section",
-        -command => [ \&EditCourses::edit_section_dialog, $sel_obj, $tree_path ]
-      ];
-}
-
-# --------------------------------------------------------------------
-# needs allocation
-# --------------------------------------------------------------------
-
-# --------------------------------------------------------------------
-# remove all resources menu
-# --------------------------------------------------------------------
-sub _remove_all {
-    my $menu      = shift;
-    my $sel_obj   = shift;
-    my $tree_path = shift;
-    push @$menu,
-      [
-        'command',
-        "Clear All Teachers, Labs, and Streams",
-        -command => [ \&EditCourses::clear_all_from_obj1, $sel_obj, $tree_path ]
-      ];
-}
-
-# --------------------------------------------------------------------
-# removing blocks
-# --------------------------------------------------------------------
-sub _remove_blocks {
-    my $menu      = shift;
-    my $sel_obj   = shift;
-    my $tree_path = shift;
-
-    my $blocks = [];
-    foreach my $block ( $sel_obj->blocks ) {
-        push @$blocks, { name => $block->short_description, obj => $block };
-    }
-    _remove_items( $menu, $sel_obj, $tree_path, $blocks, "Blocks", "block" );
-
-}
-
-# --------------------------------------------------------------------
-# Remove a single item
-# --------------------------------------------------------------------
-sub _remove_item {
-    my ( $menu, $obj1, $obj2, $path, $title ) = @_;
-
-    $path =~ s:^(.*)/.*$:$1:;
-    push @$menu,
-      [
-        "command", $title,
-        -command =>
-          [ \&EditCourses::remove_obj2_from_obj1, $obj2, $obj1, $path ]
-      ];
-}
-
-# --------------------------------------------------------------------
-# removing items
-# --------------------------------------------------------------------
-
-# --------------------------------------------------------------------
-# removing labs
-# --------------------------------------------------------------------
-sub _remove_labs {
-    my $menu      = shift;
-    my $sel_obj   = shift;
-    my $tree_path = shift;
-
-    my $labs = [];
-
-    foreach my $lab ( $sel_obj->labs ) {
-        push @$labs, { name => "$lab", obj => $labs };
-    }
-    _remove_items( $menu, $sel_obj, $tree_path, $labs, "Labs", "lab" );
-}
-
-# --------------------------------------------------------------------
-# removing streams
-# --------------------------------------------------------------------
-sub _remove_streams {
-    my $menu      = shift;
-    my $sel_obj   = shift;
-    my $tree_path = shift;
-
-    my $streams = [];
-
-    foreach my $stream ( $sel_obj->streams ) {
-        push @$streams, { name => "$stream", obj => $stream };
-    }
-    _remove_items( $menu, $sel_obj, $tree_path, $streams, "Streams", "stream" );
-}
-
-# --------------------------------------------------------------------
-# removing teachers
-# --------------------------------------------------------------------
-sub _remove_teachers {
-    my $menu      = shift;
-    my $sel_obj   = shift;
-    my $tree_path = shift;
-
-    my $teachers = [];
-    foreach my $teacher ( $sel_obj->teachers ) {
-        push @$teachers, { name => "$teacher", obj => $teacher };
-    }
-    _remove_items( $menu, $sel_obj, $tree_path, $teachers, "Teachers",
-        "teacher" );
-}
-
-###################################################################
-# sorting subs
-###################################################################
-sub _sort_by_number { $a->number <=> $b->number }
-
-sub _sort_by_alphabet { $a->number cmp $b->number }
-
-sub _sort_by_block_time {
-    $a->day_number <=> $b->day_number
-      || $a->start_number <=> $b->start_number;
-}
-
-sub _sort_by_block_id {
-    $a->number <=> $b->number;
-}
-
-sub _sort_by_teacher_name {
-    $a->lastname cmp $b->lastname
-      || $a->firstname cmp $b->firstname;
-}
-
-1;
 
 """

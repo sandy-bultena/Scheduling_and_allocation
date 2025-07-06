@@ -32,10 +32,10 @@ REMOVE_ALL_SUBS = {
     "section": lambda parent: parent.remove_all_sections(),
 }
 REFRESH_SUBS = {
-    "schedule": lambda presenter: presenter.refresh(),
+    "schedule": lambda presenter, parent_id, obj1: presenter.refresh(),
     "course": lambda presenter, parent_id, obj1:  presenter.refresh_course_gui(parent_id, obj1, True),
     "block": lambda presenter, parent_id, obj1: presenter.refresh_block(parent_id, obj1, True),
-    "section": lambda presenter, parent_id, obj1: presenter.refresh_section(parent_id, obj1, True),
+    "section": lambda presenter, parent_id, obj1: presenter.refresh_section_gui(parent_id, obj1, True),
 }
 ASSIGN_SUBS = {
     "teacher": lambda parent, teacher: parent.add_teacher(teacher),
@@ -157,46 +157,80 @@ class EditCourses:
     # Actions
     # =========================================================================
 
-    def edit_course_dialog(self, course):
+    def edit_course_dialog(self, course: Course, tree_id:str):
         #EditCourseDialog->new( $frame, $Schedule, $course );
         pass
 
-    def add_section_dialog(self, course):
+    def add_section_dialog(self, course: Course, tree_id: str):
         pass
-    """
-    # =================================================================
-    # add section dialog
-    # =================================================================
-    sub add_section_dialog {
-        my $course      = shift;
-        my $section_num = $course->get_new_number;    # gets a new section id
-        my $section     = Section->new(
-            -number => $section_num,
-            -hours  => 0,
-        );
-        $course->add_section($section);
-        EditCourses::_refresh_course_gui( $course,
-            "Schedule/Course" . $course->id );
+        """
+        # =================================================================
+        # add section dialog
+        # =================================================================
+        sub add_section_dialog {
+            my $course      = shift;
+            my $section_num = $course->get_new_number;    # gets a new section id
+            my $section     = Section->new(
+                -number => $section_num,
+                -hours  => 0,
+            );
+            $course->add_section($section);
+            EditCourses::_refresh_course_gui( $course,
+                "Schedule/Course" . $course->id );
+        
+            my ( $section_names, $block_hours ) = AddSectionDialogTk->new($frame);
+            add_sections_with_blocks( $course->id, $section_names, $block_hours );
+        
+            EditCourses::_refresh_course_gui( $course,
+                "Schedule/Course" . $course->id );
+        
+            EditCourses::dirty_flag_method();
+        }
     
-        my ( $section_names, $block_hours ) = AddSectionDialogTk->new($frame);
-        add_sections_with_blocks( $course->id, $section_names, $block_hours );
-    
-        EditCourses::_refresh_course_gui( $course,
-            "Schedule/Course" . $course->id );
-    
-        EditCourses::dirty_flag_method();
-    }
+        """
+    def edit_section_dialog(self, section: Section, tree_id: str):
+        """
+        # =================================================================
+        # edit section dialog
+        # =================================================================
+        sub edit_section_dialog {
+            my $section = shift;
+            my $path    = shift;
+            my $course;
+            if ( $path =~ m:Schedule/Course(\d+)/: ) {
 
-    """
+                $course = $Schedule->courses->get($1);
+            }
 
-    def remove_obj2_from_obj1(self, parent, selected, parent_id):
+            EditSectionDialog->new( $frame, $Schedule, $course, $section );
+        }
+
+        :param section:
+        :return:
+        """
+
+    def add_blocks_dialog(self, section, tree_id: str):
+        """
+        :param section:
+        :return:
+        """
+
+    def edit_block_dialog(self, block):
+        """
+
+        :param block:
+        :return:
+        """
+
+
+    def remove_selected_from_parent(self, parent, selected, parent_id):
         obj_type = str(type(selected)).lower()
         key = obj_type.split(".")[-1][0:-2]
         REMOVE_SUBS[key](parent,selected)
-        if isinstance(parent, Schedule):
-            self.refresh()
-        else:
-            REFRESH_SUBS[key](self,parent_id, parent)
+
+        obj_type = str(type(parent)).lower()
+        key = obj_type.split(".")[-1][0:-2]
+        REFRESH_SUBS[key](self,parent_id, parent)
         self.set_dirty_flag(True)
 
     def modify_course_needs_allocation(self, course:Course, value: bool, tree_path):
@@ -208,10 +242,10 @@ class EditCourses:
         obj_type = str(type(selected)).lower()
         key = obj_type.split(".")[-1][0:-2]
         ASSIGN_SUBS[key](parent,selected)
-        if isinstance(parent, Course):
-            self.refresh()
-        else:
-            REFRESH_SUBS[obj_type](self,parent_id, parent)
+
+        obj_type = str(type(parent)).lower()
+        key = obj_type.split(".")[-1][0:-2]
+        REFRESH_SUBS[key](self,parent_id, parent)
         self.set_dirty_flag(True)
 
 

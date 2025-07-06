@@ -140,6 +140,10 @@ class Section:
         """ Remove a block from this section """
         self._blocks.discard(block)
 
+    def remove_all_blocks(self):
+        for block in self.blocks():
+            self.remove_block(block)
+
     def add_block(self, time_slot: TimeSlot, block_id=None)->Block:
         """ Creates and Assign a block to this section"""
         block = Block(self, time_slot, block_id)
@@ -172,6 +176,10 @@ class Section:
         for b in self.blocks():
             b.add_lab(lab)
         return self
+
+    def has_lab(self, lab: Lab):
+        """Is this lab attached to any of the labs in the blocks? """
+        return lab in self.labs()
 
     def remove_lab(self, lab: Lab):
         """ Remove a lab from every block in the section """
