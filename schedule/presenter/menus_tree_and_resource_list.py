@@ -109,12 +109,10 @@ class EditCoursePopupMenuActions:
 
             self.sub_menu_add_items(menu_list, ResourceType.teacher)
             self.sub_menu_add_items(menu_list, ResourceType.lab)
-            self.sub_menu_add_items(menu_list, ResourceType.stream)
 
             menu_list.append(MenuItem(menu_type=MenuType.Separator))
             self.sub_menu_remove_items(menu_list, ResourceType.teacher)
             self.sub_menu_remove_items(menu_list, ResourceType.lab)
-            self.sub_menu_remove_items(menu_list, ResourceType.stream)
             self._remove_all_items(menu_list, "block")
 
         # ------------------------------------------------------------------------------------------------------------
@@ -213,7 +211,7 @@ class EditCoursePopupMenuActions:
         for item in items:
             def f(item_closure= item):
                 return  self.presenter.assign_selected_to_parent(self.selected_object, item_closure,
-                                                                                               self.tree_parent_id)
+                                                                                               self.tree_id)
             sub_menu.add_child(MenuItem(menu_type=MenuType.Command, label=str(item), command=f))
         menu_list.append(sub_menu)
 

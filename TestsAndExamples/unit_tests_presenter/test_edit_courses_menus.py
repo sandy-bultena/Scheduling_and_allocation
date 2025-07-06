@@ -195,6 +195,263 @@ def dirty():
 
     return set_dirty
 
+
+# =============================================================================
+# Tests for BLOCK menu
+# =============================================================================
+
+
+def test_create_tree_menu_for_block(gui, dirty, schedule_obj):
+    """can create a pop-up menu for block and all required items are there"""
+
+    # prepare
+    ec = EditCourses(dirty, None, schedule_obj, gui)
+    ec.refresh()
+    course = schedule_obj.get_course_by_number("001")
+    section = course.get_section_by_id(1)
+    block = section.blocks()[0]
+    tree_id = ".001.001.001"
+    parent_id = gui.get_parent(tree_id)
+
+    # execute
+    menu = ec.create_tree_popup(block, section, tree_id, parent_id)
+
+    # verify
+    assert len([mi for mi in menu if mi.label == 'Remove Block']) == 1
+    assert len([mi for mi in menu if mi.label == 'Add Teacher']) == 1
+    assert len([mi for mi in menu if mi.label == 'Add Lab']) == 1
+    assert len([mi for mi in menu if mi.label == 'Remove Teacher']) == 1
+    assert len([mi for mi in menu if mi.label == 'Remove Lab']) == 1
+    assert len([mi for mi in menu if mi.label == 'Remove All']) == 1
+
+
+def test_tree_menu_for_section_remove_block(gui, dirty, schedule_obj):
+    """run menu command for block: remove
+    - dirty flag is set
+    - tree is cleared of block
+    - schedule has been updated
+    """
+
+    # prepare
+    ec = EditCourses(dirty, None, schedule_obj, gui)
+    ec.refresh()
+    course = schedule_obj.get_course_by_number("001")
+    section = course.get_section_by_id(1)
+    block = section.blocks()[0]
+    tree_id = ".001.001.001"
+    parent_id = gui.get_parent(tree_id)
+    menu = ec.create_tree_popup(block, section, tree_id, parent_id)
+    mi = [mi for mi in menu if mi.label == 'Remove Block'][0]
+    assert gui.get_iid_from_name_with_parent_id("Block: Monday: 8:00 to 9:30", parent_id)
+
+    # execute
+    mi.command()
+
+    # verify
+    assert dirty_flag
+    assert len(section.blocks()) == 1
+    assert not gui.get_iid_from_name_with_parent_id("Block: Monday: 8:00 to 9:30", parent_id)
+
+def test_tree_menu_for_block_add_teacher_sub_menu(gui, dirty, schedule_obj):
+    """run menu command for block: add teachers
+    - sub menu only contains teachers not already assigned to block
+    """
+
+    # prepare
+    ec = EditCourses(dirty, None, schedule_obj, gui)
+    ec.refresh()
+    course = schedule_obj.get_course_by_number("001")
+    section = course.get_section_by_id(1)
+    block = section.blocks()[0]
+    tree_id = ".001.001.001"
+    parent_id = gui.get_parent(tree_id)
+
+    # execute
+    menu = ec.create_tree_popup(block, section, tree_id, parent_id)
+
+    # verify
+    mi = [mi for mi in menu if mi.label == 'Add Teacher'][0]
+    assert len(mi.children) == 3
+    assert mi.children[0].label == "Bugs Bunny"
+    assert mi.children[1].label == "John Doe"
+    assert mi.children[2].label == "Babe Ruth"
+
+def test_tree_menu_for_block_add_teacher(gui, dirty, schedule_obj):
+    """run menu command for block: add teachers - select teacher
+    - teacher added to block/schedule (but only to this block, not the other one)
+    - teacher added to block/tree
+    - dirty flag is set
+    """
+
+    # prepare
+    ec = EditCourses(dirty, None, schedule_obj, gui)
+    ec.refresh()
+    course = schedule_obj.get_course_by_number("001")
+    section = course.get_section_by_id(1)
+    block = section.blocks()[0]
+    block2 = section.blocks()[1]
+    tree_id = ".001.001.001"
+    parent_id = gui.get_parent(tree_id)
+    menu = ec.create_tree_popup(block, section, tree_id, parent_id)
+    mi = [mi for mi in menu if mi.label == "Add Teacher"]
+    add_menu = mi[0].children[1]        # John Doe
+
+    # execute
+    add_menu.command()
+
+    # verify
+    assert dirty_flag
+    assert block.has_teacher(schedule_obj.get_teacher_by_name("John", "Doe"))
+    assert not block2.has_teacher(schedule_obj.get_teacher_by_name("John", "Doe"))
+    assert gui.get_iid_from_name_with_parent_id("John Doe", tree_id)
+    new_iid = gui.get_iid_from_name_with_parent_id("John Doe", tree_id)
+    assert len(new_iid) == 4*4, "course_id + section_id + block_id + teacher_id"
+    assert not gui.get_iid_from_name_with_parent_id("John Doe", ".001.001.002")
+
+
+def test_tree_menu_for_block_add_lab_sub_menu(gui, dirty, schedule_obj):
+    """run menu command for block: add labs
+    - sub menu only contains labs not already assigned to block
+    """
+
+    # prepare
+    ec = EditCourses(dirty, None, schedule_obj, gui)
+    ec.refresh()
+    course = schedule_obj.get_course_by_number("001")
+    section = course.get_section_by_id(1)
+    block = section.blocks()[0]
+    tree_id = ".001.001.001"
+    parent_id = gui.get_parent(tree_id)
+
+    # execute
+    menu = ec.create_tree_popup(block, section, tree_id, parent_id)
+
+    # verify
+    mi = [mi for mi in menu if mi.label == "Add Lab"]
+
+    assert len(mi[0].children) == 3
+    assert mi[0].children[0].label == "BH311: Britain Hall"
+    assert mi[0].children[1].label == "P322: Mac Lab"
+    assert mi[0].children[2].label == "P325"
+
+def test_tree_menu_for_block_add_lab(gui, dirty, schedule_obj):
+    """run menu command for block: add lab - select lab
+    - lab added to section/schedule
+    - lab added to section/tree
+    - dirty flag is set
+    """
+
+    # prepare
+    ec = EditCourses(dirty, None, schedule_obj, gui)
+    ec.refresh()
+    course = schedule_obj.get_course_by_number("001")
+    section = course.get_section_by_id(1)
+    block = section.blocks()[0]
+    tree_id = ".001.001.001"
+    parent_id = gui.get_parent(tree_id)
+    menu = ec.create_tree_popup(block, section, tree_id, parent_id)
+    mi = [mi for mi in menu if mi.label == "Add Lab"]
+    add_menu = mi[0].children[0]
+
+    # execute
+    add_menu.command()
+
+    # verify
+    assert dirty_flag
+    assert section.has_lab(schedule_obj.get_lab_by_number("BH311"))
+    assert gui.get_iid_from_name_with_parent_id("BH311: Britain Hall", tree_id)
+    new_iid = gui.get_iid_from_name_with_parent_id("BH311: Britain Hall", tree_id)
+    assert len(new_iid) == 4*4, "course_id + section_id + block_id + teacher_id"
+    assert not gui.get_iid_from_name_with_parent_id("BH311: Britain Hall", ".001.001.002")
+
+
+def test_tree_menu_for_block_remove_all_sub_menu(gui, dirty, schedule_obj):
+    """create remove_all sub menu
+    - sub menu for sections, streams, labs, and teachers"""
+
+    # prepare
+    ec = EditCourses(dirty, None, schedule_obj, gui)
+    ec.refresh()
+    course = schedule_obj.get_course_by_number("001")
+    section = course.get_section_by_id(1)
+    block = section.blocks()[0]
+    tree_id = ".001.001.001"
+    parent_id = gui.get_parent(tree_id)
+
+    # execute
+    menu = ec.create_tree_popup(block, section, tree_id, parent_id)
+
+    # verify
+    mi = [mi for mi in menu if mi.label == 'Remove All'][0]
+    sub_menu = mi.children
+    assert len(sub_menu) == 2
+    assert sub_menu[0].label == "labs"
+    assert sub_menu[1].label == "teachers"
+
+
+def test_tree_menu_for_blocks_remove_all_labs(gui, dirty, schedule_obj):
+    """run menu command for block: remove_all labs
+    - dirty flag is set
+    - all labs, etc have been removed from block/tree
+    - schedule has been updated
+    """
+    # prepare
+    ec = EditCourses(dirty, None, schedule_obj, gui)
+    ec.refresh()
+    course = schedule_obj.get_course_by_number("001")
+    section = course.get_section_by_id(1)
+    block = section.blocks()[0]
+    tree_id = ".001.001.001"
+    parent_id = gui.get_parent(tree_id)
+    menu = ec.create_tree_popup(block, section, tree_id, parent_id)
+    mi = [mi for mi in menu if mi.label == 'Remove All'][0]
+    sub_menu = mi.children
+
+    # execute
+    mi2 = [mi for mi in sub_menu if mi.label == 'labs'][0]
+    mi2.command()
+
+    assert dirty_flag
+    assert len(block.labs()) == 0
+    ids = [iid for iid in gui.structure.keys() if iid.startswith(tree_id)]
+    for iid in ids:
+        assert not gui.structure[iid].startswith("P107")
+        assert not gui.structure[iid].startswith("P322")
+        assert not gui.structure[iid].startswith("P325")
+
+
+def test_tree_menu_for_block_remove_all_teachers(gui, dirty, schedule_obj):
+    """run menu command for section: remove_all teacher
+    - dirty flag is set
+    - all teachers, etc have been removed from block/tree
+    - schedule has been updated
+    """
+    # prepare
+    ec = EditCourses(dirty, None, schedule_obj, gui)
+    ec.refresh()
+    course = schedule_obj.get_course_by_number("001")
+    section = course.get_section_by_id(1)
+    block = section.blocks()[0]
+    tree_id = ".001.001.001"
+    parent_id = gui.get_parent(tree_id)
+    menu = ec.create_tree_popup(block, section, tree_id, parent_id)
+    mi = [mi for mi in menu if mi.label == 'Remove All'][0]
+    sub_menu = mi.children
+
+    # execute
+    mi2 = [mi for mi in sub_menu if mi.label == 'teachers'][0]
+    mi2.command()
+
+    assert dirty_flag
+    assert len(block.teachers()) == 0
+    ids = [iid for iid in gui.structure.keys() if iid.startswith(tree_id)]
+    for iid in ids:
+        assert not gui.structure[iid].startswith("Jane Doe")
+        assert not gui.structure[iid].startswith("John Doe")
+        assert not gui.structure[iid].startswith("Babe Ruth")
+        assert not gui.structure[iid].startswith("Bugs Bunny")
+
+
 # =============================================================================
 # Tests for SECTION menu
 # =============================================================================
@@ -335,7 +592,7 @@ def test_tree_menu_for_section_add_teacher_sub_menu(gui, dirty, schedule_obj):
 def test_tree_menu_for_section_add_teacher(gui, dirty, schedule_obj):
     """run menu command for section: add teachers - select teacher
     - teacher added to section/schedule
-    - teacher added to section/tree
+    - teacher added to section/tree in correct spot
     - dirty flag is set
     """
 
@@ -346,7 +603,7 @@ def test_tree_menu_for_section_add_teacher(gui, dirty, schedule_obj):
     section = course.get_section_by_id(1)
     tree_id = ".001.001"
     parent_id = gui.get_parent(tree_id)
-    menu = ec.create_tree_popup(section, course, tree_id, tree_id)
+    menu = ec.create_tree_popup(section, course, tree_id, parent_id)
     mi = [mi for mi in menu if mi.label == "Add Teacher"]
     add_menu = mi[0].children[1]        # John Doe
 
@@ -357,6 +614,9 @@ def test_tree_menu_for_section_add_teacher(gui, dirty, schedule_obj):
     assert dirty_flag
     assert section.has_teacher(schedule_obj.get_teacher_by_name("John", "Doe"))
     assert gui.get_iid_from_name_with_parent_id("John Doe", tree_id)
+    new_iid = gui.get_iid_from_name_with_parent_id("John Doe", tree_id)
+    assert len(new_iid) == 4*4, "course_id + section_id + block_id + teacher_id"
+
 
 def test_tree_menu_for_section_add_stream_sub_menu(gui, dirty, schedule_obj):
     """run menu command for section: add streams
@@ -455,6 +715,9 @@ def test_tree_menu_for_section_add_lab(gui, dirty, schedule_obj):
     assert dirty_flag
     assert section.has_lab(schedule_obj.get_lab_by_number("BH311"))
     assert gui.get_iid_from_name_with_parent_id("BH311: Britain Hall", tree_id)
+
+    new_iid = gui.get_iid_from_name_with_parent_id("BH311: Britain Hall", tree_id)
+    assert len(new_iid) == 4*4, "course_id + section_id + block_id + lab_id"
 
 def test_tree_menu_for_section_remove_all_sub_menu(gui, dirty, schedule_obj):
     """create remove_all sub menu
@@ -589,22 +852,6 @@ def test_tree_menu_for_section_remove_all_teachers(gui, dirty, schedule_obj):
         assert not gui.structure[iid].startswith("John Doe")
         assert not gui.structure[iid].startswith("Babe Ruth")
         assert not gui.structure[iid].startswith("Bugs Bunny")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 # =============================================================================
 # Tests for COURSE menu
@@ -761,6 +1008,7 @@ def test_tree_menu_for_course_add_sections(gui, dirty, schedule_obj):
 
     # prepare
     ec = EditCourses(dirty, None, schedule_obj, gui)
+    ec.refresh()
     menu = ec.create_tree_popup(schedule_obj.get_course_by_number("001"), None, "001", "")
     ec.add_section_dialog = add_section_dialog_test
     mi = [mi for mi in menu if mi.label == 'Add Sections'][0]
@@ -787,8 +1035,6 @@ def test_tree_menu_for_course_add_teacher_sub_menu(gui, dirty, schedule_obj):
 
     # verify
     mi = [mi for mi in menu if mi.label == "Add Teacher"]
-    print()
-    pprint.pp(mi)
     assert len(mi[0].children) == 2
     assert mi[0].children[0].label == "Bugs Bunny"
     assert mi[0].children[1].label == "Mickey Mouse"
@@ -802,6 +1048,7 @@ def test_tree_menu_for_course_add_teacher(gui, dirty, schedule_obj):
 
     # prepare
     ec = EditCourses(dirty, None, schedule_obj, gui)
+    ec.refresh()
     tree_id = gui.get_iid_from_name("001 BasketWeaving")
     parent_id = gui.get_iid_from_name(tree_id)
     schedule_obj.add_update_teacher("Mickey","Mouse")
@@ -815,7 +1062,9 @@ def test_tree_menu_for_course_add_teacher(gui, dirty, schedule_obj):
     # verify
     assert dirty_flag
     assert schedule_obj.get_course_by_number("001").has_teacher(schedule_obj.get_teacher_by_name("Mickey", "Mouse"))
-    assert gui.get_iid_from_name_with_parent_id("Mickey Mouse", parent_id)
+    assert gui.get_iid_from_name_with_parent_id("Mickey Mouse", tree_id)
+    new_iid = gui.get_iid_from_name_with_parent_id("Mickey Mouse", tree_id)
+    assert len(new_iid) == 4*4, "course_id + section_id + block_id + teacher_id"
 
 def test_tree_menu_for_course_add_stream_sub_menu(gui, dirty, schedule_obj):
     """run menu command for course: add streams
@@ -886,6 +1135,7 @@ def test_tree_menu_for_course_add_lab(gui, dirty, schedule_obj):
 
     # prepare
     ec = EditCourses(dirty, None, schedule_obj, gui)
+    ec.refresh()
     tree_id = gui.get_iid_from_name("001 BasketWeaving")
     parent_id = gui.get_iid_from_name(tree_id)
     menu = ec.create_tree_popup(schedule_obj.get_course_by_number("001"), None, tree_id, parent_id)
@@ -899,6 +1149,8 @@ def test_tree_menu_for_course_add_lab(gui, dirty, schedule_obj):
     assert dirty_flag
     assert schedule_obj.get_course_by_number("001").has_lab(schedule_obj.get_lab_by_number("BH311"))
     assert gui.get_iid_from_name_with_parent_id("BH311: Britain Hall", parent_id)
+    new_iid = gui.get_iid_from_name_with_parent_id("BH311: Britain Hall", tree_id)
+    assert len(new_iid) == 4*4, "course_id + section_id + block_id + lab_id"
 
 def test_tree_menu_for_course_remove_all_sub_menu(gui, dirty, schedule_obj):
     """create remove_all sub menu

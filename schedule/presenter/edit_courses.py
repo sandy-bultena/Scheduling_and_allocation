@@ -34,7 +34,7 @@ REMOVE_ALL_SUBS = {
 REFRESH_SUBS = {
     "schedule": lambda presenter, parent_id, obj1: presenter.refresh(),
     "course": lambda presenter, parent_id, obj1:  presenter.refresh_course_gui(parent_id, obj1, True),
-    "block": lambda presenter, parent_id, obj1: presenter.refresh_block(parent_id, obj1, True),
+    "block": lambda presenter, parent_id, obj1: presenter.refresh_block_gui(parent_id, obj1, True),
     "section": lambda presenter, parent_id, obj1: presenter.refresh_section_gui(parent_id, obj1, True),
 }
 ASSIGN_SUBS = {
