@@ -1,5 +1,4 @@
 from typing import Any, Optional
-import pprint
 
 import pytest
 
@@ -56,6 +55,8 @@ class EditCoursesTkTest(EditCoursesTk):
             self.called_remove_tree_item_arguments.append( [tree_iid])
             if tree_iid in self.structure.keys():
                 self.structure.pop(tree_iid)
+            else:
+                raise ValueError(f"could not remove {tree_iid} from tree because it doesn't exist")
 
         def remove_tree_item_children(self, tree_iid: str):
             self.called_remove_tree_item_children = True
@@ -195,11 +196,138 @@ def dirty():
 
     return set_dirty
 
+# =============================================================================
+# Tree created properly
+# =============================================================================
+def test_init_edit_course(gui, dirty, schedule_obj):
+    """can initialize an instance of EditCourses"""
+
+    # execute
+    ec = EditCourses(dirty, None, schedule_obj, gui)
+
+    # verify
+    assert ec is not None
+    assert isinstance(ec, EditCourses)
+
+def test_refresh_updates_tree(gui, dirty, schedule_obj, valid_tree_structure):
+    """can create a pop-up menu for course and all required items are there"""
+
+    # prepare
+    ec = EditCourses(dirty, None, schedule_obj, gui)
+
+    # execute
+    ec.refresh()
+
+    # verify
+    for key in valid_tree_structure.keys():
+        assert key in gui.structure
+        assert gui.structure[key] == valid_tree_structure[key]
+
+
+
+# =============================================================================
+# Tests for LAB/TEACHER menu
+# =============================================================================
+def test_create_tree_menu_for_teacher(gui, dirty, schedule_obj):
+    """can create a pop-up menu for teacher and all required items are there"""
+
+    # prepare
+    ec = EditCourses(dirty, None, schedule_obj, gui)
+    ec.refresh()
+    course = schedule_obj.get_course_by_number("001")
+    section = course.get_section_by_id(1)
+    block = section.blocks()[0]
+    teacher = block.teachers()[0]
+    tree_id = ".001.001.001.001"
+    parent_id = gui.get_parent(tree_id)
+
+    # execute
+    menu = ec.create_tree_popup(teacher, block, tree_id, parent_id)
+
+    # verify
+    assert len([mi for mi in menu if mi.label == 'Remove Teacher']) == 1
+
+def test_create_tree_menu_for_teacher_remove_teacher(gui, dirty, schedule_obj):
+    """remove teacher from parent"""
+
+    # prepare
+    ec = EditCourses(dirty, None, schedule_obj, gui)
+    course = schedule_obj.get_course_by_number("001")
+    section = course.get_section_by_id(1)
+    block = section.blocks()[0]
+    block.add_teacher(schedule_obj.get_teacher_by_name("Babe","Ruth"))
+    teacher = block.teachers()[0]
+    ec.refresh()
+    tree_id = ".001.001.001.001"
+    parent_id = gui.get_parent(tree_id)
+    menu = ec.create_tree_popup(teacher, block, tree_id, parent_id)
+    mi = [mi for mi in menu if mi.label == 'Remove Teacher'][0]
+
+    # execute
+    num_teachers = len(block.teachers())
+    mi.command()
+
+    # verify
+    assert len(block.teachers()) == num_teachers - 1
+    x=block.teachers()
+    for iid in [iid for iid in gui.structure.keys() if iid.startswith(parent_id)]:
+        assert not gui.structure[iid].startswith('Jane Doe')
+    assert gui.get_iid_from_name_with_parent_id("Babe Ruth", parent_id)
+
+
+# =============================================================================
+# Tests for LAB/TEACHER menu
+# =============================================================================
+def test_create_tree_menu_for_lab(gui, dirty, schedule_obj):
+    """can create a pop-up menu for lab and all required items are there"""
+
+    # prepare
+    ec = EditCourses(dirty, None, schedule_obj, gui)
+    ec.refresh()
+    course = schedule_obj.get_course_by_number("001")
+    section = course.get_section_by_id(1)
+    block = section.blocks()[0]
+    lab = block.labs()[0]
+    tree_id = ".001.001.001.001"
+    parent_id = gui.get_parent(tree_id)
+
+    # execute
+    menu = ec.create_tree_popup(lab, block, tree_id, parent_id)
+
+    # verify
+    assert len([mi for mi in menu if mi.label == 'Remove Lab']) == 1
+
+def test_create_tree_menu_for_lab_remove_lab(gui, dirty, schedule_obj, valid_tree_structure):
+    """remove lab from parent"""
+
+    # prepare
+    ec = EditCourses(dirty, None, schedule_obj, gui)
+    course = schedule_obj.get_course_by_number("001")
+    section = course.get_section_by_id(1)
+    block = section.blocks()[0]
+    ec.refresh()
+    block.add_lab(schedule_obj.get_lab_by_number("P325"))
+    lab = block.labs()[0]
+    tree_id = gui.get_iid_from_name_with_parent_id(lab.number, ".001.001.001")
+    parent_id = gui.get_parent(tree_id)
+    menu = ec.create_tree_popup(lab, block, tree_id, parent_id)
+    mi = [mi for mi in menu if mi.label == 'Remove Lab'][0]
+
+
+    # execute
+    num_labs = len(block.labs())
+    mi.command()
+
+    # verify
+    assert len(block.labs()) == num_labs - 1
+    for iid in [iid for iid in gui.structure.keys() if iid.startswith(parent_id)]:
+        assert not gui.structure[iid].startswith(lab.number)
+
+
 
 # =============================================================================
 # Tests for BLOCK menu
 # =============================================================================
-
 
 def test_create_tree_menu_for_block(gui, dirty, schedule_obj):
     """can create a pop-up menu for block and all required items are there"""
@@ -582,8 +710,6 @@ def test_tree_menu_for_section_add_teacher_sub_menu(gui, dirty, schedule_obj):
 
     # verify
     mi = [mi for mi in menu if mi.label == 'Add Teacher'][0]
-    print()
-    pprint.pp(mi)
     assert len(mi.children) == 3
     assert mi.children[0].label == "Bugs Bunny"
     assert mi.children[1].label == "John Doe"
@@ -856,30 +982,6 @@ def test_tree_menu_for_section_remove_all_teachers(gui, dirty, schedule_obj):
 # =============================================================================
 # Tests for COURSE menu
 # =============================================================================
-def test_init_edit_course(gui, dirty, schedule_obj):
-    """can initialize an instance of EditCourses"""
-
-    # execute
-    ec = EditCourses(dirty, None, schedule_obj, gui)
-
-    # verify
-    assert ec is not None
-    assert isinstance(ec, EditCourses)
-
-def test_refresh_updates_tree(gui, dirty, schedule_obj, valid_tree_structure):
-    """can create a pop-up menu for course and all required items are there"""
-
-    # prepare
-    ec = EditCourses(dirty, None, schedule_obj, gui)
-
-    # execute
-    ec.refresh()
-
-    # verify
-    for key in valid_tree_structure.keys():
-        assert key in gui.structure
-        assert gui.structure[key] == valid_tree_structure[key]
-
 def test_create_tree_menu_for_course(gui, dirty, schedule_obj):
     """can create a pop-up menu for course and all required items are there"""
 
