@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import tkinter
 from tkinter import Tk, TclError
 from tkinter.font import Font
 import platform
@@ -10,9 +11,14 @@ import re
 from typing import Literal, Optional
 
 import schedule.Utilities.Colour as Colour
+import tkinter.font as tkFont
 operating_system = platform.system().lower()
+print(operating_system)
 
-DEFAULT_FONT_SIZE = 14
+DEFAULT_FONT_SIZE = 10
+if "darwin" in operating_system:
+    DEFAULT_FONT_SIZE = 13
+
 
 
 class TkColours:
@@ -133,32 +139,23 @@ class TkColours:
 
 class TkFonts:
     def __init__(self, mw: Tk, my_size: int = DEFAULT_FONT_SIZE):
-        size = my_size
-        if re.search('darwin', operating_system):
-            family = 'arial'
-            #size += 2
-        else:
-            size -= 2
-        family = 'arial'
-
-        set_props = {
-            'slant': 'roman', 'underline': 0, 'overstrike': 0
-        }
+        default_font = tkFont.nametofont("TkTextFont")
+        family = default_font["family"]
 
         normal_weight: Literal['normal'] = 'normal'
         bold_weight: Literal['bold'] = 'bold'
-        normal_size = size
-        bigger_size = size + 2
+        normal_size = my_size
+        bigger_size = my_size + 2
         normal_font = family
         fixed_font = 'courier new'
 
         # make fonts
-        self.normal: Font = Font(mw, **set_props, weight=normal_weight, size=normal_size, family=normal_font)
-        self.bold: Font = Font(mw, **set_props, weight=bold_weight, size=normal_size, family=normal_font)
-        self.big: Font = Font(mw, **set_props, weight=normal_weight, size=bigger_size, family=normal_font)
-        self.bigbold: Font = Font(mw, **set_props, weight=bold_weight, size=bigger_size, family=normal_font)
-        self.fixed: Font = Font(mw, **set_props, weight=bold_weight, size=size + 1, family=fixed_font)
-        self.small: Font = Font(mw, **set_props, weight=normal_weight, size=size - 2, family=normal_font)
+        self.normal: Font = Font(mw, weight=normal_weight, size=normal_size, family=normal_font)
+        self.bold: Font = Font(mw, weight=bold_weight, size=normal_size, family=normal_font)
+        self.big: Font = Font(mw, weight=normal_weight, size=bigger_size, family=normal_font)
+        self.bigbold: Font = Font(mw, weight=bold_weight, size=bigger_size, family=normal_font)
+        self.fixed: Font = Font(mw, weight=bold_weight, size=my_size + 1, family=fixed_font)
+        self.small: Font = Font(mw, weight=normal_weight, size=my_size - 2, family=normal_font)
 
 
 colours: TkColours = TkColours()

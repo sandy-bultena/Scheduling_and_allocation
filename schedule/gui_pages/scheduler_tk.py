@@ -114,13 +114,19 @@ class SchedulerTk(MainPageBaseTk):
         # which semester?
         # --------------------------------------------------------------
         self._current_semester.set(str(semester))
-        semester_frame = Frame(option_frame)
+        semester_frame = Frame(option_frame, background=self.colours.DataBackground)
         semester_frame.pack(side="top", fill="y", expand=1)
-        radio_fall = Radiobutton(semester_frame, text='Fall', variable=self._current_semester, value='fall')
-        radio_winter = Radiobutton(semester_frame, text='Winter', variable=self._current_semester, value='winter')
+        radio_fall = Radiobutton(semester_frame, text='Fall',
+                                 background=self.colours.DataBackground, variable=self._current_semester,
+                                 font=self.fonts.big,
+                                 value='fall')
+        radio_winter = Radiobutton(semester_frame, text='Winter',
+                                   background=self.colours.DataBackground, variable=self._current_semester,
+                                   font=self.fonts.big,
+                                   value='winter')
 
-        radio_fall.grid(row=0, column=0)
-        radio_winter.grid(row=0, column=1)
+        radio_fall.grid(row=0, column=0, sticky="nsew", padx=25, pady=15)
+        radio_winter.grid(row=0, column=1, sticky="nsew", padx=25, pady=15)
 
         # place a watch on changing bound variables
         self._current_semester.trace('w', MAIN_PAGE_EVENT_HANDLERS["semester_change"])
@@ -140,7 +146,7 @@ class SchedulerTk(MainPageBaseTk):
             option_frame,
             justify="right",
             font=self.fonts.big,
-            borderwidth=0,
+            borderwidth=2,
             background=self.colours.ButtonBackground,
             foreground=self.colours.ButtonForeground,
             command=MAIN_PAGE_EVENT_HANDLERS["file_open_previous"],
@@ -148,7 +154,7 @@ class SchedulerTk(MainPageBaseTk):
             height=3,
             textvariable=self._previous_file
         )
-        self.previous_file_button.pack(side="top", fill="y", expand=0)
+        self.previous_file_button.pack(side="top", fill="y", expand=0, padx=5, pady=5)
 
         # --------------------------------------------------------------
         # create new schedule file option
@@ -157,13 +163,13 @@ class SchedulerTk(MainPageBaseTk):
             option_frame,
             text="Create NEW Schedule File",
             font=self.fonts.big,
-            borderwidth=0,
+            borderwidth=2,
             background=self.colours.ButtonBackground,
             foreground=self.colours.ButtonForeground,
             command=MAIN_PAGE_EVENT_HANDLERS["file_new"],
             width=BUTTON_WIDTH,
             height=3
-        ).pack(side="top", fill="y", expand=0)
+        ).pack(side="top", fill="y", expand=0, padx=5, pady=5)
 
         # --------------------------------------------------------------
         # open schedule file option
@@ -172,13 +178,13 @@ class SchedulerTk(MainPageBaseTk):
             option_frame,
             text="Browse for Schedule File",
             font=self.fonts.big,
-            borderwidth=0,
+            borderwidth=2,
             background=self.colours.ButtonBackground,
             foreground=self.colours.ButtonForeground,
             command=MAIN_PAGE_EVENT_HANDLERS["file_open"],
             width=BUTTON_WIDTH,
             height=3
-        ).pack(side="top", fill="y", expand=0)
+        ).pack(side="top", fill="y", expand=0, padx=5, pady=5)
 
         # a growable and shrinkable frame which makes resizing look better
         Frame(

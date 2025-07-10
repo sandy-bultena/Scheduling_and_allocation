@@ -20,7 +20,9 @@ class Preferences:
 
         user_base_dir = None
         if re.match(r'win', operating_system):
-            user_base_dir = os.environ['CSIDL_MYDOCUMENTS'] if os.environ['CSIDL_MYDOCUMENTS'] else None
+            user_base_dir = os.environ.get('CSIDL_MYDOCUMENTS', None)
+            if user_base_dir is None:
+                user_base_dir = os.path.expanduser("~/Documents")
         elif re.match(r'darwin|posix', operating_system):
             user_base_dir = os.environ['HOME']
         if user_base_dir is not None and os.path.isdir(user_base_dir):

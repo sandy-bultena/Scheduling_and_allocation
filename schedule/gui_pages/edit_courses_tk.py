@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import tkinter
+from tkinter import ttk
 from functools import partial
 from tkinter import *
 from typing import Callable, Any, TYPE_CHECKING
@@ -9,7 +10,7 @@ import re
 from schedule.Tk import Scrolled
 from schedule.Tk import InitGuiFontsAndColours as fac
 from schedule.Tk import AdvancedTreeview
-from schedule.Tk import  MenuType
+from schedule.Tk import MenuType
 from schedule.Tk import DragNDropManager
 from schedule.Tk import generate_menu
 from schedule.Tk.menu_and_toolbars import MenuItem
@@ -17,6 +18,7 @@ from schedule.model import ResourceType
 
 if TYPE_CHECKING:
     from schedule.model import Teacher, Lab, Stream
+
     RESOURCE_OBJECT = [Teacher | Lab | Stream]
     TREE_OBJECT = Any
 
@@ -31,6 +33,7 @@ def _default_resource_menu(resource_type: ResourceType, obj) -> list[MenuItem]:
                           command=lambda: None)
     menu = MenuItem(name=str(obj), label=str(obj), menu_type=MenuType.Command, command=lambda: None)
     return [menu_title, menu]
+
 
 # =================================================================
 # Edit courses GUI_Pages
@@ -74,11 +77,12 @@ class EditCoursesTk:
         self.handler_tree_edit: Callable[[TREE_OBJECT], None] = lambda obj: print(f"Edit {str(obj)}")
         self.handler_new_course: Callable[[], None] = lambda: None
         self.handler_tree_create_popup: Callable[[TREE_OBJECT, TREE_OBJECT, str, str], list[MenuItem]] = _default_menu
-        self.handler_resource_create_menu: Callable[[ResourceType, RESOURCE_OBJECT], list[MenuItem]] = _default_resource_menu
+        self.handler_resource_create_menu: Callable[
+            [ResourceType, RESOURCE_OBJECT], list[MenuItem]] = _default_resource_menu
         self.handler_show_teacher_stat: Callable[[RESOURCE_OBJECT], None] = lambda obj: print(f"Teacher stat: {obj}")
-        self.handler_drag_resource: Callable[[ResourceType, RESOURCE_OBJECT, TREE_OBJECT ], bool] = \
+        self.handler_drag_resource: Callable[[ResourceType, RESOURCE_OBJECT, TREE_OBJECT], bool] = \
             lambda resource_type, source_obj, target_obj: True
-        self.handler_drop_resource: Callable[[ResourceType, RESOURCE_OBJECT, TREE_OBJECT ], None] = \
+        self.handler_drop_resource: Callable[[ResourceType, RESOURCE_OBJECT, TREE_OBJECT], None] = \
             lambda resource_type, source_obj, target_obj: None
 
         # ----------------------------------------------------------------
@@ -141,16 +145,17 @@ class EditCoursesTk:
             widget.insert('end', str(obj))
             self.resource_objects[resource_type].append(obj)
 
-    def add_tree_item(self, parent_id: str, name: str, child: TREE_OBJECT, hide: bool = True):
+    def add_tree_item(self, parent_id: str, name: str, child: TREE_OBJECT, hide: bool = True) -> str:
         """add an object to the tree, as a child of the parent
         :param parent: an existing tree object that will become the parent of this new child
         :param name: the name of the child
         :param child: the child
         :param hide: hide the children?)
+        :return: The id of the tree element
         """
         tag = "bold" if parent_id is None or parent_id == "" else "normal"
         parent_id = "" if parent_id is None else parent_id
-        self.course_ttkTreeView.insert_sorted(parent_id, child, text=name, tag=tag, open = not hide)
+        return self.course_ttkTreeView.insert_sorted(parent_id, child, text=name, tag=tag, open=not hide)
 
     def remove_tree_item(self, tree_iid: str):
         """remove an item from the tree
@@ -163,10 +168,9 @@ class EditCoursesTk:
         for child in self.course_ttkTreeView.get_children(tree_iid):
             self.course_ttkTreeView.delete(child)
 
-    def update_tree_text(self, tree_iid:str, text:str):
+    def update_tree_text(self, tree_iid: str, text: str):
         if self.course_ttkTreeView.exists(tree_iid):
-            self.course_ttkTreeView.item(tree_iid,text=text)
-
+            self.course_ttkTreeView.item(tree_iid, text=text)
 
     def clear_tree(self):
         """clear the tree of all items"""
@@ -240,11 +244,10 @@ class EditCoursesTk:
         if not iid:
             return
         tv.selection_set(iid)
-        parent_iid = self.tv.parent(iid)
+        parent_iid = tv.parent(iid)
 
         # get object associated with this item
         obj = tv.get_obj_from_id(iid)
-        print("Object is", obj)
         parent_obj = tv.get_obj_from_id(parent_iid)
 
         # get menu info from callback routine
@@ -325,14 +328,18 @@ class EditCoursesTk:
 
     def _make_treeview(self, left_panel: Frame):
         """make tree representing all courses, sections, blocks, resources"""
+        style = ttk.Style()
+        style.configure('Treeview', rowheight=25)  # Adjust '30' to your desired height
         tree_scrolled: Scrolled = Scrolled(left_panel, 'AdvancedTreeview', scrollbars='se')
         tree_scrolled.pack(expand=1, fill='both', side='left')
         tv: AdvancedTreeview = tree_scrolled.widget
         tv.bind('<Double-1>', self._cmd_edit_selection)
         tv.bind('<Key-Return>', self._cmd_edit_selection)
-        tv.tag_configure("bold", font=self.Fonts.bold)
+        tv.tag_configure("bold", font=self.Fonts.big)
         tv.tag_configure("normal", font=self.Fonts.normal)
         tv.bind('<Button-2>', self._cmd_show_tree_menu)
+        tv.bind('<Button-3>', self._cmd_show_tree_menu)
+
         return tv
 
     def _make_resource_list_widgets(self, panel):

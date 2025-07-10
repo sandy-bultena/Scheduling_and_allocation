@@ -14,7 +14,7 @@ from schedule.gui_pages import SchedulerTk, set_main_page_event_handler
 from schedule.Utilities.NoteBookPageInfo import NoteBookPageInfo
 from schedule.model import Schedule, ResourceType
 from schedule.exceptions import CouldNotReadFileError
-from ..gui_generics.read_only_text_tk import ReadOnlyText
+from schedule.gui_generics.read_only_text_tk import ReadOnlyText
 
 if TYPE_CHECKING:
     from tkinter import Event
