@@ -34,7 +34,7 @@ NOTE:
     - The section name will be updated only when the dialog is closed.
 """
 
-from schedule.GUI_Dialogs import AddBlocksDialogTk
+from schedule.gui_dialogs import AddBlocksDialogTk
 # NOTE: RELIES ON Presentation.EditSectionDialog
 
 from tkinter import simpledialog, Frame, Misc, ACTIVE, LEFT, Label, Entry, StringVar, Button, messagebox

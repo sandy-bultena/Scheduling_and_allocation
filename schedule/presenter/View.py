@@ -323,7 +323,9 @@ class View:
         Handles Event: AssignBlock objects have been selected.
 
         Parameters:
-            chosen_blocks: Array of AssignBlocks that have been selected by the user."""
+            chosen_blocks: Array of AssignBlocks that have been selected by the user.
+
+        NOT SURE HOW ONE WOULD ASSIGN THESE BLOCKS TO A TEACHER OR LAB OR STREAM ????"""
 
         # Get the day and time of the chosen blocks.
         from ..gui_pages.AssignBlockTk import AssignBlockTk
@@ -525,7 +527,8 @@ class View:
         self._gui_blocks.clear()
 
     def _setup_for_assignable_blocks(self):
-        """Find all 1/2 blocks and turn them into AssignBlocks."""
+        """Find all 1/2 blocks and turn them into AssignBlocks.
+        ... this is so you can select timeslots on a view page, and create a "real" block from these"""
         type = self.type
 
         # Don't do this for 'stream' types.

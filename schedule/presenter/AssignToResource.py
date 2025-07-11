@@ -1,6 +1,6 @@
 # COMPLETED
 """Create or assign Time Blocks to various resources."""
-from schedule.GUI_Dialogs.AssignToResourceTk import AssignToResourceTk
+from schedule.gui_dialogs.AssignToResourceTk import AssignToResourceTk
 from ..model.Block import Block
 from ..model.course import Course
 from ..model.Labs import Lab

@@ -1,8 +1,15 @@
 import platform
 import tkinter
 import tkinter as tk
+import tkinter.font
+
 root = tk.Tk()
 root.geometry("300x200")
+
+e = tk.Entry(root)
+my_default_font=e.cget("font")
+default_font = tk.font.nametofont(my_default_font)
+print(default_font.actual())
 
 
 times = []
@@ -25,9 +32,9 @@ word_text.config(state='disabled')
 def _zoom(event: tk.Event=None):
     global time_index
     if event is not None:
-        if event.delta > 0 or event.keysym=='Up':
+        if event.delta > 0 or event.keysym=='Up' or event.keysym=="KP_Up":
             time_index -= 1
-        elif event.delta < 0 or event.keysym=='Down':
+        elif event.delta < 0 or event.keysym=='Down'or event.keysym=="KP_Down":
             time_index+= 1
     time_index = time_index%len(times)
     the_time.set(times[time_index])
