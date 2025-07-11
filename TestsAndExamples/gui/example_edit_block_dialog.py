@@ -2,7 +2,7 @@ from tkinter import *
 
 from schedule.model import SemesterType, TimeSlot, WeekDay, ScheduleTime
 from schedule.model.schedule import Schedule
-from schedule.gui_dialogs.edit_block_dialog_tk import EditBlockDialogTk
+from schedule.gui_dialogs.add_edit_block_dialog_tk import AddEditBlockDialogTk
 
 mw=Tk()
 frame = Frame(mw)
@@ -22,12 +22,15 @@ l1 = schedule.add_update_lab("P107", "C-Lab")
 l2 = schedule.add_update_lab("P322", "Mac Lab")
 l3 = schedule.add_update_lab("P325")
 l4 = schedule.add_update_lab("BH311", "Britain Hall")
-def apply_changes(hour, teachers, labs):
-    print(hour, teachers, labs)
+def apply_changes(number, hour, teachers, labs):
+    print(number, hour, teachers, labs)
 
-def go():
-    db = EditBlockDialogTk(frame,1.5, [t1,t2,t3],[t4],[l2],[l1,l3,l4],apply_changes)
+def go_edit():
+    db = AddEditBlockDialogTk(frame, "edit", 1.5, [t1, t2, t3], [t4], [l2], [l1, l3, l4], apply_changes)
+def go_add():
+    db = AddEditBlockDialogTk(frame, "add", 1.5, [t1, t2, t3], [t4], [l2], [l1, l3, l4], apply_changes)
 
-Button(frame, text="Block Dialog", command=go).pack()
+Button(frame, text="Edit Block", command=go_edit).pack()
+Button(frame, text="Add Blocks", command=go_add).pack()
 
 mw.mainloop()

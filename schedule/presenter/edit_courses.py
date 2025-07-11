@@ -1,7 +1,8 @@
 from typing import Optional, Callable, Any, TYPE_CHECKING
 
 from schedule.Tk.menu_and_toolbars import MenuItem, MenuType
-from schedule.model import Schedule, ResourceType, Section, Block, Teacher, Lab, Stream, Course
+from schedule.gui_dialogs.add_edit_block_dialog_tk import AddEditBlockDialogTk
+from schedule.model import Schedule, ResourceType, Section, Block, Teacher, Lab, Stream, Course, TimeSlot, ScheduleTime
 from schedule.gui_pages import EditCoursesTk
 import schedule.presenter.menus_tree_and_resource_list as menu
 from schedule.presenter.menus_tree_and_resource_list import EditCoursePopupMenuActions
@@ -46,9 +47,7 @@ ASSIGN_SUBS = {
 
 class EditCourses:
     """
-    Creates the basic EditResources (a simple matrix)
-    :param frame: gui container object
-    :param schedule: The Schedule object
+    Creates the page for editing courses, with a tree view, lists of resources, drag'n'drop, etc.
     """
 
     def __init__(self,
@@ -56,6 +55,12 @@ class EditCourses:
                  frame,
                  schedule: Optional[Schedule],
                  gui: EditCoursesTk=None):
+        """
+        :param dirty_flag_method: a function that is used to set the flag if schedule has been changed
+        :param frame: the frame to put all the gui stuff in
+        :param schedule: the model
+        :param gui: the gui page
+        """
 
         if not gui:
             self.gui = EditCoursesTk(frame)
@@ -81,7 +86,7 @@ class EditCourses:
 
 
     def refresh(self):
-        """ updates the gui will the data from schedule"""
+        """ updates the gui with the data from schedule"""
         self.gui.clear_tree()
         self.tree_ids.clear()
         for course in self.schedule.courses():
@@ -146,22 +151,42 @@ class EditCourses:
 
 
 
-    def edit_tree_obj(self, obj: Any): ...
+    def edit_tree_obj(self, obj: Any,  parent_obj: Any, tree_id: str, parent_id: str):
+        if isinstance(obj, Block):
+            self.edit_block_dialog(obj,parent_obj, parent_id)
+
     def create_new_course(self): ...
+        # TODO
+
+    # =========================================================================
+    # Menus and Actions
+    # =========================================================================
 
     def create_tree_popup(self, selected_obj: Any, parent_object, tree_path:str, tree_parent_path) -> list[MenuItem]:
+        """
+        Create a pop-up menu based on the selected object
+
+        :param selected_obj: object that was selected on the tree
+        :param parent_object: parent of selected object
+        :param tree_path: the id of the tree item that was selected
+        :param tree_parent_path: the id of the tree item that is the parent of the selected
+        :return:
+        """
         popup = EditCoursePopupMenuActions(self, selected_obj, parent_object, tree_path, tree_parent_path)
         return popup.create_tree_popup_menus()
 
-    # =========================================================================
-    # Actions
-    # =========================================================================
-
     def edit_course_dialog(self, course: Course, tree_id:str):
-        #EditCourseDialog->new( $frame, $Schedule, $course );
+        """
+        Create and use the edit course dialog to modify the selected course
+        :param course:
+        :param tree_id:
+        """
+        # EditCourseDialog->new( $frame, $Schedule, $course );
+        # TODO
         pass
 
     def add_section_dialog(self, course: Course, tree_id: str):
+        # TODO
         pass
         """
         # =================================================================
@@ -189,6 +214,7 @@ class EditCourses:
     
         """
     def edit_section_dialog(self, section: Section, tree_id: str):
+        # TODO
         """
         # =================================================================
         # edit section dialog
@@ -209,18 +235,52 @@ class EditCourses:
         :return:
         """
 
-    def add_blocks_dialog(self, section, tree_id: str):
+    def add_blocks_dialog(self, section: Section, tree_id: str):
         """
-        :param section:
-        :return:
+        :param section: the section to add a block to
+        :param tree_id: the id of the section
         """
+        def _apply_changes(number: int, hours, teachers, labs):
+            for i in range(number):
+                block = section.add_block(TimeSlot(start=ScheduleTime(8+i*hours),duration=hours))
+                for t in teachers:
+                    block.add_teacher(t)
+                for l in labs:
+                    block.add_lab(l)
+            REFRESH_SUBS["section"](self,tree_id, section)
+            self.set_dirty_flag(True)
+        AddEditBlockDialogTk(self.frame, "add", 1.5, [], list(self.schedule.teachers()),
+                              [], list(self.schedule.labs()), _apply_changes)
 
-    def edit_block_dialog(self, block):
-        """
 
+    def edit_block_dialog(self, block, section: Any, parent_id: str):
+        """
+        Modify the block
         :param block:
-        :return:
+        :param section:
+        :param parent_id: the id of the section
         """
+        def _apply_changes(_, hours, teachers, labs):
+            block.remove_all_labs()
+            block.remove_all_teachers()
+            block.time_slot.duration = hours
+            for t in teachers:
+                block.add_teacher(t)
+            for l in labs:
+                block.add_lab(l)
+            REFRESH_SUBS["section"](self,parent_id, section)
+            self.set_dirty_flag(True)
+
+        assigned_teachers = set(block.teachers())
+        non_assigned_teachers = list(set(self.schedule.teachers()).difference(assigned_teachers))
+        non_assigned_teachers.sort()
+        assigned_labs = set(block.labs())
+        non_assigned_labs = list(set(self.schedule.labs()).difference(assigned_labs))
+        non_assigned_labs.sort()
+
+        AddEditBlockDialogTk(self.frame, "edit", block.time_slot.duration, list(block.teachers()),
+                             non_assigned_teachers, list(block.labs()), non_assigned_labs, _apply_changes)
+
 
 
     def remove_selected_from_parent(self, parent, selected, parent_id):

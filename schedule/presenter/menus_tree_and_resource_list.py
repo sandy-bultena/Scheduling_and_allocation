@@ -132,7 +132,7 @@ class EditCoursePopupMenuActions:
     def _edit_block(self, menu_list: list[MenuItem]):
         menu_list.append(
             MenuItem(menu_type=MenuType.Command, label="Edit Block",
-                     command=lambda *_: self.presenter.edit_block_dialog(self.selected_object)
+                     command=lambda *_: self.presenter.edit_block_dialog(self.selected_object, self.tree_id)
                      )
         )
 

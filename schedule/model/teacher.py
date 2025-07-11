@@ -63,6 +63,9 @@ class Teacher:
     def __str__(self) -> str:
         return f"{self.firstname} {self.lastname}"
 
+    def __repr__(self):
+        return str(self)
+
     def __repl__(self) -> str:
         return str(self)
 

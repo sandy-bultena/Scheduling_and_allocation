@@ -74,7 +74,8 @@ class EditCoursesTk:
         # ----------------------------------------------------------------
         # call backs (should be defined by presenter)
         # ----------------------------------------------------------------
-        self.handler_tree_edit: Callable[[TREE_OBJECT], None] = lambda obj: print(f"Edit {str(obj)}")
+        self.handler_tree_edit: Callable[[TREE_OBJECT, TREE_OBJECT, str, str], None] \
+            = lambda obj, parent_obj, tree_id, parent_id: print(f"Edit {str(obj)}")
         self.handler_new_course: Callable[[], None] = lambda: None
         self.handler_tree_create_popup: Callable[[TREE_OBJECT, TREE_OBJECT, str, str], list[MenuItem]] = _default_menu
         self.handler_resource_create_menu: Callable[
@@ -193,16 +194,24 @@ class EditCoursesTk:
         self.handler_show_teacher_stat(obj)
 
     def _cmd_edit_selection(self, *_):
-        """bound method for <keypress Enter> or <double click> on treeview, or or clicking 'Edit Selection' button
+        """bound method for <keypress Enter> or <double click> on treeview, or clicking 'Edit Selection' button
                 calls handler: handler_tree_edit
         """
 
         # get the tree selected item
+        print(f"double clicked tree item")
         iid_list = self.course_ttkTreeView.selection()
         if not iid_list:
             return
         obj = self.course_ttkTreeView.get_obj_from_id(iid_list[0])
-        self.handler_tree_edit(obj)
+        iid = iid_list[0]
+        parent_iid = self.course_ttkTreeView.parent(iid)
+
+        # get object associated with this item
+        obj = self.course_ttkTreeView.get_obj_from_id(iid)
+        parent_obj = self.course_ttkTreeView.get_obj_from_id(parent_iid)
+
+        self.handler_tree_edit(obj,parent_obj,  iid, parent_iid)
 
     def _cmd_show_resource_type_menu(self, resource_type: ResourceType, e: tkinter.Event):
         """bound method for right click on resource list
