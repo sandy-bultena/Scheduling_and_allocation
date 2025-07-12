@@ -66,12 +66,11 @@ class Section:
     # ========================================================
     # CONSTRUCTOR
     # ========================================================
-    def __init__(self, course: Course, number: str = "", hours: float = DEFAULT_HOURS, name: str = "",
+    def __init__(self, course: Course, number: str = "", name: str = "",
                  section_id: Optional[int] = None):
         """
         Creates an instance of the Section class.
         :param number: The section's number.
-        :param hours: The hours of class the section has per week.
         :param name:
         """
 
@@ -85,7 +84,6 @@ class Section:
 
         self.name = name
         self.number = number
-        self._hours = hours
         self.num_students: int = 0
         self.course = course
 
@@ -101,8 +99,8 @@ class Section:
         - When setting, will automatically calculate the total hours if the section has blocks.
         """
         if self.blocks():
-            self._hours = sum((b.time_slot.duration for b in self.blocks()))
-        return self._hours
+            return sum((b.time_slot.duration for b in self.blocks()))
+        return self.course.hours_per_week
 
     @hours.setter
     def hours(self, val):
@@ -308,6 +306,8 @@ class Section:
     # --------------------------------------------------------
     def __str__(self) -> str:
         """ Returns a text string that describes the section """
+        print(f"SECTION: {self.number} {self.name}")
+        x=f"SECTION: {self.number} {self.name}"
         if self.name and not re.match(r"Section\s*\d*$", self.name):
             return f"Section {self.number}: {self.name}"
         else:

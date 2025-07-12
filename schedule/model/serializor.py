@@ -64,16 +64,17 @@ class CSVSerializor:
             # --------------------------------------------------------------------
             w.writerow([])
             w.writerow([None, None, 'DESCRIPTION', 'OF', 'FIELDS'])
-            w.writerow([None, 'number', 'name', 'semester', 'needs allocation', 'COURSE'])
-            w.writerow([None, 'id', 'number', 'name', 'hours', 'students', 'SECTION'])
+            w.writerow([None, 'number', 'name', 'semester', 'needs allocation', 'hours_per_week', 'COURSE'])
+            w.writerow([None, 'id', 'number', 'name', 'students', 'SECTION'])
             w.writerow([None, 'id', 'day', 'time_start', 'duration', 'movable', 'BLOCK'])
             w.writerow([])
             for course in sorted(schedule.courses()):
-                w.writerow(["course", course.number, course.name, course.semester.value, int(course.needs_allocation)])
+                w.writerow(["course", course.number, course.name, course.semester.value,
+                            int(course.needs_allocation), course.hours_per_week])
 
                 for section in course.sections():
                     w.writerow([])
-                    w.writerow(["section", None, section.number, section.name, section.hours, section.num_students])
+                    w.writerow(["section", None, section.number, section.name, section.num_students])
 
                     for s in section.streams():
                         w.writerow(["add_stream", s.number])
@@ -144,20 +145,23 @@ class CSVSerializor:
                 case 'teacher':
                     (number, fname, lname, dept, release) = row[1:6]
                     current_obj: Teacher = schedule.add_update_teacher(firstname=fname, lastname=lname, department=dept,
-                                                                teacher_id=int(number))
+                                                                teacher_id=number)
                     current_obj.release = float(release)
 
                 # -------------------------------------------------------------
                 # courses/sections/blocks
                 # -------------------------------------------------------------
                 case 'course':
-                    (number, name, semester, allocation) = row[1:5]
-                    course_obj: Course = schedule.add_update_course(number=number, name=name, semester=SemesterType(int(semester)),
-                                                                    needs_allocation=bool(int(allocation)))
+                    (number, name, semester, allocation, hours) = row[1:6]
+                    course_obj: Course = schedule.add_update_course(number=number,
+                                                                    name=name,
+                                                                    semester=SemesterType(int(semester)),
+                                                                    needs_allocation=bool(int(allocation)),
+                                                                    hours = hours)
 
                 case 'section' if course_obj is not None:
-                    (number, name, hours, students) = row[2:6]
-                    section_obj: Section = course_obj.add_section(number=number, name=name, hours=float(hours))
+                    (number, name, students) = row[2:5]
+                    section_obj: Section = course_obj.add_section(number=number, name=name)
                     section_obj.num_students = int(students)
 
                 case "add_stream" if section_obj is not None:

@@ -5,7 +5,7 @@ from os import path
 
 import pytest
 
-from schedule.presenter import Scheduler
+from schedule.presenter.scheduler import Scheduler
 from schedule.gui_pages import SchedulerTk, MAIN_PAGE_EVENT_HANDLERS
 from schedule.Utilities import Preferences
 from schedule.presenter.menus_main_menu import MAIN_MENU_EVENT_HANDLERS
@@ -86,10 +86,8 @@ def test_menu_event_handlers_have_correct_signature(gui):
     for name, handler in MAIN_MENU_EVENT_HANDLERS.items():
         print(name)
         sig = inspect.signature(handler)
-        assert len(sig.parameters) == 1
-        param = list(sig.parameters.values())[0]
-        assert param.default is None
-        assert param.annotation == "Event"
+        print(sig)
+        assert len(sig.parameters) == 0
 
 
 # =============================================================================
@@ -104,13 +102,12 @@ def test_new_from_menu(gui):
     """
 
     # prepare
-    event = tkinter.Event()
     obj = Scheduler(BIN_DIR, gui)
     assert obj.schedule is None
     obj.dirty_flag = False
 
     # execute
-    MAIN_MENU_EVENT_HANDLERS["file_new"](event)
+    MAIN_MENU_EVENT_HANDLERS["file_new"]()
 
     # verify
     assert obj.dirty_flag
@@ -138,13 +135,12 @@ def test_file_open_from_menu(gui):
     """
 
     # prepare
-    event = tkinter.Event()
     obj = Scheduler(BIN_DIR, gui)
     assert obj.schedule is None
     obj.dirty_flag = True
 
     # execute
-    MAIN_MENU_EVENT_HANDLERS["file_open"](event)
+    MAIN_MENU_EVENT_HANDLERS["file_open"]()
 
     # verify
     assert not obj.dirty_flag
@@ -165,18 +161,17 @@ def test_bad_file_open_from_menu(gui):
 
     # prepare
     global CURRENT_TEST_FILENAME
-    event = tkinter.Event()
     obj = Scheduler(BIN_DIR, gui)
     assert obj.schedule is None
 
     # execute
-    MAIN_MENU_EVENT_HANDLERS["file_open"](event)
+    MAIN_MENU_EVENT_HANDLERS["file_open"]()
     obj.dirty_flag = True
     old_schedule = obj.schedule
     old_filename = obj.schedule_filename
     old_dirty_flag = obj.dirty_flag
     CURRENT_TEST_FILENAME = BAD_SCHEDULE_FILE
-    MAIN_MENU_EVENT_HANDLERS["file_open"](event)
+    MAIN_MENU_EVENT_HANDLERS["file_open"]()
 
     # verify
     assert obj.dirty_flag == old_dirty_flag
@@ -196,7 +191,6 @@ def test_bad_file_open_from_menu2(gui):
 
     # prepare
     global CURRENT_TEST_FILENAME
-    event = tkinter.Event()
     obj = Scheduler(BIN_DIR, gui)
     assert obj.schedule is None
     obj.dirty_flag = True
@@ -207,7 +201,7 @@ def test_bad_file_open_from_menu2(gui):
     old_dirty_flag = obj.dirty_flag
     old_gui_filename = obj.gui.schedule_filename
     CURRENT_TEST_FILENAME = BAD_SCHEDULE_FILE
-    MAIN_MENU_EVENT_HANDLERS["file_open"](event)
+    MAIN_MENU_EVENT_HANDLERS["file_open"]()
 
     # verify
     assert obj.dirty_flag == old_dirty_flag
@@ -237,7 +231,7 @@ def test_open_from_menu_user_cancels(gui):
 
     # execute
     CURRENT_TEST_FILENAME = None
-    MAIN_MENU_EVENT_HANDLERS["file_open"](tkinter.Event())
+    MAIN_MENU_EVENT_HANDLERS["file_open"]()
 
     # verify
     assert obj.dirty_flag == old_dirty_flag  # didn't open new file, dirty flag unchanged
@@ -259,7 +253,7 @@ def test_open_from_menu_user_cancels2(gui):
     global CURRENT_TEST_FILENAME
     CURRENT_TEST_FILENAME = SCHEDULE_FILE
     obj = Scheduler(BIN_DIR, gui)
-    MAIN_MENU_EVENT_HANDLERS["file_open"](tkinter.Event())
+    MAIN_MENU_EVENT_HANDLERS["file_open"]()
     obj.dirty_flag = True
     old_dirty_flag = obj.dirty_flag
     old_schedule = obj.schedule
@@ -268,7 +262,7 @@ def test_open_from_menu_user_cancels2(gui):
 
     # execute
     CURRENT_TEST_FILENAME = None
-    MAIN_MENU_EVENT_HANDLERS["file_open"](tkinter.Event())
+    MAIN_MENU_EVENT_HANDLERS["file_open"]()
 
     # verify
     assert not gui.called.get("show_error", None)
@@ -354,7 +348,7 @@ def test_save_from_menu(gui):
     obj.dirty_flag = True
 
     # execute
-    MAIN_MENU_EVENT_HANDLERS["file_save"](tkinter.Event())
+    MAIN_MENU_EVENT_HANDLERS["file_save"]()
 
     # verify
     assert not obj.dirty_flag
@@ -385,7 +379,7 @@ def test_save_as_from_menu(gui):
         pass
 
     # execute
-    MAIN_MENU_EVENT_HANDLERS["file_save_as"](tkinter.Event())
+    MAIN_MENU_EVENT_HANDLERS["file_save_as"]()
 
     # verify
     assert not obj.dirty_flag
@@ -409,7 +403,7 @@ def test_save_no_schedule(gui):
     obj.dirty_flag = True
 
     # execute
-    MAIN_MENU_EVENT_HANDLERS["file_save"](tkinter.Event())
+    MAIN_MENU_EVENT_HANDLERS["file_save"]()
 
     # verify
     assert obj.dirty_flag  # no schedule to save, no change to dirty flag
@@ -430,7 +424,7 @@ def test_save_as_no_schedule(gui):
     obj.dirty_flag = True
 
     # execute
-    MAIN_MENU_EVENT_HANDLERS["file_save"](tkinter.Event())
+    MAIN_MENU_EVENT_HANDLERS["file_save"]()
 
     # verify
     assert obj.dirty_flag  # no file to save, so dirty flag not updated
@@ -456,7 +450,7 @@ def test_save_no_filename(gui):
         pass
 
     # execute
-    MAIN_MENU_EVENT_HANDLERS["file_save"](tkinter.Event())
+    MAIN_MENU_EVENT_HANDLERS["file_save"]()
 
     # verify
     assert not obj.dirty_flag

@@ -36,11 +36,12 @@ def test_full_constructor():
     name = "My Course"
     sem = SemesterType.summer
     alloc = False
-    c = Course(num, name, sem, alloc)
+    c = Course(num, name, sem, 3.0, alloc)
     assert c.name == name
     assert c.number == num
     assert c.semester == SemesterType.validate(sem)
     assert c.needs_allocation == alloc
+    assert c.hours_per_week == 3.0
 
 
 def test_name_getter():
@@ -128,10 +129,10 @@ def test_get_section_by_name_good():
     a valid name as input. """
     course = Course("abc")
     name = "test"
-    course.add_section("a", 1.5, name)
-    course.add_section("b", 1.5, name)
-    course.add_section("c", 1.5, "x")
-    course.add_section("d", 1.5, "y")
+    course.add_section("a", name)
+    course.add_section("b", name)
+    course.add_section("c", "x")
+    course.add_section("d", "y")
     sections = course.get_sections_by_name(name)
     assert len(sections) == 2 and "a" in (s.number for s in sections) and "b" in (s.number for s in sections)
 
@@ -140,7 +141,7 @@ def test_get_section_by_name_bad():
     """Verifies that get_sections_by_name() returns an empty tuple when given an invalid
     section name. """
     course = Course("abc")
-    course.add_section("", 1.5, "test")
+    course.add_section("",  "test")
     bad_name = "foo"
     sections = course.get_sections_by_name(bad_name)
     assert len(sections) == 0
@@ -205,7 +206,7 @@ def test_has_teacher():
     """Verifies that has_teacher() returns True if the specified Teacher has been assigned to
     this course. """
     course = Course("abc", "Course 1")
-    section = course.add_section("420", 1.5, "Section 1")
+    section = course.add_section("420", "Section 1")
     teacher = Teacher()
     section.add_teacher(teacher)
     assert course.has_teacher(teacher)
@@ -215,7 +216,7 @@ def test_does_not_have_teacher():
     """Verifies that has_teacher() returns False if the specified Teacher has not been assigned to
     this course. """
     course = Course("abc", "Course 1")
-    section = course.add_section("420", 1.5, "Section 1")
+    section = course.add_section("420", "Section 1")
     teacher = Teacher()
     section.add_teacher(teacher)
     teacher_not_assigned = Teacher()
@@ -258,7 +259,7 @@ def test_streams():
     """Verifies that stream_ids() returns a list of all Streams belonging to the Sections of
     this Course. """
     course = Course("abc", "Course 1")
-    section = course.add_section("420", 1.5, "Section 1")
+    section = course.add_section("420",  "Section 1")
     stream = Stream()
     section.add_stream(stream)
     streams = course.streams
@@ -269,7 +270,7 @@ def test_streams_empty():
     """Verifies that stream_() returns an empty list if no Streams are assigned to this
     Course. """
     course = Course("abc", "Course 1")
-    course.add_section("420", 1.5, "Section 1")
+    course.add_section("420",  "Section 1")
     streams = course.streams
     assert len(streams()) == 0
 
@@ -277,7 +278,7 @@ def test_streams_empty():
 def test_has_stream():
     """Verifies that has_stream_with_id() returns true if the passed Stream exists within the Course."""
     course = Course("abc", "Course 1")
-    section = course.add_section("420", 1.5, "Section 1")
+    section = course.add_section("420",  "Section 1")
     stream = Stream()
     section.add_stream(stream)
     assert course.has_stream(stream) is True
@@ -287,7 +288,7 @@ def test_has_stream_false():
     """Verifies that has_stream() returns false if the Course doesn't contain the passed
     Stream. """
     course = Course("abc", "Course 1")
-    course.add_section("420", 1.5, "Section 1")
+    course.add_section("420",  "Section 1")
     bad_stream = Stream()
     assert course.has_stream(bad_stream) is False
 
@@ -304,8 +305,8 @@ def test_assign_teacher_good():
     """Verifies that assign_teacher assigns the passed Teacher to all Sections of the
     Course. """
     course = Course("abc", "Course 1")
-    section1 = course.add_section("420", 1.5, "Section 1")
-    section2 = course.add_section("421", 1.5, "Section 1")
+    section1 = course.add_section("420",  "Section 1")
+    section2 = course.add_section("421",  "Section 1")
     teacher = Teacher()
     course.add_teacher(teacher)
     teachers = section1.teachers
@@ -318,8 +319,8 @@ def test_assign_lab_good():
     """Verifies that assign_lab can assign a legitimate Lab to all Sections of the Course."""
     course = Course("abc", "Course 1")
     # NOTE: labs are only saved if we have blocks
-    section = course.add_section("420", 1.5, "Section 1")
-    section2 = course.add_section("421", 1.5, "Section 1")
+    section = course.add_section("420",  "Section 1")
+    section2 = course.add_section("421",  "Section 1")
     section.add_block(TimeSlot())
     section2.add_block(TimeSlot())
     lab = Lab()
@@ -332,8 +333,8 @@ def test_assign_stream_good():
     """Verifies that assign_stream can successfully assign a valid Stream to all Sections
     of the Course. """
     course = Course("abc", "Course 1")
-    section = course.add_section("420", 1.5, "Section 1")
-    section2 = course.add_section("421", 1.5, "Section 1")
+    section = course.add_section("420",  "Section 1")
+    section2 = course.add_section("421", "Section 1")
 
     stream = Stream()
     course.add_stream(stream)
@@ -358,8 +359,8 @@ def test_remove_teacher_good():
 def test_remove_all_teachers():
     """Verifies that remove_all_teachers() works as intended."""
     course = Course("abc", "Course 1")
-    section1 = course.add_section("420", 1.5, "Section 1")
-    section2 = course.add_section("421", 1.5, "Section 1")
+    section1 = course.add_section("420",  "Section 1")
+    section2 = course.add_section("421",  "Section 1")
     teacher_1 = Teacher()
     teacher_2 = Teacher()
     teacher_3 = Teacher()
@@ -378,8 +379,8 @@ def test_remove_all_teachers():
 def test_remove_stream_good():
     """Verifies that remove_stream() works as intended."""
     course = Course("abc", "Course 1")
-    course.add_section("420", 1.5, "Section 1")
-    course.add_section("421", 1.5, "Section 1")
+    course.add_section("420",  "Section 1")
+    course.add_section("421",  "Section 1")
 
     stream_1 = Stream()
     stream_2 = Stream()
@@ -392,7 +393,7 @@ def test_remove_stream_good():
 def test_remove_all_streams():
     """Verifies that remove_all_streams() works as intended."""
     course = Course("abc", "Course 1")
-    course.add_section("420", 1.5, "Section 1")
+    course.add_section("420",  "Section 1")
     stream_1 = Stream()
     stream_2 = Stream()
     course.add_stream(stream_1)

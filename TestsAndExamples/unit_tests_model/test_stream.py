@@ -30,4 +30,5 @@ def test_number_getter():
 def test_string_representation_short():
     descr = "Worst place in the world."
     stream = Stream("AB", descr)
-    assert str(stream) == stream.number
+    assert stream.number in str(stream)
+    assert stream.description in str(stream)

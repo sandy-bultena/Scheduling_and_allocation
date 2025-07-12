@@ -14,6 +14,7 @@ from .conflicts import (set_block_conflicts, ConflictType, LUNCH_START, LUNCH_EN
                         set_number_of_days_conflict, set_availability_hours_conflict)
 from .enums import ResourceType, SemesterType
 from .serializor import CSVSerializor as Serializor
+DEFAULT_COURSE_HOURS = 3
 
 """ SYNOPSIS/EXAMPLE:
 """
@@ -64,7 +65,7 @@ class Schedule:
     #     rather than creating a new one
     # ------------------------------------------------------------------------
     def add_update_course(self, number: str, name: str = "new Course",
-                          semester: SemesterType = SemesterType.any,
+                          semester: SemesterType = SemesterType.any, hours:float = DEFAULT_COURSE_HOURS,
                           needs_allocation: bool = True) -> Course:
         """Creates or updates a Course object with the unique identifier 'teacher_id'
         :param number: Unique identifier for the course
@@ -74,7 +75,7 @@ class Schedule:
         """
         original_course: Course = self.get_course_by_number(number)
         if original_course is None:
-            course: Course = Course(number, name, semester, needs_allocation)
+            course: Course = Course(number, name, semester, hours, needs_allocation)
             self._courses[course.number] = course
             return course
         else:
@@ -95,6 +96,7 @@ class Schedule:
             return stream
         else:
             original_stream.description = description
+            return original_stream
 
     def add_update_lab(self, number: str, description: str = '') -> Lab:
         """Creates or updates a Lab object with the unique identifier 'teacher_id'
@@ -110,8 +112,10 @@ class Schedule:
             original_lab.description = description
             return original_lab
 
-    def add_update_teacher(self, firstname: str, lastname: str, department: str = "", release:float = 0, teacher_id: int = None) -> Teacher:
+    def add_update_teacher(self, firstname: str, lastname: str, department: str = "", release:float = 0,
+                           teacher_id: str = None) -> Teacher:
         """Creates or updates a teacher object with the unique identifier 'teacher_id'
+        :param release:
         :param firstname:
         :param lastname:
         :param department: (optional)
@@ -126,6 +130,7 @@ class Schedule:
             original_teacher.firstname = firstname
             original_teacher.lastname = lastname
             original_teacher.department = department
+            return original_teacher
 
     # ------------------------------------------------------------------------
     # returning collections as a tuple (to prevent user from modifying the collection)
@@ -241,7 +246,7 @@ class Schedule:
 
     def get_courses_for_teacher(self, teacher: Teacher) -> tuple[Course, ...]:
         """Get all the courses that has this teacher assigned to it"""
-        courses: [Course] = set([c for c in self.courses() if c.has_teacher(teacher)])
+        courses: set[Course] = set([c for c in self.courses() if c.has_teacher(teacher)])
         return tuple(sorted(courses))
 
     # ========================================================================
@@ -271,17 +276,17 @@ class Schedule:
 
     def get_sections_for_stream(self, stream: Stream) -> tuple[Section, ...]:
         """Returns a tuple of Sections assigned to the given Stream"""
-        streams: [Section] = set([s for s in self.sections() if s.has_stream(stream)])
+        streams: set[Section] = set([s for s in self.sections() if s.has_stream(stream)])
         return tuple(streams)
 
     def get_blocks_for_teacher(self, teacher: Teacher) -> tuple[Block, ...]:
         """Returns a tuple of Blocks that the given Teacher teaches"""
-        blocks: [Block] = set([b for b in self.blocks() if b.has_teacher(teacher)])
+        blocks: set[Block] = set([b for b in self.blocks() if b.has_teacher(teacher)])
         return tuple(blocks)
 
     def get_blocks_in_lab(self, lab: Lab) -> tuple[Block, ...]:
         """Returns a tuple of Blocks using the given Lab"""
-        blocks: [Block] = set([b for b in self.blocks() if b.has_lab(lab)])
+        blocks: set[Block] = set([b for b in self.blocks() if b.has_lab(lab)])
         return tuple(blocks)
 
     def get_blocks_for_stream(self, stream: Stream) -> tuple[Block, ...]:

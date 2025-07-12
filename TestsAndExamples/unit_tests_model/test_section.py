@@ -4,7 +4,7 @@ import pytest
 
 from schedule.model.section import Section
 import schedule.model.section as sections_module
-from schedule.model import Block, WeekDay, ClockTime
+from schedule.model import Block, WeekDay, ClockTime, Course
 from schedule.model import TimeSlot, ConflictType
 from schedule.model import InvalidHoursForSectionError
 
@@ -37,13 +37,6 @@ class Teacher:
     def __lt__(self, other: Teacher):
         return True
 
-
-class Course:
-    @property
-    def title(self):
-        return "Course Title"
-
-
 course = Course()
 
 
@@ -74,7 +67,6 @@ def test_constructor_default_values():
     """Checks that the constructor uses default values"""
     s = Section(course)
     assert isinstance(s.number, str)
-    assert s.hours == sections_module.DEFAULT_HOURS
     assert isinstance(s.name, str)
 
 
@@ -83,49 +75,27 @@ def test_section_created_success():
     number = "3A"
     hours = 2
     name = "My Section"
-    s = Section(course, number, hours, name)
+    s = Section(course, number, name)
     assert s.name == name
-    assert s.hours == hours
     assert s.number == number
-
-
-def test_set_hours_valid():
-    """Checks that valid hours can be set_default_fonts_and_colours"""
-    s = Section(course)
-    hours = 2
-    s.hours = hours
-    assert s.hours == hours
-
-
-def test_set_hours_invalid():
-    """Checks that invalid hours can't be set"""
-    s = Section(course)
-    hours = -10
-    with pytest.raises(InvalidHoursForSectionError) as e:
-        s.hours = hours
-    assert "must be larger than 0" in str(e.value).lower()
-    assert s.hours != hours
 
 
 def test_hours_are_block_hours():
     """Checks if this section has blocks, it returns the number of blocks hours"""
     s = Section(course)
     hours = 22
-    s.hours = hours
+    s.course.hours = hours
     block1 = s.add_block(TimeSlot(WeekDay.Monday, ClockTime("9:30"), 3))
     block2 = s.add_block(TimeSlot(WeekDay.Monday, ClockTime("10:30"), 3.5))
     assert s.hours == (block1.time_slot.duration + block2.time_slot.duration)
 
 
-def test_cannot_override_block_hours():
-    """Checks if this section has blocks, even if we change section hours, it is still blocks hours"""
+def test_hours_are_course_hours_if_no_blocks():
+    """Checks if this section has blocks, if it doesn't, return course hours"""
     s = Section(course)
     hours = 22
-    s.hours = hours
-    block1 = s.add_block(TimeSlot(WeekDay.Monday, ClockTime("9:30"), 3))
-    block2 = s.add_block(TimeSlot(WeekDay.Monday, ClockTime("10:30"), 3.5))
-    s.hours = hours
-    assert s.hours == (block1.time_slot.duration + block2.time_slot.duration)
+    s.course.hours_per_week = hours
+    assert s.hours == s.course.hours_per_week
 
 
 def test_get_title():
@@ -143,15 +113,6 @@ def test_set_num_students():
     num = 20
     s.num_students = num
     assert s.num_students == num
-
-
-def test_hours_can_be_added():
-    """Checks that hours can be added (rather than set_default_fonts_and_colours) if no blocks are set_default_fonts_and_colours"""
-    hours = 1
-    to_add = 10
-    s = Section(course, hours=hours)
-    s.add_hours(to_add)
-    assert s.hours == hours + to_add
 
 
 def test_added_hours_ignored_if_blocks():

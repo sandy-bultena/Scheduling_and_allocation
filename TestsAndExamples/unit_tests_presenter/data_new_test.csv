@@ -6,7 +6,7 @@
 
 
 ,,DESCRIPTION,OF,FIELDS
-,number,name,semester,needs allocation,COURSE
-,id,number,name,hours,students,SECTION
+,number,name,semester,needs allocation,hours_per_week,COURSE
+,id,number,name,students,SECTION
 ,id,day,time_start,duration,movable,BLOCK
 
