@@ -242,7 +242,7 @@ class EditCourses:
         """
         def _apply_changes(number: int, hours, teachers, labs):
             for i in range(number):
-                block = section.add_block(TimeSlot(start=ScheduleTime(8+i*hours),duration=hours))
+                block = section.add_block(TimeSlot(start=ScheduleTime(8),duration=hours))
                 for t in teachers:
                     block.add_teacher(t)
                 for l in labs:

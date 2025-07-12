@@ -6,7 +6,7 @@ from tkinter import *
 from tkinter.simpledialog import Dialog
 from typing import Callable, Literal
 
-from schedule.gui_generics.add_remove_tk import AddRemove
+from schedule.gui_generics.add_remove_tk import AddRemoveTk
 
 
 class AddEditBlockDialogTk(Dialog):
@@ -97,13 +97,13 @@ class AddEditBlockDialogTk(Dialog):
         # Teacher/Lab Add/Remove
         # ------------------------------------------------------------------------------------------------------------
         teacher_assignments_frame = Frame(frame)
-        AddRemove(teacher_assignments_frame, self._get_non_assigned_teachers, self._get_assigned_teachers,
-                  self._add_teacher, self._remove_teacher, "Assign Teacher to Block",
+        AddRemoveTk(teacher_assignments_frame, self._get_non_assigned_teachers, self._get_assigned_teachers,
+                    self._add_teacher, self._remove_teacher, "Assign Teacher to Block",
                                         "Remove Teacher from Block")
 
         lab_assignments_frame = Frame(frame)
-        AddRemove(lab_assignments_frame, self._get_non_assigned_labs, self._get_assigned_labs,
-                  self._add_lab, self._remove_lab, "Assign Lab to Block",
+        AddRemoveTk(lab_assignments_frame, self._get_non_assigned_labs, self._get_assigned_labs,
+                    self._add_lab, self._remove_lab, "Assign Lab to Block",
                                         "Remove Lab from Block")
 
 
