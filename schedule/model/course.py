@@ -44,6 +44,7 @@ class Course:
     def __init__(self, number: str = "",
                  name: str = "New Course",
                  semester: SemesterType = SemesterType.any,
+                 hours_per_week: float = 3.0,
                  needs_allocation: bool = True):
         """Creates and returns a course object.
         :param number: Course number
@@ -56,6 +57,7 @@ class Course:
         self._number: str = number
         self.name: str = name
         self.needs_allocation: bool = needs_allocation
+        self.hours_per_week = hours_per_week
         self._sections: set[Section] = set()
         self.semester: SemesterType = semester
 
@@ -78,7 +80,7 @@ class Course:
     # =================================================================
     # sections
     # =================================================================
-    def add_section(self, number: str = "", hours: float = DEFAULT_HOURS, name: str = "",
+    def add_section(self, number: str = "",  name: str = "",
                     section_id: int = None) -> Section:
         """Assign a Section to this Course."""
 
@@ -86,7 +88,8 @@ class Course:
             raise InvalidSectionNumberForCourseError(
                 f"<{number}>: section number is not unique for this Course.")
 
-        section = Section(self, number, hours, name, section_id)
+
+        section = Section(self, number, name, section_id)
         self._sections.add(section)
 
         return section
@@ -302,7 +305,7 @@ class Course:
         return text
 
     def __repr__(self) -> str:
-        return self.title
+        return f"{self.title}  ({self.hours_per_week} hrs/wk)"
 
 
 

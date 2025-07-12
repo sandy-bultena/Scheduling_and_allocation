@@ -208,7 +208,7 @@ class Scheduler:
             if ans:
                 self.save_menu_event()
 
-    def menu_ignore(self, _: Event = None):
+    def menu_ignore(self):
         print("still a To Do!!")
         pass
 

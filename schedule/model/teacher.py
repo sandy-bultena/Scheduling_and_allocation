@@ -30,7 +30,7 @@ class Teacher:
     # -------------------------------------------------------------------
     # constructor
     # --------------------------------------------------------------------
-    def __init__(self, firstname: str, lastname: str, department: str = "", release: float = 0, teacher_id: Optional[int] = None):
+    def __init__(self, firstname: str, lastname: str, department: str = "", release: float = 0, teacher_id: Optional[str] = None):
         """Creates a Teacher object.
         :param firstname:   first name of the teacher
         :param lastname:   last name of the teacher

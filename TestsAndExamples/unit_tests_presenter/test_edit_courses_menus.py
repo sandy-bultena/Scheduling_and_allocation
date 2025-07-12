@@ -98,14 +98,14 @@ class EditCoursesTkTest(EditCoursesTk):
 @pytest.fixture()
 def valid_tree_structure():
     return {'.001': '001 BasketWeaving',
-        '.001.001': 'Section 1  (1A)',
+        '.001.001': 'Section 1  (1A calculus available)',
         '.001.001.001': 'Block: Monday: 8:00 to 9:30',
         '.001.001.001.001': 'P107: C-Lab',
         '.001.001.001.002': 'Jane Doe',
         '.001.001.002': 'Block: Monday: 10:00 to 11:30',
         '.001.001.002.001': 'P107: C-Lab',
         '.001.001.002.002': 'Jane Doe',
-        '.001.002': 'Section 2  (1B)',
+        '.001.002': 'Section 2  (1B no calculus)',
         '.001.002.001': 'Block: Tuesday: 8:00 to 9:30',
         '.001.002.001.001': 'P322: Mac Lab',
         '.001.002.001.002': 'John Doe',
@@ -126,10 +126,10 @@ def schedule_obj():
     schedule = Schedule()
 
     # teachers
-    t1 = schedule.add_update_teacher("Jane", "Doe", "0.25", teacher_id=1)
-    t2 = schedule.add_update_teacher("John", "Doe", teacher_id=2)
-    t3 = schedule.add_update_teacher("Babe", "Ruth", teacher_id=3)
-    t4 = schedule.add_update_teacher("Bugs", "Bunny", teacher_id = 4)
+    t1 = schedule.add_update_teacher("Jane", "Doe", "0.25", teacher_id="1")
+    t2 = schedule.add_update_teacher("John", "Doe", teacher_id="2")
+    t3 = schedule.add_update_teacher("Babe", "Ruth", teacher_id="3")
+    t4 = schedule.add_update_teacher("Bugs", "Bunny", teacher_id = "4")
 
     # labs
     l1 = schedule.add_update_lab("P107", "C-Lab")
@@ -145,7 +145,7 @@ def schedule_obj():
 
     # courses
     c_001 = schedule.add_update_course("001","BasketWeaving", SemesterType.fall )
-    s_001_1 = c_001.add_section("1",1.5, section_id=1)
+    s_001_1 = c_001.add_section("1", section_id=1)
     s_001_1.add_stream(st1)
     b_001_1_1 = s_001_1.add_block(TimeSlot(WeekDay.Monday, ScheduleTime( 8) ))
     b_001_1_2 = s_001_1.add_block(TimeSlot(WeekDay.Monday, ScheduleTime( 10) ))
@@ -154,7 +154,7 @@ def schedule_obj():
     b_001_1_1.add_lab(l1)
     b_001_1_2.add_lab(l1)
 
-    s_001_2 = c_001.add_section("2",1.5,section_id=2)
+    s_001_2 = c_001.add_section("2",section_id=2)
     s_001_2.add_stream(st2)
     b_001_2_1 = s_001_2.add_block(TimeSlot(WeekDay.Tuesday, ScheduleTime( 8) ))
     b_001_2_2 = s_001_2.add_block(TimeSlot(WeekDay.Tuesday, ScheduleTime( 10) ))
@@ -165,10 +165,10 @@ def schedule_obj():
 
 
     c_002 = schedule.add_update_course("002","Thumb Twiddling", SemesterType.fall )
-    s_002_1 = c_002.add_section("1",1.5)
+    s_002_1 = c_002.add_section("1",)
     b_002_1_1 = s_002_1.add_block(TimeSlot(WeekDay.Monday, ScheduleTime( 8) ))
     b_002_1_2 = s_002_1.add_block(TimeSlot(WeekDay.Monday, ScheduleTime( 10) ))
-    s_002_2 = c_002.add_section("2",1.5)
+    s_002_2 = c_002.add_section("2",)
     b_002_2_1 = s_002_2.add_block(TimeSlot(WeekDay.Tuesday, ScheduleTime( 8) ))
     b_002_2_2 = s_002_2.add_block(TimeSlot(WeekDay.Tuesday, ScheduleTime( 10) ))
 
@@ -655,7 +655,7 @@ def test_tree_menu_for_section_remove_section(gui, dirty, schedule_obj):
     parent_id = gui.get_parent(tree_id)
     menu = ec.create_tree_popup(section, course, tree_id, parent_id)
     mi = [mi for mi in menu if mi.label == 'Remove Section'][0]
-    assert gui.get_iid_from_name_with_parent_id("Section 1  (1A)", ".001")
+    assert gui.get_iid_from_name_with_parent_id("Section 1  (1A calculus available)", ".001")
 
     # execute
     mi.command()
@@ -663,7 +663,7 @@ def test_tree_menu_for_section_remove_section(gui, dirty, schedule_obj):
     # verify
     assert dirty_flag
     assert len(course.sections()) == 1
-    assert not gui.get_iid_from_name_with_parent_id("Section 1  (1A)", ".001")
+    assert not gui.get_iid_from_name_with_parent_id("Section 1  (1A calculus available)", ".001")
 
 def test_tree_menu_for_section_add_blocks(gui, dirty, schedule_obj):
     """click section/add blocks
@@ -763,9 +763,9 @@ def test_tree_menu_for_section_add_stream_sub_menu(gui, dirty, schedule_obj):
     # verify
     mi = [mi for mi in menu if mi.label == "Add Stream"]
     assert len(mi[0].children) == 3
-    assert mi[0].children[0].label == "1B"
-    assert mi[0].children[1].label == "2A"
-    assert mi[0].children[2].label == "2B"
+    assert mi[0].children[0].label == "1B no calculus"
+    assert mi[0].children[1].label == "2A "
+    assert mi[0].children[2].label == "2B "
 
 def test_tree_menu_for_section_add_stream(gui, dirty, schedule_obj):
     """run menu command for section: add stream - select stream
@@ -1184,8 +1184,8 @@ def test_tree_menu_for_course_add_stream_sub_menu(gui, dirty, schedule_obj):
     # verify
     mi = [mi for mi in menu if mi.label == "Add Stream"]
     assert len(mi[0].children) == 2
-    assert mi[0].children[0].label == "2A"
-    assert mi[0].children[1].label == "2B"
+    assert mi[0].children[0].label == "2A "
+    assert mi[0].children[1].label == "2B "
 
 def test_tree_menu_for_course_add_stream(gui, dirty, schedule_obj):
     """run menu command for course: add stream - select stream
