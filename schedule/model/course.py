@@ -30,7 +30,7 @@ if TYPE_CHECKING:
     from .stream import Stream
     from .lab import Lab
 
-DEFAULT_HOURS: float = 1.5
+DEFAULT_HOURS: float = 3.0
 
 OptionalId = Optional[int]
 

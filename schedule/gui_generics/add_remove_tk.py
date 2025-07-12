@@ -1,5 +1,5 @@
 """
-AddRemove
+AddRemoveTk
 
 Creates two list boxes where you can transfer items from one list to another, just by clicking on an item
 
@@ -10,7 +10,7 @@ from typing import Callable, Any
 from schedule.Tk import Scrolled
 from functools import partial
 
-class AddRemove:
+class AddRemoveTk:
     def __init__(self, frame: Frame,
                  get_add_list: Callable[[],list],
                  get_remove_list: Callable[[], list],
@@ -47,7 +47,7 @@ class AddRemove:
         s: Scrolled = Scrolled(sf, 'Listbox', scrollbars='oe')
         self.add_listbox = s.widget
         self.add_listbox.configure(borderwidth="5", relief="sunken")
-        s.widget.bind('<Button-1>', partial(self._cmd_double, 'add'))
+        s.widget.bind('<Button-1>', partial(self._cmd_click, 'add'))
 
         f = Frame(self.frame)
         f.grid(column=1, stick='nsew', row=0)
@@ -57,11 +57,11 @@ class AddRemove:
         s: Scrolled = Scrolled(sf, 'Listbox', scrollbars='oe')
         self.remove_listbox = s.widget
         self.remove_listbox.configure(borderwidth="5", relief="sunken")
-        s.widget.bind('<Button-1>',  partial(self._cmd_double, 'remove'))
+        s.widget.bind('<Button-1>', partial(self._cmd_click, 'remove'))
 
         self.refresh()
 
-    def _cmd_double(self, which: str, e: Event):
+    def _cmd_click(self, which: str, e: Event):
         if which == "add":
             widget = self.add_listbox
             index = widget.nearest(e.y)
