@@ -39,7 +39,7 @@ class AddEditBlockDialogTk(Dialog):
         if add_edit_type == 'edit':
             self.tk_new_blocks.set("0")
 
-        title = "Edit Block" if add_edit_type == 'edit' else "Add Blocks"
+        title = "Edit Class Time" if add_edit_type == 'edit' else "Add Class Time"
         super().__init__(frame.winfo_toplevel(), title)
 
     def _add_teacher(self, obj):
@@ -73,7 +73,7 @@ class AddEditBlockDialogTk(Dialog):
         # ------------------------------------------------------------------------------------------------------------
         number_of_blocks_frame = Frame(frame)
         if self.add_edit_type == 'add':
-            Label(number_of_blocks_frame, text="Number of Blocks:", anchor='e', width=20).pack(side='left', padx=10, pady=5)
+            Label(number_of_blocks_frame, text="Number of Class Times:", anchor='e', width=20).pack(side='left', padx=10, pady=5)
             duration_entry = Entry(number_of_blocks_frame,
                                    textvariable=self.tk_new_blocks,
                                    validate='key',
@@ -85,7 +85,7 @@ class AddEditBlockDialogTk(Dialog):
         # duration
         # ------------------------------------------------------------------------------------------------------------
         entry_frame = Frame(frame)
-        Label(entry_frame, text="Block Duration:", anchor='e', width=20).pack(side='left',padx=10,pady=5)
+        Label(entry_frame, text="Duration:", anchor='e', width=20).pack(side='left',padx=10,pady=5)
         duration_entry = Entry(entry_frame,
                                textvariable=self.tk_duration,
                                validate='key',
@@ -98,13 +98,13 @@ class AddEditBlockDialogTk(Dialog):
         # ------------------------------------------------------------------------------------------------------------
         teacher_assignments_frame = Frame(frame)
         AddRemoveTk(teacher_assignments_frame, self._get_non_assigned_teachers, self._get_assigned_teachers,
-                    self._add_teacher, self._remove_teacher, "Assign Teacher to Block",
-                                        "Remove Teacher from Block")
+                    self._add_teacher, self._remove_teacher, "Assign Teacher to Class",
+                                        "Remove Teacher from Class")
 
         lab_assignments_frame = Frame(frame)
         AddRemoveTk(lab_assignments_frame, self._get_non_assigned_labs, self._get_assigned_labs,
-                    self._add_lab, self._remove_lab, "Assign Lab to Block",
-                                        "Remove Lab from Block")
+                    self._add_lab, self._remove_lab, "Assign Lab to Class",
+                                        "Remove Lab from Class")
 
 
         # ------------------------------------------------------------------------------------------------------------

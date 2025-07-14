@@ -103,7 +103,7 @@ class EditCoursePopupMenuActions:
         # ------------------------------------------------------------------------------------------------------------
         if isinstance(self.selected_object, Block):
             self._edit_block(menu_list)
-            self._remove_item(menu_list, "Remove Block")
+            self._remove_item(menu_list, "Remove Class Time")
 
             menu_list.append(MenuItem(menu_type=MenuType.Separator))
 
@@ -131,7 +131,7 @@ class EditCoursePopupMenuActions:
 
     def _edit_block(self, menu_list: list[MenuItem]):
         menu_list.append(
-            MenuItem(menu_type=MenuType.Command, label="Edit Block",
+            MenuItem(menu_type=MenuType.Command, label="Edit Class Time",
                      command=lambda *_: self.presenter.edit_block_dialog(self.selected_object, self.tree_id)
                      )
         )
@@ -139,7 +139,7 @@ class EditCoursePopupMenuActions:
     # ------------------------------------------------------------------------------------------------------------
     def _add_blocks(self, menu_list: list[MenuItem]):
         menu_list.append(
-            MenuItem(menu_type=MenuType.Command, label="Add Blocks",
+            MenuItem(menu_type=MenuType.Command, label="Add Class Times",
                      command=lambda *_: self.presenter.add_blocks_dialog(self.selected_object, self.tree_id)
                      )
 
@@ -254,7 +254,7 @@ class EditCoursePopupMenuActions:
                            )
 
         if parent_type == "section":
-            sub_menu.add_child(MenuItem(menu_type=MenuType.Command, label="blocks",
+            sub_menu.add_child(MenuItem(menu_type=MenuType.Command, label="class times",
                                         command=lambda *_: self.presenter.remove_all_types_from_selected_object("block",
                                                                                                            self.selected_object,
                                                                                                            self.tree_id)

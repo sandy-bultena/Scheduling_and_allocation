@@ -72,6 +72,4 @@ def go_edit():
                                 course_hours = s_001_1.course.hours_per_week)
 
 Button(frame, text="Edit Section", command=go_edit).pack()
-#Button(frame, text="Add Blocks", command=go_add).pack()
-
 mw.mainloop()

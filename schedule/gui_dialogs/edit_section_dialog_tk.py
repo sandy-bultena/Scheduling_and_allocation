@@ -144,13 +144,13 @@ class AddEditSectionDialogTk(Dialog):
         # ------------------------------------------------------------------------------------------------------------
         teacher_assignments_frame = Frame(frame)
         AddRemoveTk(teacher_assignments_frame, self._get_non_assigned_teachers, self._get_assigned_teachers,
-                    self._add_teacher, self._remove_teacher, "Assign Teacher to all Blocks",
-                                        "Remove Teacher from all Blocks",height=6)
+                    self._add_teacher, self._remove_teacher, "Assign Teacher to all Classes",
+                                        "Remove Teacher from all Classes",height=6)
 
         lab_assignments_frame = Frame(frame)
         AddRemoveTk(lab_assignments_frame, self._get_non_assigned_labs, self._get_assigned_labs,
-                    self._add_lab, self._remove_lab, "Assign Lab to all Blocks",
-                                        "Remove Lab from all Blocks", height=6)
+                    self._add_lab, self._remove_lab, "Assign Lab to all Classes",
+                                        "Remove Lab from all Classes", height=6)
 
         stream_assignments_frame = Frame(frame)
         AddRemoveTk(stream_assignments_frame, self._get_non_assigned_streams, self._get_assigned_streams,
@@ -217,7 +217,7 @@ class AddEditSectionDialogTk(Dialog):
         # ------------------------------------------------------------------------------------------------------------
         # Add
         # ------------------------------------------------------------------------------------------------------------
-        Button(self.block_frames, text="Add New Block", command=self.add_new_block).pack(expand=1, fill='y')
+        Button(self.block_frames, text="Add New Class Time", command=self.add_new_block).pack(expand=1, fill='y')
 
 
     # ================================================================================================================

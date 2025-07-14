@@ -129,7 +129,7 @@ class EditCourses:
             self.gui.update_tree_text(parent_id, name)
 
         for block in section.blocks():
-            name = "Block: " + block.description()
+            name = "Class Time: " + block.description()
             obj_id = self.gui.add_tree_item(parent_id, name, block, hide)
             self.refresh_block_gui(obj_id, block, hide= True)
 
