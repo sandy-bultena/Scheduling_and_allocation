@@ -17,7 +17,8 @@ class AddRemoveTk:
                  to_add_function: Callable[[Any], None],
                  to_remove_function: Callable[[Any], None],
                  add_text="Add to",
-                 remove_text="Remove from"):
+                 remove_text="Remove from",
+                 height = 10):
         """
         :param frame: the frame to put the widgets in
         :param get_add_list: function that returns the list for the 'add' side
@@ -44,7 +45,7 @@ class AddRemoveTk:
         Label(f, text=self.add_text).pack()
         sf = Frame(f)
         sf.pack(fill='both', expand=1)
-        s: Scrolled = Scrolled(sf, 'Listbox', scrollbars='oe')
+        s: Scrolled = Scrolled(sf, 'Listbox', scrollbars='oe', height=height)
         self.add_listbox = s.widget
         self.add_listbox.configure(borderwidth="5", relief="sunken")
         s.widget.bind('<Button-1>', partial(self._cmd_click, 'add'))
@@ -54,7 +55,7 @@ class AddRemoveTk:
         Label(f, text=self.remove_text).pack()
         sf = Frame(f)
         sf.pack(fill='both', expand=1)
-        s: Scrolled = Scrolled(sf, 'Listbox', scrollbars='oe')
+        s: Scrolled = Scrolled(sf, 'Listbox', scrollbars='oe', height=height)
         self.remove_listbox = s.widget
         self.remove_listbox.configure(borderwidth="5", relief="sunken")
         s.widget.bind('<Button-1>', partial(self._cmd_click, 'remove'))
@@ -68,7 +69,7 @@ class AddRemoveTk:
             if index < len(self.adds):
                 self.to_add_function(self.adds[index])
         else:
-            widget = self.add_listbox
+            widget = self.remove_listbox
             index = widget.nearest(e.y)
             if index < len(self.removes):
                 self.to_remove_function(self.removes[index])
