@@ -404,8 +404,15 @@ class EditCourses:
         non_assigned_teachers, assigned_teachers = list_minus_list(self.schedule.teachers(), section.teachers())
         non_assigned_labs, assigned_labs = list_minus_list(self.schedule.labs(), section.labs())
 
-        AddEditBlockDialogTk(self.frame, "edit", block.time_slot.duration, list(block.teachers()),
-                             non_assigned_teachers, list(block.labs()), non_assigned_labs, _apply_changes)
+        AddEditBlockDialogTk(
+            frame = self.frame,
+            add_edit_type = "edit",
+            duration = block.time_slot.duration,
+            assigned_teachers = list(block.teachers()),
+            non_assigned_teachers= non_assigned_teachers,
+            non_assigned_labs=non_assigned_labs,
+            assigned_labs=assigned_labs,
+            apply_changes= _apply_changes)
 
 
 
@@ -444,292 +451,33 @@ class EditCourses:
 
 
 
-
-
-
-
-
-    """
-        sub create_tree_menus {
-
-    # ------------------------------------------------------------------------
-    # course
-    # ------------------------------------------------------------------------
-    if ( $type eq 'course' ) {
-        _edit_course( $menu, $sel_obj, $tree_path );
-        _remove_item( $menu, $sel_obj, $Schedule, $tree_path, "Remove Course" );
-        push @$menu, "separator";
-        _needs_allocation( $menu, $sel_obj, $tree_path );
-        _add_teachers( $menu, $sel_obj, $tree_path );
-        _add_section( $menu, $sel_obj, $tree_path );
-        push @$menu, "separator";
-        _remove_teachers( $menu, $sel_obj, $tree_path );
-        _remove_all( $menu, $sel_obj, $tree_path );
-    }
-
-    # ------------------------------------------------------------------------
-    # section
-    # ------------------------------------------------------------------------
-    elsif ( $type eq 'section' ) {
-        _edit_section( $menu, $sel_obj, $tree_path );
-        _remove_item( $menu, $sel_obj, $par_obj, $tree_path, "Remove Section" );
-        push @$menu, "separator";
-        _add_blocks( $menu, $sel_obj, $tree_path );
-        _add_teachers( $menu, $sel_obj, $tree_path );
-        _add_labs( $menu, $sel_obj, $tree_path );
-        _add_streams( $menu, $sel_obj, $tree_path );
-        push @$menu, "separator";
-        _remove_blocks( $menu, $sel_obj, $tree_path );
-        _remove_teachers( $menu, $sel_obj, $tree_path );
-        _remove_labs( $menu, $sel_obj, $tree_path );
-        _remove_streams( $menu, $sel_obj, $tree_path );
-        _remove_all( $menu, $sel_obj, $tree_path );
-    }
-
-    # ------------------------------------------------------------------------
-    # block
-    # ------------------------------------------------------------------------
-    elsif ( $type eq 'block' ) {
-        _edit_block( $menu, $sel_obj, $par_obj, $tree_path );
-        _remove_item( $menu, $sel_obj, $par_obj, $tree_path, "Remove Block" );
-        _add_teachers( $menu, $sel_obj, $tree_path );
-        _add_labs( $menu, $sel_obj, $tree_path );
-        _remove_teachers( $menu, $sel_obj, $tree_path );
-        _remove_labs( $menu, $sel_obj, $tree_path );
-        _remove_all( $menu, $sel_obj, $tree_path );
-    }
-
-    # ------------------------------------------------------------------------
-    # lab/teacher
-    # ------------------------------------------------------------------------
-    elsif ( $type eq 'teacher' ) {
-        _remove_item( $menu, $sel_obj, $par_obj, $tree_path, "Remove Teacher" );
-    }
-    elsif ( $type eq 'lab' ) {
-        _remove_item( $menu, $sel_obj, $par_obj, $tree_path, "Remove Lab" );
-    }
-    return $menu;
-
-}
-"""
     def create_resource_menu(self, view: ResourceType, obj: RESOURCE_OBJECT) -> list[MenuItem]: ...
     def show_teacher_stat(self, teacher: ResourceType ): ...
-    def is_valid_drop(self, view: ResourceType, source: RESOURCE_OBJECT, destination: TREE_OBJECT) -> bool: ...
-    def object_dropped(self, view: ResourceType, resource: RESOURCE_OBJECT, obj: TREE_OBJECT): ...
+    def is_valid_drop(self, view: ResourceType, destination: TREE_OBJECT) -> bool:
+        match view:
+            case ResourceType.teacher:
+                if isinstance(destination, Course) or isinstance(destination, Section) or isinstance(destination, Block):
+                    return True
+                else:
+                    return False
+            case ResourceType.stream:
+                if isinstance(destination, Section):
+                    return True
+                else:
+                    return False
+            case ResourceType.lab:
+                if isinstance(destination, Course) or isinstance(destination, Section) or isinstance(destination, Block):
+                    return True
+                else:
+                    return False
+
+        return False
+
+    def object_dropped(self, view: ResourceType, resource: RESOURCE_OBJECT, destination: TREE_OBJECT, tree_id):
+        self.assign_selected_to_parent(destination, resource,tree_id)
 
 """
 
-# ===================================================================
-# method look up tables
-# ===================================================================
-
-my $s_ptr        = \$Schedule;
-my %Refresh_subs = (
-    course   => \&_refresh_course_gui,
-    section  => \&_refresh_section_gui,
-    block    => \&_refresh_block_gui,
-    schedule => \&_refresh_schedule_gui,
-);
-
-my %Assign_subs = (
-    teacher => sub { my $obj = shift; $obj->assign_teacher(shift); },
-    lab     => sub { my $obj = shift; $obj->assign_lab(shift); },
-    stream  => sub { my $obj = shift; $obj->assign_stream(shift); },
-);
-
-
-my %Remove_all_subs = (
-    teacher => sub { my $obj = shift; $obj->remove_all_teachers(); },
-    lab     => sub { my $obj = shift; $obj->remove_all_labs(); },
-    stream  => sub { my $obj = shift; $obj->remove_all_streams(); },
-    section => sub { my $obj = shift; $obj->remove_all_sections(); },
-    block   => sub { my $obj = shift; $obj->remove_all_blocks(); },
-);
-my %Clear_all_subs = (
-    course  => sub { $$s_ptr->clear_all_from_course(shift); },
-    section => sub { $$s_ptr->clear_all_from_section(shift); },
-    block   => sub { $$s_ptr->clear_all_from_block(shift); },
-);
-
-# =================================================================
-# add blocks to dialog
-# =================================================================
-sub add_blocks_dialog {
-    my $section = shift;
-    my $path    = shift;
-    my $course;
-    if ( $path =~ m:Schedule/Course(\d+)/: ) {
-        $course = $Schedule->courses->get($1);
-    }
-
-    my $block_hours = AddBlocksDialogTk->new($frame);
-    add_blocks_to_section( $course, $section, $block_hours );
-
-    EditCourses::_refresh_course_gui( $course,
-        "Schedule/Course" . $course->id );
-
-    EditCourses::dirty_flag_method();
-}
-
-# =================================================================
-# add blocks to section
-# =================================================================
-sub add_blocks_to_section {
-    my $course      = shift;
-    my $section     = shift;
-    my $block_hours = shift;
-
-    # loop over blocks foreach section
-    foreach my $hours (@$block_hours) {
-        if ($hours) {
-            my $block_num = $section->get_new_number;
-            my $block = Block->new( -number => $block_num );
-            $block->duration($hours);
-            $section->add_block($block);
-        }
-    }
-
-    # update the guis
-    EditCourses::_refresh_section_gui( $section,
-        "Schedule/Course" . $course->id . "/Section" . $section->id );
-    EditCourses::dirty_flag_method();
-
-}
-
-# =================================================================
-# add section dialog
-# =================================================================
-sub add_section_dialog {
-    my $course      = shift;
-    my $section_num = $course->get_new_number;    # gets a new section id
-    my $section     = Section->new(
-        -number => $section_num,
-        -hours  => 0,
-    );
-    $course->add_section($section);
-    EditCourses::_refresh_course_gui( $course,
-        "Schedule/Course" . $course->id );
-
-    my ( $section_names, $block_hours ) = AddSectionDialogTk->new($frame);
-    add_sections_with_blocks( $course->id, $section_names, $block_hours );
-
-    EditCourses::_refresh_course_gui( $course,
-        "Schedule/Course" . $course->id );
-
-    EditCourses::dirty_flag_method();
-}
-
-# =================================================================
-# add section with blocks
-# =================================================================
-sub add_sections_with_blocks {
-    my $course        = shift;
-    my $section_names = shift;
-    my $block_hours   = shift || [];
-
-    return unless $section_names;
-
-    # loop over sections
-    foreach my $sec_name (@$section_names) {
-        my $section_num = $course->get_new_number;    # gets a new section id
-        my $section     = Section->new(
-            -number => $section_num,
-            -hours  => 0,
-            -name   => $sec_name,
-        );
-        $course->add_section($section);
-
-        # loop over blocks foreach section
-        foreach my $hours (@$block_hours) {
-            if ($hours) {
-                my $block_num = $section->get_new_number;
-                my $block = Block->new( -number => $block_num );
-                $block->duration($hours);
-                $section->add_block($block);
-            }
-        }
-    }
-
-    # update the guis
-    EditCourses::_refresh_course_gui( $course,
-        "Schedule/Course" . $course->id );
-    EditCourses::dirty_flag_method();
-}
-
-
-# =================================================================
-# clear all scheduables from object 1
-# =================================================================
-sub clear_all_from_obj1 {
-    my $obj1      = shift;
-    my $tree_path = shift;
-    $Clear_all_subs{ $$s_ptr->get_object_type($obj1) }->($obj1);
-    $Refresh_subs{ $$s_ptr->get_object_type($obj1) }->( $obj1, $tree_path );
-    dirty_flag_method();
-}
-
-# =================================================================
-# edit block dialog
-# =================================================================
-sub edit_block_dialog {
-    my $block = shift;
-    my $path  = shift;
-    my $course;
-    my $section;
-
-    if ( $path =~ m:Schedule/Course(\d+)/Section(\d+): ) {
-        $course  = $Schedule->courses->get($1);
-        $section = $course->get_section_by_id($2);
-    }
-    return unless $course && $section;
-
-    EditBlockDialog->new( $frame, $Schedule, $course, $section, $block );
-
-    _refresh_course_gui( $course, "Schedule/Course" . $course->id );
-
-    dirty_flag_method();
-}
-
-
-# =================================================================
-# edit section dialog
-# =================================================================
-sub edit_section_dialog {
-    my $section = shift;
-    my $path    = shift;
-    my $course;
-    if ( $path =~ m:Schedule/Course(\d+)/: ) {
-
-        $course = $Schedule->courses->get($1);
-    }
-
-    EditSectionDialog->new( $frame, $Schedule, $course, $section );
-}
-
-
-# =================================================================
-# remove object2 from object 1
-# =================================================================
-sub remove_obj2_from_obj1 {
-    my $obj1      = shift;
-    my $obj2      = shift;
-    my $tree_path = shift;
-    $Remove_subs{ $$s_ptr->get_object_type($obj2) }->( $obj1, $obj2 );
-    $Refresh_subs{ $$s_ptr->get_object_type($obj1) }->( $obj1, $tree_path );
-    dirty_flag_method();
-}
-
-# =================================================================
-# remove scheduable (teacher/lab/stream)
-# =================================================================
-sub remove_scheduable {
-    my $resource_type = shift;
-    my $obj  = shift;
-    $Schedule->remove_teacher($obj) if ( $resource_type eq 'teacher' );
-    $Schedule->remove_lab($obj)     if ( $resource_type eq 'lab' );
-    $Schedule->remove_stream($obj)  if ( $resource_type eq 'stream' );
-    _refresh_schedule_gui();
-}
 
 # ===================================================================
 # add lab to course_ttkTreeView

@@ -81,10 +81,10 @@ class EditCoursesTk:
         self.handler_resource_create_menu: Callable[
             [ResourceType, RESOURCE_OBJECT], list[MenuItem]] = _default_resource_menu
         self.handler_show_teacher_stat: Callable[[RESOURCE_OBJECT], None] = lambda obj: print(f"Teacher stat: {obj}")
-        self.handler_drag_resource: Callable[[ResourceType, RESOURCE_OBJECT, TREE_OBJECT], bool] = \
-            lambda resource_type, source_obj, target_obj: True
-        self.handler_drop_resource: Callable[[ResourceType, RESOURCE_OBJECT, TREE_OBJECT], None] = \
-            lambda resource_type, source_obj, target_obj: None
+        self.handler_drag_resource: Callable[[ResourceType, TREE_OBJECT], bool] = \
+            lambda resource_type, target_obj: True
+        self.handler_drop_resource: Callable[[ResourceType, RESOURCE_OBJECT, TREE_OBJECT, str], None] = \
+            lambda resource_type, source_obj, target_obj, tree_id: None
 
         # ----------------------------------------------------------------
         # create lists to keep track of widgets and objects for all resources
@@ -315,9 +315,11 @@ class EditCoursesTk:
                 resource_type: ResourceType = info_data["resource_type"]
 
                 # check with 'user' if this is a valid item for dropping source onto target
-                if self.handler_drag_resource(resource_type, source_obj, target_obj):
+                if self.handler_drag_resource(resource_type, target_obj):
                     info_data["target_obj"] = target_obj
+                    info_data["tree_id"] = iid
                     tv.selection_set(iid)
+
                     return True
 
         return False
@@ -330,7 +332,8 @@ class EditCoursesTk:
             target_obj: TREE_OBJECT = info_data["target_obj"]
             source_obj: RESOURCE_OBJECT = info_data["source_obj"]
             resource_type: ResourceType = info_data["resource_type"]
-            self.handler_drop_resource(resource_type, source_obj, target_obj)
+            tree_id: str = info_data["tree_id"]
+            self.handler_drop_resource(resource_type, source_obj, target_obj, tree_id, )
 
     # ###################################################################
     # Private Methods
