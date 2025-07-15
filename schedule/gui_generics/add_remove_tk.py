@@ -12,33 +12,25 @@ from functools import partial
 
 class AddRemoveTk:
     def __init__(self, frame: Frame,
-                 get_add_list: Callable[[],list],
-                 get_remove_list: Callable[[], list],
-                 to_add_function: Callable[[Any], None],
-                 to_remove_function: Callable[[Any], None],
+                 add_list: list,
+                 remove_list: list,
                  add_text="Add to",
                  remove_text="Remove from",
                  height = 10):
         """
         :param frame: the frame to put the widgets in
-        :param get_add_list: function that returns the list for the 'add' side
-        :param get_remove_list: function that returns the list for the 'remove' side
-        :param to_add_function: function that deals with items that have been clicked on the 'add' side
-        :param to_remove_function: function that deals with items that have been clicked on the 'remove' side
+        :param add_list: the list of objects that can be added
+        :param remove_list: the list of objects that can be removed
         :param add_text: text over the 'add' list
         :param remove_text: text over the 'remove' list
         """
         self.frame = frame
-        self.to_add_function = to_add_function
-        self.to_remove_function = to_remove_function
         self.add_text = add_text
         self.remove_text = remove_text
         self.add_listbox = None
         self.remove_listbox = None
-        self.adds = []
-        self.removes = []
-        self.get_add_list = get_add_list
-        self.get_remove_list = get_remove_list
+        self.adds = add_list
+        self.removes = remove_list
 
         f = Frame(self.frame)
         f.grid(column=0, stick='nsew', row=0)
@@ -62,6 +54,22 @@ class AddRemoveTk:
 
         self.refresh()
 
+    def to_add_function(self, obj):
+        self.removes.append(obj)
+        try:
+            self.removes.sort()
+        except ValueError:
+            pass
+        self.adds.remove(obj)
+
+    def to_remove_function(self, obj):
+        self.adds.append(obj)
+        try:
+            self.adds.sort()
+        except ValueError:
+            pass
+        self.removes.remove(obj)
+
     def _cmd_click(self, which: str, e: Event):
         if which == "add":
             widget = self.add_listbox
@@ -77,8 +85,6 @@ class AddRemoveTk:
 
     def refresh(self):
         """updates the two list boxes"""
-        self.adds = self.get_add_list()
-        self.removes = self.get_remove_list()
         self.add_listbox.delete(0, "end")
         self.remove_listbox.delete(0, "end")
         for item in self.adds:

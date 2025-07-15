@@ -236,7 +236,7 @@ class EditCourses:
                 REFRESH_SUBS['course'](self, tree_id, this_course)
             else:
                 REFRESH_SUBS['schedule'](self,None, None)
-            self.set_dirty_flag = True
+            self.set_dirty_flag( True)
 
         block_data = []
 

@@ -3,11 +3,13 @@ from __future__ import annotations
 import re
 
 from tkinter import *
-from tkinter.messagebox import askyesno, showerror
 import tkinter.font as tkFont
 from tkinter import ttk
 from tkinter.simpledialog import Dialog
 from typing import Callable
+
+from schedule.gui_dialogs.utilities import set_style, validate_int, validate_class_times_equals_course_time, \
+    get_block_info_from_row_data, refresh_gui_blocks
 
 
 def time_to_hours(string_time:str) -> float:
@@ -38,14 +40,7 @@ class AddSectionDialogTk(Dialog):
         self.description = StringVar(value = "")
         self.number_of_sections = StringVar(value="1")
 
-        self.style = ttk.Style(frame.winfo_toplevel())
-        self.style.configure("MyCustom.TCombobox",
-                        fieldbackground='black',  # Background of the input field
-                        background='black',  # Overall widget background
-                        foreground='white',  # Text color in the input field
-                        arrowcolor='white',  # Dropdown arrow color
-                        )
-
+        set_style(frame)
         dialog_title = "Add Section(s)"
         super().__init__(frame.winfo_toplevel(), dialog_title)
 
@@ -106,47 +101,7 @@ class AddSectionDialogTk(Dialog):
         self.refresh()
 
     def refresh(self):
-        days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-        start_times = []
-        for h in range(7, 24):
-            for m in (0, 15, 30, 45):
-                start_times.append(f"{h:2d}:{m:02d}")
-        durations = [f"{x/2:4.1f} hrs" for x in range(1,13)]
-
-        # remove any pre-existing stuff
-        for w in self.block_frames.winfo_children():
-            w.destroy()
-
-        row_frames = []
-        for index, block_info in enumerate(self.row_data):
-
-            def remove_block(i = index):
-                self.row_data.pop(i)
-                self.refresh()
-
-            row_frame = Frame(self.block_frames)
-            row_frames.append(row_frame)
-            row_frame.pack(expand=1, fill='both', padx=10,pady=2)
-
-            opt_day, opt_hour, opt_duration = block_info
-
-            btn_delete = Button(row_frame, text="remove", command=remove_block)
-            om_day = ttk.Combobox(row_frame,textvariable=opt_day, state="readonly", values=days, style="MyCustom.TCombobox")
-            om_time = ttk.Combobox(row_frame,textvariable=opt_hour, state="readonly", values=start_times, style="MyCustom.TCombobox")
-            om_duration = ttk.Combobox(row_frame,textvariable=opt_duration, state="readonly", values=durations, style="MyCustom.TCombobox")
-
-            om_day.config(width=8)
-            om_time.config(width=5)
-            om_duration.config(width=8)
-
-            om_day.pack(side='left', pady=0)
-            om_time.pack(side='left', pady=0)
-            om_duration.pack(side='left', pady=0)
-            btn_delete.pack(side='left', pady=0)
-
-        # ------------------------------------------------------------------------------------------------------------
-        # Add
-        # ------------------------------------------------------------------------------------------------------------
+        refresh_gui_blocks(self)
         Button(self.block_frames, text="Add New Class", command=self.add_new_block).pack(expand=1, fill='y')
 
 
@@ -155,34 +110,19 @@ class AddSectionDialogTk(Dialog):
     # ================================================================================================================
 
     def validate(self):
-        if self.number_of_sections.get == "":
-            showerror("Number of Sections", "Number of sections must be a number!")
+        if not validate_int(self.number_of_sections.get(),"Number of Sections", "Number of sections must be a number!"):
             return False
 
-        total = 0.0
-        for block_info in self.row_data:
-            duration=float(block_info[2].get().strip().split(" ")[0])
-            if duration < 0:
-                duration += 24
-            total += duration
+        if not validate_class_times_equals_course_time(self.row_data, float(self.course_hours)):
+            return False
 
-        if total == self.course_hours or total == 0.0:
-            return True
-
-        else:
-            return askyesno("Class Times",f"Total allocated class times ({total})\n"
-                                   f"does not equal course time ({self.course_hours})"
-                                   f"\n\nDo you wish to continue?")
+        return True
 
     # ================================================================================================================
     # apply changes
     # ================================================================================================================
     def apply(self):
-        new_blocks=[]
-        for i,b in enumerate(self.row_data):
-            d = [x.get() for x in b]
-            d[2] = float(d[2].strip().split(" ")[0])
-            new_blocks.append(tuple(d))
+        new_blocks=get_block_info_from_row_data(self.row_data)
         self._apply_changes( int(self.number_of_sections.get()), new_blocks )
 
 
