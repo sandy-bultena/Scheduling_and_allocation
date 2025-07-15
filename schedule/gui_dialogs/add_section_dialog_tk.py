@@ -3,16 +3,11 @@ from __future__ import annotations
 import re
 
 from tkinter import *
-from tkinter.messagebox import askyesno
+from tkinter.messagebox import askyesno, showerror
 import tkinter.font as tkFont
 from tkinter import ttk
 from tkinter.simpledialog import Dialog
-from typing import Callable, Literal, TYPE_CHECKING
-
-
-from schedule.gui_generics.add_remove_tk import AddRemoveTk
-if TYPE_CHECKING:
-    from schedule.model import Stream, Lab, Teacher
+from typing import Callable
 
 
 def time_to_hours(string_time:str) -> float:
@@ -25,46 +20,23 @@ def time_to_hours(string_time:str) -> float:
     return hours
 
 
-class EditSectionDialogTk(Dialog):
+class AddSectionDialogTk(Dialog):
     def __init__(self, frame:Frame,
                  *,
                  course_description: str,
-                 section_description: str = "",
-                 assigned_teachers: list[Teacher] = None,
-                 non_assigned_teachers: list[Teacher],
-                 assigned_labs: list[Lab] = None,
-                 non_assigned_labs: list[Lab],
-                 assigned_streams: list[Stream] = None,
-                 non_assigned_streams: list[Stream],
-                 current_blocks: list[tuple[str,str,str]] = None,
                  course_hours: float,
-
-                 apply_changes: Callable[[str, list, list, list, list], None]):
+                 apply_changes: Callable[[int, list], None]):
 
         self.row_data = []
         self.course_hours = course_hours
-        self.current_blocks = current_blocks if current_blocks is not None else []
+        self.current_blocks =  []
         self.block_frames = None
         self.course_description = course_description
         self.top_frame = frame
-        self._assigned_teachers = assigned_teachers if assigned_teachers is not None else []
-        self._assigned_labs = assigned_labs  if assigned_labs is not None else []
-        self._assigned_streams = assigned_streams  if assigned_streams is not None else []
-        self._non_assigned_teachers = non_assigned_teachers
-        self._non_assigned_labs = non_assigned_labs
-        self._non_assigned_streams = non_assigned_streams
         self._apply_changes = apply_changes
 
-        self._get_non_assigned_teachers = lambda : self._non_assigned_teachers
-        self._get_assigned_teachers = lambda : self._assigned_teachers
-
-        self._get_non_assigned_streams = lambda : self._non_assigned_streams
-        self._get_assigned_streams = lambda : self._assigned_streams
-
-        self._get_non_assigned_labs = lambda : self._non_assigned_labs
-        self._get_assigned_labs = lambda : self._assigned_labs
-
-        self.description = StringVar(value = section_description)
+        self.description = StringVar(value = "")
+        self.number_of_sections = StringVar(value="1")
 
         self.style = ttk.Style(frame.winfo_toplevel())
         self.style.configure("MyCustom.TCombobox",
@@ -74,43 +46,24 @@ class EditSectionDialogTk(Dialog):
                         arrowcolor='white',  # Dropdown arrow color
                         )
 
-        dialog_title = "Edit Section"
+        dialog_title = "Add Section(s)"
         super().__init__(frame.winfo_toplevel(), dialog_title)
 
-    def _add_teacher(self, obj):
-        self._assigned_teachers.append(obj)
-        self._assigned_teachers.sort()
-        self._non_assigned_teachers.remove(obj)
-
-    def _remove_teacher(self, obj):
-        self._non_assigned_teachers.append(obj)
-        self._non_assigned_teachers.sort()
-        self._assigned_teachers.remove(obj)
-
-    def _add_stream(self, obj):
-        self._assigned_streams.append(obj)
-        self._assigned_streams.sort()
-        self._non_assigned_streams.remove(obj)
-
-    def _remove_stream(self, obj):
-        self._non_assigned_streams.append(obj)
-        self._non_assigned_streams.sort()
-        self._assigned_streams.remove(obj)
-
-    def _add_lab(self, obj):
-        self._assigned_labs.append(obj)
-        self._assigned_labs.sort()
-        self._non_assigned_labs.remove(obj)
-
-    def _remove_lab(self, obj):
-        self._non_assigned_labs.append(obj)
-        self._non_assigned_labs.sort()
-        self._assigned_labs.remove(obj)
+    def _is_int(self, number: str, *_) -> bool:
+        if number == "":
+            return True
+        try:
+            int(number)
+            return True
+        except ValueError:
+            self.top_frame.winfo_toplevel().bell()
+            return False
 
     # ================================================================================================================
     # The content of the main body of the dialog box
     # ================================================================================================================
     def body(self, frame:Frame):
+        tk_validate_is_number = self.top_frame.register(self._is_int)
 
         # ------------------------------------------------------------------------------------------------------------
         # Info
@@ -123,38 +76,16 @@ class EditSectionDialogTk(Dialog):
         family = default_font["family"]
         size = default_font["size"] + 2
         lbl.config(font=(family, size))
-        Label(section_info_frame, text="Section Description", anchor='e', width=20).pack(side='left', padx=10, pady=5)
-        description = Entry(section_info_frame, textvariable=self.description,)
-        description.pack(side='left', padx=10, pady=5)
+
+        Label(section_info_frame, text="How many sections?", anchor='e', width=20).pack(side='left', padx=10, pady=5)
+        en_number = Entry(section_info_frame, textvariable=self.number_of_sections, validate='key',
+                            validatecommand=(tk_validate_is_number, '%P', '%s'))
+        en_number.pack(side='left', padx=10, pady=5)
 
         # ------------------------------------------------------------------------------------------------------------
         # Blocks
         # ------------------------------------------------------------------------------------------------------------
         self.block_frames = Frame(frame)
-        for index, block_info in enumerate(self.current_blocks):
-            opt_day = StringVar(value=block_info[0])
-            opt_hour = StringVar(value=block_info[1])
-            opt_duration = StringVar(value=block_info[2])
-            self.row_data.append((opt_day, opt_hour, opt_duration))
-
-
-        # ------------------------------------------------------------------------------------------------------------
-        # Teacher/Lab/Stream Add/Remove
-        # ------------------------------------------------------------------------------------------------------------
-        teacher_assignments_frame = Frame(frame)
-        AddRemoveTk(teacher_assignments_frame, self._get_non_assigned_teachers, self._get_assigned_teachers,
-                    self._add_teacher, self._remove_teacher, "Assign Teacher to all Classes",
-                                        "Remove Teacher from all Classes",height=6)
-
-        lab_assignments_frame = Frame(frame)
-        AddRemoveTk(lab_assignments_frame, self._get_non_assigned_labs, self._get_assigned_labs,
-                    self._add_lab, self._remove_lab, "Assign Lab to all Classes",
-                                        "Remove Lab from all Classes", height=6)
-
-        stream_assignments_frame = Frame(frame)
-        AddRemoveTk(stream_assignments_frame, self._get_non_assigned_streams, self._get_assigned_streams,
-                    self._add_stream, self._remove_stream, "Assign Stream to Section",
-                                        "Remove Stream from Section", height=6)
 
         # ------------------------------------------------------------------------------------------------------------
         # layout
@@ -162,14 +93,14 @@ class EditSectionDialogTk(Dialog):
         course_info_frame.grid(row=0, column=0)
         section_info_frame.grid(row=1, column = 0)
         self.block_frames.grid(row=2, column=0, sticky='nsew', padx=5, pady=5)
-        teacher_assignments_frame.grid(row=3,column=0, sticky='nsew', padx=5, pady=5)
-        lab_assignments_frame.grid(row=4,column=0, sticky='nsew', padx=5, pady=5)
-        stream_assignments_frame.grid(row=5,column=0, sticky='nsew', padx=5, pady=5)
 
         self.refresh()
 
-        return description
+        return en_number
 
+    # ================================================================================================================
+    # refresh blocks
+    # ================================================================================================================
     def add_new_block(self):
         self.row_data.append((StringVar(value="Monday"),StringVar(value="8:00"), StringVar(value="1.5")))
         self.refresh()
@@ -216,7 +147,7 @@ class EditSectionDialogTk(Dialog):
         # ------------------------------------------------------------------------------------------------------------
         # Add
         # ------------------------------------------------------------------------------------------------------------
-        Button(self.block_frames, text="Add New Class Time", command=self.add_new_block).pack(expand=1, fill='y')
+        Button(self.block_frames, text="Add New Class", command=self.add_new_block).pack(expand=1, fill='y')
 
 
     # ================================================================================================================
@@ -224,6 +155,10 @@ class EditSectionDialogTk(Dialog):
     # ================================================================================================================
 
     def validate(self):
+        if self.number_of_sections.get == "":
+            showerror("Number of Sections", "Number of sections must be a number!")
+            return False
+
         total = 0.0
         for block_info in self.row_data:
             duration=float(block_info[2].get().strip().split(" ")[0])
@@ -248,6 +183,6 @@ class EditSectionDialogTk(Dialog):
             d = [x.get() for x in b]
             d[2] = float(d[2].strip().split(" ")[0])
             new_blocks.append(tuple(d))
-        self._apply_changes( self.description.get(), self._assigned_teachers, self._assigned_labs, self._assigned_streams, new_blocks )
+        self._apply_changes( int(self.number_of_sections.get()), new_blocks )
 
 

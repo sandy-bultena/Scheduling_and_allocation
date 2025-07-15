@@ -1,11 +1,14 @@
-from typing import Optional, Callable, Any, TYPE_CHECKING
+from typing import Optional, Callable, Any, TYPE_CHECKING, Literal
 
 from schedule.Tk.menu_and_toolbars import MenuItem, MenuType
 from schedule.gui_dialogs.add_edit_block_dialog_tk import AddEditBlockDialogTk
-from schedule.model import Schedule, ResourceType, Section, Block, Teacher, Lab, Stream, Course, TimeSlot, ScheduleTime
+from schedule.gui_dialogs.add_section_dialog_tk import AddSectionDialogTk
+from schedule.gui_dialogs.edit_section_dialog_tk import EditSectionDialogTk
+from schedule.model import Schedule, ResourceType, Section, Block, Teacher, Lab, Stream, Course, TimeSlot, ScheduleTime, \
+    WeekDay, ClockTime
 from schedule.gui_pages import EditCoursesTk
-import schedule.presenter.menus_tree_and_resource_list as menu
-from schedule.presenter.menus_tree_and_resource_list import EditCoursePopupMenuActions
+import schedule.presenter.edit_courses_tree_and_resources as menu
+from schedule.presenter.edit_courses_tree_and_resources import EditCoursePopupMenuActions
 
 if TYPE_CHECKING:
     pass
@@ -34,9 +37,9 @@ REMOVE_ALL_SUBS = {
 }
 REFRESH_SUBS = {
     "schedule": lambda presenter, parent_id, obj1: presenter.refresh(),
-    "course": lambda presenter, parent_id, obj1:  presenter.refresh_course_gui(parent_id, obj1, True),
-    "block": lambda presenter, parent_id, obj1: presenter.refresh_block_gui(parent_id, obj1, True),
-    "section": lambda presenter, parent_id, obj1: presenter.refresh_section_gui(parent_id, obj1, True),
+    "course": lambda presenter, parent_id, obj1:  presenter.refresh_course_gui(parent_id, obj1, False),
+    "block": lambda presenter, parent_id, obj1: presenter.refresh_block_gui(parent_id, obj1, False),
+    "section": lambda presenter, parent_id, obj1: presenter.refresh_section_gui(parent_id, obj1, False),
 }
 ASSIGN_SUBS = {
     "teacher": lambda parent, teacher: parent.add_teacher(teacher),
@@ -45,6 +48,29 @@ ASSIGN_SUBS = {
 }
 
 
+def _update_section(descr:str, section: Section, teachers: list[Teacher], labs: list[Lab], streams: list[Stream],
+                    blocks: list[tuple[str, str, float]]):
+    section.descr = descr
+    section.remove_all_teachers()
+    section.remove_all_labs()
+    section.remove_all_blocks()
+    section.remove_all_streams()
+    for b in blocks:
+        day = WeekDay[b[0]]
+        start = ClockTime(b[1])
+        hrs = b[2]
+        section.add_block(TimeSlot(day, start, hrs))
+    for t in teachers:
+        section.add_teacher(t)
+    for l in labs:
+        section.add_lab(l)
+    for s in streams:
+        section.add_stream(s)
+
+
+# =====================================================================================================================
+# EditCourse
+# =====================================================================================================================
 class EditCourses:
     """
     Creates the page for editing courses, with a tree view, lists of resources, drag'n'drop, etc.
@@ -73,9 +99,7 @@ class EditCourses:
         self.tree_ids: dict[str, str] = {}
 
 
-        # ---------------------------------------------------------------------
         # set all the event required handlers
-        # ---------------------------------------------------------------------
         self.gui.handler_tree_edit = self.edit_tree_obj
         self.gui.handler_new_course = self.create_new_course
         self.gui.handler_tree_create_popup = self.create_tree_popup
@@ -84,83 +108,86 @@ class EditCourses:
         self.gui.handler_drag_resource = self.is_valid_drop
         self.gui.handler_drop_resource = self.object_dropped
 
-
+    # -----------------------------------------------------------------------------------------------------------------
+    # subs for refreshing the tree
+    # -----------------------------------------------------------------------------------------------------------------
     def refresh(self):
         """ updates the gui with the data from schedule"""
         self.gui.clear_tree()
         self.tree_ids.clear()
         for course in self.schedule.courses():
             name = " ".join((course.number, course.name))
-            obj_id = self.gui.add_tree_item("", name, course)
-            self.refresh_course_gui(obj_id, course, True)
+            course_id = self.gui.add_tree_item("", name, course)
+            self.refresh_course_gui(course_id, course, True)
         self.gui.update_resource_type_objects(ResourceType.teacher, self.schedule.teachers())
         self.gui.update_resource_type_objects(ResourceType.lab, self.schedule.labs())
         self.gui.update_resource_type_objects(ResourceType.stream, self.schedule.streams())
 
 
-    def refresh_course_gui(self, parent_id, course: Course, hide:bool = True):
+    def refresh_course_gui(self, course_id, course: Course, hide:bool = True):
         """
         refresh the contents of the course (sections) on the tree structure
-        :param parent_id: the parent id of the Course tree item
+        :param course_id: the id of the Course tree item
         :param course:
         :param hide: leave the parent (and everything under it hidden?)
         :return:
         """
-        self.gui.remove_tree_item_children(parent_id)
+        self.gui.remove_tree_item_children(course_id)
         for section in course.sections():
             name = str(section)
-            obj_id = self.gui.add_tree_item(parent_id, name, section, hide)
-            self.refresh_section_gui(obj_id, section, hide)
+            section_id = self.gui.add_tree_item(course_id, name, section, hide)
+            self.refresh_section_gui(section_id, section, hide)
 
-    def refresh_section_gui(self, parent_id, section: Section, hide: bool = True):
+    def refresh_section_gui(self, section_id, section: Section, hide: bool = True):
         """
         adds the contents of the section (blocks) on the tree structure
-        :param parent_id: the parent id of the tree item
+        :param section_id: the id of the Section tree item
         :param section: course section
         :param hide: leave the parent (and everything under it hidden?)
         :return:
         """
-        self.gui.remove_tree_item_children(parent_id)
+        self.gui.remove_tree_item_children(section_id)
 
         # change the name of the parent text if stream exists for this section
         name = str(section)
         if len(section.streams()):
             name += "  (" + ",".join([str(stream) for stream in section.streams()]) + ")"
-            self.gui.update_tree_text(parent_id, name)
+            self.gui.update_tree_text(section_id, name)
 
         for block in section.blocks():
             name = "Class Time: " + block.description()
-            obj_id = self.gui.add_tree_item(parent_id, name, block, hide)
-            self.refresh_block_gui(obj_id, block, hide= True)
+            block_id = self.gui.add_tree_item(section_id, name, block, hide)
+            self.refresh_block_gui(block_id, block, hide)
 
-    def refresh_block_gui(self, parent_id, block: Block, hide: bool=True):
+
+    def refresh_block_gui(self, block_id, block: Block, hide: bool=True):
         """
         adds the contents of the block (resources) onto the tree structure
-        :param parent_id: the parent id of the tree item
+        :param block_id: the id of the Block tree item
         :param block: course section block
         :param hide: leave the parent (and everything under it hidden?)
         :return:
         """
-        self.gui.remove_tree_item_children(parent_id)
+        self.gui.remove_tree_item_children(block_id)
         for lab in block.labs():
-            self.gui.add_tree_item(parent_id, str(lab), lab, hide)
+            self.gui.add_tree_item(block_id, str(lab), lab, hide)
         for teacher in block.teachers():
-            self.gui.add_tree_item(parent_id, str(teacher), teacher, hide)
+            self.gui.add_tree_item(block_id, str(teacher), teacher, hide)
 
 
 
-
+    # -------------------------------------------------------------------------------------------------------------
+    # Menus and Actions
+    # -------------------------------------------------------------------------------------------------------------
 
     def edit_tree_obj(self, obj: Any,  parent_obj: Any, tree_id: str, parent_id: str):
         if isinstance(obj, Block):
             self.edit_block_dialog(obj,parent_obj, parent_id)
+        if isinstance(obj, Section):
+            self.edit_section_dialog(obj, tree_id)
 
     def create_new_course(self): ...
         # TODO
-
-    # =========================================================================
-    # Menus and Actions
-    # =========================================================================
 
     def create_tree_popup(self, selected_obj: Any, parent_object, tree_path:str, tree_parent_path) -> list[MenuItem]:
         """
@@ -186,54 +213,65 @@ class EditCourses:
         pass
 
     def add_section_dialog(self, course: Course, tree_id: str):
-        # TODO
-        pass
+        """Add section to Course
+        :param course:
+        :param tree_id:
         """
-        # =================================================================
-        # add section dialog
-        # =================================================================
-        sub add_section_dialog {
-            my $course      = shift;
-            my $section_num = $course->get_new_number;    # gets a new section id
-            my $section     = Section->new(
-                -number => $section_num,
-                -hours  => 0,
-            );
-            $course->add_section($section);
-            EditCourses::_refresh_course_gui( $course,
-                "Schedule/Course" . $course->id );
-        
-            my ( $section_names, $block_hours ) = AddSectionDialogTk->new($frame);
-            add_sections_with_blocks( $course->id, $section_names, $block_hours );
-        
-            EditCourses::_refresh_course_gui( $course,
-                "Schedule/Course" . $course->id );
-        
-            EditCourses::dirty_flag_method();
-        }
-    
-        """
+        def apply_changes(number:int, blocks):
+            for i in range(number):
+                section = course.add_section()
+                _update_section(section.name, section, [], [], [], blocks)
+            self.set_dirty_flag(True)
+
+        title = f"{course.name} ({course.hours_per_week} hrs)"
+
+        db = AddSectionDialogTk(self.frame,
+                                course_description=title,
+                                apply_changes=apply_changes,
+                                course_hours=course.hours_per_week),
+        REFRESH_SUBS["course"](self, tree_id, course)
+
+
     def edit_section_dialog(self, section: Section, tree_id: str):
-        # TODO
-        """
-        # =================================================================
-        # edit section dialog
-        # =================================================================
-        sub edit_section_dialog {
-            my $section = shift;
-            my $path    = shift;
-            my $course;
-            if ( $path =~ m:Schedule/Course(\d+)/: ) {
-
-                $course = $Schedule->courses->get($1);
-            }
-
-            EditSectionDialog->new( $frame, $Schedule, $course, $section );
-        }
-
+        """Modify an existing section
         :param section:
-        :return:
+        :param tree_id:
         """
+        def apply_changes(descr: str, teachers:list[Teacher], labs:list[Lab], streams:list[Stream], blocks:list[tuple[str,str,float]]):
+            _update_section(descr, section, teachers, labs, streams, blocks)
+            self.set_dirty_flag(True)
+
+
+        title = f"{section.course.name} ({section.course.hours_per_week} hrs)"
+        text = section.title
+        block_data = []
+        for b in section.blocks():
+            block_data.append((b.time_slot.day.name, str(b.time_slot.time_start), str(b.time_slot.duration)))
+        assigned_teachers = set(section.teachers())
+        non_assigned_teachers = list(set(self.schedule.teachers()).difference(assigned_teachers))
+        non_assigned_teachers.sort()
+        assigned_labs = set(section.labs())
+        non_assigned_labs = list(set(self.schedule.labs()).difference(assigned_labs))
+        non_assigned_labs.sort()
+        assigned_streams = set(section.streams())
+        non_assigned_streams = list(set(self.schedule.streams()).difference(assigned_streams))
+        non_assigned_streams.sort()
+        hrs = section.course.hours_per_week
+
+        db = EditSectionDialogTk(self.frame,
+                                 course_description=title,
+                                 section_description=text,
+                                 assigned_teachers=list(section.teachers()),
+                                 non_assigned_teachers=non_assigned_teachers,
+                                 assigned_labs=list(section.labs()),
+                                 non_assigned_labs=non_assigned_labs,
+                                 assigned_streams=list(section.streams()),
+                                 non_assigned_streams=non_assigned_streams,
+                                 current_blocks=block_data,
+                                 apply_changes=apply_changes,
+                                 course_hours=section.course.hours_per_week)
+        REFRESH_SUBS["section"](self, tree_id, section)
+
 
     def add_blocks_dialog(self, section: Section, tree_id: str):
         """
@@ -315,6 +353,7 @@ class EditCourses:
         key = obj_type.split(".")[-1][0:-2]
         REFRESH_SUBS[key](self, selected_id, selected)
         self.set_dirty_flag(True)
+
 
 
 

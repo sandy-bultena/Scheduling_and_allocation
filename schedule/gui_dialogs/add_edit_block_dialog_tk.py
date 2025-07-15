@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import tkinter
 from tkinter import *
+from tkinter.messagebox import showerror
 from tkinter.simpledialog import Dialog
 from typing import Callable, Literal
 
@@ -39,7 +40,7 @@ class AddEditBlockDialogTk(Dialog):
         if add_edit_type == 'edit':
             self.tk_new_blocks.set("0")
 
-        title = "Edit Class Time" if add_edit_type == 'edit' else "Add Class Time"
+        title = "Edit Class Time(s)" if add_edit_type == 'edit' else "Add Class"
         super().__init__(frame.winfo_toplevel(), title)
 
     def _add_teacher(self, obj):
@@ -73,7 +74,7 @@ class AddEditBlockDialogTk(Dialog):
         # ------------------------------------------------------------------------------------------------------------
         number_of_blocks_frame = Frame(frame)
         if self.add_edit_type == 'add':
-            Label(number_of_blocks_frame, text="Number of Class Times:", anchor='e', width=20).pack(side='left', padx=10, pady=5)
+            Label(number_of_blocks_frame, text="Number of Classes:", anchor='e', width=20).pack(side='left', padx=10, pady=5)
             duration_entry = Entry(number_of_blocks_frame,
                                    textvariable=self.tk_new_blocks,
                                    validate='key',
@@ -118,23 +119,33 @@ class AddEditBlockDialogTk(Dialog):
         return duration_entry
 
     # ================================================================================================================
+    # validate before applying
+    # ================================================================================================================
+    def validate(self):
+        try:
+            float(self.tk_duration.get())
+        except ValueError:
+            showerror("Class Duration", "Duration of class must be a valid float!")
+            return False
+        try:
+            int(float(self.tk_new_blocks.get()))
+        except ValueError:
+            showerror("Number of Classes", "Number of classes must be a valid int!")
+            return False
+        return True
+
+    # ================================================================================================================
     # apply changes
     # ================================================================================================================
     def apply(self):
-        try:
-            duration = float(self.tk_duration.get())
-        except ValueError:
-            duration = self.old_duration
-        try:
-            number_new_blocks = int(float(self.tk_new_blocks.get()))
-        except ValueError:
-            number_new_blocks = 1
+        duration = float(self.tk_duration.get())
+        number_new_blocks = int(float(self.tk_new_blocks.get()))
         self._apply_changes(number_new_blocks, duration, self._assigned_teachers, self._assigned_labs )
 
     # ================================================================================================================
     # Number validation
     # ================================================================================================================
-    def _validate_is_number(self, number:str ,_:str) -> bool:
+    def _validate_is_number(self, number:str , _:str) -> bool:
         if number == "" or number == ".":
             return True
         try:

@@ -148,7 +148,7 @@ class EditCoursesTk:
 
     def add_tree_item(self, parent_id: str, name: str, child: TREE_OBJECT, hide: bool = True) -> str:
         """add an object to the tree, as a child of the parent
-        :param parent: an existing tree object that will become the parent of this new child
+        :param parent_id: an existing tree object that will become the parent of this new child
         :param name: the name of the child
         :param child: the child
         :param hide: hide the children?)
@@ -156,7 +156,9 @@ class EditCoursesTk:
         """
         tag = "bold" if parent_id is None or parent_id == "" else "normal"
         parent_id = "" if parent_id is None else parent_id
-        return self.course_ttkTreeView.insert_sorted(parent_id, child, text=name, tag=tag, open=not hide)
+        iid = self.course_ttkTreeView.insert_sorted(parent_id, child, text=name, tag=tag)
+        self.course_ttkTreeView.after(20,lambda *_: self.course_ttkTreeView.item(parent_id, open=not hide))
+        return iid
 
     def remove_tree_item(self, tree_iid: str):
         """remove an item from the tree
@@ -199,7 +201,6 @@ class EditCoursesTk:
         """
 
         # get the tree selected item
-        print(f"double clicked tree item")
         iid_list = self.course_ttkTreeView.selection()
         if not iid_list:
             return
@@ -346,8 +347,8 @@ class EditCoursesTk:
         tv.bind('<Key-Return>', self._cmd_edit_selection)
         tv.tag_configure("bold", font=self.Fonts.big)
         tv.tag_configure("normal", font=self.Fonts.normal)
-        tv.bind('<Button-2>', self._cmd_show_tree_menu)
-        tv.bind('<Button-3>', self._cmd_show_tree_menu)
+        tv.bind('<ButtonRelease-2>', self._cmd_show_tree_menu)
+        tv.bind('<ButtonRelease-3>', self._cmd_show_tree_menu)
 
         return tv
 

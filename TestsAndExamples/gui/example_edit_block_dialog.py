@@ -12,10 +12,10 @@ mw.geometry("400x400")
 schedule = Schedule()
 
 # teachers
-t1 = schedule.add_update_teacher("Jane", "Doe", "0.25", teacher_id=1)
-t2 = schedule.add_update_teacher("John", "Doe", teacher_id=2)
-t3 = schedule.add_update_teacher("Babe", "Ruth", teacher_id=3)
-t4 = schedule.add_update_teacher("Bugs", "Bunny", teacher_id=4)
+t1 = schedule.add_update_teacher("Jane", "Doe", "0.25", teacher_id="1")
+t2 = schedule.add_update_teacher("John", "Doe", teacher_id="2")
+t3 = schedule.add_update_teacher("Babe", "Ruth", teacher_id="3")
+t4 = schedule.add_update_teacher("Bugs", "Bunny", teacher_id="4")
 
 # labs
 l1 = schedule.add_update_lab("P107", "C-Lab")

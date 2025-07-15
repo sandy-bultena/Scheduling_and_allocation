@@ -57,7 +57,7 @@ class Course:
         self._number: str = number
         self.name: str = name
         self.needs_allocation: bool = needs_allocation
-        self.hours_per_week = hours_per_week
+        self.hours_per_week = float(hours_per_week)
         self._sections: set[Section] = set()
         self.semester: SemesterType = semester
 
@@ -88,6 +88,14 @@ class Course:
             raise InvalidSectionNumberForCourseError(
                 f"<{number}>: section number is not unique for this Course.")
 
+        if number == "":
+            max_number = 0
+            for sec_number in (s.number for s in self.sections()):
+                try:
+                    max_number = max(int(sec_number), max_number)
+                except ValueError:
+                    pass
+            number = str(max_number + 1)
 
         section = Section(self, number, name, section_id)
         self._sections.add(section)

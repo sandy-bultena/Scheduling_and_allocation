@@ -306,8 +306,6 @@ class Section:
     # --------------------------------------------------------
     def __str__(self) -> str:
         """ Returns a text string that describes the section """
-        print(f"SECTION: {self.number} {self.name}")
-        x=f"SECTION: {self.number} {self.name}"
         if self.name and not re.match(r"Section\s*\d*$", self.name):
             return f"Section {self.number}: {self.name}"
         else:
