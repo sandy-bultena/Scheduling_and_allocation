@@ -3,6 +3,7 @@ from typing import Optional, Callable, Any, TYPE_CHECKING, Literal
 from schedule.Tk.menu_and_toolbars import MenuItem, MenuType
 from schedule.gui_dialogs.add_edit_block_dialog_tk import AddEditBlockDialogTk
 from schedule.gui_dialogs.add_section_dialog_tk import AddSectionDialogTk
+from schedule.gui_dialogs.edit_course_dialog_tk import EditCourseDialogTk
 from schedule.gui_dialogs.edit_section_dialog_tk import EditSectionDialogTk
 from schedule.model import Schedule, ResourceType, Section, Block, Teacher, Lab, Stream, Course, TimeSlot, ScheduleTime, \
     WeekDay, ClockTime
@@ -185,9 +186,11 @@ class EditCourses:
             self.edit_block_dialog(obj,parent_obj, parent_id)
         if isinstance(obj, Section):
             self.edit_section_dialog(obj, tree_id)
+        if isinstance(obj, Course):
+            self.edit_course_dialog(obj, tree_id)
 
-    def create_new_course(self): ...
-        # TODO
+    def create_new_course(self):
+        self._add_edit_course_dialog('add', None, None)
 
     def create_tree_popup(self, selected_obj: Any, parent_object, tree_path:str, tree_parent_path) -> list[MenuItem]:
         """
@@ -202,15 +205,89 @@ class EditCourses:
         popup = EditCoursePopupMenuActions(self, selected_obj, parent_object, tree_path, tree_parent_path)
         return popup.create_tree_popup_menus()
 
+    def _add_edit_course_dialog(self, add_or_edit: Literal['add','edit'], course: Optional[Course], tree_id:Optional[str]):
+        """
+        Create and use the edit course dialog to modify the selected course
+        :param course:
+        :param tree_id:
+        """
+
+        def apply_changes(course_number: str, course_name:str, hours_per_week:int, num_sections:int, teachers:list[Teacher], labs:list[Lab],  blocks:list[tuple[str,str,float]]):
+            if course_number not in (c.number for c in self.schedule.courses()):
+                this_course = self.schedule.add_update_course(number = course_number)
+            else:
+                this_course = self.schedule.get_course_by_number(course_number)
+
+            this_course.name = course_name
+            this_course.hours_per_week = hours_per_week
+            this_course.remove_all_sections()
+            for _ in range(num_sections):
+                section = this_course.add_section()
+                for b in blocks:
+                    day = WeekDay[b[0]]
+                    start = ClockTime(b[1])
+                    hrs = b[2]
+                    section.add_block(TimeSlot(day, start, hrs))
+                for t in teachers:
+                    section.add_teacher(t)
+                for l in labs:
+                    section.add_lab(l)
+            if add_or_edit == 'edit':
+                REFRESH_SUBS['course'](self, tree_id, this_course)
+            else:
+                REFRESH_SUBS['schedule'](self,None, None)
+            self.set_dirty_flag = True
+
+        block_data = []
+
+        assigned_teachers = []
+        non_assigned_teachers = list(set(self.schedule.teachers()).difference(assigned_teachers))
+        non_assigned_teachers.sort()
+        assigned_labs = []
+        non_assigned_labs = list(set(self.schedule.labs()).difference(assigned_labs))
+        non_assigned_labs.sort()
+        course_number = ""
+        number_sections = 1
+        hours_per_week = 3
+        course_name = ""
+
+        if course is not None:
+            course_number = course.number
+            number_sections = len(course.sections())
+            hours_per_week = course.hours_per_week
+            course_name = course.name
+            if len(course.sections()) != 0:
+                for b in course.sections()[0].blocks():
+                    block_data.append((b.time_slot.day.name, str(b.time_slot.time_start), str(b.time_slot.duration)))
+
+            assigned_teachers = list(set(course.teachers()))
+            assigned_labs = list(set(course.labs()))
+
+        db = EditCourseDialogTk(self.frame,
+                                course_number=course_number,
+                                edit_or_add=add_or_edit,
+                                existing_course_numbers=[c.number for c in self.schedule.courses()],
+                                course_name=course_name,
+                                course_hours=hours_per_week,
+                                num_sections=number_sections,
+
+                                assigned_teachers=assigned_teachers,
+                                non_assigned_teachers=non_assigned_teachers,
+                                assigned_labs=assigned_labs,
+                                non_assigned_labs=non_assigned_labs,
+                                current_blocks=block_data,
+                                apply_changes=apply_changes,
+                                )
+        pass
+
     def edit_course_dialog(self, course: Course, tree_id:str):
         """
         Create and use the edit course dialog to modify the selected course
         :param course:
         :param tree_id:
         """
-        # EditCourseDialog->new( $frame, $Schedule, $course );
-        # TODO
-        pass
+        self._add_edit_course_dialog('edit',course,tree_id)
+
 
     def add_section_dialog(self, course: Course, tree_id: str):
         """Add section to Course
