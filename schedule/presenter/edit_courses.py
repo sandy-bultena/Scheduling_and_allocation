@@ -18,9 +18,9 @@ if TYPE_CHECKING:
 RESOURCE_OBJECT = Teacher | Lab | Stream
 TREE_OBJECT = Any
 
-# =================================================================
+# =====================================================================================================================
 # model subroutine lookups
-# =================================================================
+# =====================================================================================================================
 REMOVE_SUBS = {
     "teacher": lambda parent, teacher: parent.remove_teacher(teacher),
     "lab": lambda parent, lab: parent.remove_lab(lab),
@@ -48,7 +48,9 @@ ASSIGN_SUBS = {
     "stream": lambda parent, stream: parent.add_stream(stream),
 }
 
-
+# =====================================================================================================================
+# update a section with teachers and blocks and labs and streams
+# =====================================================================================================================
 def _update_section(descr:str, section: Section, teachers: list[Teacher], labs: list[Lab], streams: list[Stream],
                     blocks: list[tuple[str, str, float]]):
     section.descr = descr
@@ -67,6 +69,12 @@ def _update_section(descr:str, section: Section, teachers: list[Teacher], labs: 
         section.add_lab(l)
     for s in streams:
         section.add_stream(s)
+
+def list_minus_list(all_list, other_list):
+    other_list = set(other_list)
+    minus_list = list(set(all_list).difference(other_list))
+    minus_list.sort()
+    return  minus_list, list(other_list)
 
 
 # =====================================================================================================================
@@ -182,15 +190,20 @@ class EditCourses:
     # -------------------------------------------------------------------------------------------------------------
 
     def edit_tree_obj(self, obj: Any,  parent_obj: Any, tree_id: str, parent_id: str):
+        """
+        Given a particular tree object, edit it (Blocks, Section, Course)
+        :param obj: Any tree object, but will ignore it if it is not a Block, Section or Course
+        :param parent_obj: Who is the parent of this object
+        :param tree_id: What is the tree_id of this object
+        :param parent_id: What is the tree_id of this object's parent object
+        :return:
+        """
         if isinstance(obj, Block):
             self.edit_block_dialog(obj,parent_obj, parent_id)
         if isinstance(obj, Section):
             self.edit_section_dialog(obj, tree_id)
         if isinstance(obj, Course):
             self.edit_course_dialog(obj, tree_id)
-
-    def create_new_course(self):
-        self._add_edit_course_dialog('add', None, None)
 
     def create_tree_popup(self, selected_obj: Any, parent_object, tree_path:str, tree_parent_path) -> list[MenuItem]:
         """
@@ -205,6 +218,20 @@ class EditCourses:
         popup = EditCoursePopupMenuActions(self, selected_obj, parent_object, tree_path, tree_parent_path)
         return popup.create_tree_popup_menus()
 
+    def create_new_course(self):
+        """
+        Create a new course
+        """
+        self._add_edit_course_dialog('add', None, None)
+
+    def edit_course_dialog(self, course: Course, tree_id:str):
+        """
+        Create and use the edit course dialog to modify the selected course
+        :param course:
+        :param tree_id:
+        """
+        self._add_edit_course_dialog('edit',course,tree_id)
+
     def _add_edit_course_dialog(self, add_or_edit: Literal['add','edit'], course: Optional[Course], tree_id:Optional[str]):
         """
         Create and use the edit course dialog to modify the selected course
@@ -212,7 +239,9 @@ class EditCourses:
         :param tree_id:
         """
 
-        def apply_changes(course_number: str, course_name:str, hours_per_week:int, num_sections:int, teachers:list[Teacher], labs:list[Lab],  blocks:list[tuple[str,str,float]]):
+        def apply_changes(course_number: str, course_name:str, hours_per_week: float,
+                          allocation: bool, num_sections:int, teachers:list[Teacher],
+                          labs:list[Lab],  blocks:list[tuple[str,str,float]]):
             if course_number not in (c.number for c in self.schedule.courses()):
                 this_course = self.schedule.add_update_course(number = course_number)
             else:
@@ -220,6 +249,7 @@ class EditCourses:
 
             this_course.name = course_name
             this_course.hours_per_week = hours_per_week
+            this_course.needs_allocation = allocation
             this_course.remove_all_sections()
             for _ in range(num_sections):
                 section = this_course.add_section()
@@ -240,28 +270,28 @@ class EditCourses:
 
         block_data = []
 
-        assigned_teachers = []
-        non_assigned_teachers = list(set(self.schedule.teachers()).difference(assigned_teachers))
-        non_assigned_teachers.sort()
-        assigned_labs = []
-        non_assigned_labs = list(set(self.schedule.labs()).difference(assigned_labs))
-        non_assigned_labs.sort()
+        non_assigned_teachers, assigned_teachers = list_minus_list(self.schedule.teachers(), [])
+        non_assigned_labs, assigned_labs = list_minus_list( self.schedule.labs(), [])
+
         course_number = ""
         number_sections = 1
         hours_per_week = 3
         course_name = ""
+        course_allocation = True
 
         if course is not None:
             course_number = course.number
             number_sections = len(course.sections())
             hours_per_week = course.hours_per_week
             course_name = course.name
+            course_allocation = course.needs_allocation
             if len(course.sections()) != 0:
                 for b in course.sections()[0].blocks():
                     block_data.append((b.time_slot.day.name, str(b.time_slot.time_start), str(b.time_slot.duration)))
 
-            assigned_teachers = list(set(course.teachers()))
-            assigned_labs = list(set(course.labs()))
+            non_assigned_teachers, assigned_teachers = list_minus_list(self.schedule.teachers(), course.teachers())
+            non_assigned_labs, assigned_labs = list_minus_list(self.schedule.labs(), course.labs())
+
 
         db = EditCourseDialogTk(self.frame,
                                 course_number=course_number,
@@ -269,6 +299,7 @@ class EditCourses:
                                 existing_course_numbers=[c.number for c in self.schedule.courses()],
                                 course_name=course_name,
                                 course_hours=hours_per_week,
+                                course_allocation= course_allocation,
                                 num_sections=number_sections,
 
                                 assigned_teachers=assigned_teachers,
@@ -279,15 +310,6 @@ class EditCourses:
                                 apply_changes=apply_changes,
                                 )
         pass
-
-    def edit_course_dialog(self, course: Course, tree_id:str):
-        """
-        Create and use the edit course dialog to modify the selected course
-        :param course:
-        :param tree_id:
-        """
-        self._add_edit_course_dialog('edit',course,tree_id)
-
 
     def add_section_dialog(self, course: Course, tree_id: str):
         """Add section to Course
@@ -324,16 +346,9 @@ class EditCourses:
         block_data = []
         for b in section.blocks():
             block_data.append((b.time_slot.day.name, str(b.time_slot.time_start), str(b.time_slot.duration)))
-        assigned_teachers = set(section.teachers())
-        non_assigned_teachers = list(set(self.schedule.teachers()).difference(assigned_teachers))
-        non_assigned_teachers.sort()
-        assigned_labs = set(section.labs())
-        non_assigned_labs = list(set(self.schedule.labs()).difference(assigned_labs))
-        non_assigned_labs.sort()
-        assigned_streams = set(section.streams())
-        non_assigned_streams = list(set(self.schedule.streams()).difference(assigned_streams))
-        non_assigned_streams.sort()
-        hrs = section.course.hours_per_week
+        non_assigned_teachers, assigned_teachers = list_minus_list(self.schedule.teachers(),section.teachers())
+        non_assigned_labs, assigned_labs = list_minus_list(self.schedule.labs(),section.labs())
+        non_assigned_streams, assigned_streams = list_minus_list(self.schedule.streams(), section.streams())
 
         db = EditSectionDialogTk(self.frame,
                                  course_description=title,
@@ -386,12 +401,8 @@ class EditCourses:
             REFRESH_SUBS["section"](self,parent_id, section)
             self.set_dirty_flag(True)
 
-        assigned_teachers = set(block.teachers())
-        non_assigned_teachers = list(set(self.schedule.teachers()).difference(assigned_teachers))
-        non_assigned_teachers.sort()
-        assigned_labs = set(block.labs())
-        non_assigned_labs = list(set(self.schedule.labs()).difference(assigned_labs))
-        non_assigned_labs.sort()
+        non_assigned_teachers, assigned_teachers = list_minus_list(self.schedule.teachers(), section.teachers())
+        non_assigned_labs, assigned_labs = list_minus_list(self.schedule.labs(), section.labs())
 
         AddEditBlockDialogTk(self.frame, "edit", block.time_slot.duration, list(block.teachers()),
                              non_assigned_teachers, list(block.labs()), non_assigned_labs, _apply_changes)

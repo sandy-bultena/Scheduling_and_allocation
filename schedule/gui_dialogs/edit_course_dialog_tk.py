@@ -22,13 +22,14 @@ class EditCourseDialogTk(Dialog):
                  course_number:str = "",
                  course_name: str = "",
                  course_hours: float = 3.0,
+                 course_allocation: bool = True,
                  num_sections: int = 1,
                  assigned_teachers: list[Teacher] = None,
                  non_assigned_teachers: list[Teacher],
                  assigned_labs: list[Lab] = None,
                  non_assigned_labs: list[Lab],
                  current_blocks: list[tuple[str,str,str]] = None,
-                 apply_changes: Callable[[str, str, float, int, list, list, list], None]):
+                 apply_changes: Callable[[str, str, float, bool, int, list, list, list], None]):
 
         set_style(frame)
 
@@ -38,6 +39,7 @@ class EditCourseDialogTk(Dialog):
         self.course_number_tk = StringVar(value = course_number)
         self.course_name_tk = StringVar(value = course_name)
         self.course_hours_tk = StringVar(value=str(course_hours))
+        self.course_allocation_tk = BooleanVar(value=course_allocation)
         self.num_sections_tk = StringVar(value = str(num_sections))
         self._assigned_teachers = assigned_teachers if assigned_teachers is not None else []
         self._non_assigned_teachers = non_assigned_teachers
@@ -64,34 +66,30 @@ class EditCourseDialogTk(Dialog):
         # Course
         # ------------------------------------------------------------------------------------------------------------
         course_info_frame = Frame(frame)
-        course_number_frame = Frame(course_info_frame)
-        course_number_frame.pack()
-        Label(course_number_frame, text="Course number", anchor='e', width=20).pack(side='left', padx=10, pady=5)
-        en_course_number = Entry(course_number_frame, textvariable=self.course_number_tk,)
-        en_course_number.pack(side='left', padx=10, pady=5)
+        Label(course_info_frame, text="Course number", anchor='e', width=15).grid(row=0, column=0, sticky='nsew')
+        en_course_number = Entry(course_info_frame, textvariable=self.course_number_tk,)
+        en_course_number.grid(row=0, column=1, sticky='nsew')
         if self.edit_or_add == 'edit':
             en_course_number.config(state='readonly')
 
-        course_name_frame = Frame(course_info_frame)
-        course_name_frame.pack()
-        Label(course_name_frame, text="Course name", anchor='e', width=20).pack(side='left', padx=10, pady=5)
-        en_course_name = Entry(course_name_frame, textvariable=self.course_name_tk,)
-        en_course_name.pack(side='left', padx=10, pady=5)
+        Label(course_info_frame, text="Course name", anchor='e', width=15).grid(row=1, column=0, sticky='nsew')
+        en_course_name = Entry(course_info_frame, textvariable=self.course_name_tk,)
+        en_course_name.grid(row=1, column=1, sticky='nsew')
 
-        course_hours_frame = Frame(course_info_frame)
-        course_hours_frame.pack()
-        Label(course_hours_frame, text="Hours per week", anchor='e', width=20).pack(side='left', padx=10, pady=5)
-        en_course_name = entry_float(course_hours_frame, textvariable=self.course_hours_tk)
-        en_course_name.pack(side='left', padx=10, pady=5)
+        Label(course_info_frame, text="Hours per week", anchor='e', width=15).grid(row=2, column=0, sticky='nsew')
+        en_course_name = entry_float(course_info_frame, textvariable=self.course_hours_tk)
+        en_course_name.grid(row=2, column=1, sticky='nsew')
 
+        Label(course_info_frame, text="Needs Allocation", anchor='e', width=15).grid(row=3, column=0, sticky='nsew')
+        en_course_name = Checkbutton(course_info_frame, text="", offvalue=False, onvalue=True, variable=self.course_allocation_tk, width=20)
+        en_course_name.grid(row=3, column=1, sticky='nsew')
 
         # ------------------------------------------------------------------------------------------------------------
         # Sections/Blocks
         # ------------------------------------------------------------------------------------------------------------
-        section_info_frame = Frame(frame)
-        Label(section_info_frame, text="Number of Sections", anchor='e', width=20).pack(side='left', padx=10, pady=5)
-        description = entry_int(section_info_frame, textvariable=self.num_sections_tk)
-        description.pack(side='left', padx=10, pady=5)
+        Label(course_info_frame, text="Number of Sections", anchor='e', width=20).grid(row=4, column=0, sticky='nsew')
+        description = entry_int(course_info_frame, textvariable=self.num_sections_tk)
+        description.grid(row=4, column=1, sticky='nsew')
 
         self.block_frames = Frame(frame)
         for index, block_info in enumerate(self.current_blocks):
@@ -105,20 +103,19 @@ class EditCourseDialogTk(Dialog):
         # ------------------------------------------------------------------------------------------------------------
         teacher_assignments_frame = Frame(frame)
         AddRemoveTk(teacher_assignments_frame, self._non_assigned_teachers, self._assigned_teachers,
-                    "Assign Teacher to all Classes", "Remove Teacher from all Classes",height=6)
+                    "Assign Teacher to all Classes", "Remove Teacher from all Classes",height=10)
 
         lab_assignments_frame = Frame(frame)
         AddRemoveTk(lab_assignments_frame, self._non_assigned_labs, self._assigned_labs,
-                     "Assign Lab to all Classes","Remove Lab from all Classes", height=6)
+                     "Assign Lab to all Classes","Remove Lab from all Classes", height=10)
 
         # ------------------------------------------------------------------------------------------------------------
         # layout
         # ------------------------------------------------------------------------------------------------------------
         course_info_frame.grid(row=0, column=0)
-        section_info_frame.grid(row=1, column = 0)
-        self.block_frames.grid(row=2, column=0, sticky='nsew', padx=5, pady=5)
-        teacher_assignments_frame.grid(row=3,column=0, sticky='nsew', padx=5, pady=5)
-        lab_assignments_frame.grid(row=4,column=0, sticky='nsew', padx=5, pady=5)
+        self.block_frames.grid(row=1, column=0, sticky='nsew', padx=5, pady=5)
+        teacher_assignments_frame.grid(row=2,column=0, sticky='nsew', padx=5, pady=5)
+        lab_assignments_frame.grid(row=3,column=0, sticky='nsew', padx=5, pady=5)
 
         self.refresh()
 
@@ -162,7 +159,7 @@ class EditCourseDialogTk(Dialog):
             d[2] = float(d[2].strip().split(" ")[0])
             new_blocks.append(tuple(d))
         self._apply_changes(self.course_number_tk.get(), self.course_name_tk.get(),
-                            float(self.course_hours_tk.get()),
+                            float(self.course_hours_tk.get()),self.course_allocation_tk.get(),
                             int(self.num_sections_tk.get()), self._assigned_teachers,
                     self._assigned_labs, new_blocks)
 
