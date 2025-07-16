@@ -1,6 +1,6 @@
 from typing import Optional, Callable, Any, TYPE_CHECKING, Literal
 
-from schedule.Tk.menu_and_toolbars import MenuItem, MenuType
+from schedule.Tk.menu_and_toolbars import MenuItem
 from schedule.gui_dialogs.add_edit_block_dialog_tk import AddEditBlockDialogTk
 from schedule.gui_dialogs.add_section_dialog_tk import AddSectionDialogTk
 from schedule.gui_dialogs.edit_course_dialog_tk import EditCourseDialogTk
@@ -8,7 +8,6 @@ from schedule.gui_dialogs.edit_section_dialog_tk import EditSectionDialogTk
 from schedule.model import Schedule, ResourceType, Section, Block, Teacher, Lab, Stream, Course, TimeSlot, ScheduleTime, \
     WeekDay, ClockTime
 from schedule.gui_pages import EditCoursesTk
-import schedule.presenter.edit_courses_tree_and_resources as menu
 from schedule.presenter.edit_courses_tree_and_resources import EditCoursePopupMenuActions
 
 if TYPE_CHECKING:
@@ -293,7 +292,7 @@ class EditCourses:
             non_assigned_labs, assigned_labs = list_minus_list(self.schedule.labs(), course.labs())
 
 
-        db = EditCourseDialogTk(self.frame,
+        EditCourseDialogTk(self.frame,
                                 course_number=course_number,
                                 edit_or_add=add_or_edit,
                                 existing_course_numbers=[c.number for c in self.schedule.courses()],
@@ -324,7 +323,7 @@ class EditCourses:
 
         title = f"{course.name} ({course.hours_per_week} hrs)"
 
-        db = AddSectionDialogTk(self.frame,
+        AddSectionDialogTk(self.frame,
                                 course_description=title,
                                 apply_changes=apply_changes,
                                 course_hours=course.hours_per_week),
@@ -350,7 +349,7 @@ class EditCourses:
         non_assigned_labs, assigned_labs = list_minus_list(self.schedule.labs(),section.labs())
         non_assigned_streams, assigned_streams = list_minus_list(self.schedule.streams(), section.streams())
 
-        db = EditSectionDialogTk(self.frame,
+        EditSectionDialogTk(self.frame,
                                  course_description=title,
                                  section_description=text,
                                  assigned_teachers=list(section.teachers()),
@@ -473,153 +472,10 @@ class EditCourses:
 
         return False
 
-    def object_dropped(self, view: ResourceType, resource: RESOURCE_OBJECT, destination: TREE_OBJECT, tree_id):
+    def object_dropped(self, resource: RESOURCE_OBJECT, destination: TREE_OBJECT, tree_id):
         self.assign_selected_to_parent(destination, resource,tree_id)
 
 """
-
-
-# ===================================================================
-# add lab to course_ttkTreeView
-# ===================================================================
-sub _add_lab_to_gui {
-    my $l        = shift;
-    my $path     = shift;
-    my $not_hide = shift;
-
-    my $l_id = $l . $l->id;
-
-    #no warnings;
-    $Gui->add(
-        "$path/$l_id",
-        -text => "Lab: " . $l->number . " " . $l->descr,
-        -data => { -obj => $l }
-    );
-
-}
-
-# ===================================================================
-# add teacher to the course_ttkTreeView
-# ===================================================================
-sub _add_teacher_to_gui {
-    my $t        = shift;
-    my $path     = shift;
-    my $not_hide = shift || 0;
-
-    my $t_id = "Teacher" . $t->id;
-    $Gui->add(
-        "$path/$t_id",
-        -text => "Teacher: $t",
-        -data => { -obj => $t }
-    );
-}
-
-# =================================================================
-# edit/modify a schedule object
-# =================================================================
-sub _cb_edit_obj {
-    my $obj  = shift;
-    my $path = shift;
-
-    my $obj_type = $Schedule->get_object_type($obj);
-
-    if ( $obj_type eq 'course' ) {
-        edit_course_dialog( $obj, $path );
-    }
-    elsif ( $obj_type eq 'section' ) {
-        edit_section_dialog( $obj, $path );
-    }
-    elsif ( $obj_type eq 'block' ) {
-        edit_block_dialog( $obj, $path );
-    }
-    elsif ( $obj_type eq 'teacher' ) {
-        _cb_show_teacher_stat( $obj->id );
-    }
-    else {
-        $Gui->alert;
-    }
-}
-
-# =================================================================
-# get course_ttkTreeView menu
-# =================================================================
-sub _cb_get_tree_menu {
-    return DynamicMenus::create_tree_menus( $Schedule, @_ );
-}
-
-# =================================================================
-# get scheduable menu
-# =================================================================
-sub _cb_get_scheduable_menu {
-    return DynamicMenus::show_scheduable_menu( $Schedule, @_ );
-}
-
-# ============================================================================================
-# Create a new course
-# ============================================================================================
-sub _cb_new_course {
-    my $course = Course->new( -number => "", -name => "" );
-    $Schedule->courses->add($course);
-    EditCourseDialog->new( $frame, $Schedule, $course );
-}
-
-# =================================================================
-# object dropped on course_ttkTreeView
-# =================================================================
-sub _cb_object_dropped_on_tree {
-    my $dragged_object_type = shift;
-    my $id_of_obj_dropped   = shift;
-    my $path                = shift;
-    my $dropped_onto_obj    = shift;
-
-    my $dropped_on_type = $Schedule->get_object_type($dropped_onto_obj);
-    return unless $dropped_on_type;
-
-    # -------------------------------------------------------------
-    # assign dropped object to appropriate schedule object
-    # -------------------------------------------------------------
-    if ( $dragged_object_type eq 'teacher' ) {
-        my $add_obj = $Schedule->teachers->get($id_of_obj_dropped);
-        $dropped_onto_obj->assign_teacher($add_obj);
-    }
-
-    if ( $dragged_object_type eq 'lab' ) {
-        if ( $dropped_on_type ne 'course' ) {
-            my $add_obj = $Schedule->labs->get($id_of_obj_dropped);
-            $dropped_onto_obj->assign_lab($add_obj);
-        }
-        else {
-            $Gui->alert;
-            return;
-        }
-    }
-
-    if ( $dragged_object_type eq 'stream' ) {
-        my $add_obj = $Schedule->streams->get($id_of_obj_dropped);
-        if ( $dropped_on_type eq 'block' ) {
-            $dropped_onto_obj = $dropped_onto_obj->section;
-        }
-        $dropped_onto_obj->assign_stream($add_obj);
-    }
-
-    # -------------------------------------------------------------
-    # update the gui
-    # -------------------------------------------------------------
-    if ( $dragged_object_type eq 'stream' ) {
-        _refresh_schedule_gui();
-    }
-    elsif ( $dropped_on_type eq 'block' ) {
-        _refresh_block_gui( $dropped_onto_obj, $path, 1 );
-    }
-    elsif ( $dropped_on_type eq 'section' ) {
-        _refresh_section_gui( $dropped_onto_obj, $path, 1 );
-    }
-    elsif ( $dropped_on_type eq 'course' ) {
-        _refresh_course_gui( $dropped_onto_obj, $path, 1 );
-    }
-    dirty_flag_method();
-
-}
 
 
 # =================================================================

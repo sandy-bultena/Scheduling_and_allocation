@@ -182,18 +182,18 @@ example::
         # create scrollbars
         # ----------------------------------------------------------------------------------------
         if 'n' in scrollbars or 's' in scrollbars:
-            self._horizontal_scrollbar = tk.Scrollbar(self, orient=HORIZONTAL, takefocus=0)
+            self._horizontal_scrollbar = tk.Scrollbar(self, orient='horizontal', takefocus=0)
             if 'n' in scrollbars:
-                self._horizontal_scrollbar.pack(side=TOP, fill=X)
+                self._horizontal_scrollbar.pack(side='top', fill='x')
             else:
-                self._horizontal_scrollbar.pack(side=BOTTOM, fill=X)
+                self._horizontal_scrollbar.pack(side='bottom', fill='x')
 
         if 'e' in scrollbars or 'w' in scrollbars:
-            self._vertical_scrollbar = tk.Scrollbar(self, orient=VERTICAL, takefocus=0, troughcolor='pink')
+            self._vertical_scrollbar = tk.Scrollbar(self, orient='vertical', takefocus=0, troughcolor='pink')
             if 'e' in scrollbars:
-                self._vertical_scrollbar.pack(side=RIGHT, fill=Y)
+                self._vertical_scrollbar.pack(side='right', fill='y')
             else:
-                self._vertical_scrollbar.pack(side=LEFT, fill=Y)
+                self._vertical_scrollbar.pack(side='left', fill='y')
 
         # ----------------------------------------------------------------------------------------
         # is the widget we want to scroll, scrollable?
@@ -218,7 +218,7 @@ example::
             if 'height' in kwargs:
                 canvas_args['height'] = kwargs['height']
             _canvas = Canvas(self, **canvas_args)
-            _canvas.pack(side=TOP, fill=BOTH, expand=1)
+            _canvas.pack(side='top', fill='both', expand=1)
 
             self._widget = _tk_widget_type(_canvas, **kwargs)
 
@@ -388,7 +388,7 @@ example::
 
         'what' must be  Literal["units", "pages"]
         """
-        if self.vertical_scrollbar is None:
+        if self.horizontal_scrollbar is not None:
             self._scrollable_object.xview_scroll(number, what)
 
     def yview_scroll(self, number: int, what: Literal["units", "pages"]) -> None:
@@ -396,5 +396,7 @@ example::
 
         'what' must be  Literal["units", "pages"]
         """
-        if self.vertical_scrollbar is None:
+        print("*** ", number)
+        if self.vertical_scrollbar is not None:
+            print("*** ... ", number)
             self._scrollable_object.yview_scroll(number, what)

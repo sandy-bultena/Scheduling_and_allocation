@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 import tkinter
 from tkinter import ttk
 from functools import partial
@@ -83,8 +84,8 @@ class EditCoursesTk:
         self.handler_show_teacher_stat: Callable[[RESOURCE_OBJECT], None] = lambda obj: print(f"Teacher stat: {obj}")
         self.handler_drag_resource: Callable[[ResourceType, TREE_OBJECT], bool] = \
             lambda resource_type, target_obj: True
-        self.handler_drop_resource: Callable[[ResourceType, RESOURCE_OBJECT, TREE_OBJECT, str], None] = \
-            lambda resource_type, source_obj, target_obj, tree_id: None
+        self.handler_drop_resource: Callable[[ RESOURCE_OBJECT, TREE_OBJECT, str], None] = \
+            lambda source_obj, target_obj, tree_id: None
 
         # ----------------------------------------------------------------
         # create lists to keep track of widgets and objects for all resources
@@ -300,7 +301,11 @@ class EditCoursesTk:
         for s_iid in tv.selection():
             tv.selection_remove(s_iid)
 
-        # a resource widget can only be dropped on the serl.course_ttkTreeView
+        tv_y_pos = e.y_root - tv.winfo_rooty()
+
+        # -------------------------------------------------------------------------------------------------
+        # a resource widget can only be dropped on the self.course_ttkTreeView
+        # -------------------------------------------------------------------------------------------------
         if target == tv:
 
             # get position of mouse within the treeview widget, and identify item in treeview under mouse
@@ -311,7 +316,6 @@ class EditCoursesTk:
             if iid:
                 tv.item(iid, open=True)
                 target_obj: TREE_OBJECT = tv.get_obj_from_id(iid)
-                source_obj: RESOURCE_OBJECT = info_data["source_obj"]
                 resource_type: ResourceType = info_data["resource_type"]
 
                 # check with 'user' if this is a valid item for dropping source onto target
@@ -319,8 +323,24 @@ class EditCoursesTk:
                     info_data["target_obj"] = target_obj
                     info_data["tree_id"] = iid
                     tv.selection_set(iid)
-
                     return True
+
+        # -------------------------------------------------------------------------------------------------
+        # if mouse above or below tv view, then force scroll, but have a time delay to make it more
+        # manageable
+        # -------------------------------------------------------------------------------------------------
+        elif tv_y_pos < 0:
+            if info_data.get('start_time', None) is not None and time.time() - info_data['start_time'] < 0.5:
+                return False
+            info_data['start_time'] = time.time()
+            n1,n2 = self.tree_scrolled.yview()
+            self.tree_scrolled.yview_moveto(max(7/8*n1 - 1/8*n2,0))
+        elif tv_y_pos > 0:
+            if info_data.get('start_time', None) is not None and time.time() - info_data['start_time'] < 0.5:
+                return False
+            info_data['start_time'] = time.time()
+            n1,n2 = self.tree_scrolled.yview()
+            self.tree_scrolled.yview_moveto(min(7/8*n1 + 1/8*n2,1))
 
         return False
 
@@ -331,9 +351,8 @@ class EditCoursesTk:
         if self._resource_on_drag(e, info_data, target):
             target_obj: TREE_OBJECT = info_data["target_obj"]
             source_obj: RESOURCE_OBJECT = info_data["source_obj"]
-            resource_type: ResourceType = info_data["resource_type"]
             tree_id: str = info_data["tree_id"]
-            self.handler_drop_resource(resource_type, source_obj, target_obj, tree_id, )
+            self.handler_drop_resource(source_obj, target_obj, tree_id )
 
     # ###################################################################
     # Private Methods
@@ -343,9 +362,9 @@ class EditCoursesTk:
         """make tree representing all courses, sections, blocks, resources"""
         style = ttk.Style()
         style.configure('Treeview', rowheight=25)  # Adjust '30' to your desired height
-        tree_scrolled: Scrolled = Scrolled(left_panel, 'AdvancedTreeview', scrollbars='se')
-        tree_scrolled.pack(expand=1, fill='both', side='left')
-        tv: AdvancedTreeview = tree_scrolled.widget
+        self.tree_scrolled: Scrolled = Scrolled(left_panel, 'AdvancedTreeview', scrollbars='se')
+        self.tree_scrolled.pack(expand=1, fill='both', side='left')
+        tv: AdvancedTreeview = self.tree_scrolled.widget
         tv.bind('<Double-1>', self._cmd_edit_selection)
         tv.bind('<Key-Return>', self._cmd_edit_selection)
         tv.tag_configure("bold", font=self.Fonts.big)
