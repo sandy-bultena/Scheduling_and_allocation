@@ -14,7 +14,7 @@ def main():
     mw.geometry('400x450')
     mw.title('Edit Resources Generic')
     frame = Frame(mw)
-    frame.pack(expand=1, fill=BOTH)
+    frame.pack(expand=1, fill='both')
 
     col_descr = DEColumnDescription("Column 1", 30, "")
     col2_descr = DEColumnDescription("Column 2", 20, "")

@@ -151,7 +151,7 @@ def test_return_teachers_as_tuple():
     s = Schedule()
     assert len(s.teachers()) == 0
     o1 = Teacher('ABC', 'Doe')
-    o2 = Teacher('ABC', 'Doe')
+    o2 = Teacher('DEF', 'Doe')
     s._teachers = {o1.number: o1, o2.number: o2}
     assert len(s.teachers()) == 2
     assert isinstance(s.teachers(), tuple)
@@ -215,8 +215,8 @@ def test_get_teacher_by_id():
     o1 = Teacher('Jane', 'Doe')
     o2 = Teacher('John', 'Doe')
     s._teachers = {o1.number: o1, o2.number: o2}
-    assert o2 == s.get_teacher_by_number(o2._id)
-    assert o1 == s.get_teacher_by_number(o1._id)
+    assert o2 == s.get_teacher_by_number(o2.number)
+    assert o1 == s.get_teacher_by_number(o1.number)
 
 
 def test_remove_course():

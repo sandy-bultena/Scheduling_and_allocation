@@ -10,7 +10,7 @@ from .course import Course
 from .lab import Lab
 from .stream import Stream
 from .section import Section
-from .conflicts import (set_block_conflicts, ConflictType, LUNCH_START, LUNCH_END, set_lunch_break_conflicts,
+from .conflicts import (set_block_conflicts, ConflictType, set_lunch_break_conflicts,
                         set_number_of_days_conflict, set_availability_hours_conflict)
 from .enums import ResourceType, SemesterType
 from .serializor import CSVSerializor as Serializor
@@ -71,6 +71,7 @@ class Schedule:
         :param number: Unique identifier for the course
         :param name: Name of the course
         :param semester: Which semester is this course in
+        :param hours: How many hours per week are allocated for this course
         :param needs_allocation: Will give allocation to any teacher who teaches this course [True]
         """
         original_course: Course = self.get_course_by_number(number)
@@ -123,7 +124,7 @@ class Schedule:
         """
         original_teacher = self.get_teacher_by_number(teacher_id) if teacher_id is not None else None
         if original_teacher is None:
-            teacher = Teacher(firstname, lastname, department, release=release, teacher_id=teacher_id)
+            teacher = Teacher(firstname, lastname, department, release=release)
             self._teachers[teacher.number] = teacher
             return teacher
         else:

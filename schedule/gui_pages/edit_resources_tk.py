@@ -66,7 +66,7 @@ class EditResourcesTk:
             delete=self.delete_handler,
             colours=self.colours,
         )
-        self.data_entry.pack(side=TOP, expand=True, fill=BOTH)
+        self.data_entry.pack(side='top', expand=True, fill='both')
 
         # --------------------------------------------------------------------------
         # NOTE: If weird shit is happening, give up and use a 'Save' button

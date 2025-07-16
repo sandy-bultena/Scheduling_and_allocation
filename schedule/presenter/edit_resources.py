@@ -8,7 +8,7 @@ property_conversions_from_str = {
     "firstname": lambda x: x,
     "lastname": lambda x: x,
     "release": lambda x: float(x) if x else 0,
-    "teacher_id": lambda x: int(x),
+    "teacher_id": lambda x: x,
     "description": lambda x: x,
     "number": lambda x: x,
 }
@@ -44,7 +44,6 @@ class EditResources:
         match view_type:
             case ResourceType.teacher:
                 self.column_descriptions: list[DEColumnDescription] = [
-                    DEColumnDescription(title="ID", width=4, property="teacher_id", unique_id=True),
                     DEColumnDescription(title="First Name", width=15, property="firstname", unique_id=False),
                     DEColumnDescription(title="Last Name", width=15, property="lastname", unique_id=False),
                     DEColumnDescription(title="RT", width=8, property="release", unique_id=False),
@@ -137,7 +136,7 @@ class EditResources:
         needs_updating = self._check_for_changed_resources(all_data)
 
         # do we need to change anything?
-        changes = False or self.dirty_flag_method()
+        changes = False or self.dirty_flag_method(None)
         changes = True if len(needs_updating) else changes
         changes = True if len(self.delete_queue) else changes
         self.dirty_flag_method(changes)

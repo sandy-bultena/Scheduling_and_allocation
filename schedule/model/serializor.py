@@ -53,7 +53,7 @@ class CSVSerializor:
             w.writerow([])
 
             w.writerow([None, 'number', 'first name', 'last name', 'department', 'release'])
-            for teacher in sorted(schedule.teachers(), key=lambda x: int(x.number)):
+            for teacher in sorted(schedule.teachers(), key=lambda x: x.number):
                 w.writerow(
                     ["teacher", teacher.number, teacher.firstname, teacher.lastname,
                      teacher.department, teacher.release])

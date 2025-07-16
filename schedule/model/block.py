@@ -89,7 +89,7 @@ class Block:
     # ------------------------------------------------------------------------
     def labs(self) -> tuple[Lab, ...]:
         """Returns an immutable list of the labs assigned to this block."""
-        return tuple(self._labs)
+        return tuple(sorted(self._labs))
 
     def add_lab(self, lab: Lab):
         """Assign a new lab, to this block"""
@@ -112,7 +112,7 @@ class Block:
     # ------------------------------------------------------------------------
     def teachers(self) -> tuple[Teacher, ...]:
         """Returns an immutable list of the teachers assigned to this block."""
-        return tuple(self._teachers)
+        return tuple(sorted(self._teachers))
 
     def add_teacher(self, teacher: Teacher):
         """Assign a new teacher, to this block"""

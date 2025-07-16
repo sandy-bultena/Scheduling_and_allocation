@@ -99,26 +99,26 @@ class EditCoursesTkTest(EditCoursesTk):
 def valid_tree_structure():
     return {'.001': '001 BasketWeaving',
         '.001.001': 'Section 1  (1A calculus available)',
-        '.001.001.001': 'Block: Monday: 8:00 to 9:30',
+        '.001.001.001': 'Class Time: Monday: 8:00 to 9:30',
         '.001.001.001.001': 'P107: C-Lab',
         '.001.001.001.002': 'Jane Doe',
-        '.001.001.002': 'Block: Monday: 10:00 to 11:30',
+        '.001.001.002': 'Class Time: Monday: 10:00 to 11:30',
         '.001.001.002.001': 'P107: C-Lab',
         '.001.001.002.002': 'Jane Doe',
         '.001.002': 'Section 2  (1B no calculus)',
-        '.001.002.001': 'Block: Tuesday: 8:00 to 9:30',
+        '.001.002.001': 'Class Time: Tuesday: 8:00 to 9:30',
         '.001.002.001.001': 'P322: Mac Lab',
         '.001.002.001.002': 'John Doe',
-        '.001.002.002': 'Block: Tuesday: 10:00 to 11:30',
+        '.001.002.002': 'Class Time: Tuesday: 10:00 to 11:30',
         '.001.002.002.001': 'P325',
         '.001.002.002.002': 'Babe Ruth',
         '.002': '002 Thumb Twiddling',
         '.002.001': 'Section 1',
-        '.002.001.001': 'Block: Monday: 8:00 to 9:30',
-        '.002.001.002': 'Block: Monday: 10:00 to 11:30',
+        '.002.001.001': 'Class Time: Monday: 8:00 to 9:30',
+        '.002.001.002': 'Class Time: Monday: 10:00 to 11:30',
         '.002.002': 'Section 2',
-        '.002.002.001': 'Block: Tuesday: 8:00 to 9:30',
-        '.002.002.002': 'Block: Tuesday: 10:00 to 11:30'}
+        '.002.002.001': 'Class Time: Tuesday: 8:00 to 9:30',
+        '.002.002.002': 'Class Time: Tuesday: 10:00 to 11:30'}
 
 
 @pytest.fixture()
@@ -249,6 +249,7 @@ def test_create_tree_menu_for_teacher(gui, dirty, schedule_obj):
 
 def test_create_tree_menu_for_teacher_remove_teacher(gui, dirty, schedule_obj):
     """remove teacher from parent"""
+    # NOTE: teachers method returns sorted teachers, so Jane Doe comes before Babe Ruth
 
     # prepare
     ec = EditCourses(dirty, None, schedule_obj, gui)
@@ -258,8 +259,10 @@ def test_create_tree_menu_for_teacher_remove_teacher(gui, dirty, schedule_obj):
     block.add_teacher(schedule_obj.get_teacher_by_name("Babe","Ruth"))
     teacher = block.teachers()[0]
     ec.refresh()
-    tree_id = ".001.001.001.001"
-    parent_id = gui.get_parent(tree_id)
+    parent_id = ".001.001.001"
+    tree_id = gui.get_iid_from_name_with_parent_id(f"{teacher.firstname} {teacher.lastname}", parent_id)
+
+
     menu = ec.create_tree_popup(teacher, block, tree_id, parent_id)
     mi = [mi for mi in menu if mi.label == 'Remove Teacher'][0]
 
@@ -345,7 +348,7 @@ def test_create_tree_menu_for_block(gui, dirty, schedule_obj):
     menu = ec.create_tree_popup(block, section, tree_id, parent_id)
 
     # verify
-    assert len([mi for mi in menu if mi.label == 'Remove Block']) == 1
+    assert len([mi for mi in menu if mi.label == 'Remove Class Time']) == 1
     assert len([mi for mi in menu if mi.label == 'Add Teacher']) == 1
     assert len([mi for mi in menu if mi.label == 'Add Lab']) == 1
     assert len([mi for mi in menu if mi.label == 'Remove Teacher']) == 1
@@ -369,8 +372,8 @@ def test_tree_menu_for_section_remove_block(gui, dirty, schedule_obj):
     tree_id = ".001.001.001"
     parent_id = gui.get_parent(tree_id)
     menu = ec.create_tree_popup(block, section, tree_id, parent_id)
-    mi = [mi for mi in menu if mi.label == 'Remove Block'][0]
-    assert gui.get_iid_from_name_with_parent_id("Block: Monday: 8:00 to 9:30", parent_id)
+    mi = [mi for mi in menu if mi.label == 'Remove Class Time'][0]
+    assert gui.get_iid_from_name_with_parent_id("Class Time: Monday: 8:00 to 9:30", parent_id)
 
     # execute
     mi.command()
@@ -378,7 +381,7 @@ def test_tree_menu_for_section_remove_block(gui, dirty, schedule_obj):
     # verify
     assert dirty_flag
     assert len(section.blocks()) == 1
-    assert not gui.get_iid_from_name_with_parent_id("Block: Monday: 8:00 to 9:30", parent_id)
+    assert not gui.get_iid_from_name_with_parent_id("Class Time: Monday: 8:00 to 9:30", parent_id)
 
 def test_tree_menu_for_block_add_teacher_sub_menu(gui, dirty, schedule_obj):
     """run menu command for block: add teachers
@@ -602,7 +605,7 @@ def test_create_tree_menu_for_section(gui, dirty, schedule_obj):
     # verify
     assert len([mi for mi in menu if mi.label == 'Edit Section']) == 1
     assert len([mi for mi in menu if mi.label == 'Remove Section']) == 1
-    assert len([mi for mi in menu if mi.label == 'Add Blocks']) == 1
+    assert len([mi for mi in menu if mi.label == 'Add Class Times']) == 1
     assert len([mi for mi in menu if mi.label == 'Add Teacher']) == 1
     assert len([mi for mi in menu if mi.label == 'Add Lab']) == 1
     assert len([mi for mi in menu if mi.label == 'Add Stream']) == 1
@@ -684,7 +687,7 @@ def test_tree_menu_for_section_add_blocks(gui, dirty, schedule_obj):
     parent_id = gui.get_parent(tree_id)
     menu = ec.create_tree_popup(section, course, tree_id, parent_id)
     ec.add_blocks_dialog = add_dialog_test
-    mi = [mi for mi in menu if mi.label == 'Add Blocks'][0]
+    mi = [mi for mi in menu if mi.label == 'Add Class Times'][0]
 
     # execute
     mi.command()
@@ -864,7 +867,7 @@ def test_tree_menu_for_section_remove_all_sub_menu(gui, dirty, schedule_obj):
     mi = [mi for mi in menu if mi.label == 'Remove All'][0]
     sub_menu = mi.children
     assert len(sub_menu) == 4
-    assert sub_menu[0].label == "blocks"
+    assert sub_menu[0].label == "class times"
     assert sub_menu[1].label == "streams"
     assert sub_menu[2].label == "labs"
     assert sub_menu[3].label == "teachers"
@@ -888,7 +891,7 @@ def test_tree_menu_for_section_remove_all_blocks(gui, dirty, schedule_obj):
     sub_menu = mi.children
 
     # execute
-    mi2 = [mi for mi in sub_menu if mi.label == 'blocks'][0]
+    mi2 = [mi for mi in sub_menu if mi.label == 'class times'][0]
     mi2.command()
 
     assert dirty_flag

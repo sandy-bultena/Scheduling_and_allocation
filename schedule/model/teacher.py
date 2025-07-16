@@ -25,17 +25,15 @@ SYNOPSIS
 
 class Teacher:
     """Describes a teacher."""
-    teacher_ids = IdGenerator()
 
     # -------------------------------------------------------------------
     # constructor
     # --------------------------------------------------------------------
-    def __init__(self, firstname: str, lastname: str, department: str = "", release: float = 0, teacher_id: Optional[str] = None):
+    def __init__(self, firstname: str, lastname: str, department: str = "", release: float = 0):
         """Creates a Teacher object.
         :param firstname:   first name of the teacher
         :param lastname:   last name of the teacher
         :param department:  department that this teacher is associated with
-        :param teacher_id: set the teacher id to this value
         """
         self.firstname = firstname
         self.lastname = lastname
@@ -43,19 +41,19 @@ class Teacher:
         self.release = release
         self.resource_type = ResourceType.teacher
 
-        self._id = Teacher.teacher_ids.get_new_id(teacher_id)
-
     # =================================================================
     # unique identifier
     # =================================================================
     @property
-    def teacher_id(self) -> int:
-        return self._id
+    def teacher_id(self) -> str:
+        t_id = f"{self.lastname}_{self.firstname}"
+        t_id.replace(" ","_")
+        return t_id
 
     @property
     def number(self) -> str:
         """Returns the unique ID for this Teacher."""
-        return str(self._id)
+        return self.teacher_id
 
     # =================================================================
     # other
@@ -66,9 +64,6 @@ class Teacher:
     def __repr__(self):
         return str(self)
 
-    def __repl__(self) -> str:
-        return str(self)
-
     def __lt__(self, other: Teacher) -> bool:
         return (self.lastname, self.firstname) < (other.lastname, other.firstname)
 
@@ -76,7 +71,7 @@ class Teacher:
         return self.number == other.number
 
     def __hash__(self):
-        return hash(self._id)
+        return hash(self.number)
 
 
 # =================================================================
