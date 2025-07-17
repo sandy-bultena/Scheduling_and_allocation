@@ -23,7 +23,7 @@ from __future__ import annotations
 import copy
 from typing import TYPE_CHECKING, Optional
 from .id_generator import IdGenerator
-from .conflicts import ConflictType
+from .enums import ConflictType
 OptionalId = Optional[int]
 
 # stuff that we need just for type checking, not for actual functionality

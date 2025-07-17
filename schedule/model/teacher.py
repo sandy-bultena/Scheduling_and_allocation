@@ -47,7 +47,7 @@ class Teacher:
     @property
     def teacher_id(self) -> str:
         t_id = f"{self.lastname}_{self.firstname}"
-        t_id.replace(" ","_")
+        t_id = t_id.replace(" ","_")
         return t_id
 
     @property

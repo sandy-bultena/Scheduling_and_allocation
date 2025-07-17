@@ -1,41 +1,48 @@
 from __future__ import annotations
 import pytest
 
-from schedule.model import Block
-from schedule.model.conflicts import ConflictType
+from schedule.model import Block, Lab, Teacher, Stream, Section
+from schedule.model.enums import ConflictType
 
 
-class Lab:
-    def __init__(self, number='P100', description="", *args, **kwargs):
-        self.number = number
-        self.description = description
-        pass
+
+# class Lab:
+#     def __init__(self, number='P100', description="", *args, **kwargs):
+#         self.number = number
+#         self.description = description
+#         pass
+#     def __lt__(self, other):
+#         return self.number < other.number
+#
+#
+# class Teacher:
+#     def __init__(self, fname, lname, *args, **kwargs):
+#         self.fname = fname
+#         self.lname = lname
+#     def __lt__(self, other):
+#         return self.lname, self.fname
+#
+#
+# class Stream:
+#     def __init__(self, number):
+#         self.number = number
+#     def __lt__(self, other):
 
 
-class Teacher:
-    def __init__(self, *args, **kwargs):
-        pass
-
-
-class Stream:
-    def __init__(self, *args, **kwargs):
-        pass
-
-
-class TestContainer:
-    id: int
-
-    @property
-    def id(self) -> int:
-        return 3
-
-    @property
-    def title(self) -> str:
-        return "the title"
-
-    def streams(self) -> tuple[Stream, ...]:
-        return tuple([Stream(self)])
-
+# class TestContainer:
+#     id: int
+#
+#     @property
+#     def id(self) -> int:
+#         return 3
+#
+#     @property
+#     def title(self) -> str:
+#         return "the title"
+#
+#     def streams(self) -> tuple[Stream, ...]:
+#         return tuple([Stream(self)])
+#
 
 class TimeSlot:  # for testing
     def __init__(self, day, start, duration, movable=True):
@@ -52,7 +59,7 @@ class TimeSlot:  # for testing
         return self.day == other.day and self.time_start == other.time_start and self.duration == other.duration
 
 
-dummy_Section = TestContainer()
+dummy_Section = Section(None)
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -157,8 +164,8 @@ def test_assign_lab_multiple():
     start = "8:30"
     dur = 2
     block = Block(dummy_Section, TimeSlot(day, start, dur))
-    lab1 = Lab()
-    lab2 = Lab()
+    lab1 = Lab("P100")
+    lab2 = Lab("P101")
     block.add_lab(lab1)
     block.add_lab(lab2)
     labs = block.labs()
@@ -173,8 +180,8 @@ def test_assign_lab_multiple_with_duplicate():
     start = "8:30"
     dur = 2
     block = Block(dummy_Section, TimeSlot(day, start, dur))
-    lab1 = Lab()
-    lab2 = Lab()
+    lab1 = Lab("P100")
+    lab2 = Lab("p101")
     block.add_lab(lab1)
     block.add_lab(lab1)
     block.add_lab(lab2)
@@ -188,8 +195,8 @@ def test_remove_lab_good():
     start = "8:30"
     dur = 2
     block = Block(dummy_Section, TimeSlot(day, start, dur))
-    lab1 = Lab()
-    lab2 = Lab()
+    lab1 = Lab("P100")
+    lab2 = Lab("101")
     block.add_lab(lab1)
     block.add_lab(lab2)
     block.remove_lab(lab1)
@@ -448,7 +455,7 @@ def test_conflicted_setter_good():
 
 
 def test_is_conflicted_true():
-    """Verifies that is_conflicted() returns the true if the conflicted number is not zero."""
+    """Verifies that is_conflicted() returns true if the conflicted number is not zero."""
     day = "mon"
     start = "8:30"
     dur = 2

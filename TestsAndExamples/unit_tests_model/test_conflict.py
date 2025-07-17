@@ -1,4 +1,5 @@
 import pytest
+from schedule.model import enums as enums
 from schedule.model import conflicts as con
 from schedule.model import Block, TimeSlot, WeekDay, ClockTime
 from schedule.model import ResourceType, ConflictType
@@ -89,7 +90,7 @@ def test_is_availability():
 # ============================================================================
 # most severe
 # ============================================================================
-severity_order = con.ORDER_OF_SEVERITY
+severity_order = enums.ORDER_OF_SEVERITY
 
 def test_severity_dependent_on_view():
     """if view can have a conflict specific to its view, then it should be the most severe"""

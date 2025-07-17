@@ -1,6 +1,6 @@
 from .block import Block
 from .schedule_time import ClockTime, ScheduleTime
-from .conflicts import ConflictType
+from .enums import ConflictType
 from .time_slot import TimeSlot
 from .enums import WeekDay, SemesterType, ResourceType
 from .lab import Lab

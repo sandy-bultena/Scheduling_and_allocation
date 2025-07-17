@@ -28,9 +28,7 @@ DIRECTORY = str
 
 class Scheduler:
     """
-    # ==================================================================
-    # This is the main entry point for the Scheduler Program
-    # ==================================================================
+    This is the main entry point for the Scheduler Program
     """
 
     def __init__(self, bin_dir: DIRECTORY, gui: Optional[SchedulerTk] = None):

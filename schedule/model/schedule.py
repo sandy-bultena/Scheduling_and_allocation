@@ -10,7 +10,8 @@ from .course import Course
 from .lab import Lab
 from .stream import Stream
 from .section import Section
-from .conflicts import (set_block_conflicts, ConflictType, set_lunch_break_conflicts,
+from .enums import ConflictType
+from .conflicts import (set_block_conflicts,  set_lunch_break_conflicts,
                         set_number_of_days_conflict, set_availability_hours_conflict)
 from .enums import ResourceType, SemesterType
 from .serializor import CSVSerializor as Serializor
