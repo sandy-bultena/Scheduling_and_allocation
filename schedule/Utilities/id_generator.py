@@ -38,7 +38,7 @@ class IdGenerator:
         """Value of the largest id that was created"""
         return self._current_id
 
-    def get_new_id(self, value: Optional[int|str]) -> int:
+    def get_new_id(self, value: Optional[int|str] = None) -> int:
         """Change the current id, else get the next value"""
 
         if value is None:

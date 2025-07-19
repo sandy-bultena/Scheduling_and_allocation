@@ -232,7 +232,7 @@ def darken(colour: str, amount: int = 10) -> str:
     - Parameter Colour -> The Colour to darken.
     - Parameter amount -> How much to darken by. Defaults to 10.
     """
-    # get_by_id HSL
+    # get HSL
     h, s, l = hsl(string(colour))
 
     # reduce light

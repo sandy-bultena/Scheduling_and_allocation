@@ -100,7 +100,7 @@ sub OpenCmd {
     # only continue on if callback is defined
     return unless $self->cget(-children);
 
-    # get_by_id a list of children of this branch (should this be leaf instead of child?)
+    # get a list of children of this branch (should this be leaf instead of child?)
     my @children = $self->infoChildren($path);
 
     # loop through all the children
