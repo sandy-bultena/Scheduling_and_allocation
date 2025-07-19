@@ -6,12 +6,12 @@ from typing import Optional, TYPE_CHECKING
 from schedule.presenter.edit_resources import EditResources
 from schedule.presenter.edit_courses import EditCourses
 
-# from .ViewsManager import ViewsManager
+# from .ViewsHubControl import ViewsHubControl
 
 from .menus_main_menu import set_menu_event_handler, main_menu
 from schedule.Utilities import Preferences
 from schedule.gui_pages import SchedulerTk, set_main_page_event_handler
-from schedule.Utilities.NoteBookPageInfo import NoteBookPageInfo
+from schedule.Utilities.notebook_page_info import NoteBookPageInfo
 from schedule.model import Schedule, ResourceType
 from schedule.exceptions import CouldNotReadFileError
 from schedule.gui_generics.read_only_text_tk import ReadOnlyText
@@ -366,7 +366,7 @@ class Scheduler:
 #     #
 #     #     # Create the view manager (which shows all the schedule views, etc.)
 #     #     global views_manager, schedule
-#     #     # TODO: Implement ViewsManager class.
-#     #     views_manager = ViewsManager(gui, is_data_dirty(), schedule)
+#     #     # TODO: Implement ViewsHubControl class.
+#     #     views_manager = ViewsHubControl(gui, is_data_dirty(), schedule)
 #     #     gui.set_views_manager(views_manager)
 #     #

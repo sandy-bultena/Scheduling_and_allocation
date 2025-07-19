@@ -1,7 +1,5 @@
 from __future__ import annotations
-from typing import Optional
 from .enums import ResourceType
-from .id_generator import IdGenerator
 
 """
 SYNOPSIS

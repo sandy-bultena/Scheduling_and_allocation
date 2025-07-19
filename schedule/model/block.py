@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import copy
 from typing import TYPE_CHECKING, Optional
-from .id_generator import IdGenerator
+from schedule.Utilities.id_generator import IdGenerator
 from .enums import ConflictType
 OptionalId = Optional[int]
 
@@ -64,6 +64,11 @@ class Block:
     def id(self):
         """block id"""
         return self._block_id
+
+    @property
+    def number(self):
+        """block id"""
+        return str(self._block_id)
 
     def description(self) -> str:
         """Returns text string that describes this Block."""

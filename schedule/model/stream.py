@@ -41,7 +41,6 @@ class Stream:
     # conversion to string
     # --------------------------------------------------------
     def __str__(self) -> str:
-        """ Returns a text string with the Stream's number """
         return self.number + " " + self.description
 
     def __repl__(self) -> str:

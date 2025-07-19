@@ -20,9 +20,9 @@ from schedule.Tk import FindImages
 from schedule.Tk import set_default_fonts_and_colours, TkColours, TkFonts
 from schedule.Tk import generate_menu, make_toolbar
 from schedule.gui_pages.note_book_frame_tk import NoteBookFrame
-from ..Utilities.NoteBookPageInfo import NoteBookPageInfo
+from schedule.Utilities.notebook_page_info import NoteBookPageInfo
 from schedule.Tk import MenuItem, ToolbarItem
-from ..Utilities.Preferences import Preferences
+from schedule.Utilities.Preferences import Preferences
 
 if TYPE_CHECKING:
     pass
