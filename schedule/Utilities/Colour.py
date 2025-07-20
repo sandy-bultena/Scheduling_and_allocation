@@ -43,6 +43,8 @@ def initialize_colours():
 
     _colour_list = __colour_data.split("\n")
     for c in _colour_list:
+        if not c:
+            continue
         r, g, b, name = re.split(r"\s+", c.strip(), 3)
         if not name:
             continue
@@ -149,6 +151,9 @@ def string(colour: str) -> str:
     global LEN
     if colour[0] != "#":
         colour_string: str = "#000000"
+        if not colour_list:
+            initialize_colours()
+
         if colour_list and colour in colour_list:
             colour_string = get_colour_string_from_rgb(
                 colour_list[colour][0] / 255,
