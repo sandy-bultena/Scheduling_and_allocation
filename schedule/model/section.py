@@ -31,7 +31,7 @@ SYNOPSIS
 from __future__ import annotations
 import re
 from typing import TYPE_CHECKING, Optional
-from .id_generator import IdGenerator
+from schedule.Utilities.id_generator import IdGenerator
 from .block import Block
 from .model_exceptions import InvalidHoursForSectionError
 

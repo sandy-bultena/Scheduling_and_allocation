@@ -9,19 +9,23 @@ def main():
     canvas: Canvas = Canvas(mw)
     canvas.pack(expand=1, fill='both')
 
+
+    canvas.tag_bind(MOVABLE_TAG_NAME, "<Button-1>", lambda e: select_gui_block_to_move(canvas, e))
+
     r1: int = canvas.create_rectangle(50, 50, 150, 150, fill='blue', tags=(MOVABLE_TAG_NAME, "obj1"))
     s1: int = canvas.create_text(100, 100, text="A", tags=(MOVABLE_TAG_NAME, "obj1"))
     r2: int = canvas.create_rectangle(70, 70, 170, 170, fill='red', tags=(MOVABLE_TAG_NAME, "obj2"))
     s2: int = canvas.create_text(120, 120, text="B", tags=(MOVABLE_TAG_NAME, "obj2"))
-
-    canvas.tag_bind(MOVABLE_TAG_NAME, "<Button-1>", lambda e: select_gui_block_to_move(canvas, e))
-
     mw.mainloop()
 
 
 def select_gui_block_to_move(canvas: Canvas, event: Event):
     obj: tuple[int, ...] = canvas.find_withtag('current')
+    print(obj)
+    current_tags = canvas.gettags(obj[0])
+    print(current_tags)
     tags: tuple[str] = tuple(filter(lambda x: x != MOVABLE_TAG_NAME and x != 'current', canvas.gettags(obj[0])))
+    print(tags)
     canvas.tag_raise(tags, 'all')
 
     # unbind any previous binding for clicking and motion, just in case
