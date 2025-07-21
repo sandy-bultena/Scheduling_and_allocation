@@ -19,7 +19,7 @@ from tkinter.messagebox import showerror, showinfo, askyesnocancel
 from schedule.Tk import FindImages
 from schedule.Tk import set_default_fonts_and_colours, TkColours, TkFonts
 from schedule.Tk import generate_menu, make_toolbar
-from schedule.gui_pages.note_book_frame_tk import NoteBookFrame
+from schedule.gui_pages.note_book_frame_tk import NoteBookFrameTk
 from schedule.Utilities.notebook_page_info import NoteBookPageInfo
 from schedule.Tk import MenuItem, ToolbarItem
 from schedule.Utilities.Preferences import Preferences
@@ -54,7 +54,7 @@ class MainPageBaseTk:
 
         # private properties
         self._preferences = preferences
-        self._notebook_frame: Optional[NoteBookFrame] = None
+        self._notebook_frame: Optional[NoteBookFrameTk] = None
         self._wait = None
         self.notebook_pages_info: list[NoteBookPageInfo] | None = None
         self._front_page_frame: Optional[Frame] = None
@@ -201,7 +201,7 @@ class MainPageBaseTk:
         # frame
         main_page_frame = Frame(mw, borderwidth=1, relief='ridge')
         main_page_frame.pack(side='top', expand=1, fill='both')
-        self._notebook_frame = NoteBookFrame(self.mw, main_page_frame, notebook_pages_info)
+        self._notebook_frame = NoteBookFrameTk(self.mw, main_page_frame, notebook_pages_info)
 
     # def update_for_new_schedule_and_show_page(self):
     #     """Reset the GUI_Pages when a new schedule is read."""

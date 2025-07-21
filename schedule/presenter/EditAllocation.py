@@ -243,7 +243,7 @@ class EditAllocation:
             section = remaining[SECTION_KEY]
             remaining[VALUE_KEY] = section.hours_since_midnight - section.allocated_hours
 
-        # get_by_id totals for all semesters
+        # get totals for all semesters
         for sem in self._semesters:
             if sem == semester:
                 continue

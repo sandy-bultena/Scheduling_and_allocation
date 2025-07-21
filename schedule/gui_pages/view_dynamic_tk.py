@@ -14,6 +14,21 @@ from schedule.model import ResourceType, ConflictType
 
 DEFAULT_CANVAS_WIDTH = 700
 DEFAULT_CANVAS_HEIGHT = 700
+CONFLICT_COLOUR_INFO = []
+for c in (ConflictType.TIME_TEACHER, ConflictType.TIME, ConflictType.LUNCH,
+          ConflictType.MINIMUM_DAYS, ConflictType.AVAILABILITY):
+    bg = ConflictType.colours()[c]
+    fg = "white"
+    if Colour.is_light(bg):
+        fg = "black"
+    text = c.name
+    CONFLICT_COLOUR_INFO.append({
+        "bg": Colour.string(bg),
+        "fg": Colour.string(fg),
+        "text": text
+    })
+
+
 
 def _default_menu(*_) -> list[MenuItem]:
     menu = MenuItem(name="nothing", label="nothing", menu_type=MenuType.Command, command=lambda: None)
@@ -29,7 +44,6 @@ class ViewDynamicTk:
     # Init
     # =================================================================================================================
     def __init__(self, mw: Tk,  title: str,
-                 conflict_info_colours: list[dict[str,str]],
                  get_popup_menu_handler: Callable = _default_menu,
                  refresh_blocks_handler: Callable = lambda *_: None,
                  on_closing_handler: Callable = lambda *_: None,
@@ -43,7 +57,6 @@ class ViewDynamicTk:
         """
         :param mw: MainWindow/root
         :param title: title of the toplevel window (displayed in the top bar)
-        :param conflict_info_colours: a list of colours for each type of conflict (used to set info bar)
         :param get_popup_menu_handler: a function that returns menu info for gui block popup menu
         :param refresh_blocks_handler: a function that redraws all the appropriate blocks on the canvas
         :param on_closing_handler: a function that handles the closing of this view
@@ -76,7 +89,7 @@ class ViewDynamicTk:
         f = Frame(tl)
         f.pack(expand=1, fill="x")
 
-        for c in conflict_info_colours:
+        for c in CONFLICT_COLOUR_INFO:
             Label(f, text=c['text'], width=10, background=c['bg'], foreground=c['fg']) \
                 .pack(side='left', expand=1, fill="x")
 

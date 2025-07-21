@@ -1,12 +1,11 @@
 import re
 from schedule.model import Block, ResourceType
-from schedule.gui_pages.view_canvas_tk import ViewCanvasTk
 from schedule.Utilities.id_generator import IdGenerator
 
 class GuiBlock:
     """GuiBlock - describes the visual representation of a Block."""
 
-    gui_block_ids = IdGenerator()
+    _gui_block_ids = IdGenerator()
 
 
     # =================================================================
@@ -15,21 +14,17 @@ class GuiBlock:
     def __init__(self, block: Block, resource_type: ResourceType, colour:str):
         """
         Creates a gui-usable representation of the block.
-        :param view_gui: The context where this block is drawn
         :param block: the block object that needs to be drawn
         :param resource_type: what type of resource is this gui block representing
         :param colour: the default colour of this block
         """
-        self._id: int = GuiBlock.gui_block_ids.get_new_id()
+        self._id: int = GuiBlock._gui_block_ids.get_new_id()
         self.block = block
         self.start_time: float = block.time_slot.time_start.hours
         self.day: int = block.time_slot.day.value
         self.duration: float = block.time_slot.duration
         self.resource_type: ResourceType = resource_type
 
-        self.gui_tag = f'gui_tag_{self._id}'
-
-        self.co_ords: list[int] = [0,0,0.0]
         self._colour = colour
 
     # =================================================================
@@ -38,6 +33,10 @@ class GuiBlock:
     @property
     def colour(self):
         return self._colour
+
+    @property
+    def gui_tag(self):
+        return f'gui_tag_{self._id}'
 
     # =================================================================
     # get_block_text

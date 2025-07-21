@@ -1,7 +1,7 @@
 from functools import partial
 from tkinter.ttk import Notebook
 from tkinter import *
-from typing import Optional
+from typing import Optional, Callable
 
 from schedule.Utilities import NoteBookPageInfo
 
@@ -19,7 +19,7 @@ def _tab_changed(notebook: Notebook, event_handlers: dict, pages: dict[str, Fram
     f()
 
 
-class NoteBookFrame:
+class NoteBookFrameTk:
     # ===================================================================================
     # constructor
     # ===================================================================================
@@ -46,7 +46,7 @@ class NoteBookFrame:
         :return: a dictionary of frames contained within each Notebook tab
 
         """
-        tab_selected_handlers: dict[int, callable] = dict()
+        tab_selected_handlers: dict[int, Callable] = dict()
         pages: dict[str, Frame] = dict()
 
         for info in pages_info:

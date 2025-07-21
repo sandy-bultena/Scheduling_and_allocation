@@ -24,40 +24,6 @@ from schedule.Tk import InitGuiFontsAndColours as fac
 
 
 class ViewChoicesTk:
-    """
-            my $self            = shift;
-        my $default_tab     = shift;
-        my $all_scheduables = shift;
-        my $btn_callback    = shift || sub { return; };
-
-        my $f = $self->_pages->{ lc($default_tab) };
-
-        $views_manager->gui->reset_button_refs();
-
-        $frame->destroy if $frame;
-
-        $frame = $f->Frame->pack( -expand => 1, -fill => 'both' );
-
-        foreach my $resource_type ( AllScheduables->valid_types ) {
-            my $view_choices_frame =
-              $frame->LabFrame(
-                -label => $all_scheduables->by_type($resource_type)->title, )
-              ->pack( -expand => 1, -fill => 'both' );
-
-            my $view_choices_scrolled_frame =
-              $view_choices_frame->Scrolled( 'Frame', -scrollbars => "osoe" )
-              ->pack( -expand => 1, -fill => 'both' );
-
-            $views_manager->gui->create_buttons_for_frame(
-                $view_choices_scrolled_frame,
-                $all_scheduables->by_type($resource_type),
-                $btn_callback
-            );
-        }
-
-    }
-
-    """
     colours: fac.TkColours = fac.colours
     Fonts: fac.TkFonts = fac.fonts
 
@@ -66,28 +32,25 @@ class ViewChoicesTk:
         Initialize this manager
         :param frame: where to put the gui objects
         """
+        self.frame = frame
 
         if self.Fonts is None:
             self.Fonts = fac.TkFonts(frame.winfo_toplevel())
+        scrolled_frame = Scrolled(frame, "Frame").widget
 
-        self.frame = frame
         self._button_refs: dict[str, Button] = {}
 
-        Label(frame,text="Edit Class Times for ...", font=self.Fonts.big, anchor='center').pack(expand=1,fill='both')
-
+        Label(scrolled_frame,text="Edit Class Times for ...", font=self.Fonts.big, anchor='center').pack(expand=1,fill='both', pady=20)
         for resource_type in (ResourceType.teacher, ResourceType.lab, ResourceType.stream):
-            l_frame = LabelFrame(text=resource_type.name)
+            l_frame = LabelFrame(scrolled_frame, text=resource_type.name)
             l_frame.pack(expand=1,fill='both', padx=5,pady=15)
-
-            r_frame = Scrolled(l_frame, "Frame").widget
-            r_frame.pack(expand=1, fill='both')
 
             for index,resource in enumerate(resources[resource_type]):
                 row = int(index/4)
                 col = index-row*4
                 command = partial(btn_callback, resource)
-                self._button_refs[resource.number] = Button(r_frame, text=str(resource), highlightthickness=10, command=command, width=15)
-                self._button_refs[resource.number].grid(column = col, row=row, sticky='nsew',ipadx=20, ipady=20, padx=2, pady=2)
+                self._button_refs[resource.number] = Button(l_frame, text=str(resource), highlightthickness=4, command=command, width=15)
+                self._button_refs[resource.number].grid(column = col, row=row, sticky='nsew',ipadx=20, ipady=10, padx=2, pady=2)
 
 
 
@@ -98,7 +61,6 @@ class ViewChoicesTk:
         :param view_conflict: conflict for the view associated with this button
         :return:
         """
-
         btn = self._button_refs.get(button_id, None)
         if btn is None:
             return

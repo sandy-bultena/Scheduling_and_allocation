@@ -57,5 +57,7 @@ view = ViewDynamicTk(mw, "View",conflict_info,
                      )
 
 view.draw_block(ResourceType.teacher, 2, 9.5, 3, "Block 1", "bl1")
+c = view.view_canvas.gui_block_to_day_time_duration("bl1")
+print(c)
 
 mw.mainloop()

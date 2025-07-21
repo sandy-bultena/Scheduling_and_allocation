@@ -7,7 +7,7 @@ class NoteBookPageInfo:
                  tab_changed_handler: callable = lambda *_: {},
                  subpages: list[NoteBookPageInfo] = None,
                  frame_args: dict = None,
-                 # creation_handler: Callable[[str], None] = lambda name: print(f"Creating {name}"),
+                 creation_handler: Callable[[str], None] = lambda name: print(f"Creating {name}"),
                  is_default_page: bool = False):
         """
         Create a NoteBookPageInfo instance
@@ -23,5 +23,5 @@ class NoteBookPageInfo:
         self.subpages = subpages if subpages is not None else []
         self.id = -1
         self.frame_args = frame_args if frame_args is not None else {}
-        # self.creation_handler = creation_handler
+        self.creation_handler = creation_handler
         self.is_default_page = is_default_page

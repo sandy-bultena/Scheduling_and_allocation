@@ -25,7 +25,7 @@ st2 = schedule.add_update_stream("1B")
 
 mw = Tk()
 frame = Frame()
-frame.pack()
+frame.pack(expand=1, fill="both")
 resources:dict[ResourceType, list] = {ResourceType.teacher:[t1,t2,t3,t4,t1,t2,t3,t4,t1,t2,t3,t4,],
                            ResourceType.stream:[st1,st2],
                            ResourceType.lab:[l1,l2,l3,l4]}
