@@ -1,8 +1,7 @@
 from __future__ import annotations
-from tkinter import *
 import tkinter as tk
 from tkinter import ttk
-from functools import partial
+#from functools import partial
 import schedule.Tk as new_tk
 
 import sys
@@ -24,7 +23,7 @@ def eprint(*args, **kwargs):
 # https://anzeljg.github.io/rin2/book2/2405/docs/tkinter/index.html
 ###############
 
-class Scrolled(Frame):
+class Scrolled(tk.Frame):
     """Creates a frame, creates and inserts the defined widget, and adds scrollbars
 
 Parameters
@@ -143,7 +142,7 @@ example::
         # ----------------------------------------------------------------------------------------
         # initialize_columns the holding frame
         # ----------------------------------------------------------------------------------------
-        Frame.__init__(self, parent)
+        tk.Frame.__init__(self, parent)
 
         self._widget_type = widget_type
         self._scrollable_object = None
@@ -181,6 +180,8 @@ example::
         # ----------------------------------------------------------------------------------------
         # create scrollbars
         # ----------------------------------------------------------------------------------------
+        self._horizontal_scrollbar = None
+        self._vertical_scrollbar = None
         if 'n' in scrollbars or 's' in scrollbars:
             self._horizontal_scrollbar = tk.Scrollbar(self, orient='horizontal', takefocus=0)
             if 'n' in scrollbars:
@@ -206,26 +207,10 @@ example::
             self._scrollable_object = self._widget
             self._scrollable_object.pack(fill='both', expand=1)
 
+
         except AttributeError:
-
-            # ----------------------------------------------------------------------------------------
-            # the widget is not scrollable, so we are going to put it inside a canvas object
-            # which is scrollable
-            # ----------------------------------------------------------------------------------------
-            canvas_args = {}
-            if 'width' in kwargs:
-                canvas_args['width'] = kwargs['width']
-            if 'height' in kwargs:
-                canvas_args['height'] = kwargs['height']
-            _canvas = Canvas(self, **canvas_args)
-            _canvas.pack(side='top', fill='both', expand=1)
-
-            self._widget = _tk_widget_type(_canvas, **kwargs)
-
-            _canvas.bind('<Configure>', partial(self.update_scrollbars, _canvas))
-            _canvas.create_window((0, 0), window=self._widget, anchor="nw")
-
-            self._scrollable_object = _canvas
+            pass
+            self._canvas_scrolled(**kwargs)
 
         # ----------------------------------------------------------------------------------------
         # bind the scrollable object to the scrollbars
@@ -238,23 +223,48 @@ example::
         if self._horizontal_scrollbar is not None:
             self._horizontal_scrollbar.configure(command=self._scrollable_object.xview)
             self._scrollable_object.configure(xscrollcommand=self._horizontal_scrollbar.set)
-        self.pack(fill="both", expand=1)
+
+        self.pack(expand=1, fill="both")
+
+
+    def _canvas_scrolled(self, **kwargs):
+        # ----------------------------------------------------------------------------------------
+        # the widget is not scrollable, so we are going to put it inside a canvas object
+        # which is scrollable
+        # ----------------------------------------------------------------------------------------
+        # Create a canvas object and a vertical scrollbar for scrolling it.
+        canvas = tk.Canvas(self)
+        canvas.pack(side="left", fill="both", expand=tk.TRUE)
+        self._scrollable_object = canvas
+
+        # Create a frame inside the canvas which will be scrolled with it.
+        self._widget = tk.Frame(canvas)
+
+        self._scrolled_id = canvas.create_window(0, 0, window=self._widget,
+                                           anchor="nw")
+
+        # Track changes to the canvas and frame width and sync them,
+        # also updating the scrollbar.
+        def _configure_interior(event):
+            # Update the scrollbars to match the size of the inner frame.
+            size = (self._widget.winfo_reqwidth(), self._widget.winfo_reqheight())
+            canvas.config(scrollregion="0 0 %s %s" % size)
+            if self._widget.winfo_reqwidth() != canvas.winfo_width():
+                # Update the canvas's width to fit the inner frame.
+                canvas.config(width=self._widget.winfo_reqwidth())
+        self._widget.bind('<Configure>', _configure_interior)
+
+        def _configure_canvas(event):
+            if self._widget.winfo_reqwidth() != canvas.winfo_width():
+                # Update the inner frame's width to fill the canvas.
+                canvas.itemconfigure(self._scrolled_id, width=canvas.winfo_width())
+        canvas.bind('<Configure>', _configure_canvas)
 
     # ===============================================================================================================
     # pass on all 'configure' to the scrollable object
     # ===============================================================================================================
-    # def configure(self, **kwargs):
-    #    self._widget.configure(**kwargs)
-
-    # ===============================================================================================================
-    # if adding things to the frame, we need to update the scrollbars.
-    # ... at this point must be done manually from the calling code
-    # ===============================================================================================================
-    def update_scrollbars(self, *_args, **_kwargs):
-        """resets the scrollbars to accommodate changes in the canvas size"""
-        if isinstance(self._scrollable_object, Canvas):
-            canvas = self._scrollable_object
-            canvas.configure(scrollregion=canvas.bbox("all"))
+    def configure(self, **kwargs):
+       self._widget.configure(**kwargs)
 
     # ===============================================================================================================
     # Subwidget
