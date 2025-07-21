@@ -19,7 +19,7 @@
 from typing import Optional
 
 from schedule.gui_pages.view_dynamic_tk import ViewDynamicTk
-from schedule.model import Block, Teacher, Stream, Lab, Schedule
+from schedule.model import Block, Teacher, Stream, Lab, Schedule, ClockTime, ScheduleTime
 from schedule.model.enums import WeekDay, ResourceType
 from schedule.presenter.gui_block import GuiBlock
 
@@ -30,7 +30,7 @@ class View:
         self.mw = mw
         self.resource = resource
         self.schedule = schedule
-        self.gui_blocks = {}
+        self.gui_blocks: dict[str, Block] = {}
 
         resource_type = ResourceType.none
         if isinstance(resource, Teacher):
@@ -43,7 +43,12 @@ class View:
 
         self.blocks: list[Block] = []
         self.gui: ViewDynamicTk = ViewDynamicTk(mw, str(resource),
-                                                refresh_blocks_handler=self.event_redraw)
+                                                refresh_blocks_handler=self.event_redraw,
+                                                on_closing_handler=self.on_closing,
+                                                double_click_block_handler=self.open_companion_view,
+                                                gui_block_is_moving_handler=self.gui_block_is_moving,
+                                                gui_block_has_dropped_handler=self.gui_block_has_dropped,
+                                                )
         self.draw()
 
 
@@ -59,15 +64,81 @@ class View:
         return blocks
 
     def draw(self):
-        self.gui.draw_view_canvas()
+        self.gui.draw()
 
-    def event_redraw(self, gui_view):
+    def event_redraw(self):
         self.gui_blocks.clear()
-        self.gui = gui_view
         for block in self.get_blocks():
             gui_block = GuiBlock(block, self.resource_type)
             self.gui_blocks[gui_block.gui_tag]= block
             text = gui_block.get_block_text(self.gui.view_canvas.scale.current_scale)
             self.gui.draw_block(self.resource_type, gui_block.day, gui_block.start_time, gui_block.duration, text, gui_block.gui_tag)
+            self.gui.colour_block(gui_block.gui_tag, self.resource_type, conflict=block.conflict)
 
+    def on_closing(self, gui):
+        print("Do stuff with views manager")
 
+    def gui_block_is_moving(self, gui_id: str,  day, start_time, duration):
+        block: Block = self.gui_blocks.get(gui_id,None)
+        if block is None:
+            return
+        self._update_block(block, day, start_time, duration)
+        self.gui.colour_block(gui_id, self.resource_type, conflict = block.conflict)
+
+    def _update_block(self, block,  day, start_time, duration):
+        block.time_slot.time_start = ScheduleTime(start_time)
+        block.time_slot.snap_to_day(day)
+        block.time_slot.duration = duration
+        block.time_slot.snap_to_time()
+        self.schedule.calculate_conflicts()
+
+    def gui_block_has_dropped(self, gui_id: str,  day, start_time, duration):
+        block: Block = self.gui_blocks.get(gui_id,None)
+        if block is None:
+            return
+        self._update_block(block, day, start_time, duration)
+        self.gui.move_block(gui_id, block.time_slot.day.value,
+                            block.time_slot.time_start.hours, block.time_slot.duration)
+        for gui_tag, block in self.gui_blocks.items():
+            self.gui.colour_block(gui_tag, self.resource_type, conflict = block.conflict)
+
+    def open_companion_view(self, gui_id: str):
+        """
+        Based on the resource_type of this view, will open another view which has this Block.
+
+        lab/stream -> teacher_ids
+        teacher_ids -> stream_ids
+
+        :param self:
+        :param gui_id:
+        :return:
+        """
+
+        resource_type = self.resource_type
+
+        # # in lab or stream, open teacher schedules
+        # # no teacher schedules, then open other lab schedules
+        #
+        # if (resource_type == "lab" or resource_type == ResourceType.Lab) or (resource_type == "stream" or resource_type == ResourceType.Stream):
+        #     teachers = guiblock.block.teacher_ids()
+        #     if len(teachers) > 0:
+        #         self.views_manager.create_view_containing_block(teachers, self.resource_type)
+        #     else:
+        #         labs = guiblock.block.lab_ids()
+        #         if len(labs) > 0:
+        #             self.views_manager.create_view_containing_block(labs, 'teacher',
+        #                                                             self.schedulable)
+        # # ---------------------------------------------------------------
+        # # in teacher schedule, open lab schedules
+        # # no lab schedules, then open other teacher schedules
+        # # ---------------------------------------------------------------
+        # elif resource_type == "teacher" or resource_type == ResourceType.Teacher:
+        #     labs = guiblock.block.lab_ids()
+        #     if len(labs) > 0:
+        #         self.views_manager.create_view_containing_block(labs, self.resource_type)
+        #     else:
+        #         teachers = guiblock.block.teacher_ids()
+        #         if len(teachers) > 0:
+        #             self.views_manager.create_view_containing_block(teachers, 'lab',
+        #                                                             self.schedulable)
+        #

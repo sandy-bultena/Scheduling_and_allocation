@@ -35,7 +35,7 @@ def _default_menu(*_) -> list[MenuItem]:
     return [menu, ]
 
 class ViewDynamicTk:
-    """Basic view with days/weeks printed on it."""
+    """View which allows dragging'n'dropping with popup menus for blocks, etc"""
 
     immovable_colour: str = "#dddddd"
     view_ids = IdGenerator()
@@ -99,7 +99,7 @@ class ViewDynamicTk:
         self.cn = cn
 
         # create the view_canvas
-        self.view_canvas = self.draw_view_canvas()
+        self.view_canvas = self._draw_view_canvas()
 
         # create scale menu and redo/undo menu
         main_menu = Menu(mw)
@@ -107,9 +107,9 @@ class ViewDynamicTk:
 
         view_menu = Menu(main_menu, tearoff=0)
         main_menu.add_cascade(menu=view_menu, label="View", underline=0)
-        view_menu.add_command(label="50%", underline=0, command=partial(self.draw_view_canvas, 0.50))
-        view_menu.add_command(label="75%", underline=0, command=partial(self.draw_view_canvas, 0.75))
-        view_menu.add_command(label="100%", underline=0, command=partial(self.draw_view_canvas, 1.00))
+        view_menu.add_command(label="50%", underline=0, command=partial(self.draw, 0.50))
+        view_menu.add_command(label="75%", underline=0, command=partial(self.draw, 0.75))
+        view_menu.add_command(label="100%", underline=0, command=partial(self.draw, 1.00))
 
         undo_menu = Menu(main_menu, tearoff=0)
         main_menu.add_cascade(menu=undo_menu, label="Undo/Redo")
@@ -123,7 +123,7 @@ class ViewDynamicTk:
         self.toplevel.bind('<Command-y>', self.redo)
 
 
-    def draw_view_canvas(self, scale_factor: float = 1.0) -> ViewCanvasTk:
+    def _draw_view_canvas(self, scale_factor: float = 1.0) -> ViewCanvasTk:
         """
         Clears the canvas of all blocks and redraws the background, followed by a call
         to an event handler that will update all the required blocks
@@ -149,16 +149,19 @@ class ViewDynamicTk:
         height = self.toplevel.winfo_reqheight()  # Get required height based on content
         self.toplevel.geometry(f"{width}x{height}")
 
-        # update blocks?
-        self.refresh_blocks_handler(self)
+        return self.view_canvas
+
+    def draw(self, scale_factor: float = 1.0):
+        self._draw_view_canvas(scale_factor)
+
+        # update blocks
+        self.refresh_blocks_handler()
 
         # reset binding to canvas objects
         self.cn.tag_bind(self.view_canvas.Movable_Tag_Name, "<Button-1>", self.select_gui_block_to_move)
         self.cn.tag_bind(self.view_canvas.Clickable_Tag_Name, '<3>', self._post_menu)
         self.cn.tag_bind(self.view_canvas.Clickable_Tag_Name, '<2>', self._post_menu)
         self.cn.tag_bind(self.view_canvas.Clickable_Tag_Name, "<Double-1>", self._double_clicked)
-
-        return self.view_canvas
 
 
     def draw_block(self, resource_type: ResourceType, day: int, start_time: float,
@@ -207,15 +210,15 @@ class ViewDynamicTk:
 
         conflict = ConflictType.most_severe(conflict,resource_type)
         colour = self.view_canvas.default_colour(resource_type)
-        if conflict is not ConflictType.NONE:
-            colour = ConflictType.colours()[conflict]
+        if conflict is not None:
+            colour = ConflictType.colours().get(conflict, "pink")
         if not is_movable:
             colour = self.immovable_colour
         self._change_block_colour(gui_block_id, colour)
 
     def destroy(self):
         """Close/destroy the gui window."""
-        self.on_closing_handler()
+        self.on_closing_handler(self)
         self.toplevel.destroy()
 
     # =================================================================
@@ -236,8 +239,8 @@ class ViewDynamicTk:
         if not Colour.is_light(colour):
             text_colour = "white"
 
-        cn.itemconfigure(f"text && {gui_block_id}", fill=colour, outline=colour)
-        cn.itemconfigure(f"text && {gui_block_id}", fill=text_colour)
+        cn.itemconfigure(f"{self.view_canvas.Rectange_Tag_Name} && {gui_block_id}", fill=colour)
+        cn.itemconfigure(f"{self.view_canvas.Text_Tag_Name} && {gui_block_id}", fill=text_colour)
 
 
     def _refresh_gui(self):
