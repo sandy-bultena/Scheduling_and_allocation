@@ -26,7 +26,7 @@ from schedule.presenter.gui_block import GuiBlock
 
 class View:
     """View - describes the visual representation of a Schedule."""
-    def __init__(self, mw, resource: Teacher|Stream|Lab, schedule: Schedule):
+    def __init__(self, mw, schedule: Schedule, resource: Teacher|Stream|Lab ):
         self.mw = mw
         self.resource = resource
         self.schedule = schedule
@@ -61,8 +61,9 @@ class View:
     def draw(self):
         self.gui.draw_view_canvas()
 
-    def event_redraw(self):
+    def event_redraw(self, gui_view):
         self.gui_blocks.clear()
+        self.gui = gui_view
         for block in self.get_blocks():
             gui_block = GuiBlock(block, self.resource_type)
             self.gui_blocks[gui_block.gui_tag]= block

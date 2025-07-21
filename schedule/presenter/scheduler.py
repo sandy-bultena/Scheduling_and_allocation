@@ -17,6 +17,7 @@ from schedule.model import Schedule, ResourceType
 from schedule.exceptions import CouldNotReadFileError
 from schedule.gui_generics.read_only_text_tk import ReadOnlyText
 from schedule.gui_pages.view_choices_tk import ViewChoicesTk
+from .view import View
 
 if TYPE_CHECKING:
     from tkinter import Event
@@ -238,11 +239,13 @@ class Scheduler:
         # create a global view hub manager
         # on moving away from this page, must remove all the views (check previous version to see what it did)
         # it would be too hard to manage the views, if the contents of the schedule were changing
-        view_choice = ViewChoicesTk(views_frame,resources, lambda *args: print(*args))
+        view_choice = ViewChoicesTk(views_frame,resources, self.call_view)
         # data_entry = EditResources(self.set_dirty_method, teachers_frame, ResourceType.teacher, self.schedule)
         # data_entry.schedule = self.schedule
         # data_entry.refresh()
-
+    def call_view(self, resource):
+        mw = self.gui.mw
+        View(mw, self.schedule, resource)
 
     #
     #     #     global views_manager, gui

@@ -11,7 +11,7 @@ class GuiBlock:
     # =================================================================
     # new
     # =================================================================
-    def __init__(self, block: Block, resource_type: ResourceType, colour:str):
+    def __init__(self, block: Block, resource_type: ResourceType, colour:str="grey"):
         """
         Creates a gui-usable representation of the block.
         :param block: the block object that needs to be drawn

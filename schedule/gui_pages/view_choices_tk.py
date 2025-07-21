@@ -27,16 +27,21 @@ class ViewChoicesTk:
     colours: fac.TkColours = fac.colours
     Fonts: fac.TkFonts = fac.fonts
 
-    def __init__(self, frame: Frame, resources:dict[ResourceType,list], btn_callback: Callable):
+    def __init__(self, parent: Frame, resources:dict[ResourceType,list], btn_callback: Callable):
         """
         Initialize this manager
-        :param frame: where to put the gui objects
+        :param parent: where to put the gui objects
         """
-        self.frame = frame
+        # remove anything that was already in the frame
+        for widget in parent.winfo_children():
+            widget.destroy()
+
+
+        self.parent = parent
 
         if self.Fonts is None:
-            self.Fonts = fac.TkFonts(frame.winfo_toplevel())
-        scrolled_frame = Scrolled(frame, "Frame").widget
+            self.Fonts = fac.TkFonts(parent.winfo_toplevel())
+        scrolled_frame = Scrolled(parent, "Frame").widget
 
         self._button_refs: dict[str, Button] = {}
 
@@ -67,7 +72,7 @@ class ViewChoicesTk:
 
         # change the background colour of the button
         # ... (doesn't work on MAC) so also change the background colour of the highlighted area
-        colour_highlight = self.frame.cget("background")
+        colour_highlight = self.parent.cget("background")
         colour = self.colours.ButtonBackground
         active_colour = self.colours.ActiveBackground
         if view_conflict is not None:
