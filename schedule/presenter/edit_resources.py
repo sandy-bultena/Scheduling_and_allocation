@@ -44,6 +44,7 @@ class EditResources:
         match view_type:
             case ResourceType.teacher:
                 self.column_descriptions: list[DEColumnDescription] = [
+                    DEColumnDescription(title="ID", width=25, property="teacher_id", unique_id=True),
                     DEColumnDescription(title="First Name", width=15, property="firstname", unique_id=False),
                     DEColumnDescription(title="Last Name", width=15, property="lastname", unique_id=False),
                     DEColumnDescription(title="RT", width=8, property="release", unique_id=False),
@@ -149,6 +150,8 @@ class EditResources:
 
         # all done saving, decrement number of files currently being saved
         EditResources.Currently_saving -= 1
+        #t=self.schedule.get_teacher_by_number("Bultena_Sandy")
+        #print(id(self.schedule), id(t), t, t.release)
         self.refresh()
 
     # =================================================================

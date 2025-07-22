@@ -102,9 +102,9 @@ def test_init_teacher(gui, dirty, schedule_obj):
     # verify
     assert gui.called_initialize_columns
     columns = gui.column_descriptions
-    assert columns[0].property == 'firstname'
-    assert columns[1].property == 'lastname'
-    assert columns[2].property == 'release'
+    assert columns[1].property == 'firstname'
+    assert columns[2].property == 'lastname'
+    assert columns[3].property == 'release'
 
 
 def test_init_stream(gui, dirty, schedule_obj):
@@ -248,7 +248,7 @@ def test_adding_new_teacher(gui, dirty, schedule_obj):
     dirty(dirty_set_to)
     obj = EditResources(dirty, None, ResourceType.teacher, schedule_obj, gui)
     obj.refresh()
-    gui.data_entry.append([ "New", "Teacher", ".21"])
+    gui.data_entry.append(["", "New", "Teacher", ".21"])
 
     # execute
     obj.save()
@@ -272,7 +272,7 @@ def test_adding_new_teacher_no_release_specified(gui, dirty, schedule_obj):
     dirty(dirty_set_to)
     obj = EditResources(dirty, None, ResourceType.teacher, schedule_obj, gui)
     obj.refresh()
-    gui.data_entry.append([ "New", "Teacher"])
+    gui.data_entry.append([ "", "New", "Teacher"])
 
     # execute
     obj.save()
@@ -284,31 +284,56 @@ def test_adding_new_teacher_no_release_specified(gui, dirty, schedule_obj):
     assert new_teacher is not None
     assert dirty_flag
 
-
-def test_modifying_teacher(gui, dirty, schedule_obj):
-    """save after teacher modified
-    - teacher modification is added to schedule
+def test_modifying_teacher_not_new_obj(gui, dirty, schedule_obj):
+    """save after teacher release modified
+    - teacher modification is added to schedule, without changing the actual object
     - dirty flag is set
-    **** TODO: This is forced to pass, but in reality, John Doe teacher should be deleted
-               when his name is changed, but that does not happen
     """
     # prepare
     dirty_set_to = False
     dirty(dirty_set_to)
+    teacher_obj_id = id(schedule_obj.get_teacher_by_number("Doe_John"))
     obj = EditResources(dirty, None, ResourceType.teacher, schedule_obj, gui)
     obj.refresh()
-    gui.data_entry[1][1] = "new name"
-    teacher_id = "new_name_John"
+    gui.data_entry[1][3] = "3"
 
     # execute
     obj.save()
 
     # validate
     assert gui.called_get_all_data
-    assert len(schedule_obj.teachers()) == 4
+    teacher = schedule_obj.get_teacher_by_number("Doe_John")
+    assert teacher is not None
+    assert teacher.firstname == "John"
+    assert teacher.release == 3.0
+    assert id(teacher) == teacher_obj_id
+    assert dirty_flag
+
+
+
+def test_modifying_teacher(gui, dirty, schedule_obj):
+    """save after teacher modified
+    - teacher modification is added to schedule
+    - dirty flag is set
+    """
+    # prepare
+    dirty_set_to = False
+    dirty(dirty_set_to)
+    obj = EditResources(dirty, None, ResourceType.teacher, schedule_obj, gui)
+    obj.refresh()
+    gui.data_entry[1][2] = "new name"
+    teacher_id = gui.data_entry[1][0]
+
+    # execute
+    obj.save()
+
+    # validate
+    assert gui.called_get_all_data
+    assert len(schedule_obj.teachers()) == 3
     teacher = schedule_obj.get_teacher_by_number(teacher_id)
     assert teacher is not None
     assert teacher.firstname == "John"
+    assert teacher.lastname == "new name"
     assert dirty_flag
 
 
@@ -380,6 +405,30 @@ def test_modifying_lab(gui, dirty, schedule_obj):
     lab = schedule_obj.get_lab_by_number(lab_id)
     assert lab is not None
     assert lab.description == "new name"
+    assert dirty_flag
+
+def test_modifying_lab_not_new_obj(gui, dirty, schedule_obj):
+    """save after lab description modified
+    - lab modification is added to schedule, without changing the actual object
+    - dirty flag is set
+    """
+    # prepare
+    dirty_set_to = False
+    dirty(dirty_set_to)
+    lab_obj_id = id(schedule_obj.get_lab_by_number("P107"))
+    obj = EditResources(dirty, None, ResourceType.lab, schedule_obj, gui)
+    obj.refresh()
+    gui.data_entry[0][1] = "something else"
+
+    # execute
+    obj.save()
+
+    # validate
+    assert gui.called_get_all_data
+    lab = schedule_obj.get_lab_by_number("P107")
+    assert lab is not None
+    assert lab.description == "something else"
+    assert id(lab) == lab_obj_id
     assert dirty_flag
 
 

@@ -31,6 +31,7 @@ class Teacher:
         """Creates a Teacher object.
         :param firstname:   first name of the teacher
         :param lastname:   last name of the teacher
+        :param release: how much release does the teacher have in fractions of FTE
         :param department:  department that this teacher is associated with
         """
         self.firstname = firstname
