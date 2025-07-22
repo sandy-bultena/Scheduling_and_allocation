@@ -18,6 +18,7 @@ from typing import Callable
 
 from schedule.Tk import Scrolled
 from schedule.Utilities import Colour
+from schedule.gui_generics.block_colours import RESOURCE_COLOURS
 from schedule.model.enums import ConflictType, ResourceType
 from schedule.Tk import InitGuiFontsAndColours as fac
 
@@ -57,11 +58,16 @@ class ViewChoicesTk:
                 self._button_refs[resource.number] = Button(l_frame, text=str(resource), highlightthickness=4, command=command, width=15)
                 self._button_refs[resource.number].grid(column = col, row=row, sticky='nsew',ipadx=20, ipady=10, padx=2, pady=2)
 
+        mw = self.parent.winfo_toplevel()
+        mw.update_idletasks()
+        current_height = mw.winfo_height()
+        w = min(mw.winfo_reqwidth(), mw.winfo_screenwidth()-50)
+        mw.geometry(f"{w}x{current_height}")
 
-
-    def set_button_colour(self, button_id: str, view_conflict: ConflictType = None):
+    def set_button_colour(self, button_id: str, resource_type, view_conflict: ConflictType = None):
         """
         Sets the colour according to the conflict resource_type
+        :param resource_type:
         :param button_id:
         :param view_conflict: conflict for the view associated with this button
         :return:
@@ -70,16 +76,21 @@ class ViewChoicesTk:
         if btn is None:
             return
 
+        print(button_id, view_conflict)
         # change the background colour of the button
         # ... (doesn't work on MAC) so also change the background colour of the highlighted area
+
         colour_highlight = self.parent.cget("background")
-        colour = self.colours.ButtonBackground
+        colour = RESOURCE_COLOURS.get(resource_type, self.colours.ButtonBackground)
         active_colour = self.colours.ActiveBackground
+
         if view_conflict is not None:
-            colour = ConflictType.colours()[view_conflict]
+            colour = ConflictType.colours().get(view_conflict,'grey')
             active_colour = Colour.darken(colour, 10)
-            if platform.system() == "Darwin":
-                colour_highlight = colour
+            print("changing colour to", colour)
+
+        if platform.system() == "Darwin":
+            colour_highlight = colour
         btn.configure(background=colour, activebackground=active_colour,
                       highlightbackground=colour_highlight)
 

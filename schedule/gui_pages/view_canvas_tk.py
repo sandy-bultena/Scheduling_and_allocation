@@ -9,6 +9,7 @@ import tkinter
 from typing import Protocol, Optional
 
 import schedule.Utilities.Colour as Colour
+from schedule.gui_generics.block_colours import RESOURCE_COLOURS
 from schedule.model import ResourceType
 from schedule.gui_generics.drawing_scale import DrawingScale
 
@@ -31,18 +32,8 @@ RECTANGLE_Y1_OFFSET = 2
 RECTANGLE_X2_OFFSET = -2
 RECTANGLE_Y2_OFFSET = -3
 
-LIME_GREEN = "#ccffcc"
-SKY_BLUE = "#b3e6ff"
-TEAL = Colour.add(SKY_BLUE, LIME_GREEN)
-
 EARLIEST_TIME = min(Times.keys())
 LATEST_TIME = max(Times.keys())
-
-COLOURS: dict[ResourceType, str] = {
-    ResourceType.lab: "#cdefab",
-    ResourceType.teacher: "#abcdef",
-    ResourceType.stream: TEAL
-}
 
 # =====================================================================================================================
 # what is the minimal requirements for the canvas object to have if we want to draw
@@ -160,7 +151,7 @@ class ViewCanvasTk:
         """
 
         # colour
-        colour = COLOURS[resource_type]
+        colour = RESOURCE_COLOURS[resource_type]
         colour = Colour.string(colour)
         text_colour = "black"
         if not Colour.is_light(colour):
@@ -223,12 +214,6 @@ class ViewCanvasTk:
             coords = self.canvas.coords(obj_id[0])
             return [coords[0]-RECTANGLE_X1_OFFSET, coords[1]-RECTANGLE_Y1_OFFSET,
                     coords[2]-RECTANGLE_X2_OFFSET, coords[3]-RECTANGLE_Y2_OFFSET]
-
-    # =================================================================
-    # default colours
-    # =================================================================
-    def default_colour(self, resource_type: ResourceType):
-        return COLOURS[resource_type]
 
     # =================================================================
     # coords_to_day_time_duration

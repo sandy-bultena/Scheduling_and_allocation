@@ -433,5 +433,14 @@ class Schedule:
         for teacher in self.get_teachers_assigned_to_any_course():
             set_lunch_break_conflicts(self.get_blocks_for_teacher(teacher))
             set_availability_hours_conflict(self.get_blocks_for_teacher(teacher))
-            if not teacher.release:
+            if teacher.release != 0:
                 set_number_of_days_conflict(self.get_blocks_for_teacher(teacher))
+
+    # --------------------------------------------------------
+    # get conflict for a specific resource
+    # --------------------------------------------------------
+    def resource_conflict(self, resource: Teacher|Stream|Lab) -> ConflictType:
+        conflict = ConflictType.NONE
+        for block in self.get_blocks_for_obj(resource):
+            conflict = block.conflict | conflict
+        return conflict

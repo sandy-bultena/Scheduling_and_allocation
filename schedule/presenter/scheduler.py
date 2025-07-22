@@ -18,6 +18,7 @@ from schedule.exceptions import CouldNotReadFileError
 from schedule.gui_generics.read_only_text_tk import ReadOnlyText
 from schedule.gui_pages.view_choices_tk import ViewChoicesTk
 from .view import View
+from .view_choices import ViewChoices
 
 if TYPE_CHECKING:
     from tkinter import Event
@@ -230,31 +231,17 @@ class Scheduler:
     def update_choices_of_resource_views(self):
         notebook_name = NoteBookPageNames.schedule.value.lower()
         views_frame = self.gui.get_notebook_frame(notebook_name)
-        resources = {
-            ResourceType.teacher: list(self.schedule.teachers()),
-            ResourceType.lab: list(self.schedule.labs()),
-            ResourceType.stream: list(self.schedule.streams()),
-        }
-
         # create a global view hub manager
         # on moving away from this page, must remove all the views (check previous version to see what it did)
         # it would be too hard to manage the views, if the contents of the schedule were changing
-        view_choice = ViewChoicesTk(views_frame,resources, self.call_view)
+
+        view_choice = ViewChoices(views_frame, self.schedule)
+        view_choice.refresh()
+
         # data_entry = EditResources(self.set_dirty_method, teachers_frame, ResourceType.teacher, self.schedule)
         # data_entry.schedule = self.schedule
         # data_entry.refresh()
-    def call_view(self, resource):
-        mw = self.gui.mw
-        View(mw, self.schedule, resource)
 
-    #
-    #     #     global views_manager, gui
-    #     #     btn_callback = views_manager.get_create_new_view_callback
-    #     #     all_view_choices = views_manager.get_all_scheduables()
-    #     #     page_name = pages_lookup['Schedules'].name
-    #     #     gui.draw_view_choices(page_name, all_view_choices, btn_callback)
-    #     #
-    #     #     views_manager.determine_button_colours()
     #
     # ==================================================================
     # update_overview

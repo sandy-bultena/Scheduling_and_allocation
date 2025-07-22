@@ -9,26 +9,12 @@ from typing import Callable
 from schedule.Tk import generate_menu, MenuItem, MenuType
 from schedule.Utilities import Colour
 from schedule.Utilities.id_generator import IdGenerator
+from schedule.gui_generics.block_colours import CONFLICT_COLOUR_INFO, IMMOVABLE_COLOUR, RESOURCE_COLOURS
 from schedule.gui_pages.view_canvas_tk import ViewCanvasTk
 from schedule.model import ResourceType, ConflictType
 
 DEFAULT_CANVAS_WIDTH = 700
 DEFAULT_CANVAS_HEIGHT = 700
-CONFLICT_COLOUR_INFO = []
-for c in (ConflictType.TIME_TEACHER, ConflictType.TIME, ConflictType.LUNCH,
-          ConflictType.MINIMUM_DAYS, ConflictType.AVAILABILITY):
-    bg = ConflictType.colours()[c]
-    fg = "white"
-    if Colour.is_light(bg):
-        fg = "black"
-    text = c.name
-    CONFLICT_COLOUR_INFO.append({
-        "bg": Colour.string(bg),
-        "fg": Colour.string(fg),
-        "text": text
-    })
-
-
 
 def _default_menu(*_) -> list[MenuItem]:
     menu = MenuItem(name="nothing", label="nothing", menu_type=MenuType.Command, command=lambda: None)
@@ -37,13 +23,12 @@ def _default_menu(*_) -> list[MenuItem]:
 class ViewDynamicTk:
     """View which allows dragging'n'dropping with popup menus for blocks, etc"""
 
-    immovable_colour: str = "#dddddd"
     view_ids = IdGenerator()
 
     # =================================================================================================================
     # Init
     # =================================================================================================================
-    def __init__(self, mw: Tk,  title: str,
+    def __init__(self, frame: Frame,  title: str,
                  get_popup_menu_handler: Callable = _default_menu,
                  refresh_blocks_handler: Callable = lambda *_: None,
                  on_closing_handler: Callable = lambda *_: None,
@@ -67,7 +52,7 @@ class ViewDynamicTk:
         :param gui_block_has_dropped_handler: a function that handles the dropping of a gui block
         """
 
-        self.mw = mw
+        self.mw = frame.winfo_toplevel()
         self.view_id = self.view_ids.get_new_id()
         self.get_popup_menu_handler = get_popup_menu_handler
         self.refresh_blocks_handler = refresh_blocks_handler
@@ -79,7 +64,7 @@ class ViewDynamicTk:
         self.gui_block_has_dropped_handler = gui_block_has_dropped_handler
 
         # create a new toplevel window for this view
-        tl = Toplevel(mw)
+        tl = Toplevel(self.mw)
         self.toplevel = tl
         tl.protocol('WM_DELETE_WINDOW', self.destroy)
         tl.resizable(False, False)
@@ -102,7 +87,7 @@ class ViewDynamicTk:
         self.view_canvas = self._draw_view_canvas()
 
         # create scale menu and redo/undo menu
-        main_menu = Menu(mw)
+        main_menu = Menu(self.mw)
         tl.configure(menu=main_menu)
 
         view_menu = Menu(main_menu, tearoff=0)
@@ -209,11 +194,11 @@ class ViewDynamicTk:
         """
 
         conflict = ConflictType.most_severe(conflict,resource_type)
-        colour = self.view_canvas.default_colour(resource_type)
+        colour = RESOURCE_COLOURS[resource_type]
         if conflict is not None:
             colour = ConflictType.colours().get(conflict, "pink")
         if not is_movable:
-            colour = self.immovable_colour
+            colour = IMMOVABLE_COLOUR
         self._change_block_colour(gui_block_id, colour)
 
     def destroy(self):
