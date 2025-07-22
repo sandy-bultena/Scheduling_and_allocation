@@ -16,12 +16,14 @@
 # from ..Utilities.AllResources import AllResources
 #
 #
-from typing import Optional
+import re
 
+from schedule.Utilities.id_generator import IdGenerator
 from schedule.gui_pages.view_dynamic_tk import ViewDynamicTk
-from schedule.model import Block, Teacher, Stream, Lab, Schedule, ClockTime, ScheduleTime
-from schedule.model.enums import WeekDay, ResourceType
-from schedule.presenter.gui_block import GuiBlock
+from schedule.model import Block, Teacher, Stream, Lab, Schedule, ScheduleTime
+from schedule.model.enums import ResourceType
+
+_gui_block_ids = IdGenerator()
 
 
 class View:
@@ -31,6 +33,7 @@ class View:
         self.resource = resource
         self.schedule = schedule
         self.gui_blocks: dict[str, Block] = {}
+
 
         resource_type = ResourceType.none
         if isinstance(resource, Teacher):
@@ -66,14 +69,19 @@ class View:
     def draw(self):
         self.gui.draw()
 
+    def _block_to_floats(self, block) -> tuple[int,float,float]:
+        return block.time_slot.day.value, block.time_slot.time_start.hours, block.time_slot.duration
+
     def event_redraw(self):
         self.gui_blocks.clear()
         for block in self.get_blocks():
-            gui_block = GuiBlock(block, self.resource_type)
-            self.gui_blocks[gui_block.gui_tag]= block
-            text = gui_block.get_block_text(self.gui.view_canvas.scale.current_scale)
-            self.gui.draw_block(self.resource_type, gui_block.day, gui_block.start_time, gui_block.duration, text, gui_block.gui_tag)
-            self.gui.colour_block(gui_block.gui_tag, self.resource_type, conflict=block.conflict)
+            gui_block_id: int = _gui_block_ids.get_new_id()
+            gui_tag = f'gui_tag_{gui_block_id}'
+            self.gui_blocks[gui_tag]= block
+            text = self.get_block_text(block, self.gui.view_canvas.scale.current_scale)
+            day, start_time, duration = self._block_to_floats(block)
+            self.gui.draw_block(self.resource_type, day, start_time, duration, text, gui_tag)
+            self.gui.colour_block(gui_tag, self.resource_type, conflict=block.conflict)
 
     def on_closing(self, gui):
         print("Do stuff with views manager")
@@ -101,6 +109,57 @@ class View:
                             block.time_slot.time_start.hours, block.time_slot.duration)
         for gui_tag, block in self.gui_blocks.items():
             self.gui.colour_block(gui_tag, self.resource_type, conflict = block.conflict)
+
+    def get_block_text(self, block, scale):
+        """Get the text for a specific resource_type of blocks"""
+
+        resource_type = self.resource_type
+
+        # course & section & streams
+        course_number = ""
+        section_number = ""
+        stream_numbers = ""
+        if block.section:
+            course_number = block.section.course.number if scale > 0.5 else re.split("[-*]", block.section.course.number)
+            section_number = block.section.title
+            stream_numbers = ",".join((stream.number for stream in block.section.streams()))
+
+        # labs
+        lab_numbers = ",".join(l.number for l in block.labs())
+        lab_numbers = lab_numbers if scale > .75 else lab_numbers[0:11] + "..."
+        lab_numbers = lab_numbers if scale > .50 else lab_numbers[0:7] + "..."
+        lab_numbers = lab_numbers if resource_type != ResourceType.lab and scale > .75 else ""
+
+        # streams
+        stream_numbers = stream_numbers if scale > .75 else stream_numbers[0:11] + "..."
+        stream_numbers = stream_numbers if scale > .50 else stream_numbers[0:7] + "..."
+        stream_numbers = stream_numbers if resource_type != ResourceType.stream and scale > .75 else ""
+
+        # teachers
+        teachers_name = ""
+        for t in block.teachers():
+            if len(str(t)) > 15:
+                teachers_name = teachers_name + f"{t.firstname[0:1]} {t.lastname}\n"
+            else:
+                teachers_name = teachers_name + f"{str(t)}\n"
+        teachers_name = teachers_name.rstrip()
+        teachers_name = teachers_name if scale > .75 else teachers_name[0:11] + "..."
+        teachers_name = teachers_name if scale > .50 else teachers_name[0:7] + "..."
+        teachers_name = teachers_name if resource_type != ResourceType.stream and scale > .75 else ""
+
+
+        # --------------------------------------------------------------------
+        # define what to display
+        # --------------------------------------------------------------------
+        block_text = f"{course_number}\n{section_number}\n"
+        block_text = block_text + teachers_name + "\n" if teachers_name else block_text
+        block_text = block_text + lab_numbers + "\n" if lab_numbers else block_text
+        block_text = block_text + stream_numbers + "\n" if stream_numbers else block_text
+
+        block_text = block_text.rstrip()
+        return block_text
+
+
 
     def open_companion_view(self, gui_id: str):
         """
