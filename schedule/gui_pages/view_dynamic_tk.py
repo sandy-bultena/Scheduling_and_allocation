@@ -261,7 +261,7 @@ class ViewDynamicTk:
         calls the "redo" handler with this view's id
         """
         print("called redo")
-        self.redo_handler(self.view_id)
+        self.redo_handler()
 
     def _double_clicked(self, _: Event):
         """

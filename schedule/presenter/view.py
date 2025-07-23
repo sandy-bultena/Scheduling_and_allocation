@@ -50,6 +50,7 @@ class View:
                                                 gui_block_has_dropped_handler=self.gui_block_has_dropped,
                                                 get_popup_menu_handler=self.popup_menu,
                                                 undo_handler=self.views_controller.undo,
+                                                redo_handler=self.views_controller.redo,
                                                 )
         self._block_original_start_time: Optional[float]= None
         self._block_original_day: Optional[float] = None
@@ -147,13 +148,18 @@ class View:
         """
         User has stopped dragging the gui block, so adjust gui block to block's new location
         :param gui_id: the id of the gui representation of the block
-        :param day: the position of the gui block
-        :param start_time: the start time of the gui block
-        :param duration: (not sure if we need this, TBD)
         """
 
         block: Block = self.gui_blocks.get(gui_id,None)
         if block is None:
+            return
+
+        # has the block actually moved?
+        if self._block_original_start_time is None or self._block_original_day is None:
+            return
+
+        if (self._block_original_start_time == block.time_slot.time_start.hours and
+            self._block_original_day == block.time_slot.day.value):
             return
 
         # set the gui block coordinates to match the block (which is constantly being snapped to grid
@@ -195,7 +201,7 @@ class View:
 
         # create the menu
         menu_list: list[MenuItem] = []
-        for resource in resources:
+        for resource in sorted(resources):
             menu_list.append(MenuItem(menu_type=MenuType.Command, label=f"Move to {resource}",
                                       command=partial(self.views_controller.move_block_to_resource,
                                                       self.resource_type,
@@ -222,7 +228,7 @@ class View:
 
 
     # ----------------------------------------------------------------------------------------------------------------
-    # move_gui_block_to (used by Views Controller & View)
+    # refresh block colour (used by Views Controller & View)
     # ----------------------------------------------------------------------------------------------------------------
     def refresh_block_colours(self):
         """Go through all blocks, and adjust colours as required"""

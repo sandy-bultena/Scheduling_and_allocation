@@ -19,6 +19,7 @@ class Action:
             to_time: Optional[float] = None,
             from_resource: Optional[RESOURCE] = None,
             to_resource: Optional[RESOURCE] = None,
+            resource_type:Optional[ResourceType] = None,
                  ):
         self.action = action
         self.block = block
@@ -28,6 +29,15 @@ class Action:
         self.from_time = from_time
         self.from_resource = from_resource
         self.to_resource = to_resource
+        self.resource_type = resource_type
+
+    def __str__(self):
+        if self.action == 'move':
+            return f"move {self.block} from {self.from_day} to {self.to_day} and from {self.from_time} to {self.to_time}"
+        elif self.action == "change_resource":
+            return f"{self.block} change from {self.from_resource} to {self.to_resource}"
+        else:
+            return "Action with no action"
 
 # =====================================================================================================================
 # Views Controller
@@ -109,13 +119,22 @@ class ViewsController:
                 view.refresh_block_colours()
 
     # -----------------------------------------------------------------------------------------------------------------
-    # notify block move
+    # save changes to undo db
     # -----------------------------------------------------------------------------------------------------------------
-    def add_move_to_undo(self, block: Block, from_day, to_day, from_time, to_time):
+    def add_move_to_undo(self, block: Block, from_day:float, to_day:float, from_time:float, to_time:float):
 
         # add to undo list
         self._undo.append(Action(block=block, action="move", from_day=from_day, from_time=from_time,
                                  to_day = to_day, to_time = to_time))
+
+    def add_change_resource_to_undo(self, resource_type: ResourceType, block: Block, from_resource, to_resource):
+
+        # add to undo list
+        self._undo.append(Action(block=block, action="change_resource",
+                                 from_resource=from_resource,
+                                 to_resource=to_resource,
+                                 resource_type=resource_type))
+
 
     # ----------------------------------------------------------------------------------------------------------------
     # open companion view (double_click_handler)
@@ -147,6 +166,25 @@ class ViewsController:
     # ----------------------------------------------------------------------------------------------------------------
     def move_block_to_resource(self, resource_type: ResourceType, block: Block, from_resource: RESOURCE, to_resource: RESOURCE):
         """
+        a block has been moved from one resource to another, update appropriate views, adjust 'undo' and 'redo' appropriately
+        :param resource_type:
+        :param block:
+        :param from_resource:
+        :param to_resource:
+        """
+
+        # if user has made a change, then we can no longer do 'redo'
+        self.remove_all_redoes()
+
+        # update
+        self._update_move_block_to_resource(resource_type, block, from_resource, to_resource)
+
+        # add the user change to 'undo'
+        self._undo.append(Action(block=block, action="change_resource", resource_type=resource_type,
+                                 from_resource=from_resource, to_resource=to_resource))
+
+    def _update_move_block_to_resource(self, resource_type: ResourceType, block: Block, from_resource: RESOURCE, to_resource: RESOURCE):
+        """
         a block has been moved from one resource to another, update appropriate views
         :param resource_type:
         :param block:
@@ -155,12 +193,15 @@ class ViewsController:
         """
         match resource_type:
             case ResourceType.teacher:
+                print(f"... removing {from_resource} from block")
+                print(f"... adding {to_resource} to block")
                 block.remove_teacher(from_resource)
                 block.add_teacher(to_resource)
             case ResourceType.lab:
                 block.remove_lab(from_resource)
                 block.add_lab(to_resource)
         self.schedule.calculate_conflicts()
+
         self.dirty_flag_method(True)
 
         if from_resource.number in self._views.keys():
@@ -172,19 +213,30 @@ class ViewsController:
             self._views[to_resource.number].draw()
         else:
             self.call_view(to_resource)
-        self._undo.append(Action(block=block, action="change_resource", from_resource=from_resource, to_resource=to_resource))
 
     # ----------------------------------------------------------------------------------------------------------------
-    # undo last actions
+    # undo/redo last actions
     # ----------------------------------------------------------------------------------------------------------------
     def undo(self):
         if len(self._undo) == 0:
             return
 
         action = self._undo.pop()
+        print(action)
+        self._process_action(action, self._redo)
+
+    def redo(self):
+        if len(self._redo) == 0:
+            return
+
+        action = self._redo.pop()
+        print(action)
+        self._process_action(action, self._undo)
+
+    def _process_action(self, action, other_list):
         match action.action:
             case 'move':
-                self._redo.append(Action(action='move', block= action.block,
+                other_list.append(Action(action='move', block= action.block,
                                          from_day = action.to_day, from_time=action.to_time,
                                          to_day = action.from_day, to_time=action.from_time,
                                          ))
@@ -192,6 +244,17 @@ class ViewsController:
                 action.block.time_slot.snap_to_day(action.from_day)
                 self.schedule.calculate_conflicts()
                 self.notify_block_move(None, action.block, action.from_day, action.from_time)
+            case 'change_resource':
+                other_list.append(Action(action='change_resource', block=action.block,
+                                         from_resource=action.to_resource,
+                                         to_resource=action.from_resource,
+                                         resource_type=action.resource_type,
+                                  ))
+                self.schedule.calculate_conflicts()
+                self._update_move_block_to_resource(resource_type=action.resource_type, block=action.block,
+                                                    from_resource=action.to_resource,
+                                                    to_resource=action.from_resource)
+
 
     def remove_all_redoes(self):
         self._redo.clear()
