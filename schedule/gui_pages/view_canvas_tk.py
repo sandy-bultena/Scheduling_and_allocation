@@ -184,7 +184,7 @@ class ViewCanvasTk:
         if movable:
             self.canvas.addtag_withtag(self.Movable_Tag_Name, gui_tag)
         else:
-            self.canvas.tag_raise("baseline")
+            self.canvas.tag_raise(gui_tag,"baseline")
 
     # =================================================================
     # get the gui id from tags
@@ -261,7 +261,7 @@ class ViewCanvasTk:
     # =================================================================
     # get_coords
     # =================================================================
-    def get_coords(self, day, start, duration):
+    def get_coords(self, day, start, duration=1):
         """Determines the canvas coordinates based on day, time_start time, and duration.
             :param start:
             :param day:

@@ -32,7 +32,8 @@ class ViewChoices:
 
     def call_view(self, resource):
         view = View(self, self.frame, self.schedule, resource)
-        self._views[resource.number] = view
+        if resource.number not in self._views:
+            self._views[resource.number] = view
 
 
     #
@@ -45,5 +46,11 @@ class ViewChoices:
     #     #     views_manager.determine_button_colours()
     #
 
-    def notify_block_move(self, block):
+    def notify_block_move(self, resource_number, moved_block, day, start_time):
         self.refresh()
+        for view_id, view in self._views.items():
+            if view_id != resource_number:
+                for gui_id, block in view.gui_blocks.items():
+                    if block.number == moved_block.number:
+                        view.move_gui_block_to(moved_block, day, start_time)
+                view.refresh_block_colours()

@@ -1,23 +1,12 @@
+from schedule.model import Teacher, Lab, Stream
+from schedule.presenter.view import View
 
-"""ViewsHubControl - Manage all of the views (presentations of schedules)"""
-from typing import Protocol
+RESOURCE = Teacher|Lab|Stream
 
+class ViewsController:
+    def __init__(self, choices: View):
+        self._views: dict[RESOURCE, View] = {}
 
-class Subsriber(Protocol):
-    def notify_block_changed_time(self, block_id, day, start_time, duration): ...
-    def notify_block_changed_resource(self, old_resource, new_resource, block_id): ...
-
-
-class ViewHubControl:
-    def __init__(self):
-        self.subscribers = dict()
-    def subscribe(self, view_id, view):
-        self.subscribers[view_id] = view
-    def unsubscribe(self, view_id):
-        try:
-            self.subscribers.pop(view_id)
-        except KeyError:
-            pass
 
 
 # from .View import View

@@ -18,7 +18,7 @@
 #
 from __future__ import annotations
 import re
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from schedule.Utilities.id_generator import IdGenerator
 from schedule.gui_pages.view_dynamic_tk import ViewDynamicTk
@@ -51,7 +51,7 @@ class View:
 
         self.blocks: list[Block] = []
         self.gui: ViewDynamicTk = ViewDynamicTk(self.frame, str(resource),
-                                                refresh_blocks_handler=self.redraw,
+                                                refresh_blocks_handler=self.draw_blocks,
                                                 on_closing_handler=self.on_closing,
                                                 double_click_block_handler=self.open_companion_view,
                                                 gui_block_is_moving_handler=self.gui_block_is_moving,
@@ -77,7 +77,7 @@ class View:
     def _block_to_floats(self, block) -> tuple[int,float,float]:
         return block.time_slot.day.value, block.time_slot.time_start.hours, block.time_slot.duration
 
-    def redraw(self):
+    def draw_blocks(self):
         self.gui_blocks.clear()
         for block in self.get_blocks():
             gui_block_id: int = _gui_block_ids.get_new_id()
@@ -106,7 +106,19 @@ class View:
         block.time_slot.duration = duration
         block.time_slot.snap_to_time()
         self.schedule.calculate_conflicts()
-        self.views_controller.notify_block_move(block)
+        self.views_controller.notify_block_move(self.resource.number, block,  day, start_time)
+        self.refresh_block_colours()
+
+    def get_gui_id_from_block(self, block_number: str) -> Optional[str]:
+        for g,b in self.gui_blocks.items():
+            if b.number == block_number:
+                return g
+        return None
+
+    def move_gui_block_to(self, block, day, start_time):
+        gui_id = self.get_gui_id_from_block(block.number)
+        self.gui.move_gui_block(gui_id, day, start_time)
+
 
     def gui_block_has_dropped(self, gui_id: str,  day, start_time, duration):
         block: Block = self.gui_blocks.get(gui_id,None)
@@ -114,9 +126,13 @@ class View:
             return
         self._update_block(block, day, start_time, duration)
 
-        self.gui.move_block(gui_id, block.time_slot.day.value,
-                            block.time_slot.time_start.hours, block.time_slot.duration)
+        self.gui.move_gui_block(gui_id, block.time_slot.day.value,
+                                block.time_slot.time_start.hours)
+        self.views_controller.notify_block_move(self.resource.number, block, block.time_slot.day.value,
+                                block.time_slot.time_start.hours)
+#        self.refresh_block_colours()
 
+    def refresh_block_colours(self):
         for gui_tag, block in self.gui_blocks.items():
             self.gui.colour_block(gui_tag, self.resource_type, is_movable=block.movable(), conflict = block.conflict)
 

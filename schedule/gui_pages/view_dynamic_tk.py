@@ -1,5 +1,3 @@
-# =================================================================
-
 from __future__ import annotations
 
 from functools import partial
@@ -16,19 +14,21 @@ from schedule.model import ResourceType, ConflictType
 DEFAULT_CANVAS_WIDTH = 700
 DEFAULT_CANVAS_HEIGHT = 700
 
+
 def _default_menu(*_) -> list[MenuItem]:
     menu = MenuItem(name="nothing", label="nothing", menu_type=MenuType.Command, command=lambda: None)
     return [menu, ]
 
+
 class ViewDynamicTk:
-    """View which allows dragging'n'dropping with popup menus for blocks, etc"""
+    """ Provide the dynamic view for all calls times for a specific resource."""
 
     view_ids = IdGenerator()
 
     # =================================================================================================================
     # Init
     # =================================================================================================================
-    def __init__(self, frame: Frame,  title: str,
+    def __init__(self, frame: Frame, title: str,
                  get_popup_menu_handler: Callable = _default_menu,
                  refresh_blocks_handler: Callable = lambda *_: None,
                  on_closing_handler: Callable = lambda *_: None,
@@ -99,7 +99,7 @@ class ViewDynamicTk:
         undo_menu = Menu(main_menu, tearoff=0)
         main_menu.add_cascade(menu=undo_menu, label="Undo/Redo")
         undo_menu.add_command(label="Undo", accelerator="ctrl-z", command=self.undo)
-        undo_menu.add_cascade(label="Redo", accelerator="ctrl-y",  command=self.redo)
+        undo_menu.add_cascade(label="Redo", accelerator="ctrl-y", command=self.redo)
 
         # bind keys (for mac and windows)
         self.toplevel.bind("<Control-z>", self.undo)
@@ -107,11 +107,11 @@ class ViewDynamicTk:
         self.toplevel.bind('<Control-y>', self.redo)
         self.toplevel.bind('<Command-y>', self.redo)
 
-
     def _draw_view_canvas(self, scale_factor: float = 1.0) -> ViewCanvasTk:
         """
         Clears the canvas of all blocks and redraws the background, followed by a call
         to an event handler that will update all the required blocks
+        :param scale_factor: Allows smaller views to be drawn, 1=100%
         """
 
         self.cn.delete('all')
@@ -122,8 +122,8 @@ class ViewDynamicTk:
         self.cn.bind("<ButtonRelease-1>", "")
 
         # set height and width of canvas and toplevel
-        self.cn.configure(width=DEFAULT_CANVAS_WIDTH*scale_factor,
-                              height=DEFAULT_CANVAS_WIDTH*scale_factor)
+        self.cn.configure(width=DEFAULT_CANVAS_WIDTH * scale_factor,
+                          height=DEFAULT_CANVAS_WIDTH * scale_factor)
 
         # redraw background (things that don't change, like time, etc.)
         self.view_canvas = ViewCanvasTk(self.cn, scale_factor)
@@ -137,6 +137,11 @@ class ViewDynamicTk:
         return self.view_canvas
 
     def draw(self, scale_factor: float = 1.0):
+        """
+        Draw the view, calls event handler refresh_blocks_handler to get info about the blocks"
+        :param scale_factor:
+        :return:
+        """
         self._draw_view_canvas(scale_factor)
 
         # update blocks
@@ -148,9 +153,8 @@ class ViewDynamicTk:
         self.cn.tag_bind(self.view_canvas.Clickable_Tag_Name, '<2>', self._post_menu)
         self.cn.tag_bind(self.view_canvas.Clickable_Tag_Name, "<Double-1>", self._double_clicked)
 
-
     def draw_block(self, resource_type: ResourceType, day: int, start_time: float,
-                   duration: float, text:str, gui_block_id, movable = True):
+                   duration: float, text: str, gui_block_id, movable=True):
         """
         Draws the specific block on the gui canvas
         :param resource_type:
@@ -164,28 +168,10 @@ class ViewDynamicTk:
         # draw the block
         self.view_canvas.draw_block(resource_type, day, start_time, duration, text, gui_block_id, movable)
 
-    def move_block(self, gui_block_id: str, day_number, start_number, duration):
-        """
-        Move the block image to a new location based on day, start and duration
-        :param gui_block_id: this tag specifies the gui tag associated with the drawn images
-        :param day_number:
-        :param start_number:
-        :param duration:
-        """
-
-        new_coords = self.view_canvas.get_coords(day_number, start_number, duration)
-        old_coords = self.view_canvas.gui_block_coords(gui_block_id)
-        if old_coords is None:
-            return
-
-        (cur_x_pos, cur_y_pos, _, _) = old_coords
-        self.cn.lift(gui_block_id)
-        self.cn.move(gui_block_id, new_coords[0] - cur_x_pos, new_coords[1] - cur_y_pos)
-
     def colour_block(self, gui_block_id: str, resource_type: ResourceType, is_movable=True,
-                     conflict:ConflictType = None):
+                     conflict: ConflictType = None):
         """
-        Set the colour of the block, base on some of its properties
+        Set the colour of the block, base on its resource, conflict, etc.
         :param is_movable:
         :param conflict:
         :param gui_block_id:
@@ -193,7 +179,7 @@ class ViewDynamicTk:
         :return:
         """
 
-        conflict = ConflictType.most_severe(conflict,resource_type)
+        conflict = ConflictType.most_severe(conflict, resource_type)
         colour = RESOURCE_COLOURS[resource_type]
 
         if conflict != ConflictType.NONE:
@@ -212,32 +198,10 @@ class ViewDynamicTk:
         cn.itemconfigure(f"{self.view_canvas.Rectange_Tag_Name} && {gui_block_id}", fill=colour)
         cn.itemconfigure(f"{self.view_canvas.Text_Tag_Name} && {gui_block_id}", fill=text_colour)
 
-
-
-
-
-
-
     def destroy(self):
         """Close/destroy the gui window."""
         self.on_closing_handler(self)
         self.toplevel.destroy()
-
-    # =================================================================
-    # generic gui updates
-    # =================================================================
-
-    def _change_block_colour(self, gui_block_id: str, colour: str):
-        """
-        Change the Colour of the GuiBlock (including text and shading).
-        :param gui_block_id: the unique tag that identifies the block
-        :param colour: the new colour
-        """
-
-
-    def _refresh_gui(self):
-        """Forces the graphics to update."""
-        self.mw.update_idletasks()
 
     # =================================================================
     # menus, popups and double-clicks
@@ -277,7 +241,6 @@ class ViewDynamicTk:
         gui_block_id = self.view_canvas.get_gui_block_id_from_selected_item()
         self.double_click_block_handler(gui_block_id)
 
-
     # ============================================================================
     # Dragging Guiblocks around
     # ============================================================================
@@ -292,10 +255,10 @@ class ViewDynamicTk:
         self.cn.tag_bind(self.view_canvas.Movable_Tag_Name, "<Button-1>", "")
 
         # bind for mouse motion
-        self.cn.bind("<Motion>",partial(self.gui_block_is_moving, gui_block_id, event.x, event.y))
+        self.cn.bind("<Motion>", partial(self.gui_block_is_moving, gui_block_id, event.x, event.y))
 
         # bind for release of mouse up
-        self.cn.bind("<ButtonRelease-1>", partial(self.gui_block_has_stopped_moving,gui_block_id))
+        self.cn.bind("<ButtonRelease-1>", partial(self.gui_block_has_stopped_moving, gui_block_id))
 
     def gui_block_is_moving(self, gui_block_id, original_x, original_y, event: Event):
 
@@ -304,13 +267,15 @@ class ViewDynamicTk:
 
         # move the widget
         self.cn.move(gui_block_id, event.x - original_x, event.y - original_y)
+
+        # get the information about the movement and call event handler
         info = self.view_canvas.gui_block_to_day_time_duration(gui_block_id)
         if info is not None:
             day, start_time, duration = info
             self.gui_block_is_moving_handler(gui_block_id, day, start_time, duration)
 
         # rebind for motion
-        self.cn.bind("<Motion>",partial(self.gui_block_is_moving, gui_block_id, event.x, event.y))
+        self.cn.bind("<Motion>", partial(self.gui_block_is_moving, gui_block_id, event.x, event.y))
 
     def gui_block_has_stopped_moving(self, gui_block_id, _: Event):
         self.cn.tag_bind(self.view_canvas.Movable_Tag_Name, "<Button-1>", self.select_gui_block_to_move)
@@ -320,3 +285,20 @@ class ViewDynamicTk:
         if info is not None:
             day, start_time, duration = info
             self.gui_block_has_dropped_handler(gui_block_id, day, start_time, duration)
+
+    def move_gui_block(self, gui_block_id: str, day_number, start_number):
+        """
+        Move the gui block to a new location based on day, start and duration
+        :param gui_block_id: this tag specifies the gui tag associated with the drawn images
+        :param day_number:
+        :param start_number:
+        """
+
+        new_coords = self.view_canvas.get_coords(day_number, start_number)
+        old_coords = self.view_canvas.gui_block_coords(gui_block_id)
+        if old_coords is None:
+            return
+
+        (cur_x_pos, cur_y_pos, _, _) = old_coords
+        self.cn.lift(gui_block_id)
+        self.cn.move(gui_block_id, new_coords[0] - cur_x_pos, new_coords[1] - cur_y_pos)
