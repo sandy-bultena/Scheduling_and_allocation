@@ -76,7 +76,6 @@ class ViewChoicesTk:
         if btn is None:
             return
 
-        print(button_id, view_conflict)
         # change the background colour of the button
         # ... (doesn't work on MAC) so also change the background colour of the highlighted area
 
@@ -84,10 +83,9 @@ class ViewChoicesTk:
         colour = RESOURCE_COLOURS.get(resource_type, self.colours.ButtonBackground)
         active_colour = self.colours.ActiveBackground
 
-        if view_conflict is not None:
+        if view_conflict != ConflictType.NONE:
             colour = ConflictType.colours().get(view_conflict,'grey')
             active_colour = Colour.darken(colour, 10)
-            print("changing colour to", colour)
 
         if platform.system() == "Darwin":
             colour_highlight = colour

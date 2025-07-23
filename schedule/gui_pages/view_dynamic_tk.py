@@ -195,7 +195,7 @@ class ViewDynamicTk:
 
         conflict = ConflictType.most_severe(conflict,resource_type)
         colour = RESOURCE_COLOURS[resource_type]
-        if conflict is not None:
+        if conflict != ConflictType.NONE:
             colour = ConflictType.colours().get(conflict, "pink")
         if not is_movable:
             colour = IMMOVABLE_COLOUR

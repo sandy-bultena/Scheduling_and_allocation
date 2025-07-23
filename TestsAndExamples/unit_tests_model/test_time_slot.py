@@ -155,3 +155,21 @@ def test_conflicts_time_different_days():
     slot1 = TimeSlot(WeekDay.Tuesday, ClockTime("9:30"), 1)
     slot2 = TimeSlot(WeekDay.Monday, ClockTime("9:00"), 1)
     assert slot1.conflicts_time(slot2) is False
+
+def test_conflicts_time_one_inside_another1():
+    slot1 = TimeSlot(WeekDay.Tuesday, ClockTime("9:30"), 1)
+    slot2 = TimeSlot(WeekDay.Tuesday, ClockTime("9:30"), 4)
+    assert slot1.conflicts_time(slot2) is True
+    assert slot2.conflicts_time(slot1) is True
+
+def test_conflicts_time_one_inside_another2():
+    slot1 = TimeSlot(WeekDay.Tuesday, ClockTime("9:30"), 4)
+    slot2 = TimeSlot(WeekDay.Tuesday, ClockTime("10:00"), 1)
+    assert slot1.conflicts_time(slot2) is True
+    assert slot2.conflicts_time(slot1) is True
+
+def test_conflicts_time_one_inside_another3():
+    slot1 = TimeSlot(WeekDay.Tuesday, ClockTime("9:30"), 4)
+    slot2 = TimeSlot(WeekDay.Tuesday, ClockTime("9:30"), 4)
+    assert slot1.conflicts_time(slot2) is True
+    assert slot2.conflicts_time(slot1) is True

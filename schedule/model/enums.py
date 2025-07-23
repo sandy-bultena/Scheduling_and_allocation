@@ -152,7 +152,7 @@ class ConflictType(Flag):
         the conflict number
         :param view_type: -> defines the user's current view. ResourceType (enum)
         """
-        severest = None
+        severest = ConflictType.NONE
         sorted_conflicts: list[ConflictType] = ORDER_OF_SEVERITY.copy()
 
         # based on the view, get_by_id the string version of the enum ConflictType
@@ -170,6 +170,13 @@ class ConflictType(Flag):
             if conflict in self:
                 severest = conflict
                 break
+
+        # it doesn't make sense for labs or streams to have LUNCH, AVAILABILITY, or MINIMUM_DAYS
+        # as valid conflicts
+        if view_type == ResourceType.lab or view_type == ResourceType.stream:
+            if severest == ConflictType.LUNCH or severest == ConflictType.AVAILABILITY or severest == ConflictType.MINIMUM_DAYS:
+                severest = ConflictType.NONE
+
 
         return severest
 

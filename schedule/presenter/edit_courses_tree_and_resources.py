@@ -232,11 +232,16 @@ class EditCoursePopupMenuActions:
                 text = "Remove generic item"
 
         sub_menu = MenuItem(menu_type=MenuType.Cascade, tear_off=False, label=text)
+
+        # ... do NOT use lambda's in a loop, we need to bind the individual 'item' in loop rather than its last value
+        # ... https://stackoverflow.com/questions/54288926/python-loops-and-closures
         for item in items:
+            def f(item_closure=item):
+                return self.presenter.remove_selected_from_parent(self.selected_object, item_closure,
+                                                                self.tree_id)
+
             sub_menu.add_child(MenuItem(menu_type=MenuType.Command, label=str(item),
-                                        command=lambda *_: self.presenter.remove_selected_from_parent(self.selected_object, item,
-                                                                                               self.tree_parent_id)
-                                        ))
+                                        command=f))
         menu_list.append(sub_menu)
 
     # ------------------------------------------------------------------------------------------------------------

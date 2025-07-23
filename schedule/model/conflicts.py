@@ -3,9 +3,8 @@ Provides classes for managing scheduling conflicts
 """
 from __future__ import annotations
 import itertools
-from enum import Flag
 from typing import TYPE_CHECKING
-from .enums import ResourceType, ConflictType
+from .enums import ConflictType
 from .time_slot import ClockTime
 
 if TYPE_CHECKING:

@@ -109,7 +109,10 @@ class TimeSlot:
         other_start = other.time_start.hours + delta
         other_end = other.time_start.hours + other.duration - delta
 
-        return other_start < self_start < other_end or other_start < self_end < other_end
+        conflict1 = other_start < self_start < other_end or other_start < self_end < other_end
+        conflict2 = self_start >= other_start and self_end <= other_end
+        conflict3 = other_start >= self_start and other_end <= self_end
+        return conflict1 or conflict2 or conflict3
 
     def __eq__(self, other):
         return (self.day == other.day
