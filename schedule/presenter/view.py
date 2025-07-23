@@ -85,8 +85,8 @@ class View:
             self.gui_blocks[gui_tag]= block
             text = self.get_block_text(block, self.gui.view_canvas.scale.current_scale)
             day, start_time, duration = self._block_to_floats(block)
-            self.gui.draw_block(self.resource_type, day, start_time, duration, text, gui_tag)
-            self.gui.colour_block(gui_tag, self.resource_type, conflict=block.conflict)
+            self.gui.draw_block(self.resource_type, day, start_time, duration, text, gui_tag, block.movable())
+            self.gui.colour_block(gui_tag, self.resource_type, block.movable(), conflict=block.conflict)
 
     def on_closing(self, gui):
         print("Do stuff with views manager")
@@ -96,9 +96,11 @@ class View:
         if block is None:
             return
         self._update_block(block, day, start_time, duration)
-        self.gui.colour_block(gui_id, self.resource_type, conflict = block.conflict)
+        self.gui.colour_block(gui_id, self.resource_type, is_movable=block.movable(), conflict = block.conflict)
 
     def _update_block(self, block,  day, start_time, duration):
+        """update the block by snapping to time and day, although it doesn't update the gui block"""
+
         block.time_slot.time_start = ScheduleTime(start_time)
         block.time_slot.snap_to_day(day)
         block.time_slot.duration = duration
@@ -111,10 +113,12 @@ class View:
         if block is None:
             return
         self._update_block(block, day, start_time, duration)
+
         self.gui.move_block(gui_id, block.time_slot.day.value,
                             block.time_slot.time_start.hours, block.time_slot.duration)
+
         for gui_tag, block in self.gui_blocks.items():
-            self.gui.colour_block(gui_tag, self.resource_type, conflict = block.conflict)
+            self.gui.colour_block(gui_tag, self.resource_type, is_movable=block.movable(), conflict = block.conflict)
 
     def get_block_text(self, block, scale):
         """Get the text for a specific resource_type of blocks"""

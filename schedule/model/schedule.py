@@ -432,12 +432,10 @@ class Schedule:
         # ---------------------------------------------------------
         # for each teacher teacher
         # ---------------------------------------------------------
-        print("=============== ")
         for teacher in self.get_teachers_assigned_to_any_course():
             set_lunch_break_conflicts(self.get_blocks_for_teacher(teacher))
             set_availability_hours_conflict(self.get_blocks_for_teacher(teacher))
             if teacher.release == 0:
-                print(id(self), id(teacher), teacher, teacher.release, type(teacher.release), )
                 set_number_of_days_conflict(self.get_blocks_for_teacher(teacher))
 
     # --------------------------------------------------------

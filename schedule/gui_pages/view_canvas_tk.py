@@ -77,12 +77,14 @@ class ViewCanvasTk:
         (x_min, dummy_y) = self._days_x_coords(1)
 
         for time in Times.keys():
+
             # Draw each hour line.
             (y_hour, y_half) = self._time_y_coords(time, 0.5)
             canvas.create_line(
                 x_min, y_hour, x_max, y_hour,
                 fill="dark grey",
-                dash="-"
+                dash="-",
+                tags="baseline",
             )
 
             # Hour text.
@@ -90,6 +92,7 @@ class ViewCanvasTk:
                 (x_min + scale.x_origin) / 2,
                 y_hour, text=Times[time],
                 fill=self.fill_colour,
+                tags="baseline",
             )
 
             # for all inner times, draw a dotted line for the half hour.
@@ -97,7 +100,8 @@ class ViewCanvasTk:
                 canvas.create_line(
                     x_min, y_half, x_max, y_half,
                     fill="grey",
-                    dash="."
+                    dash=".",
+                    tags="baseline",
                 )
 
                 # Half-hour text.
@@ -106,6 +110,7 @@ class ViewCanvasTk:
                         (x_min + scale.x_origin) / 2,
                         y_half, text=":30",
                         fill=self.fill_colour,
+                        tags="baseline",
                     )
 
         # --------------------------------------------------------------------
@@ -115,7 +120,7 @@ class ViewCanvasTk:
 
         for i in range(len(DAYS) + 1):
             (x_day, x_day_end) = self._days_x_coords(i + 1)
-            canvas.create_line(x_day, scale.y_height_scale, x_day, y_max, fill=self.fill_colour,)
+            canvas.create_line(x_day, scale.y_height_scale, x_day, y_max, fill=self.fill_colour,tags="baseline",)
 
             # day text
             if i < len(DAYS):
@@ -125,6 +130,7 @@ class ViewCanvasTk:
                         (y_min + scale.y_origin) / 2,
                         text=DAYS[i][0:1],
                         fill=self.fill_colour,
+                        tags=("baseline",),
                     )
                 else:
                     canvas.create_text(
@@ -132,13 +138,14 @@ class ViewCanvasTk:
                         (y_min + scale.y_origin) / 2,
                         text=DAYS[i],
                         fill=self.fill_colour,
+                        tags=("baseline",),
                     )
 
     # =================================================================
     # draw_block
     # =================================================================
     def draw_block(self, resource_type: ResourceType, day: int, start_time: float,
-                   duration: float, text:str, gui_tag):
+                   duration: float, text:str, gui_tag, movable):
         """
         Draws the specific block on the gui canvas
         :param resource_type:
@@ -167,12 +174,17 @@ class ViewCanvasTk:
              x2 + RECTANGLE_X2_OFFSET,
              y2 + RECTANGLE_Y2_OFFSET),
             fill=colour, outline=colour,
-            tags=(self.Rectange_Tag_Name, self.Movable_Tag_Name, self.Clickable_Tag_Name, gui_tag))
+            tags=(self.Rectange_Tag_Name, self.Clickable_Tag_Name, gui_tag))
 
         self.canvas.create_text(
             (x1 + x2) / 2, (y1 + y2) / 2, text=text, fill=text_colour,
-            tags=(self.Text_Tag_Name, self.Movable_Tag_Name, self.Clickable_Tag_Name, gui_tag)
+            tags=(self.Text_Tag_Name, self.Clickable_Tag_Name, gui_tag)
         )
+        #self.canvas.addtag_withtag(self.Movable_Tag_Name, gui_tag)
+        if movable:
+            self.canvas.addtag_withtag(self.Movable_Tag_Name, gui_tag)
+        else:
+            self.canvas.tag_raise("baseline")
 
     # =================================================================
     # get the gui id from tags

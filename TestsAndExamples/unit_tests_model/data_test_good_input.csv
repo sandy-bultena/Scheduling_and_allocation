@@ -50,17 +50,14 @@ course,420-1B4,Computerized Systems,1,1,4.0
 
 section,,1,Section 1,17
 add_block,,Tuesday,15:00,2.0,0
-add_block_teacher,Bultena_Sandy
 add_block_teacher,Buschinelli_Mauricio
 add_lab,P325
 add_block,,Thursday,15:00,2.0,0
-add_block_teacher,Bultena_Sandy
 add_block_teacher,Buschinelli_Mauricio
 add_lab,P325
 
 ,,,adds teacher to all defined blocks
 ,id,allocation
-add_section_teacher,Bultena_Sandy,2.0
 add_section_teacher,Buschinelli_Mauricio,2.0
 
 section,,2,Section 2,20

@@ -1,14 +1,17 @@
 from tkinter import Frame
 
 from schedule.gui_pages.view_choices_tk import ViewChoicesTk
-from schedule.model import ResourceType, Schedule, ConflictType
+from schedule.model import ResourceType, Schedule, ConflictType, Stream, Teacher, Lab
 from schedule.presenter.view import View
 
+RESOURCE = Teacher | Lab | Stream
 
 class ViewChoices:
     def __init__(self, frame, schedule: Schedule):
         self.frame = frame
         self.schedule = schedule
+        self._views: dict[RESOURCE, View] = {}
+
 
         self.resources = {
             ResourceType.teacher: list(self.schedule.teachers()),
@@ -23,13 +26,14 @@ class ViewChoices:
         for resource_type in self.resources:
             for resource in self.resources[resource_type]:
                 conflict = self.schedule.resource_conflict(resource)
-                print(resource.number, conflict)
                 conflict = conflict.most_severe(resource_type)
                 self.gui.set_button_colour(resource.number, resource_type, conflict)
 
 
     def call_view(self, resource):
-        View(self, self.frame, self.schedule, resource)
+        view = View(self, self.frame, self.schedule, resource)
+        self._views[resource.number] = view
+
 
     #
     #     #     global views_manager, gui
@@ -42,5 +46,4 @@ class ViewChoices:
     #
 
     def notify_block_move(self, block):
-        print(block, "moved", block.conflict)
         self.refresh()

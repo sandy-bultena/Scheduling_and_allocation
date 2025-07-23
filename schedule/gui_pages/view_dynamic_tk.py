@@ -150,7 +150,7 @@ class ViewDynamicTk:
 
 
     def draw_block(self, resource_type: ResourceType, day: int, start_time: float,
-                   duration: float, text:str, gui_block_id):
+                   duration: float, text:str, gui_block_id, movable = True):
         """
         Draws the specific block on the gui canvas
         :param resource_type:
@@ -162,7 +162,7 @@ class ViewDynamicTk:
         :return:
         """
         # draw the block
-        self.view_canvas.draw_block(resource_type, day, start_time, duration, text, gui_block_id)
+        self.view_canvas.draw_block(resource_type, day, start_time, duration, text, gui_block_id, movable)
 
     def move_block(self, gui_block_id: str, day_number, start_number, duration):
         """
@@ -195,11 +195,28 @@ class ViewDynamicTk:
 
         conflict = ConflictType.most_severe(conflict,resource_type)
         colour = RESOURCE_COLOURS[resource_type]
+
         if conflict != ConflictType.NONE:
             colour = ConflictType.colours().get(conflict, "pink")
+
         if not is_movable:
             colour = IMMOVABLE_COLOUR
-        self._change_block_colour(gui_block_id, colour)
+
+        cn = self.cn
+
+        colour = Colour.string(colour)
+        text_colour = "black"
+        if not Colour.is_light(colour):
+            text_colour = "white"
+
+        cn.itemconfigure(f"{self.view_canvas.Rectange_Tag_Name} && {gui_block_id}", fill=colour)
+        cn.itemconfigure(f"{self.view_canvas.Text_Tag_Name} && {gui_block_id}", fill=text_colour)
+
+
+
+
+
+
 
     def destroy(self):
         """Close/destroy the gui window."""
@@ -216,16 +233,6 @@ class ViewDynamicTk:
         :param gui_block_id: the unique tag that identifies the block
         :param colour: the new colour
         """
-
-        cn = self.cn
-
-        colour = Colour.string(colour)
-        text_colour = "black"
-        if not Colour.is_light(colour):
-            text_colour = "white"
-
-        cn.itemconfigure(f"{self.view_canvas.Rectange_Tag_Name} && {gui_block_id}", fill=colour)
-        cn.itemconfigure(f"{self.view_canvas.Text_Tag_Name} && {gui_block_id}", fill=text_colour)
 
 
     def _refresh_gui(self):

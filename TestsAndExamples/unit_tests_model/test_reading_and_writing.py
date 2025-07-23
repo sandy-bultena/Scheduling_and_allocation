@@ -35,3 +35,11 @@ def test_schedule_actually_has_stuff_in_it():
     assert len(schedule.courses()) != 0
     assert len(schedule.labs()) != 0
     assert len(schedule._streams) != 0
+
+def test_blocks_movable_is_correct():
+    schedule = s.Schedule(path.dirname(__file__) + "/data_test_good_input.csv")
+    teacher = schedule.get_teacher_by_number("Bultena_Sandy")
+    blocks = schedule.get_blocks_for_teacher(teacher)
+    for b in blocks:
+        assert b.movable()
+        
