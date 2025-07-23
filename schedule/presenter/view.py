@@ -49,7 +49,10 @@ class View:
                                                 gui_block_is_moving_handler=self.gui_block_is_moving,
                                                 gui_block_has_dropped_handler=self.gui_block_has_dropped,
                                                 get_popup_menu_handler=self.popup_menu,
+                                                undo_handler=self.views_controller.undo,
                                                 )
+        self._block_original_start_time: Optional[float]= None
+        self._block_original_day: Optional[float] = None
         self.gui.draw()
 
     # ----------------------------------------------------------------------------------------------------------------
@@ -120,6 +123,11 @@ class View:
         if block is None:
             return
 
+        # capture the info about the block before it starts moving
+        if self._block_original_start_time is None and self._block_original_day is None:
+            self._block_original_start_time = block.time_slot.time_start.hours
+            self._block_original_day = block.time_slot.day.value
+
         """update the block by snapping to time and day, although it doesn't update the gui block"""
         block.time_slot.time_start = ScheduleTime(start_time)
         block.time_slot.snap_to_day(day)
@@ -135,7 +143,7 @@ class View:
     # ----------------------------------------------------------------------------------------------------------------
     # gui_block_has_dropped (gui_block_has_dropped_handler)
     # ----------------------------------------------------------------------------------------------------------------
-    def gui_block_has_dropped(self, gui_id: str,  day, start_time, duration):
+    def gui_block_has_dropped(self, gui_id: str):
         """
         User has stopped dragging the gui block, so adjust gui block to block's new location
         :param gui_id: the id of the gui representation of the block
@@ -155,6 +163,13 @@ class View:
         # very important, let the gui controller _know_ that the gui block has been moved
         self.views_controller.notify_block_move(self.resource.number, block, block.time_slot.day.value,
                                 block.time_slot.time_start.hours)
+
+        # save the action so that it can be undone
+        self.views_controller.remove_all_redoes()
+        self.views_controller.add_move_to_undo(block, self._block_original_day, block.time_slot.day.value,
+                                               self._block_original_start_time, block.time_slot.time_start.hours)
+        self._block_original_start_time = None
+        self._block_original_day = None
 
     # ----------------------------------------------------------------------------------------------------------------
     # get popup menu (get_popup_menu_handler)

@@ -253,12 +253,14 @@ class ViewDynamicTk:
         """
         calls the "undo" handler with this view's id
         """
-        self.undo_handler(self.view_id)
+        print("called undo")
+        self.undo_handler()
 
     def redo(self, _: Event = None):
         """
         calls the "redo" handler with this view's id
         """
+        print("called redo")
         self.redo_handler(self.view_id)
 
     def _double_clicked(self, _: Event):
@@ -311,7 +313,7 @@ class ViewDynamicTk:
         info = self.view_canvas.gui_block_to_day_time_duration(gui_block_id)
         if info is not None:
             day, start_time, duration = info
-            self.gui_block_has_dropped_handler(gui_block_id, day, start_time, duration)
+            self.gui_block_has_dropped_handler(gui_block_id)
 
     def move_gui_block(self, gui_block_id: str, day_number, start_number):
         """
