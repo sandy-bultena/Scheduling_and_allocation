@@ -18,7 +18,7 @@ from schedule.exceptions import CouldNotReadFileError
 from schedule.gui_generics.read_only_text_tk import ReadOnlyText
 from schedule.gui_pages.view_choices_tk import ViewChoicesTk
 from .view import View
-from .view_choices import ViewChoices
+from .views_controller import ViewsController
 
 if TYPE_CHECKING:
     from tkinter import Event
@@ -235,7 +235,7 @@ class Scheduler:
         # on moving away from this page, must remove all the views (check previous version to see what it did)
         # it would be too hard to manage the views, if the contents of the schedule were changing
 
-        view_choice = ViewChoices(self.set_dirty_method, views_frame, self.schedule)
+        view_choice = ViewsController(self.set_dirty_method, views_frame, self.schedule)
         view_choice.refresh()
 
         # data_entry = EditResources(self.set_dirty_method, teachers_frame, ResourceType.teacher, self.schedule)

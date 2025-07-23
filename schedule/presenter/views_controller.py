@@ -6,7 +6,7 @@ from schedule.presenter.view import View
 
 RESOURCE = Teacher | Lab | Stream
 
-class ViewChoices:
+class ViewsController:
     def __init__(self, dirty_flag_method: Callable[[Optional[bool]], bool], frame, schedule: Schedule):
         self.dirty_flag_method=dirty_flag_method
         self.frame = frame

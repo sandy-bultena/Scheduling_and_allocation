@@ -10,7 +10,7 @@ from schedule.gui_pages.view_dynamic_tk import ViewDynamicTk
 from schedule.model import Block, Teacher, Stream, Lab, Schedule, ScheduleTime
 from schedule.model.enums import ResourceType
 if TYPE_CHECKING:
-    from schedule.presenter.view_choices import ViewChoices
+    from schedule.presenter.views_controller import ViewsController
 
 # =====================================================================================================================
 # use an generator to always guarantee that the new id will be unique
@@ -22,7 +22,7 @@ _gui_block_ids = IdGenerator()
 # =====================================================================================================================
 class View:
     """View - describes the visual representation of a Schedule."""
-    def __init__(self, views_controller: ViewChoices, frame, schedule: Schedule, resource: Teacher|Stream|Lab ):
+    def __init__(self, views_controller: ViewsController, frame, schedule: Schedule, resource: Teacher | Stream | Lab):
         self.views_controller = views_controller
         self.frame = frame
         self.resource = resource
