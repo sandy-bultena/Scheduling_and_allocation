@@ -235,7 +235,7 @@ class Scheduler:
         # on moving away from this page, must remove all the views (check previous version to see what it did)
         # it would be too hard to manage the views, if the contents of the schedule were changing
 
-        view_choice = ViewChoices(views_frame, self.schedule)
+        view_choice = ViewChoices(self.set_dirty_method, views_frame, self.schedule)
         view_choice.refresh()
 
         # data_entry = EditResources(self.set_dirty_method, teachers_frame, ResourceType.teacher, self.schedule)

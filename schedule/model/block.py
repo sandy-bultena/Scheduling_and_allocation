@@ -32,6 +32,7 @@ if TYPE_CHECKING:
     from .lab import Lab
     from .teacher import Teacher
     from .section import Section
+    from .stream import Stream
 
 
 class Block:
@@ -88,6 +89,13 @@ class Block:
     def clear_conflicts(self):
         """remove any and all conflicts"""
         self.conflict = ConflictType.NONE
+
+    # ------------------------------------------------------------------------
+    # All about streams
+    # ------------------------------------------------------------------------
+    def streams(self) -> tuple[Stream, ...]:
+        """Returns an immutable list of the assigned to the section that this block is part of."""
+        return self.section.streams()
 
     # ------------------------------------------------------------------------
     # All about labs

@@ -40,7 +40,6 @@ class ViewDynamicTk:
 
                  ):
         """
-        :param mw: MainWindow/root
         :param title: title of the toplevel window (displayed in the top bar)
         :param get_popup_menu_handler: a function that returns menu info for gui block popup menu
         :param refresh_blocks_handler: a function that redraws all the appropriate blocks on the canvas
@@ -107,6 +106,9 @@ class ViewDynamicTk:
         self.toplevel.bind('<Control-y>', self.redo)
         self.toplevel.bind('<Command-y>', self.redo)
 
+    # =================================================================================================================
+    # draw the view canvas (the static drawing of the view)
+    # =================================================================================================================
     def _draw_view_canvas(self, scale_factor: float = 1.0) -> ViewCanvasTk:
         """
         Clears the canvas of all blocks and redraws the background, followed by a call
@@ -136,6 +138,9 @@ class ViewDynamicTk:
 
         return self.view_canvas
 
+    # =================================================================================================================
+    # draw the view (the view with all the gui interactions)
+    # =================================================================================================================
     def draw(self, scale_factor: float = 1.0):
         """
         Draw the view, calls event handler refresh_blocks_handler to get info about the blocks"
@@ -153,6 +158,9 @@ class ViewDynamicTk:
         self.cn.tag_bind(self.view_canvas.Clickable_Tag_Name, '<2>', self._post_menu)
         self.cn.tag_bind(self.view_canvas.Clickable_Tag_Name, "<Double-1>", self._double_clicked)
 
+    # =================================================================================================================
+    # draw an individual block
+    # =================================================================================================================
     def draw_block(self, resource_type: ResourceType, day: int, start_time: float,
                    duration: float, text: str, gui_block_id, movable=True):
         """
@@ -163,11 +171,19 @@ class ViewDynamicTk:
         :param duration:
         :param text:  the text to display on the block
         :param gui_block_id:  the unique identifier for all gui objects that comprise this block
-        :return:
+        :param movable: is this block allowed to be moved?
         """
         # draw the block
-        self.view_canvas.draw_block(resource_type, day, start_time, duration, text, gui_block_id, movable)
+        self.view_canvas.draw_block(
+            resource_type=resource_type,
+            day = day, start_time = start_time, duration=duration,
+            text=text,
+            gui_tag=gui_block_id,
+            movable=movable)
 
+    # =================================================================================================================
+    # colour an individual block
+    # =================================================================================================================
     def colour_block(self, gui_block_id: str, resource_type: ResourceType, is_movable=True,
                      conflict: ConflictType = None):
         """
@@ -195,17 +211,24 @@ class ViewDynamicTk:
         if not Colour.is_light(colour):
             text_colour = "white"
 
-        cn.itemconfigure(f"{self.view_canvas.Rectange_Tag_Name} && {gui_block_id}", fill=colour)
-        cn.itemconfigure(f"{self.view_canvas.Text_Tag_Name} && {gui_block_id}", fill=text_colour)
+        # if tag name doesn't exist, then don't do anything
+        try:
+            cn.itemconfigure(f"{self.view_canvas.Rectange_Tag_Name} && {gui_block_id}", fill=colour)
+            cn.itemconfigure(f"{self.view_canvas.Text_Tag_Name} && {gui_block_id}", fill=text_colour)
+        except TclError:
+            pass
 
+    # =================================================================================================================
+    # the window is being closed (event handler for the little 'x' in top-level window)
+    # =================================================================================================================
     def destroy(self):
         """Close/destroy the gui window."""
         self.on_closing_handler(self)
         self.toplevel.destroy()
 
-    # =================================================================
+    # =================================================================================================================
     # menus, popups and double-clicks
-    # =================================================================
+    # =================================================================================================================
     def _post_menu(self, e: Event):
         """
         Display pop up menu for specific gui block
@@ -214,8 +237,12 @@ class ViewDynamicTk:
         gui_block_id = self.view_canvas.get_gui_block_id_from_selected_item()
 
         # get menu info from callback routine
-        menu = Menu(self.toplevel, tearoff=0)
         menu_details = self.get_popup_menu_handler(gui_block_id)
+        if menu_details is None:
+            return
+
+        # create the menu and display
+        menu = Menu(self.toplevel, tearoff=0)
         generate_menu(self.toplevel, menu_details, menu)
         try:
             menu.tk_popup(e.x_root, e.y_root)
@@ -302,3 +329,6 @@ class ViewDynamicTk:
         (cur_x_pos, cur_y_pos, _, _) = old_coords
         self.cn.lift(gui_block_id)
         self.cn.move(gui_block_id, new_coords[0] - cur_x_pos, new_coords[1] - cur_y_pos)
+
+    def raise_to_top(self):
+        self.toplevel.lift()

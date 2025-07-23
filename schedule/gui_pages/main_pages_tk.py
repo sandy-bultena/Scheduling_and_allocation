@@ -84,6 +84,13 @@ class MainPageBaseTk:
         # when clicking the 'x' in the corner of the window, call _exit_schedule
         self.mw.protocol("WM_DELETE_WINDOW", self._exit_schedule)
 
+        # have main window pop-up and have focus
+        # https://stackoverflow.com/questions/8691655/how-to-put-a-tkinter-window-on-top-of-the-others/8691795
+        self.mw.lift()
+        self.mw.call('wm', 'attributes', '.', '-topmost', True)
+        self.mw.after_idle(self.mw.call, 'wm', 'attributes', '.', '-topmost', False)
+        self.mw.focus_force()
+
         # colors and fonts
         self.colours, self.fonts = set_default_fonts_and_colours(self.mw, invert=self.dark_mode)
 
