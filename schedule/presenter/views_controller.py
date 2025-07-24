@@ -12,7 +12,7 @@ RESOURCE = Teacher | Lab | Stream
 # =====================================================================================================================
 
 class Action:
-    def __init__(self, block: Block, action: Literal['move', 'change_resource'],
+    def __init__(self, block: Block, action: Literal['move', 'change_resource', 'toggle_movable'],
             from_day: Optional[float] = None,
             from_time: Optional[float] = None,
             to_day: Optional[float] = None,
@@ -20,6 +20,7 @@ class Action:
             from_resource: Optional[RESOURCE] = None,
             to_resource: Optional[RESOURCE] = None,
             resource_type:Optional[ResourceType] = None,
+            was_movable: bool = None,
                  ):
         self.action = action
         self.block = block
@@ -30,12 +31,15 @@ class Action:
         self.from_resource = from_resource
         self.to_resource = to_resource
         self.resource_type = resource_type
+        self.was_movable = was_movable
 
     def __str__(self):
         if self.action == 'move':
             return f"move {self.block} from {self.from_day} to {self.to_day} and from {self.from_time} to {self.to_time}"
         elif self.action == "change_resource":
             return f"{self.block} change from {self.from_resource} to {self.to_resource}"
+        elif self.action == "toggle_movable":
+            return f"{self.block} movable has been toggled"
         else:
             return "Action with no action"
 
@@ -104,11 +108,10 @@ class ViewsController:
     # notify block move
     # -----------------------------------------------------------------------------------------------------------------
     def notify_block_move(self, resource_number: Optional[str], moved_block: Block, day: float, start_time:float):
-        """A block has been moved in a view, so propogate this information to the other views"""
+        """A block has been modified in a view, so propagate this information to the other views"""
 
         self.dirty_flag_method(True)
         self.refresh()
-        self.schedule.calculate_conflicts()
 
         # update any view that has the same block that was moved
         for view_id, view in self._views.items():
@@ -116,25 +119,55 @@ class ViewsController:
                 for gui_id, block in view.gui_blocks.items():
                     if block.number == moved_block.number:
                         view.move_gui_block_to(moved_block, day, start_time)
-                view.refresh_block_colours()
+                        view.refresh_block_colours()
 
     # -----------------------------------------------------------------------------------------------------------------
-    # save changes to undo db
+    # notify block movable toggled
     # -----------------------------------------------------------------------------------------------------------------
-    def add_move_to_undo(self, block: Block, from_day:float, to_day:float, from_time:float, to_time:float):
+    def notify_block_movable_toggled(self, modified_block: Block):
+        """A block has been modified in a view, so propagate this information to the other views"""
 
-        # add to undo list
-        self._undo.append(Action(block=block, action="move", from_day=from_day, from_time=from_time,
-                                 to_day = to_day, to_time = to_time))
+        self.dirty_flag_method(True)
+        self.refresh()
+        #### self.schedule.calculate_conflicts()
 
-    def add_change_resource_to_undo(self, resource_type: ResourceType, block: Block, from_resource, to_resource):
+        # update any view that has the same block that was moved
+        for view_id, view in self._views.items():
+            for gui_id, block in view.gui_blocks.items():
+                if block.number == modified_block.number:
+                    view.refresh_block_colours()
 
-        # add to undo list
-        self._undo.append(Action(block=block, action="change_resource",
-                                 from_resource=from_resource,
-                                 to_resource=to_resource,
-                                 resource_type=resource_type))
+    # ----------------------------------------------------------------------------------------------------------------
+    # notify move block to a different resource
+    # ----------------------------------------------------------------------------------------------------------------
+    def notify_move_block_to_resource(self, resource_type: ResourceType, block: Block, from_resource: RESOURCE, to_resource: RESOURCE):
+        """
+        a block has been moved from one resource to another, update appropriate views, adjust 'undo' and 'redo' appropriately
+        :param resource_type:
+        :param block:
+        :param from_resource:
+        :param to_resource:
+        """
+        match resource_type:
+            case ResourceType.teacher:
+                block.remove_teacher(from_resource)
+                block.add_teacher(to_resource)
+            case ResourceType.lab:
+                block.remove_lab(from_resource)
+                block.add_lab(to_resource)
+        self.schedule.calculate_conflicts()
 
+        self.dirty_flag_method(True)
+
+        if from_resource.number in self._views.keys():
+            self._views[from_resource.number].draw()
+        else:
+            self.call_view(from_resource)
+
+        if to_resource.number in self._views.keys():
+            self._views[to_resource.number].draw()
+        else:
+            self.call_view(to_resource)
 
     # ----------------------------------------------------------------------------------------------------------------
     # open companion view (double_click_handler)
@@ -161,58 +194,28 @@ class ViewsController:
         except KeyError:
             pass
 
-    # ----------------------------------------------------------------------------------------------------------------
-    # move block to a different resource
-    # ----------------------------------------------------------------------------------------------------------------
-    def move_block_to_resource(self, resource_type: ResourceType, block: Block, from_resource: RESOURCE, to_resource: RESOURCE):
-        """
-        a block has been moved from one resource to another, update appropriate views, adjust 'undo' and 'redo' appropriately
-        :param resource_type:
-        :param block:
-        :param from_resource:
-        :param to_resource:
-        """
+    # -----------------------------------------------------------------------------------------------------------------
+    # save changes to undo db
+    # -----------------------------------------------------------------------------------------------------------------
+    def save_action_block_move(self, block: Block, from_day:float, to_day:float, from_time:float, to_time:float):
 
-        # if user has made a change, then we can no longer do 'redo'
-        self.remove_all_redoes()
+        # add to undo list
+        self._undo.append(Action(block=block, action="move", from_day=from_day, from_time=from_time,
+                                 to_day = to_day, to_time = to_time))
 
-        # update
-        self._update_move_block_to_resource(resource_type, block, from_resource, to_resource)
+    def save_action_block_resource_changed(self, resource_type: ResourceType, block: Block, from_resource, to_resource):
 
-        # add the user change to 'undo'
-        self._undo.append(Action(block=block, action="change_resource", resource_type=resource_type,
-                                 from_resource=from_resource, to_resource=to_resource))
+        # add to undo list
+        self._undo.append(Action(block=block, action="change_resource",
+                                 from_resource=from_resource,
+                                 to_resource=to_resource,
+                                 resource_type=resource_type))
 
-    def _update_move_block_to_resource(self, resource_type: ResourceType, block: Block, from_resource: RESOURCE, to_resource: RESOURCE):
-        """
-        a block has been moved from one resource to another, update appropriate views
-        :param resource_type:
-        :param block:
-        :param from_resource:
-        :param to_resource:
-        """
-        match resource_type:
-            case ResourceType.teacher:
-                print(f"... removing {from_resource} from block")
-                print(f"... adding {to_resource} to block")
-                block.remove_teacher(from_resource)
-                block.add_teacher(to_resource)
-            case ResourceType.lab:
-                block.remove_lab(from_resource)
-                block.add_lab(to_resource)
-        self.schedule.calculate_conflicts()
+    def save_action_block_movable_toggled(self, block: Block, was: bool):
 
-        self.dirty_flag_method(True)
+        # add to undo list
+        self._undo.append(Action(block=block, action="toggle_movable", was_movable=was))
 
-        if from_resource.number in self._views.keys():
-            self._views[from_resource.number].draw()
-        else:
-            self.call_view(from_resource)
-
-        if to_resource.number in self._views.keys():
-            self._views[to_resource.number].draw()
-        else:
-            self.call_view(to_resource)
 
     # ----------------------------------------------------------------------------------------------------------------
     # undo/redo last actions
@@ -251,124 +254,15 @@ class ViewsController:
                                          resource_type=action.resource_type,
                                   ))
                 self.schedule.calculate_conflicts()
-                self._update_move_block_to_resource(resource_type=action.resource_type, block=action.block,
+                self.notify_move_block_to_resource(resource_type=action.resource_type, block=action.block,
                                                     from_resource=action.to_resource,
                                                     to_resource=action.from_resource)
+            case 'toggle_movable':
+                other_list.append(Action(action='toggle_movable', block=action.block, was_movable=not action.was_movable))
+                action.block.time_slot.movable = action.was_movable
+                self.notify_block_movable_toggled(action.block)
+
 
 
     def remove_all_redoes(self):
         self._redo.clear()
-
-"""
-        # ------------------------------------------------------------------------
-        # get_by_id the undo/redo
-        # ------------------------------------------------------------------------
-        action = None
-        if type == 'undo':
-            undoes: list = self.undoes()
-            action = undoes.pop() if undoes else None
-        else:
-            redoes: list = self.redoes()
-            action = redoes.pop() if redoes else None
-
-        if not action:
-            return
-
-        # ------------------------------------------------------------------------
-        # process action
-        # ------------------------------------------------------------------------
-
-        if action.move_type == "Day/Time":
-            obj = action.origin_obj
-            block: Block = self._find_block_to_apply_undo_redo(action, obj)
-
-            # --------------------------------------------------------------------
-            # make new undo/redo object as necessary
-            # --------------------------------------------------------------------
-            redo_or_undo = Undo(block.number, block.time_start, block.day, action.origin_obj,
-                                action.move_type, None)
-            if type == 'undo':
-                self.add_redo(redo_or_undo)
-                self.remove_last_undo()
-            else:
-                self.add_undo(redo_or_undo)
-                self.remove_last_redo()
-
-            # --------------------------------------------------------------------
-            # perform local undo/redo
-            # --------------------------------------------------------------------
-            block.time_start = action.origin_start
-            block.day = action.origin_day
-
-            # update all views to re-place blocks.
-            self.redraw_all_views()
-
-        # ------------------------------------------------------------------------
-        # moved a teacher from one course to another, or moved blocks from
-        # one lab to a different lab
-        # ------------------------------------------------------------------------
-        else:
-            original_obj = action.origin_obj
-            target_obj = action.new_obj
-            block: Block = self._find_block_to_apply_undo_redo(action, target_obj)
-
-            # --------------------------------------------------------------------
-            # make new undo/redo object as necessary
-            # --------------------------------------------------------------------
-            redo_or_undo = Undo(block.number, block.time_start, block.day, action.new_obj,
-                                action.move_type, action.origin_obj)
-            if type == 'undo':
-                self.add_redo(redo_or_undo)
-                self.remove_last_undo()
-            else:
-                self.add_undo(redo_or_undo)
-                self.remove_last_redo()
-
-            # reassign teacher/lab to blocks.
-            if action.move_type == 'teacher':
-                block.remove_teacher_by_id(target_obj)
-                block.assign_teacher_by_id(original_obj)
-                block.section.remove_teacher_by_id(target_obj)
-                block.section.assign_teacher_by_id(original_obj)
-            elif action.move_type == 'lab':
-                block.remove_lab_by_id(target_obj)
-                block.assign_lab_by_id(original_obj)
-
-            # Update all views to re-place the blocks.
-            self.redraw_all_views()
-
-    def _find_block_to_apply_undo_redo(self, action, obj) -> Block:
-        block: Block
-        blocks = self.schedule.get_blocks_for_obj(obj)
-        for b in blocks:
-            if b.id == action.block_id:
-                block = b
-                return block
-
-    def add_undo(self, undo: Undo):
-        self._undoes.append(undo)
-        return self
-
-    def add_redo(self, redo: Undo):
-        self._redoes.append(redo)
-        return self
-
-    def remove_last_undo(self):
-        # NOTE: In Perl, popping an empty list just returns undef.
-        # In Python, trying to pop an empty list throws an IndexError.
-        if self._undoes:
-            self._undoes.pop()
-
-    def remove_last_redo(self):
-        if self._redoes:
-            self._redoes.pop()
-
-    def remove_all_undoes(self):
-        self._undoes.clear()
-        return self
-
-    def remove_all_redoes(self):
-        self._redoes.clear()
-        return self
-
-"""

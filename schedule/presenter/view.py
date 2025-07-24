@@ -1,7 +1,6 @@
 from __future__ import annotations
 import re
 from functools import partial
-from turtledemo.rosette import mn_eck
 from typing import TYPE_CHECKING, Optional
 
 from schedule.Tk import MenuItem, MenuType
@@ -11,6 +10,8 @@ from schedule.model import Block, Teacher, Stream, Lab, Schedule, ScheduleTime
 from schedule.model.enums import ResourceType
 if TYPE_CHECKING:
     from schedule.presenter.views_controller import ViewsController
+
+RESOURCE = Lab | Stream | Teacher
 
 # =====================================================================================================================
 # use an generator to always guarantee that the new id will be unique
@@ -43,12 +44,12 @@ class View:
 
         # create the gui representation of the view
         self.gui: ViewDynamicTk = ViewDynamicTk(self.frame, str(resource),
+                                                get_popup_menu_handler=self.popup_menu,
                                                 refresh_blocks_handler=self.draw_blocks,
                                                 on_closing_handler=self.on_closing,
                                                 double_click_block_handler=self.open_companion_view,
                                                 gui_block_is_moving_handler=self.gui_block_is_moving,
                                                 gui_block_has_dropped_handler=self.gui_block_has_dropped,
-                                                get_popup_menu_handler=self.popup_menu,
                                                 undo_handler=self.views_controller.undo,
                                                 redo_handler=self.views_controller.redo,
                                                 )
@@ -57,9 +58,34 @@ class View:
         self.gui.draw()
 
     # ----------------------------------------------------------------------------------------------------------------
+    # get popup menu (get_popup_menu_handler)
+    # ----------------------------------------------------------------------------------------------------------------
+    def toggle_is_movable(self, block: Block):
+        """
+        toggle movability for block, and inform View Controller
+        :param block: the block that needs its 'movable' option toggled
+        """
+
+        block.time_slot.movable = not block.time_slot.movable
+        self.refresh_block_colours()
+
+        # very important, let the gui controller _know_ that the gui block has been modified
+        self.views_controller.notify_block_movable_toggled( block)
+
+        # new action by user, so clear all 'redo'
+        self.views_controller.remove_all_redoes()
+
+        # save the action so that it can be undone
+        self.views_controller.save_action_block_movable_toggled(block, not block.movable)
+
+
+    # ----------------------------------------------------------------------------------------------------------------
     # get all the blocks for this resource/schedule (refresh_blocks_handler)
     # ----------------------------------------------------------------------------------------------------------------
     def draw_blocks(self):
+        """
+        draw blocks onto Canvas
+        """
 
         # get all the blocks for this resource/schedule
         blocks = []
@@ -139,14 +165,15 @@ class View:
         self.gui.colour_block(gui_id, self.resource_type, is_movable=block.movable(), conflict = block.conflict)
 
         # very important, let the gui controller _know_ that the gui block has been moved
-        self.views_controller.notify_block_move(self.resource.number, block,  day, start_time)
+        self.views_controller.notify_block_move(self.resource.number, block, day, start_time)
 
     # ----------------------------------------------------------------------------------------------------------------
     # gui_block_has_dropped (gui_block_has_dropped_handler)
     # ----------------------------------------------------------------------------------------------------------------
     def gui_block_has_dropped(self, gui_id: str):
         """
-        User has stopped dragging the gui block, so adjust gui block to block's new location
+        User has stopped dragging the gui block, so adjust gui block to block's new location and
+        inform View Controller
         :param gui_id: the id of the gui representation of the block
         """
 
@@ -168,12 +195,16 @@ class View:
 
         # very important, let the gui controller _know_ that the gui block has been moved
         self.views_controller.notify_block_move(self.resource.number, block, block.time_slot.day.value,
-                                block.time_slot.time_start.hours)
+                                                block.time_slot.time_start.hours)
+
+        # new action by user, so clear all 'redo'
+        self.views_controller.remove_all_redoes()
 
         # save the action so that it can be undone
-        self.views_controller.remove_all_redoes()
-        self.views_controller.add_move_to_undo(block, self._block_original_day, block.time_slot.day.value,
-                                               self._block_original_start_time, block.time_slot.time_start.hours)
+        self.views_controller.save_action_block_move(block, self._block_original_day, block.time_slot.day.value,
+                                                     self._block_original_start_time, block.time_slot.time_start.hours)
+
+        # reset the 'start move' info
         self._block_original_start_time = None
         self._block_original_day = None
 
@@ -181,12 +212,13 @@ class View:
     # get popup menu (get_popup_menu_handler)
     # ----------------------------------------------------------------------------------------------------------------
     def popup_menu(self, gui_id) -> Optional[list[MenuItem]]:
+        """
+        Create a pop-up menu that is unique to this gui_id
+        :param gui_id:
+        """
         block = self.gui_blocks.get(gui_id, None)
 
         if block is None:
-            return
-
-        if self.resource_type == ResourceType.stream:
             return
 
         # get the resources (note we cannot swap blocks between streams)
@@ -196,22 +228,45 @@ class View:
                 resources = set(self.schedule.teachers()) - set(block.teachers())
             case ResourceType.lab:
                 resources = set(self.schedule.labs()) - set(block.labs())
-        if len(resources) == 0:
-            return
 
         # create the menu
-        menu_list: list[MenuItem] = []
+        menu_list: list[MenuItem] = [MenuItem(menu_type=MenuType.Command, label=f"Toggle 'is_movable' property",
+                                              command=partial(self.toggle_is_movable, block))]
+
+        if len(resources):
+            menu_list.append(MenuItem(menu_type=MenuType.Separator))
+
         for resource in sorted(resources):
             menu_list.append(MenuItem(menu_type=MenuType.Command, label=f"Move to {resource}",
-                                      command=partial(self.views_controller.move_block_to_resource,
-                                                      self.resource_type,
-                                                      block,
-                                                      self.resource,
-                                                      resource)
+                                      command=partial(self.move_resource, block, resource)
                                       )
                              )
         return menu_list
 
+    # ----------------------------------------------------------------------------------------------------------------
+    # modify the resource (from pop-up menu)
+    # ----------------------------------------------------------------------------------------------------------------
+    def move_resource(self, block: Block, resource: RESOURCE):
+        """
+        move resource (ask Views Controller to do it for us)
+        :param block:
+        :param resource:
+        """
+
+        # let gui controller handle this because it involves more than one resource
+        self.views_controller.notify_move_block_to_resource(resource_type = self.resource_type,
+                                                            block=block,
+                                                            from_resource= self.resource,
+                                                            to_resource= resource)
+
+        # new action by user, so clear all 'redo'
+        self.views_controller.remove_all_redoes()
+
+        # save the action so that it can be undone
+        self.views_controller.save_action_block_resource_changed(resource_type = self.resource_type,
+                                                                 block=block,
+                                                                 from_resource= self.resource,
+                                                                 to_resource= resource)
 
     # ----------------------------------------------------------------------------------------------------------------
     # move_gui_block_to (used by Views Controller)
