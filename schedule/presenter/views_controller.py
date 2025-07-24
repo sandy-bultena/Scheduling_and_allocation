@@ -119,7 +119,7 @@ class ViewsController:
                 for gui_id, block in view.gui_blocks.items():
                     if block.number == moved_block.number:
                         view.move_gui_block_to(moved_block, day, start_time)
-                        view.refresh_block_colours()
+            view.refresh_block_colours()
 
     # -----------------------------------------------------------------------------------------------------------------
     # notify block movable toggled

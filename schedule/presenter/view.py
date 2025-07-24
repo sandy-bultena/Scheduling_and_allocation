@@ -44,6 +44,7 @@ class View:
 
         # create the gui representation of the view
         self.gui: ViewDynamicTk = ViewDynamicTk(self.frame, str(resource),
+                                                resource_type= self.resource_type,
                                                 get_popup_menu_handler=self.popup_menu,
                                                 refresh_blocks_handler=self.draw_blocks,
                                                 on_closing_handler=self.on_closing,
@@ -176,10 +177,13 @@ class View:
         inform View Controller
         :param gui_id: the id of the gui representation of the block
         """
-
         block: Block = self.gui_blocks.get(gui_id,None)
         if block is None:
             return
+
+        # set the gui block coordinates to match the block
+        # (which is constantly being snapped to grid during the move process)
+        self.gui.move_gui_block(gui_id, block.time_slot.day.value,block.time_slot.time_start.hours)
 
         # has the block actually moved?
         if self._block_original_start_time is None or self._block_original_day is None:
@@ -188,10 +192,6 @@ class View:
         if (self._block_original_start_time == block.time_slot.time_start.hours and
             self._block_original_day == block.time_slot.day.value):
             return
-
-        # set the gui block coordinates to match the block (which is constantly being snapped to grid
-        # during the move process
-        self.gui.move_gui_block(gui_id, block.time_slot.day.value,block.time_slot.time_start.hours)
 
         # very important, let the gui controller _know_ that the gui block has been moved
         self.views_controller.notify_block_move(self.resource.number, block, block.time_slot.day.value,

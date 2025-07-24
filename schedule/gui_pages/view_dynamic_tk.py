@@ -7,7 +7,7 @@ from typing import Callable
 from schedule.Tk import generate_menu, MenuItem, MenuType
 from schedule.Utilities import Colour
 from schedule.Utilities.id_generator import IdGenerator
-from schedule.gui_generics.block_colours import CONFLICT_COLOUR_INFO, IMMOVABLE_COLOUR, RESOURCE_COLOURS
+from schedule.gui_generics.block_colours import get_conflict_colour_info, IMMOVABLE_COLOUR, RESOURCE_COLOURS
 from schedule.gui_pages.view_canvas_tk import ViewCanvasTk
 from schedule.model import ResourceType, ConflictType
 
@@ -29,6 +29,7 @@ class ViewDynamicTk:
     # Init
     # =================================================================================================================
     def __init__(self, frame: Frame, title: str,
+                 resource_type: ResourceType,
                  get_popup_menu_handler: Callable = _default_menu,
                  refresh_blocks_handler: Callable = lambda *_: None,
                  on_closing_handler: Callable = lambda *_: None,
@@ -73,7 +74,8 @@ class ViewDynamicTk:
         f = Frame(tl)
         f.pack(expand=1, fill="x")
 
-        for c in CONFLICT_COLOUR_INFO:
+        for c in get_conflict_colour_info(resource_type):
+            print(c)
             Label(f, text=c['text'], width=10, background=c['bg'], foreground=c['fg']) \
                 .pack(side='left', expand=1, fill="x")
 
