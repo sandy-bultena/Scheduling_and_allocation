@@ -107,13 +107,13 @@ def test_severity_dependent_on_view():
 
     cc = ConflictType.NONE
     most_severe: ConflictType = cc.most_severe( ResourceType.teacher)
-    assert most_severe is None
+    assert most_severe == ConflictType.NONE
 
     most_severe: ConflictType = cc.most_severe( ResourceType.lab)
-    assert most_severe is None
+    assert most_severe == ConflictType.NONE
 
     most_severe: ConflictType = cc.most_severe( ResourceType.stream)
-    assert most_severe is None
+    assert most_severe == ConflictType.NONE
 
     cc = ALL_BITS_SET
     most_severe: ConflictType = cc.most_severe( ResourceType.none)
@@ -136,7 +136,7 @@ def test_severity_view_independent():
 
     cc = ConflictType.NONE
     most_severe = cc.most_severe(ResourceType.none)
-    assert most_severe is None
+    assert most_severe == ConflictType.NONE
 
 
 # ============================================================================

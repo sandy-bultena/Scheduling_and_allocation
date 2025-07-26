@@ -1,8 +1,8 @@
-# IN PROGRESS
+
 from __future__ import annotations
 
-from enum import Enum
-from typing import Optional, TYPE_CHECKING
+from dataclasses import dataclass, field
+from typing import Optional, TYPE_CHECKING, Any, Callable
 
 from schedule.presenter.edit_resources import EditResources
 from schedule.presenter.edit_courses import EditCourses
@@ -12,29 +12,26 @@ from schedule.presenter.edit_courses import EditCourses
 from .menus_main_menu import set_menu_event_handler, main_menu
 from schedule.Utilities import Preferences
 from schedule.gui_pages import SchedulerTk, set_main_page_event_handler
-from schedule.Utilities.notebook_page_info import NoteBookPageInfo
 from schedule.model import Schedule, ResourceType
 from schedule.exceptions import CouldNotReadFileError
 from schedule.gui_generics.read_only_text_tk import ReadOnlyText
-from schedule.gui_pages.view_choices_tk import ViewChoicesTk
-from .view import View
 from .views_controller import ViewsController
 
-if TYPE_CHECKING:
-    from tkinter import Event
+# =====================================================================================
+# Notebook book-keeping
+# =====================================================================================
+@dataclass
+class NBTabInfo:
+        name: str
+        label: str
+        subpages: list = field(default_factory=list)
+        frame_args: dict[str, Any] =  field(default_factory=dict)
+        creation_handler: Callable = lambda *_: None
+        is_default_page: bool = False
 
-class NoteBookPageNames(Enum):
-    overview_course = "by Course"
-    overview_teacher = "by Teacher"
-    schedule = "Schedules"
-    overview = "Overview"
-    course = "Courses"
-    teacher = "Teachers"
-    lab = "Labs"
-    stream = "Streams"
 
 # =====================================================================================
-# CLASS
+# Scheduler
 # =====================================================================================
 
 DIRECTORY = str
@@ -44,6 +41,15 @@ class Scheduler:
     """
     This is the main entry point for the Scheduler Program
     """
+
+    NB_overview_course = "by Course"
+    NB_overview_teacher = "by Teacher"
+    NB_schedule = "Schedules"
+    NB_overview = "Overview"
+    NB_course = "Courses"
+    NB_teacher = "Teachers"
+    NB_lab = "Labs"
+    NB_stream = "Streams"
 
     def __init__(self, bin_dir: DIRECTORY, gui: Optional[SchedulerTk] = None):
         # self.bin_dir: Optional[DIRECTORY] = None
@@ -62,20 +68,19 @@ class Scheduler:
         self._schedule_filename = ""
         self._previous_filename = self.preferences.previous_file()
 
-        #        self.views_manager: Optional[viewsManager] = None
-
         # --------------------------------------------------------------------
         # required notebook pages
         # --------------------------------------------------------------------
-        by_course_page = NoteBookPageInfo(NoteBookPageNames.overview_course.value, self.update_course_text)
-        by_teacher_page = NoteBookPageInfo(NoteBookPageNames.overview_teacher.value, self.update_teacher_text)
-        self._required_pages: list[NoteBookPageInfo] = [
-            NoteBookPageInfo(NoteBookPageNames.schedule.value, self.update_choices_of_resource_views),
-            NoteBookPageInfo(NoteBookPageNames.overview.value, self.update_overview, subpages=[by_course_page, by_teacher_page]),
-            NoteBookPageInfo(NoteBookPageNames.course.value, self.update_edit_courses),
-            NoteBookPageInfo(NoteBookPageNames.teacher.value, self.update_edit_teachers),
-            NoteBookPageInfo(NoteBookPageNames.lab.value, self.update_edit_labs),
-            NoteBookPageInfo(NoteBookPageNames.stream.value, self.update_edit_streams)
+        by_course_page = NBTabInfo(label=self.NB_overview_course, name=self.NB_overview_course)
+        by_teacher_page = NBTabInfo(label=self.NB_overview_teacher, name=self.NB_overview_teacher)
+
+        self._required_tabs: list[NBTabInfo] = [
+            NBTabInfo(label=self.NB_schedule, name=self.NB_schedule),
+            NBTabInfo(label=self.NB_overview, name=self.NB_overview, subpages=[by_course_page, by_teacher_page]),
+            NBTabInfo(label=self.NB_course, name=self.NB_course),
+            NBTabInfo(label=self.NB_teacher, name=self.NB_teacher),
+            NBTabInfo(label=self.NB_lab, name=self.NB_lab),
+            NBTabInfo(label = self.NB_stream, name = self.NB_stream)
         ]
 
         # --------------------------------------------------------------------
@@ -106,7 +111,8 @@ class Scheduler:
         self.gui.create_menu_and_toolbars(self._toolbar_buttons, self._button_properties, self._menu)
         self.gui.create_front_page(self.preferences.semester())
         self.gui.create_status_bar()
-        # pre_process_stuff()
+        self.gui.notebook_tab_changed_handler = self.notebook_tab_has_changed
+
 
         self.gui.start_event_loop()
 
@@ -157,7 +163,7 @@ class Scheduler:
     def new_menu_event(self):
         self.schedule = Schedule()
         self.schedule_filename = ""
-        self.gui.create_standard_page(self._required_pages)
+        self.gui.create_standard_page(self._required_tabs)
         self.dirty_flag = True
 
     def open_menu_event(self):
@@ -175,7 +181,7 @@ class Scheduler:
                 self.schedule = schedule
                 self.schedule_filename = filename
                 self.dirty_flag = False
-                self.gui.create_standard_page(self._required_pages)
+                self.gui.create_standard_page(self._required_tabs)
 
             except CouldNotReadFileError as e:
                 self.gui.show_error("Read File", str(e))
@@ -193,7 +199,6 @@ class Scheduler:
             return
 
         if filename is None or filename == "":
-            print("Select file to save")
             filename = self.gui.select_file_to_save()
 
         if filename is not None and filename != "":
@@ -225,33 +230,43 @@ class Scheduler:
         pass
 
     # ==================================================================
+    # notebook tab has changed
+    # ==================================================================
+    def notebook_tab_has_changed(self, name: str, frame):
+
+        if name == self.NB_overview_course:
+            self.update_course_text(frame)
+        elif name == self.NB_overview_teacher:
+            self.update_teacher_text(frame)
+        elif name == self.NB_schedule:
+            self.update_choices_of_resource_views(frame)
+        elif name == self.NB_overview:
+            self.update_overview(frame)
+        elif name == self.NB_course:
+            self.update_edit_courses(frame)
+        elif name == self.NB_teacher:
+            self.update_edit_teachers(frame)
+        elif name == self.NB_lab:
+            self.update_edit_labs(frame)
+        elif name == self.NB_stream:
+            self.update_edit_streams(frame)
+
+    # ==================================================================
     # update_choices_of_resource_views
     # (what teacher_ids/lab_ids/stream_ids) can we create schedules for?
     # ==================================================================
-    def update_choices_of_resource_views(self):
-        notebook_name = NoteBookPageNames.schedule.value.lower()
-        views_frame = self.gui.get_notebook_frame(notebook_name)
-        # create a global view hub manager
-        # on moving away from this page, must remove all the views (check previous version to see what it did)
-        # it would be too hard to manage the views, if the contents of the schedule were changing
-
-        view_choice = ViewsController(self.set_dirty_method, views_frame, self.schedule)
+    def update_choices_of_resource_views(self, frame):
+        view_choice = ViewsController(self.set_dirty_method, frame, self.schedule)
         view_choice.refresh()
 
-        # data_entry = EditResources(self.set_dirty_method, teachers_frame, ResourceType.teacher, self.schedule)
-        # data_entry.schedule = self.schedule
-        # data_entry.refresh()
-
-    #
     # ==================================================================
     # update_overview
     # A text representation of the schedules
     # ==================================================================
-    def update_overview(self):
-        self.update_course_text()
-        self.update_teacher_text()
+    def update_overview(self, frame):
+        pass
 
-    def update_course_text(self):
+    def update_course_text(self, frame):
         text: list[str] = list()
         if self.schedule is None:
             text.append('There is no schedule, please open one')
@@ -261,20 +276,16 @@ class Scheduler:
             else:
                 for c in self.schedule.courses():
                     text.append(str(c))
-        notebook_name = NoteBookPageNames.overview_course.value.lower()
-        frame = self.gui.get_notebook_frame(notebook_name)
         data_entry = ReadOnlyText(frame, text)
         data_entry.write(text)
 
-    def update_teacher_text(self):
+    def update_teacher_text(self, frame):
         text = []
         if not self.schedule.teachers:
             text.append('No teachers defined in this schedule')
         else:
             for t in self.schedule.teachers():
                 text.append(self.schedule.teacher_details(t))
-        notebook_name = NoteBookPageNames.overview_teacher.value.lower()
-        frame = self.gui.get_notebook_frame(notebook_name)
         data_entry = ReadOnlyText(frame, text)
         data_entry.write(text)
 
@@ -282,10 +293,8 @@ class Scheduler:
     # update_edit_teachers
     # - A page where teacher_ids can be added/modified or deleted
     # ==================================================================
-    def update_edit_teachers(self):
-        notebook_name = NoteBookPageNames.teacher.value.lower()
-        teachers_frame = self.gui.get_notebook_frame(notebook_name)
-        data_entry = EditResources(self.set_dirty_method, teachers_frame, ResourceType.teacher, self.schedule)
+    def update_edit_teachers(self, frame):
+        data_entry = EditResources(self.set_dirty_method, frame, ResourceType.teacher, self.schedule)
         data_entry.schedule = self.schedule
         data_entry.refresh()
 
@@ -293,10 +302,8 @@ class Scheduler:
     # update_edit_streams
     # - A page where stream_ids can be added/modified or deleted
     # ==================================================================
-    def update_edit_streams(self):
-        notebook_name = NoteBookPageNames.stream.value.lower()
-        streams_frame = self.gui.get_notebook_frame(notebook_name)
-        data_entry = EditResources(self.set_dirty_method, streams_frame, ResourceType.stream, self.schedule)
+    def update_edit_streams(self, frame):
+        data_entry = EditResources(self.set_dirty_method, frame, ResourceType.stream, self.schedule)
         data_entry.schedule = self.schedule
         data_entry.refresh()
 
@@ -304,10 +311,8 @@ class Scheduler:
     # update_edit_labs
     # - A page where lab_ids can be added/modified or deleted
     # ==================================================================
-    def update_edit_labs(self):
-        notebook_name = NoteBookPageNames.lab.value.lower()
-        labs_frame = self.gui.get_notebook_frame(notebook_name)
-        data_entry = EditResources(self.set_dirty_method, labs_frame, ResourceType.lab, self.schedule)
+    def update_edit_labs(self, frame):
+        data_entry = EditResources(self.set_dirty_method, frame, ResourceType.lab, self.schedule)
         data_entry.schedule = self.schedule
         data_entry.refresh()
 
@@ -315,11 +320,8 @@ class Scheduler:
     # draw_edit_courses
     # - A page where courses can be added/modified or deleted
     # ==================================================================
-    def update_edit_courses(self):
-        print( "Update edit courses")
-        notebook_name = NoteBookPageNames.course.value.lower()
-        edit_course_frame = self.gui.get_notebook_frame(notebook_name)
-        data_entry = EditCourses(self.set_dirty_method, edit_course_frame, self.schedule)
+    def update_edit_courses(self, frame):
+        data_entry = EditCourses(self.set_dirty_method, frame, self.schedule)
         data_entry.schedule = self.schedule
         data_entry.refresh()
 

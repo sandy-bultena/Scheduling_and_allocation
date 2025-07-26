@@ -12,15 +12,14 @@ from functools import partial
 from tkinter.ttk import Notebook
 from tkinter import *
 from tkinter import filedialog as fd
-from typing import Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING, Callable
 
 from tkinter.messagebox import showerror, showinfo, askyesnocancel
 
 from schedule.Tk import FindImages
 from schedule.Tk import set_default_fonts_and_colours, TkColours, TkFonts
 from schedule.Tk import generate_menu, make_toolbar
-from schedule.gui_pages.note_book_frame_tk import NoteBookFrameTk
-from schedule.Utilities.notebook_page_info import NoteBookPageInfo
+from schedule.gui_pages.note_book_frame_tk import NoteBookFrameTk, TabInfoProtocol
 from schedule.Tk import MenuItem, ToolbarItem
 from schedule.Utilities.Preferences import Preferences
 
@@ -51,12 +50,13 @@ class MainPageBaseTk:
         self.dict_of_frames: dict[str, Frame] = dict()
         self.logo: Optional[PhotoImage] = None
         self.mw: Optional[Toplevel] = None
+        self.notebook_tab_changed_handler: Callable[[str,Frame], None] = lambda a,b: None
 
         # private properties
         self._preferences = preferences
         self._notebook_frame: Optional[NoteBookFrameTk] = None
         self._wait = None
-        self.notebook_pages_info: list[NoteBookPageInfo] | None = None
+        self.notebook_tabs_info: list[TabInfoProtocol] | None = None
         self._front_page_frame: Optional[Frame] = None
         self._toolbar = None
         self._default_notebook_page: int = 0
@@ -191,14 +191,14 @@ class MainPageBaseTk:
     # ===================================================================================
     # standard page with notebook
     # ===================================================================================
-    def create_standard_page(self, notebook_pages_info: Optional[list[NoteBookPageInfo]] = None):
+    def create_standard_page(self, notebook_pages_info: Optional[list[TabInfoProtocol]] = None, reset=False):
         """Create the 'normal' page after the main page has fulfilled its purpose"""
 
         # if the page is already created, do not recreate it
-        if self._notebook_frame is not None:
-            if self._notebook_frame.top_level_notebook:
-                self._notebook_frame.top_level_notebook.select(self._default_notebook_page)
-                self._notebook_frame.top_level_notebook.event_generate("<<NotebookTabChanged>>")
+        if self._notebook_frame is not None or reset:
+            if self._notebook_frame.main_notebook_frame:
+                self._notebook_frame.main_notebook_frame.select(self._default_notebook_page)
+                self._notebook_frame.main_notebook_frame.event_generate("<<NotebookTabChanged>>")
                 return
 
         # create the page
@@ -208,17 +208,8 @@ class MainPageBaseTk:
         # frame
         main_page_frame = Frame(mw, borderwidth=1, relief='ridge')
         main_page_frame.pack(side='top', expand=1, fill='both')
-        self._notebook_frame = NoteBookFrameTk(self.mw, main_page_frame, notebook_pages_info)
-
-    # def update_for_new_schedule_and_show_page(self):
-    #     """Reset the GUI_Pages when a new schedule is read."""
-    #
-    #     if self._notebook_frame:
-    #         if self._top_level_notebook:
-    #             self._top_level_notebook.select(self._default_notebook_page)
-    #             self._top_level_notebook.event_generate("<<NotebookTabChanged>>")
-    #     else:
-    #         self.create_standard_page()
+        self._notebook_frame = NoteBookFrameTk(self.mw, main_page_frame, notebook_pages_info,
+                                               self.notebook_tab_changed_handler)
 
     # ===================================================================================
     # waiting routines
@@ -264,12 +255,6 @@ class MainPageBaseTk:
 
         filename = select_gui(**kwargs)
         return filename
-
-    def get_notebook_frame(self, page_name: str) -> Optional[Frame]:
-        """get frame for the notebook page"""
-        if self._notebook_frame is not None:
-            return self._notebook_frame.dict_of_frames.get(page_name.lower())
-        return None
 
     # ========================================================================
     # message boxes
