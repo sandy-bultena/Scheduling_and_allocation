@@ -24,7 +24,7 @@ from schedule.Tk import InitGuiFontsAndColours as fac
 
 
 
-class ViewChoicesTk:
+class ViewsControllerTk:
     colours: fac.TkColours = fac.colours
     Fonts: fac.TkFonts = fac.fonts
 

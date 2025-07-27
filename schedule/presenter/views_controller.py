@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Callable, Optional, Literal
 
-from schedule.gui_pages.view_choices_tk import ViewChoicesTk
+from schedule.gui_pages.views_controller_tk import ViewsControllerTk
 from schedule.model import ResourceType, Schedule, Stream, Teacher, Lab, Block, ScheduleTime
 from schedule.presenter.view import View
 
@@ -52,7 +52,8 @@ class ViewsController:
     # -----------------------------------------------------------------------------------------------------------------
     # init
     # -----------------------------------------------------------------------------------------------------------------
-    def __init__(self, dirty_flag_method: Callable[[Optional[bool]], bool], frame, schedule: Schedule):
+    def __init__(self, dirty_flag_method: Callable[[Optional[bool]], bool], frame, schedule: Schedule,
+                 gui:ViewsControllerTk = None):
         """
         :param dirty_flag_method: method used to indicate that data has changed
         :param frame: where the view choices will be displayed
@@ -72,7 +73,11 @@ class ViewsController:
             ResourceType.stream: list(self.schedule.streams())
         }
 
-        self.gui = ViewChoicesTk(frame, self.resources, self.call_view)
+        if gui is not None:
+            self.gui = gui
+        else:
+            self.gui = ViewsControllerTk(frame, self.resources, self.call_view)
+
 
     # -----------------------------------------------------------------------------------------------------------------
     # refresh
@@ -108,7 +113,7 @@ class ViewsController:
     # notify block move
     # -----------------------------------------------------------------------------------------------------------------
     def notify_block_move(self, resource_number: Optional[str], moved_block: Block, day: float, start_time:float):
-        """A block has been modified in a view, so propagate this information to the other views"""
+        """A GUI block has been modified in a view, so propagate this information to the other views"""
 
         self.dirty_flag_method(True)
         self.refresh()
@@ -129,7 +134,6 @@ class ViewsController:
 
         self.dirty_flag_method(True)
         self.refresh()
-        #### self.schedule.calculate_conflicts()
 
         # update any view that has the same block that was moved
         for view_id, view in self._views.items():

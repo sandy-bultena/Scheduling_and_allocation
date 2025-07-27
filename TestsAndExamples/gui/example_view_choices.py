@@ -1,7 +1,7 @@
 from tkinter import *
 
 from schedule.Tk import set_default_fonts_and_colours
-from schedule.gui_pages.view_choices_tk import ViewChoicesTk
+from schedule.gui_pages.views_controller_tk import ViewsControllerTk
 from schedule.model import Schedule
 from schedule.model.enums import ConflictType, ResourceType
 
@@ -29,7 +29,7 @@ frame.pack(expand=1, fill="both")
 resources:dict[ResourceType, list] = {ResourceType.teacher:[t1,t2,t3,t4,t1,t2,t3,t4,t1,t2,t3,t4,],
                            ResourceType.stream:[st1,st2],
                            ResourceType.lab:[l1,l2,l3,l4]}
-vm = ViewChoicesTk(frame, resources,lambda *_:print(*_))
+vm = ViewsControllerTk(frame, resources, lambda *_:print(*_))
 vm.set_button_colour(t1.number, ConflictType.TIME)
 vm.set_button_colour(t2.number)
 mw.mainloop()

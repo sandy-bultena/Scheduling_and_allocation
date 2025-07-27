@@ -1,3 +1,4 @@
+"""Provides code to deal with user modifying the gui view.  Most actions are passed onto the View Controller"""
 from __future__ import annotations
 import re
 from functools import partial
@@ -23,7 +24,7 @@ _gui_block_ids = IdGenerator()
 # =====================================================================================================================
 class View:
     """View - describes the visual representation of a Schedule."""
-    def __init__(self, views_controller: ViewsController, frame, schedule: Schedule, resource: Teacher | Stream | Lab):
+    def __init__(self, views_controller: ViewsController, frame, schedule: Schedule, resource: RESOURCE, gui:ViewDynamicTk=None):
         self.views_controller = views_controller
         self.frame = frame
         self.resource = resource
@@ -43,17 +44,19 @@ class View:
         self.blocks: list[Block] = []
 
         # create the gui representation of the view
-        self.gui: ViewDynamicTk = ViewDynamicTk(self.frame, str(resource),
-                                                resource_type= self.resource_type,
-                                                get_popup_menu_handler=self.popup_menu,
-                                                refresh_blocks_handler=self.draw_blocks,
-                                                on_closing_handler=self.on_closing,
-                                                double_click_block_handler=self.open_companion_view,
-                                                gui_block_is_moving_handler=self.gui_block_is_moving,
-                                                gui_block_has_dropped_handler=self.gui_block_has_dropped,
-                                                undo_handler=self.views_controller.undo,
-                                                redo_handler=self.views_controller.redo,
-                                                )
+        if gui is None:
+            self.gui: ViewDynamicTk = ViewDynamicTk(self.frame, str(resource), resource_type= self.resource_type)
+        else:
+            self.gui = gui
+
+        # Need to set handlers here, instead on constructor, so that it is easier for testing
+        self.gui.get_popup_menu_handler = self.popup_menu
+        self.gui.refresh_blocks_handler = self.draw_blocks
+        self.gui.on_closing_handler = self.on_closing
+        self.gui.double_click_block_handler = self.open_companion_view
+        self.gui.gui_block_is_moving_handler = self.gui_block_is_moving
+        self.gui.gui_block_has_dropped_handler = self.gui_block_has_dropped
+
         self._block_original_start_time: Optional[float]= None
         self._block_original_day: Optional[float] = None
         self.gui.draw()
@@ -66,9 +69,7 @@ class View:
         toggle movability for block, and inform View Controller
         :param block: the block that needs its 'movable' option toggled
         """
-
         block.time_slot.movable = not block.time_slot.movable
-        self.refresh_block_colours()
 
         # very important, let the gui controller _know_ that the gui block has been modified
         self.views_controller.notify_block_movable_toggled( block)
@@ -120,7 +121,7 @@ class View:
     # ----------------------------------------------------------------------------------------------------------------
     # important tidy-up stuff (on_closing_handler)
     # ----------------------------------------------------------------------------------------------------------------
-    def on_closing(self, _):
+    def on_closing(self, *_):
         """When the view closes, clean up"""
         self.views_controller.view_is_closing(self.resource)
 
@@ -138,7 +139,7 @@ class View:
     # ----------------------------------------------------------------------------------------------------------------
     # gui_block_is_moving (gui_block_is_moving_handler)
     # ----------------------------------------------------------------------------------------------------------------
-    def gui_block_is_moving(self, gui_id: str,  day: float, start_time: float, duration: float):
+    def gui_block_is_moving(self, gui_id: str,  gui_block_day: float, gui_block_start_time: float):
         """
         Update block and conflict information as the user is dragging the gui block
         :param gui_id: the id of the gui representation of the block
@@ -156,17 +157,16 @@ class View:
             self._block_original_start_time = block.time_slot.time_start.hours
             self._block_original_day = block.time_slot.day.value
 
-        """update the block by snapping to time and day, although it doesn't update the gui block"""
-        block.time_slot.time_start = ScheduleTime(start_time)
-        block.time_slot.snap_to_day(day)
-        block.time_slot.duration = duration
+        # update the block by snapping to time and day, although it doesn't update the gui block
+        block.time_slot.time_start = ScheduleTime(gui_block_start_time)
+        block.time_slot.snap_to_day(gui_block_day)
         block.time_slot.snap_to_time()
         self.schedule.calculate_conflicts()
         self.refresh_block_colours()
         self.gui.colour_block(gui_id, self.resource_type, is_movable=block.movable(), conflict = block.conflict)
 
         # very important, let the gui controller _know_ that the gui block has been moved
-        self.views_controller.notify_block_move(self.resource.number, block, day, start_time)
+        self.views_controller.notify_block_move(self.resource.number, block, gui_block_day, gui_block_start_time)
 
     # ----------------------------------------------------------------------------------------------------------------
     # gui_block_has_dropped (gui_block_has_dropped_handler)
@@ -298,7 +298,7 @@ class View:
         """
         :param block: The block object
         """
-        scale = self.gui.view_canvas.scale.current_scale
+        scale = self.gui.get_scale()
         resource_type = self.resource_type
 
         # course & section & streams

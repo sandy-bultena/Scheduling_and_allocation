@@ -28,49 +28,50 @@ class ViewDynamicTk:
     # =================================================================================================================
     # Init
     # =================================================================================================================
-    def __init__(self, frame: Frame, title: str,
-                 resource_type: ResourceType,
-                 get_popup_menu_handler: Callable = _default_menu,
-                 refresh_blocks_handler: Callable = lambda *_: None,
-                 on_closing_handler: Callable = lambda *_: None,
-                 undo_handler: Callable = lambda *_: None,
-                 redo_handler: Callable = lambda *_: None,
-                 double_click_block_handler: Callable = lambda *_: None,
-                 gui_block_is_moving_handler: Callable = lambda *_: None,
-                 gui_block_has_dropped_handler: Callable = lambda *_: None
-
-                 ):
+    def __init__(self, frame: Frame, title: str, resource_type: ResourceType,):
         """
+        creates a dynamic view to see all of the blocks, where they are, movable, changeable, etc
+        :param frame: where to put the view
         :param title: title of the toplevel window (displayed in the top bar)
-        :param get_popup_menu_handler: a function that returns menu info for gui block popup menu
-        :param refresh_blocks_handler: a function that redraws all the appropriate blocks on the canvas
-        :param on_closing_handler: a function that handles the closing of this view
-        :param undo_handler: a function that handles an 'undo' event
-        :param redo_handler: a function that handles a 'redo' event
-        :param double_click_block_handler: a function that handles a double click on a gui block
-        :param gui_block_is_moving_handler: a function that handles the movement of a gui block
-        :param gui_block_has_dropped_handler: a function that handles the dropping of a gui block
+        :param resource_type: What type of view is this
         """
 
         self.mw = frame.winfo_toplevel()
         self.view_id = self.view_ids.get_new_id()
-        self.get_popup_menu_handler = get_popup_menu_handler
-        self.refresh_blocks_handler = refresh_blocks_handler
-        self.on_closing_handler = on_closing_handler
-        self.undo_handler = undo_handler
-        self.redo_handler = redo_handler
-        self.double_click_block_handler = double_click_block_handler
-        self.gui_block_is_moving_handler = gui_block_is_moving_handler
-        self.gui_block_has_dropped_handler = gui_block_has_dropped_handler
 
+        # ------------------------------------------------------------------------------------------------------------
+        # handlers
+        # ------------------------------------------------------------------------------------------------------------
+        # returns menu info for gui block popup menu
+        self.get_popup_menu_handler: Callable[[str], list[MenuItem]] = _default_menu
+
+        # redraws all the appropriate blocks on the canvas
+        self.refresh_blocks_handler: Callable[[], None] = lambda: None
+
+        # handles the closing of this view
+        self.on_closing_handler: Callable = lambda *_: None
+
+        # handles a double click on a gui block
+        self.double_click_block_handler: Callable[[str], None] = lambda gui_id: None
+
+        # handles the movement of a gui block
+        self.gui_block_is_moving_handler: Callable[[str, float, float], None] = lambda gui_id, day, start: None
+
+        # handles the dropping of a gui block
+        self.gui_block_has_dropped_handler: Callable[[str], None] = lambda gui_id: None
+
+        # ------------------------------------------------------------------------------------------------------------
         # create a new toplevel window for this view
+        # ------------------------------------------------------------------------------------------------------------
         tl = Toplevel(self.mw)
         self.toplevel = tl
         tl.protocol('WM_DELETE_WINDOW', self.destroy)
         tl.resizable(False, False)
         tl.title(title)
 
+        # ------------------------------------------------------------------------------------------------------------
         # Create bar at top to show Colour coding of conflicts
+        # ------------------------------------------------------------------------------------------------------------
         f = Frame(tl)
         f.pack(expand=1, fill="x")
 
@@ -79,7 +80,9 @@ class ViewDynamicTk:
             Label(f, text=c['text'], width=10, background=c['bg'], foreground=c['fg']) \
                 .pack(side='left', expand=1, fill="x")
 
+        # ------------------------------------------------------------------------------------------------------------
         # add canvas
+        # ------------------------------------------------------------------------------------------------------------
         cn = Canvas(tl, height=DEFAULT_CANVAS_HEIGHT, width=DEFAULT_CANVAS_WIDTH, background="white")
         cn.pack()
         self.cn = cn
@@ -87,7 +90,9 @@ class ViewDynamicTk:
         # create the view_canvas
         self.view_canvas = self._draw_view_canvas()
 
+        # ------------------------------------------------------------------------------------------------------------
         # create scale menu and redo/undo menu
+        # ------------------------------------------------------------------------------------------------------------
         main_menu = Menu(self.mw)
         tl.configure(menu=main_menu)
 
@@ -99,14 +104,16 @@ class ViewDynamicTk:
 
         undo_menu = Menu(main_menu, tearoff=0)
         main_menu.add_cascade(menu=undo_menu, label="Undo/Redo")
-        undo_menu.add_command(label="Undo", accelerator="ctrl-z", command=self.undo)
-        undo_menu.add_cascade(label="Redo", accelerator="ctrl-y", command=self.redo)
+        undo_menu.add_command(label="Undo", accelerator="ctrl-z", command=self._undo)
+        undo_menu.add_cascade(label="Redo", accelerator="ctrl-y", command=self._redo)
 
+        # ------------------------------------------------------------------------------------------------------------
         # bind keys (for mac and windows)
-        self.toplevel.bind("<Control-z>", self.undo)
-        self.toplevel.bind('<Command-z>', self.undo)
-        self.toplevel.bind('<Control-y>', self.redo)
-        self.toplevel.bind('<Command-y>', self.redo)
+        # ------------------------------------------------------------------------------------------------------------
+        self.toplevel.bind("<Control-z>", self._undo)
+        self.toplevel.bind('<Command-z>', self._undo)
+        self.toplevel.bind('<Control-y>', self._redo)
+        self.toplevel.bind('<Command-y>', self._redo)
 
     # =================================================================================================================
     # draw the view canvas (the static drawing of the view)
@@ -141,8 +148,11 @@ class ViewDynamicTk:
         return self.view_canvas
 
     # =================================================================================================================
-    # draw the view (the view with all the gui interactions)
+    # draw the view (the view with all the gui interactions) (called by view, and if resized from menu)
     # =================================================================================================================
+    def get_scale(self):
+        return self.view_canvas.scale.current_scale
+
     def draw(self, scale_factor: float = 1.0):
         """
         Draw the view, calls event handler refresh_blocks_handler to get info about the blocks"
@@ -152,10 +162,11 @@ class ViewDynamicTk:
         self._draw_view_canvas(scale_factor)
 
         # update blocks
+        print(self.refresh_blocks_handler)
         self.refresh_blocks_handler()
 
         # reset binding to canvas objects
-        self.cn.tag_bind(self.view_canvas.Movable_Tag_Name, "<Button-1>", self.select_gui_block_to_move)
+        self.cn.tag_bind(self.view_canvas.Movable_Tag_Name, "<Button-1>", self._select_gui_block_to_move)
         self.cn.tag_bind(self.view_canvas.Clickable_Tag_Name, '<3>', self._post_menu)
         self.cn.tag_bind(self.view_canvas.Clickable_Tag_Name, '<2>', self._post_menu)
         self.cn.tag_bind(self.view_canvas.Clickable_Tag_Name, "<Double-1>", self._double_clicked)
@@ -221,6 +232,13 @@ class ViewDynamicTk:
             pass
 
     # =================================================================================================================
+    # put this gui window on top of every one else
+    # =================================================================================================================
+    def raise_to_top(self):
+        """put this gui window on top of every one else"""
+        self.toplevel.lift()
+
+    # =================================================================================================================
     # the window is being closed (event handler for the little 'x' in top-level window)
     # =================================================================================================================
     def destroy(self):
@@ -251,20 +269,6 @@ class ViewDynamicTk:
         finally:
             menu.grab_release()
 
-    def undo(self, _: Event = None):
-        """
-        calls the "undo" handler with this view's id
-        """
-        print("called undo")
-        self.undo_handler()
-
-    def redo(self, _: Event = None):
-        """
-        calls the "redo" handler with this view's id
-        """
-        print("called redo")
-        self.redo_handler()
-
     def _double_clicked(self, _: Event):
         """
         call event handler because gui block was double-clicked
@@ -272,54 +276,28 @@ class ViewDynamicTk:
         gui_block_id = self.view_canvas.get_gui_block_id_from_selected_item()
         self.double_click_block_handler(gui_block_id)
 
+
+    # =================================================================================================================
+    # undo/ redo
+    # =================================================================================================================
+    def _undo(self, _: Event = None):
+        """
+        calls the "undo" handler with this view's id
+        """
+        self.undo_handler()
+
+    def _redo(self, _: Event = None):
+        """
+        calls the "redo" handler with this view's id
+        """
+        self.redo_handler()
+
     # ============================================================================
-    # Dragging Guiblocks around
+    # Moving Gui blocks around in response to changes in the schedule block
     # ============================================================================
-    def select_gui_block_to_move(self, event: Event):
-
-        gui_block_id = self.view_canvas.get_gui_block_id_from_selected_item()
-        self.cn.tag_raise(gui_block_id, 'all')
-
-        # unbind any previous binding for clicking and motion, just in case
-        self.cn.bind("<Motion>", "")
-        self.cn.bind("<ButtonRelease-1>", "")
-        self.cn.tag_bind(self.view_canvas.Movable_Tag_Name, "<Button-1>", "")
-
-        # bind for mouse motion
-        self.cn.bind("<Motion>", partial(self.gui_block_is_moving, gui_block_id, event.x, event.y))
-
-        # bind for release of mouse up
-        self.cn.bind("<ButtonRelease-1>", partial(self.gui_block_has_stopped_moving, gui_block_id))
-
-    def gui_block_is_moving(self, gui_block_id, original_x, original_y, event: Event):
-
-        # unbind moving while we process
-        self.cn.bind("<Motion>", "")
-
-        # move the widget
-        self.cn.move(gui_block_id, event.x - original_x, event.y - original_y)
-
-        # get the information about the movement and call event handler
-        info = self.view_canvas.gui_block_to_day_time_duration(gui_block_id)
-        if info is not None:
-            day, start_time, duration = info
-            self.gui_block_is_moving_handler(gui_block_id, day, start_time, duration)
-
-        # rebind for motion
-        self.cn.bind("<Motion>", partial(self.gui_block_is_moving, gui_block_id, event.x, event.y))
-
-    def gui_block_has_stopped_moving(self, gui_block_id, _: Event):
-        self.cn.tag_bind(self.view_canvas.Movable_Tag_Name, "<Button-1>", self.select_gui_block_to_move)
-        self.cn.bind("<Motion>", "")
-        self.cn.bind("<ButtonRelease-1>", "")
-        info = self.view_canvas.gui_block_to_day_time_duration(gui_block_id)
-        if info is not None:
-            day, start_time, duration = info
-            self.gui_block_has_dropped_handler(gui_block_id)
-
     def move_gui_block(self, gui_block_id: str, day_number, start_number):
         """
-        Move the gui block to a new location based on day, start and duration
+        Move the gui block to a new location based on day
         :param gui_block_id: this tag specifies the gui tag associated with the drawn images
         :param day_number:
         :param start_number:
@@ -334,5 +312,48 @@ class ViewDynamicTk:
         self.cn.lift(gui_block_id)
         self.cn.move(gui_block_id, new_coords[0] - cur_x_pos, new_coords[1] - cur_y_pos)
 
-    def raise_to_top(self):
-        self.toplevel.lift()
+
+    # ============================================================================
+    # Dragging Guiblocks around
+    # ============================================================================
+    def _select_gui_block_to_move(self, event: Event):
+
+        gui_block_id = self.view_canvas.get_gui_block_id_from_selected_item()
+        self.cn.tag_raise(gui_block_id, 'all')
+
+        # unbind any previous binding for clicking and motion, just in case
+        self.cn.bind("<Motion>", "")
+        self.cn.bind("<ButtonRelease-1>", "")
+        self.cn.tag_bind(self.view_canvas.Movable_Tag_Name, "<Button-1>", "")
+
+        # bind for mouse motion
+        self.cn.bind("<Motion>", partial(self._gui_block_is_moving, gui_block_id, event.x, event.y))
+
+        # bind for release of mouse up
+        self.cn.bind("<ButtonRelease-1>", partial(self._gui_block_has_stopped_moving, gui_block_id))
+
+    def _gui_block_is_moving(self, gui_block_id, original_x, original_y, event: Event):
+
+        # unbind moving while we process
+        self.cn.bind("<Motion>", "")
+
+        # move the widget
+        self.cn.move(gui_block_id, event.x - original_x, event.y - original_y)
+
+        # get the information about the movement and call event handler
+        info = self.view_canvas.gui_block_to_day_time_duration(gui_block_id)
+        if info is not None:
+            day, start_time, _ = info
+            self.gui_block_is_moving_handler(gui_block_id, day, start_time)
+
+        # rebind for motion
+        self.cn.bind("<Motion>", partial(self._gui_block_is_moving, gui_block_id, event.x, event.y))
+
+    def _gui_block_has_stopped_moving(self, gui_block_id, _: Event):
+        self.cn.tag_bind(self.view_canvas.Movable_Tag_Name, "<Button-1>", self._select_gui_block_to_move)
+        self.cn.bind("<Motion>", "")
+        self.cn.bind("<ButtonRelease-1>", "")
+        info = self.view_canvas.gui_block_to_day_time_duration(gui_block_id)
+        if info is not None:
+            self.gui_block_has_dropped_handler(gui_block_id)
+

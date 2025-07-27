@@ -46,7 +46,7 @@ class EditResourcesTk:
         self.delete_handler = event_delete_handler
         self.save_handler = event_save_handler
 
-    def initialize_columns(self, column_descriptions: list[DEColumnDescription]):
+    def initialize_columns(self, column_descriptions: list[DEColumnDescription], disabled_columns=None):
 
         titles: list[str] = list()
         column_widths: list[int] = list()
@@ -65,6 +65,7 @@ class EditResourcesTk:
             colwidths=column_widths,
             delete=self.delete_handler,
             colours=self.colours,
+            disabled = disabled_columns
         )
         self.data_entry.pack(side='top', expand=True, fill='both')
 

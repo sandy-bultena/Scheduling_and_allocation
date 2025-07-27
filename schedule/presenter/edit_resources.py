@@ -95,11 +95,13 @@ class EditResources:
         else:
             self.gui = gui
 
+        disabled_columns = [True,] if view_type == ResourceType.teacher else []
+
         self.dirty_flag_method: Callable[[Optional[bool]], bool] = dirty_flag_method
         self.delete_queue: list = list()
         self.view_type: ResourceType = view_type
         self.schedule: Optional[Schedule] = schedule
-        self.gui.initialize_columns(self.column_descriptions)
+        self.gui.initialize_columns(self.column_descriptions, disabled_columns)
 
     # =================================================================
     # refresh the tables

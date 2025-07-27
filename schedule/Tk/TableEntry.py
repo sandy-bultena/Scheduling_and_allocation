@@ -193,12 +193,14 @@ Example::
         """Add an empty row at the end of the 'spreadsheet'"""
         column_widths = self.cget("colwidths")
         columns_enabled_disabled = self.cget("disabled")
+        if columns_enabled_disabled is None:
+            columns_enabled_disabled = []
 
         # make sure lists are long enough
         while len(column_widths) < self.number_of_columns + 1:
             column_widths.append(0)
         while len(columns_enabled_disabled) < self.number_of_columns + 1:
-            columns_enabled_disabled.append(0)
+            columns_enabled_disabled.append(False)
 
         # --------------------------------------------------------------------------------
         # add the grid_row

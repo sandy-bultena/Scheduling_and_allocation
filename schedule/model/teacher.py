@@ -39,15 +39,15 @@ class Teacher:
         self.department = department
         self.release = release
         self.resource_type = ResourceType.teacher
+        self._id = f"{self.lastname}_{self.firstname}"
+        self._id = self._id.replace(" ", "_")
 
     # =================================================================
     # unique identifier
     # =================================================================
     @property
     def teacher_id(self) -> str:
-        t_id = f"{self.lastname}_{self.firstname}"
-        t_id = t_id.replace(" ","_")
-        return t_id
+        return self._id
 
     @property
     def number(self) -> str:
