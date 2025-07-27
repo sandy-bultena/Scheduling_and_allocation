@@ -41,6 +41,10 @@ class ViewDynamicTkTest:
         self.gui_block_has_dropped_handler: Callable[[str], None] = lambda gui_id: None
 
 
+        # undo/redo handlers
+        self.undo_handler: Callable[[], None] = lambda: None
+        self.redo_handler: Callable[[], None] = lambda: None
+
         self.draw_blocks_info = {}
         self.colour_blocks_info = {}
 
@@ -78,6 +82,8 @@ class ViewsControllerTest:
         self.action_resource_saved = {}
         self.block_move = {}
         self.action_moved = {}
+        self.undo_called = False
+        self.redo_called = False
 
     def notify_block_move(self, resource_number: Optional[str], moved_block: Block, day: float, start_time:float):
         self.block_move["id"] = resource_number
@@ -119,6 +125,12 @@ class ViewsControllerTest:
 
     def remove_all_redoes(self):
         self.remove_redoes = True
+
+    def undo(self):
+        self.undo_called = True
+
+    def redo(self):
+        self.redo_called = True
 
 
 # =====================================================================================================================
@@ -255,6 +267,19 @@ def test_draw_blocks(schedule_obj, view_control, gui):
                                                 block.time_slot.duration, block.movable())
         assert gui.colour_blocks_info[gui_id] == (ResourceType.teacher, block.movable(), block.conflict )
 
+def test_view_keeps_track_of_blocks_and_gui_ids(schedule_obj, view_control, gui):
+    """Create the view
+    1. Able to determine if a certain block is in the view
+    """
+    # prepare
+    teacher = schedule_obj.get_teacher_by_name("Jane","Doe")
+    block = schedule_obj.get_blocks_for_teacher(teacher)[0]
+
+    # execute
+    view = View(view_control,"", schedule_obj, resource=teacher, gui=gui )
+
+    # validate
+    assert view.is_block_in_view(block)
 # ===================================================================================================================
 # Testing View Popup and Popup Handlers
 # ===================================================================================================================
@@ -465,4 +490,34 @@ def test_gui_block_has_dropped_but_not_moved(schedule_obj, view_control, gui):
     # validate
     assert not view_control.remove_redoes
     assert len(view_control.action_moved) == 0
+
+def test_gui_undo_passed_to_controller(schedule_obj, view_control, gui):
+    """user triggered a undo
+    1. undo trigger is passed to controller
+    """
+
+    # prepare
+    teacher = schedule_obj.get_teacher_by_name("Jane","Doe")
+    view = View(view_control,"", schedule_obj, resource=teacher, gui=gui )
+
+    # execute
+    gui.undo_handler()
+
+    # validate
+    assert view_control.undo_called
+
+def test_gui_redo_passed_to_controller(schedule_obj, view_control, gui):
+    """user triggered a redo
+    1. redo trigger is passed to controller
+    """
+
+    # prepare
+    teacher = schedule_obj.get_teacher_by_name("Jane","Doe")
+    view = View(view_control,"", schedule_obj, resource=teacher, gui=gui )
+
+    # execute
+    gui.redo_handler()
+
+    # validate
+    assert view_control.redo_called
 

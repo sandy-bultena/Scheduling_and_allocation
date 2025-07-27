@@ -60,6 +60,10 @@ class ViewDynamicTk:
         # handles the dropping of a gui block
         self.gui_block_has_dropped_handler: Callable[[str], None] = lambda gui_id: None
 
+        # undo/redo handlers
+        self.undo_handler: Callable[[], None] = lambda: None
+        self.redo_handler: Callable[[], None] = lambda: None
+
         # ------------------------------------------------------------------------------------------------------------
         # create a new toplevel window for this view
         # ------------------------------------------------------------------------------------------------------------
@@ -162,7 +166,6 @@ class ViewDynamicTk:
         self._draw_view_canvas(scale_factor)
 
         # update blocks
-        print(self.refresh_blocks_handler)
         self.refresh_blocks_handler()
 
         # reset binding to canvas objects
@@ -281,15 +284,11 @@ class ViewDynamicTk:
     # undo/ redo
     # =================================================================================================================
     def _undo(self, _: Event = None):
-        """
-        calls the "undo" handler with this view's id
-        """
+        """calls the "undo" handler"""
         self.undo_handler()
 
     def _redo(self, _: Event = None):
-        """
-        calls the "redo" handler with this view's id
-        """
+        """calls the "redo" handler"""
         self.redo_handler()
 
     # ============================================================================

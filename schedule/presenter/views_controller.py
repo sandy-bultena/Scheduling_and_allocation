@@ -121,9 +121,8 @@ class ViewsController:
         # update any view that has the same block that was moved
         for view_id, view in self._views.items():
             if resource_number is None or view_id != resource_number:
-                for gui_id, block in view.gui_blocks.items():
-                    if block.number == moved_block.number:
-                        view.move_gui_block_to(moved_block, day, start_time)
+                if view.is_block_in_view(moved_block):
+                    view.move_gui_block_to(moved_block, day, start_time)
             view.refresh_block_colours()
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -137,16 +136,14 @@ class ViewsController:
 
         # update any view that has the same block that was moved
         for view_id, view in self._views.items():
-            for gui_id, block in view.gui_blocks.items():
-                if block.number == modified_block.number:
-                    view.refresh_block_colours()
+            view.refresh_block_colours()
 
     # ----------------------------------------------------------------------------------------------------------------
     # notify move block to a different resource
     # ----------------------------------------------------------------------------------------------------------------
     def notify_move_block_to_resource(self, resource_type: ResourceType, block: Block, from_resource: RESOURCE, to_resource: RESOURCE):
         """
-        a block has been moved from one resource to another, update appropriate views, adjust 'undo' and 'redo' appropriately
+        a block has been moved from one resource to another
         :param resource_type:
         :param block:
         :param from_resource:

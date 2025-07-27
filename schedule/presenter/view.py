@@ -56,6 +56,8 @@ class View:
         self.gui.double_click_block_handler = self.open_companion_view
         self.gui.gui_block_is_moving_handler = self.gui_block_is_moving
         self.gui.gui_block_has_dropped_handler = self.gui_block_has_dropped
+        self.gui.undo_handler = self.views_controller.undo
+        self.gui.redo_handler = self.views_controller.redo
 
         self._block_original_start_time: Optional[float]= None
         self._block_original_day: Optional[float] = None
@@ -117,6 +119,12 @@ class View:
                                 gui_block_id=gui_tag,
                                 movable=block.movable())
             self.gui.colour_block(gui_tag, self.resource_type, block.movable(), conflict=block.conflict)
+
+    # ----------------------------------------------------------------------------------------------------------------
+    # is block in this view?
+    # ----------------------------------------------------------------------------------------------------------------
+    def is_block_in_view(self, block):
+        return block in self.gui_blocks.values()
 
     # ----------------------------------------------------------------------------------------------------------------
     # important tidy-up stuff (on_closing_handler)

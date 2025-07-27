@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import schedule.presenter.view
 from schedule.model import TimeSlot, WeekDay, SemesterType, ScheduleTime, Schedule, ResourceType, ConflictType
-from schedule.presenter.views_controller import ViewsController
+from schedule.presenter.views_controller import ViewsController, Action
 
 # =====================================================================================================================
 # Dummy classes
@@ -30,7 +30,9 @@ class GUI:
     def raise_to_top(self): pass
 
 VIEW_TEST_CALLED = 0
-REFRESH_BLOCKS_CALLED = 0
+REFRESH_COLOURS_CALLED = 0
+MOVE_GUI_BLOCK_TO = 0
+VIEW_DRAW_CALLED = 0
 class ViewTest:
 
     def __init__(self, views_controller, frame, schedule, resource, gui=None):
@@ -38,19 +40,26 @@ class ViewTest:
         global VIEW_TEST_CALLED
         VIEW_TEST_CALLED += 1
         self.gui_blocks = {}
+        self.move_gui_block_args = []
 
     def move_gui_block_to(self, block: Block, day: float, start_time: float):
-        pass
+        global MOVE_GUI_BLOCK_TO
+        self.move_gui_block_args.append((block, day, start_time))
+        MOVE_GUI_BLOCK_TO += 1
 
     def refresh_block_colours(self):
-        global REFRESH_BLOCKS_CALLED
-        REFRESH_BLOCKS_CALLED += 1
+        global REFRESH_COLOURS_CALLED
+        REFRESH_COLOURS_CALLED += 1
 
     def get_block_text(self, block: Block):
         return "hi"
 
     def draw(self):
-        pass
+        global VIEW_DRAW_CALLED
+        VIEW_DRAW_CALLED += 1
+
+    def is_block_in_view(self, block):
+        return True
 
 # =====================================================================================================================
 # ViewsControllerTestTkTest
@@ -195,7 +204,7 @@ def test_refresh(schedule_obj, gui):
 
 
 def test_block_moved(schedule_obj, gui, monkeypatch):
-    global REFRESH_BLOCKS_CALLED
+    global REFRESH_COLOURS_CALLED
     """block has moved
     1. dirty flag has been reset
     2. refresh was called (which recalculates conflicts)
@@ -211,21 +220,296 @@ def test_block_moved(schedule_obj, gui, monkeypatch):
     blocks = schedule_obj.get_blocks_for_teacher(teacher)
     block1 = blocks[0]
     block2 = blocks[1]
-    block1.time_slot.day = block2.time_slot.day
-    block1.time_slot.time_start = block2.time_slot.time_start
     dirty_flag_method(False)
     vc.call_view(teacher1)
     vc.call_view(teacher2)
+    assert not block1.conflict
+    assert not block2.conflict
 
     # execute
-    REFRESH_BLOCKS_CALLED = 0
+    REFRESH_COLOURS_CALLED = 0
     vc.notify_block_move("", block1, block1.time_slot.day.value, block1.time_slot.time_start.hours)
 
     # verify
     assert dirty_flag_method()
     assert block1.conflict
     assert block2.conflict
-    assert REFRESH_BLOCKS_CALLED == 2
+    assert REFRESH_COLOURS_CALLED == 2
+
+def test_block_moved_view_updated(schedule_obj, gui, monkeypatch):
+    global MOVE_GUI_BLOCK_TO
+    """block has moved
+    1. views are told to update their gui_block positions (but not the one that triggered it)
+    """
+
+    # prepare
+    monkeypatch.setattr("schedule.presenter.views_controller.View", ViewTest)
+    vc = ViewsController(dirty_flag_method, "", schedule_obj, gui)
+
+    # both teacher and stream share the same blocks
+    teacher: Teacher = schedule_obj.get_teacher_by_name("Jane","Doe")
+    stream: Stream = schedule_obj.get_stream_by_number("1A")
+    blocks = schedule_obj.get_blocks_for_teacher(teacher)
+    block1, block2 = blocks
+    vc.call_view(teacher)
+    vc.call_view(stream)
+
+    # execute
+    MOVE_GUI_BLOCK_TO = 0
+    vc.notify_block_move(teacher.number, block1, block1.time_slot.day.value, block1.time_slot.time_start.hours)
+
+    # verify
+    assert MOVE_GUI_BLOCK_TO == 1
+
+def test_block_movable_changed(schedule_obj, gui, monkeypatch):
+    """block movable has been changed
+    1. dirty flag is updated
+    2. update colours on all the views
+    3. update colors on view choices
+    4. conflicts are recalculated
+    """
+    global REFRESH_COLOURS_CALLED
+    REFRESH_COLOURS_CALLED = 0
+
+    # prepare
+    monkeypatch.setattr("schedule.presenter.views_controller.View", ViewTest)
+    vc = ViewsController(dirty_flag_method, "", schedule_obj, gui)
+    teacher: Teacher = schedule_obj.get_teacher_by_name("Jane","Doe")
+    stream: Stream = schedule_obj.get_stream_by_number("1A")
+    blocks = schedule_obj.get_blocks_for_teacher(teacher)
+    block1, block2 = blocks
+    vc.call_view(teacher)
+    vc.call_view(stream)
+    dirty_flag_method(False)
+    assert not block1.conflict
+
+    # execute
+    block1.time_slot.movable = not block1.movable()
+    vc.notify_block_movable_toggled(block1)
+
+    # validate
+    assert dirty_flag_method()
+    assert block1.conflict
+
+    # ... validate update colours on all the open views
+    assert REFRESH_COLOURS_CALLED == 2
+
+    # ... validate update colours on all the views
+    assert (len(gui.btn_colours) == len(vc.resources[ResourceType.teacher])
+            + len(vc.resources[ResourceType.lab])
+            + len(vc.resources[ResourceType.stream])
+            )
 
 
+def test_block_moved_to_different_resource1(schedule_obj, gui, monkeypatch):
+    """block is to be moved to a different resource
+    1. block is removed from original resource
+    2. block is added to the other resource
+    3. dirty flag is set
+    4. conflicts are updated
+    5. conflicts are recalculated
+    """
+    monkeypatch.setattr("schedule.presenter.views_controller.View", ViewTest)
+
+    # prepare
+    monkeypatch.setattr("schedule.presenter.views_controller.View", ViewTest)
+    vc = ViewsController(dirty_flag_method, "", schedule_obj, gui)
+    teacher: Teacher = schedule_obj.get_teacher_by_name("Jane","Doe")
+    teacher2: Teacher = schedule_obj.get_teacher_by_name("John", "Doe")
+    blocks = schedule_obj.get_blocks_for_teacher(teacher)
+    block1, block2 = blocks
+
+    # execute
+    dirty_flag_method(False)
+    block2.conflict = ConflictType.NONE
+    vc.notify_move_block_to_resource(ResourceType.teacher, block1, teacher, teacher2)
+
+    # validate
+    assert block1 not in schedule_obj.get_blocks_for_teacher(teacher)
+    assert block1 in schedule_obj.get_blocks_for_teacher(teacher2)
+    assert dirty_flag_method()
+    assert block2.conflict
+
+def test_block_moved_to_different_resource2(schedule_obj, gui, monkeypatch):
+    """block is to be moved to a different resource, both views are already opened
+    1. both views are redrawn
+    """
+    global VIEW_DRAW_CALLED
+    monkeypatch.setattr("schedule.presenter.views_controller.View", ViewTest)
+
+    # prepare
+    monkeypatch.setattr("schedule.presenter.views_controller.View", ViewTest)
+    vc = ViewsController(dirty_flag_method, "", schedule_obj, gui)
+    teacher: Teacher = schedule_obj.get_teacher_by_name("Jane","Doe")
+    teacher2: Teacher = schedule_obj.get_teacher_by_name("John", "Doe")
+    blocks = schedule_obj.get_blocks_for_teacher(teacher)
+    block1, block2 = blocks
+    vc.call_view(teacher)
+    vc.call_view(teacher2)
+    VIEW_DRAW_CALLED = 0
+
+    # execute
+    vc.notify_move_block_to_resource(ResourceType.teacher, block1, teacher, teacher2)
+
+    # validate
+    assert VIEW_DRAW_CALLED == 2
+
+
+def test_block_moved_to_different_resource3(schedule_obj, gui, monkeypatch):
+    """block is to be moved to a different resource, only one view is already open
+    1. one view is redrawn, the other is created
+    """
+    global VIEW_DRAW_CALLED
+    global VIEW_TEST_CALLED
+    monkeypatch.setattr("schedule.presenter.views_controller.View", ViewTest)
+
+    # prepare
+    monkeypatch.setattr("schedule.presenter.views_controller.View", ViewTest)
+    vc = ViewsController(dirty_flag_method, "", schedule_obj, gui)
+    teacher: Teacher = schedule_obj.get_teacher_by_name("Jane", "Doe")
+    teacher2: Teacher = schedule_obj.get_teacher_by_name("John", "Doe")
+    blocks = schedule_obj.get_blocks_for_teacher(teacher)
+    block1, block2 = blocks
+    vc.call_view(teacher)
+    VIEW_DRAW_CALLED = 0
+    VIEW_TEST_CALLED = 0
+
+    # execute
+    vc.notify_move_block_to_resource(ResourceType.teacher, block1, teacher, teacher2)
+
+    # validate
+    assert VIEW_DRAW_CALLED == 1
+    assert VIEW_TEST_CALLED == 1
+
+def test_undos_from_saved_actions(schedule_obj, gui, monkeypatch):
+    """create 3 actions of type move, change resource, change movability
+    1. undo list should have three actions saved
+    2. redo list should have no actions saved
+    """
+    monkeypatch.setattr("schedule.presenter.views_controller.View", ViewTest)
+    vc = ViewsController(dirty_flag_method, "", schedule_obj, gui)
+    teacher: Teacher = schedule_obj.get_teacher_by_name("Jane", "Doe")
+    teacher2: Teacher = schedule_obj.get_teacher_by_name("John", "Doe")
+    blocks = schedule_obj.get_blocks_for_teacher(teacher)
+    block1, block2 = blocks
+
+    # execute
+    vc.save_action_block_move(block1, from_day=5, to_day=block1.time_slot.day.value,
+                              from_time=0, to_time=block1.time_slot.time_start.hours)
+    vc.save_action_block_resource_changed(ResourceType.teacher, block1, from_resource=teacher2, to_resource=teacher)
+    vc.save_action_block_movable_toggled(block2,  block2.movable())
+
+    # validate
+    undos = vc._undo
+    assert len(undos) == 3
+    assert len(vc._redo) == 0
+    a1,a2,a3 = undos
+    assert a1.action == "move"
+    assert a1.from_day == 5
+    assert a1.to_day == block1.time_slot.day.value
+    assert a1.from_time == 0
+    assert a1.to_time == block1.time_slot.time_start.hours
+
+    assert a2.action == "change_resource"
+    assert a2.to_resource == teacher
+    assert a2.from_resource == teacher2
+
+    assert a3.action == "toggle_movable"
+    assert a3.was_movable == block2.movable()
+
+def test_undos_actual_undo(schedule_obj, gui, monkeypatch):
+    """create 3 actions, then undo all changes, one by one
+    1. undo action is done
+    2. undo action is saved in redo
+    """
+    monkeypatch.setattr("schedule.presenter.views_controller.View", ViewTest)
+    vc = ViewsController(dirty_flag_method, "", schedule_obj, gui)
+    teacher: Teacher = schedule_obj.get_teacher_by_name("Jane", "Doe")
+    teacher2: Teacher = schedule_obj.get_teacher_by_name("John", "Doe")
+    blocks = schedule_obj.get_blocks_for_teacher(teacher)
+    block1, block2 = blocks
+
+    original_movable = block2.movable()
+    block2.movable = not block2.time_slot.movable
+
+    vc.save_action_block_move(block1, from_day=5, to_day=block1.time_slot.day.value,
+                              from_time=14, to_time=block1.time_slot.time_start.hours)
+    vc.save_action_block_resource_changed(ResourceType.teacher, block1, from_resource=teacher2, to_resource=teacher)
+    vc.save_action_block_movable_toggled(block2,  original_movable)
+
+    # execute
+    vc.undo()
+
+    # validate
+    assert len(vc._undo) == 2
+    assert len(vc._redo) == 1
+    assert block2.time_slot.movable == original_movable
+
+    # execute
+    vc.undo()
+
+    # validate
+    assert len(vc._undo) == 1
+    assert len(vc._redo) == 2
+    assert block1 in schedule_obj.get_blocks_for_teacher(teacher2)
+
+    # execute
+    vc.undo()
+
+    # validate
+    assert len(vc._undo) == 0
+    assert len(vc._redo) == 3
+    assert block1.time_slot.day.value == 5
+    assert block1.time_slot.time_start.hours == 14
+
+def test_redos(schedule_obj, gui, monkeypatch):
+    """create 3 actions, then undo all changes, and then redo them
+    1. after, everything is back to the original
+    2. redo action is saved in 'undo'
+    """
+    monkeypatch.setattr("schedule.presenter.views_controller.View", ViewTest)
+    vc = ViewsController(dirty_flag_method, "", schedule_obj, gui)
+    teacher: Teacher = schedule_obj.get_teacher_by_name("Jane", "Doe")
+    teacher2: Teacher = schedule_obj.get_teacher_by_name("John", "Doe")
+    blocks = schedule_obj.get_blocks_for_teacher(teacher)
+    block1, block2 = blocks
+
+    original_time = block1.time_slot.time_start.hours
+    original_movable = block2.movable()
+    block2.movable = not block2.time_slot.movable
+
+    vc.save_action_block_move(block1, from_day=5, to_day=block1.time_slot.day.value,
+                              from_time=14, to_time=block1.time_slot.time_start.hours)
+    vc.save_action_block_resource_changed(ResourceType.teacher, block1, from_resource=teacher2, to_resource=teacher)
+    vc.save_action_block_movable_toggled(block2,  original_movable)
+
+    # execute
+    vc.undo()
+    vc.undo()
+    vc.undo()
+    vc.redo()
+    vc.redo()
+    vc.redo()
+
+    # validate
+    assert len(vc._undo) == 3
+    assert len(vc._redo) == 0
+    assert block2.time_slot.movable != original_movable
+    assert block1 in schedule_obj.get_blocks_for_teacher(teacher)
+    assert block1.time_slot.time_start.hours == original_time
+
+def test_undo_redo_no_action_required(schedule_obj, gui, monkeypatch):
+    """no pending actions,
+    1. redo/undo do not crash the program
+    """
+    monkeypatch.setattr("schedule.presenter.views_controller.View", ViewTest)
+    vc = ViewsController(dirty_flag_method, "", schedule_obj, gui)
+
+    # execute
+    vc.undo()
+    vc.undo()
+    vc.undo()
+    vc.redo()
+    vc.redo()
+    vc.redo()
 
