@@ -133,6 +133,9 @@ class View:
         """When the view closes, clean up"""
         self.views_controller.view_is_closing(self.resource)
 
+    def close(self):
+        self.gui.kill()
+
     # ----------------------------------------------------------------------------------------------------------------
     # open companion view (double_click_handler)
     # ----------------------------------------------------------------------------------------------------------------

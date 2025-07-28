@@ -226,7 +226,6 @@ class ViewsController:
             return
 
         action = self._undo.pop()
-        print(action)
         self._process_action(action, self._redo)
 
     def redo(self):
@@ -234,7 +233,6 @@ class ViewsController:
             return
 
         action = self._redo.pop()
-        print(action)
         self._process_action(action, self._undo)
 
     def _process_action(self, action, other_list):
@@ -267,3 +265,14 @@ class ViewsController:
 
     def remove_all_redoes(self):
         self._redo.clear()
+
+    def redraw_all(self):
+        for resource, view in self._views.items():
+            teacher_numbers = (x.number for x in self.schedule.teachers())
+            lab_numbers = (x.number for x in self.schedule.labs())
+            stream_numbers = (x.number for x in self.schedule.streams())
+            if resource not in teacher_numbers and resource not in stream_numbers and resource not in lab_numbers:
+                view.close()
+            else:
+                view.draw()
+

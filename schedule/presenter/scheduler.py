@@ -1,5 +1,8 @@
-
 from __future__ import annotations
+
+import asyncio
+import inspect
+from asyncio import sleep
 
 from dataclasses import dataclass, field
 from enum import Enum
@@ -65,9 +68,11 @@ class Scheduler:
         # self.bin_dir: Optional[DIRECTORY] = None
         # self.user_base_dir: Optional[DIRECTORY] = None
 
+        self.view_controller: Optional[ ViewsController] = None
         self.preferences: Preferences = Preferences()
         self.schedule: Optional[Schedule] = None
         self._dirty_flag = False
+        self.current_tab: Optional[str] = None
 
         # gui is optional so that we can test the presenter more readily
         if gui:
@@ -85,7 +90,7 @@ class Scheduler:
         by_teacher_page = NBTabInfo(label=self.NB_overview_teacher, name=self.NB_overview_teacher)
 
         self._required_tabs: list[NBTabInfo] = [
-            NBTabInfo(label=self.NB_schedule, name=self.NB_schedule),
+            NBTabInfo(label=self.NB_schedule, name=self.NB_schedule, is_default_page=True),
             NBTabInfo(label=self.NB_overview, name=self.NB_overview, subpages=[by_course_page, by_teacher_page]),
             NBTabInfo(label=self.NB_course, name=self.NB_course),
             NBTabInfo(label=self.NB_teacher, name=self.NB_teacher),
@@ -243,7 +248,7 @@ class Scheduler:
     # notebook tab has changed
     # ==================================================================
     def notebook_tab_has_changed(self, name: str, frame):
-
+        self.current_tab = name
         if name == self.NB_overview_course:
             self.update_course_text(frame)
         elif name == self.NB_overview_teacher:
@@ -266,8 +271,8 @@ class Scheduler:
     # (what teacher_ids/lab_ids/stream_ids) can we create schedules for?
     # ==================================================================
     def update_choices_of_resource_views(self, frame):
-        view_choice = ViewsController(self.set_dirty_method, frame, self.schedule)
-        view_choice.refresh()
+        self.view_controller = ViewsController(self.set_dirty_method, frame, self.schedule)
+        self.view_controller.refresh()
 
     # ==================================================================
     # update_overview
@@ -411,9 +416,16 @@ class Scheduler:
     # - A page where teacher_ids can be added/modified or deleted
     # ==================================================================
     def set_dirty_method(self, value: Optional[bool] = None) -> bool:
+
+        # if value is true, update all the open views
+        if value and self.current_tab != self.NB_schedule and self.view_controller is not None:
+            self.view_controller.redraw_all()
+
         if value is not None:
             self.dirty_flag = value
         return self.dirty_flag
+
+
 
     """
     (c) Sandy Bultena 2025

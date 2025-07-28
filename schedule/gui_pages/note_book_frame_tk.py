@@ -38,8 +38,11 @@ class NoteBookFrameTk:
         self.tab_frames: dict[tuple[Notebook,int], tuple[str,Frame]] = {}
         self.tab_changed_handler = tab_changed_handler
         self.main_notebook_frame = None
+        self.notebook = []
 
         self.recursive_notebook_creation(self.frame, tabs_info)
+        self.notebook[0].select(self._default_notebook_page)
+        self.frame.winfo_toplevel().after(500, lambda : self._tab_changed(self.notebook[0]))
 
 
     # ===================================================================================
@@ -50,8 +53,11 @@ class NoteBookFrameTk:
         if tabs_info is None:
             return
 
+        if self.notebook is None:
+            self.notebook = []
         # Create notebook if required
         notebook = Notebook(notebook_frame)
+        self.notebook.append(notebook)
         notebook.pack(expand=1, fill='both')
 
         if self.main_notebook_frame is None:
@@ -80,6 +86,7 @@ class NoteBookFrameTk:
 
         # add the binding for changing of events, and include a list of events for each tab change
         notebook.bind("<<NotebookTabChanged>>", partial(self._tab_changed, notebook))
+
 
     def _tab_changed(self, notebook: Notebook, *_):
         """calls the tab changed callback when the tab has changed"""

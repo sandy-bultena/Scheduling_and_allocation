@@ -139,10 +139,9 @@ class EditResources:
         needs_updating = self._check_for_changed_resources(all_data)
 
         # do we need to change anything?
-        changes = False or self.dirty_flag_method(None)
-        changes = True if len(needs_updating) else changes
-        changes = True if len(self.delete_queue) else changes
-        self.dirty_flag_method(changes)
+        changes = False
+        changes = len(needs_updating) or changes
+        changes = len(self.delete_queue) or changes
 
         # Update or add changes.
         for obj in self.delete_queue:
@@ -152,8 +151,7 @@ class EditResources:
 
         # all done saving, decrement number of files currently being saved
         EditResources.Currently_saving -= 1
-        #t=self.schedule.get_teacher_by_number("Bultena_Sandy")
-        #print(id(self.schedule), id(t), t, t.release)
+        self.dirty_flag_method(changes)
         self.refresh()
 
     # =================================================================

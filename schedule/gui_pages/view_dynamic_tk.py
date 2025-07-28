@@ -80,7 +80,6 @@ class ViewDynamicTk:
         f.pack(expand=1, fill="x")
 
         for c in get_conflict_colour_info(resource_type):
-            print(c)
             Label(f, text=c['text'], width=10, background=c['bg'], foreground=c['fg']) \
                 .pack(side='left', expand=1, fill="x")
 
@@ -248,6 +247,10 @@ class ViewDynamicTk:
         """Close/destroy the gui window."""
         self.on_closing_handler(self)
         self.toplevel.destroy()
+
+    def kill(self):
+        self.toplevel.destroy()
+        self.mw.update_idletasks()
 
     # =================================================================================================================
     # menus, popups and double-clicks
