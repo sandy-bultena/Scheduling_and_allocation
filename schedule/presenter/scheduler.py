@@ -2,7 +2,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from enum import Enum
+from functools import partial
 from typing import Optional, TYPE_CHECKING, Any, Callable
+
 
 from schedule.presenter.edit_resources import EditResources
 from schedule.presenter.edit_courses import EditCourses
@@ -15,7 +18,14 @@ from schedule.gui_pages import SchedulerTk, set_main_page_event_handler
 from schedule.model import Schedule, ResourceType
 from schedule.exceptions import CouldNotReadFileError
 from schedule.gui_generics.read_only_text_tk import ReadOnlyText
-from .views_controller import ViewsController
+from schedule.presenter.view import View
+from schedule.presenter.views_controller import ViewsController
+from schedule.Export.view_export_canvases import PDFCanvas, LatexCanvas
+from schedule.gui_pages.view_canvas_tk import ViewCanvasTk
+
+class CanvasType(Enum):
+    latex = 1
+    pdf = 2
 
 # =====================================================================================
 # Notebook book-keeping
@@ -96,15 +106,15 @@ class Scheduler:
         set_main_page_event_handler("file_new", self.new_menu_event)
         set_main_page_event_handler("file_open_previous", self.open_previous_file_event)
         set_main_page_event_handler("semester_change", self.semester_change)
+        set_menu_event_handler("print_pdf_teacher", partial(self.print_views, ResourceType.teacher, CanvasType.pdf))
+        set_menu_event_handler("print_pdf_lab", partial(self.print_views, ResourceType.lab, CanvasType.pdf))
+        set_menu_event_handler("print_pdf_streams", partial(self.print_views, ResourceType.stream, CanvasType.pdf))
+        set_menu_event_handler("print_latex_teacher", partial(self.print_views, ResourceType.teacher, CanvasType.latex))
+        set_menu_event_handler("print_latex_lab", partial(self.print_views, ResourceType.lab, CanvasType.latex))
+        set_menu_event_handler("print_latex_streams", partial(self.print_views, ResourceType.stream, CanvasType.latex))
 
         # TODO
-        set_menu_event_handler("print_pdf_teacher", self.menu_ignore)
-        set_menu_event_handler("print_pdf_lab", self.menu_ignore)
-        set_menu_event_handler("print_pdf_streams", self.menu_ignore)
         set_menu_event_handler("print_text", self.menu_ignore)
-        set_menu_event_handler("print_latex_teacher", self.menu_ignore)
-        set_menu_event_handler("print_latex_lab", self.menu_ignore)
-        set_menu_event_handler("print_latex_streams", self.menu_ignore)
 
         (self._toolbar_buttons, self._button_properties, self._menu) = main_menu()
 
@@ -328,43 +338,74 @@ class Scheduler:
 
 
         pass
-    #
-    #     # ==================================================================
-    #     # print_views
-    #     # - print the schedule 'views'
-    #     # - resource_type defines the output resource_type, PDF, Latex
-    #     # ==================================================================
-    #     def print_views(self, print_type, view_type):
-    #         pass
-    #         # global gui
-    #         # # --------------------------------------------------------------
-    #         # # no schedule yet
-    #         # # --------------------------------------------------------------
-    #         #
-    #         # if not schedule:
-    #         #     gui.show_error("Export", "Cannot export - There is no schedule")
-    #         #
-    #         # # --------------------------------------------------------------
-    #         # # cannot print if the schedule is not saved
-    #         # # --------------------------------------------------------------
-    #         # if is_data_dirty():
-    #         #     ans = gui.question(
-    #         #         "Unsaved Changes",
-    #         #         "There are unsaved changes.\nDo you want to save them?"
-    #         #         )
-    #         #
-    #         #     if ans:
-    #         #         save_schedule()
-    #         #     else:
-    #         #         return
-    #         #
-    #         # # --------------------------------------------------------------
-    #         # # define base file name
-    #         # # --------------------------------------------------------------
-    #         # # NOTE: Come back to this later.
-    #         # pass
-    #         #
-    #         #
+
+    # ==================================================================
+    # print_views
+    # - print the schedule 'views'
+    # - resource_type defines the output resource_type, PDF, Latex
+    # ==================================================================
+    def print_views(self, resource_type, canvas_type):
+
+        # no schedule yet
+
+        if not self.schedule:
+            self.gui.show_error("Export", "Cannot export - There is no schedule")
+
+        # should not print if the schedule is not saved
+        if self.dirty_flag:
+            self.gui.show_message(
+                title="Unsaved Changes",
+                msg="There are unsaved changes",
+                detail="You cannot print schedules if the schedule is not saved"
+                )
+            return
+
+        # gather info
+        resources = ()
+        match resource_type:
+            case ResourceType.teacher:
+                resources = self.schedule.teachers()
+            case ResourceType.lab:
+                resources = self.schedule.labs()
+            case ResourceType.stream:
+                resources = self.schedule.streams()
+
+        # loop over each resource and create file
+        for resource in resources:
+            if canvas_type == CanvasType.pdf:
+                cn = PDFCanvas(title=str(resource), schedule_name=self.schedule.filename)
+                vc = ViewCanvasTk(cn, 0.8)
+            else:
+                cn = LatexCanvas(title=str(resource), schedule_name=self.schedule.filename)
+                vc = cn
+
+            blocks = ()
+            match resource_type:
+                case ResourceType.teacher:
+                    blocks = self.schedule.get_blocks_for_teacher(resource)
+                case ResourceType.lab:
+                    blocks = self.schedule.get_blocks_in_lab(resource)
+                case ResourceType.stream:
+                    blocks = self.schedule.get_blocks_for_stream(resource)
+
+            for block in blocks:
+                text = View.get_block_text(block, scale=1, resource_type=ResourceType.teacher)
+
+                day, start_time, duration = View._block_to_floats(block)
+
+                vc.draw_block(resource_type=ResourceType.teacher,
+                              day=day, start_time=start_time, duration=duration,
+                              text=text,
+                              gui_tag="",
+                              movable=True,
+                              )
+            cn.save()
+
+
+
+
+
+
     # ==================================================================
     # update_edit_teachers
     # - A page where teacher_ids can be added/modified or deleted
@@ -374,24 +415,9 @@ class Scheduler:
             self.dirty_flag = value
         return self.dirty_flag
 
-#     """
-#     (c) Sandy Bultena 2025
-#     Copyrighted by the standard GPL License Agreement
-#
-#     All Rights Reserved.
-#     """
-#     # # ==================================================================
-#     # # pre-process procedures
-#     # # ==================================================================
-#     # def pre_process_stuff():
-#     #     gui.bind_dirty_flag()
-#     #     gui.define_notebook_tabs(required_pages)
-#     #
-#     #     gui.define_exit_callback(exit_schedule)
-#     #
-#     #     # Create the view manager (which shows all the schedule views, etc.)
-#     #     global views_manager, schedule
-#     #     # TODO: Implement ViewsHubControl class.
-#     #     views_manager = ViewsHubControl(gui, is_data_dirty(), schedule)
-#     #     gui.set_views_manager(views_manager)
-#     #
+    """
+    (c) Sandy Bultena 2025
+    Copyrighted by the standard GPL License Agreement
+
+    All Rights Reserved.
+    """

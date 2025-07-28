@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from os import path
 from typing import Optional
 
 import schedule.exceptions as errors
@@ -42,6 +43,7 @@ class Schedule:
         self._streams: dict[str, Stream] = dict()
         self._labs: dict[str, Lab] = dict()
         self._courses: dict[str, Course] = dict()
+        self.filename = ""
 
         if file is not None:
             self.read_file(file)
@@ -52,6 +54,7 @@ class Schedule:
             Serializor.parse(self, file)
         except Exception as e:
             raise errors.CouldNotReadFileError(f"Could not read {file}, {e}")
+        self.filename = path.basename(file)
 
     def write_file(self, file):
         """write to a csv file all the info about the schedule"""
@@ -59,6 +62,7 @@ class Schedule:
             Serializor.write(self, file)
         except Exception as e:
             raise errors.CouldNotWriteFileError(f"Could not read {file}, {e}")
+        self.filename = path.basename(file)
 
     # ------------------------------------------------------------------------
     # adding an object to collection

@@ -5,7 +5,7 @@
 \pdfpageheight=11in		%-- Letter
 \textwidth=5.0in		%-- Letter
 \textheight=9.5in		%-- Letter
- 
+
 \oddsidemargin -15mm
 \evensidemargin -15mm
 
@@ -32,21 +32,6 @@
 \newcommand{\thursday}{4}
 \newcommand{\friday}{5}
 
-
-% The entry style will have two options:
-% * the first option sets how many hours the entry will be (i.e. its height);
-% * the second option sets how many overlapping entries there are (thus
-%   determining the width).
-% \tikzset{entry/.style 2 args={
-%     draw,
-%     rectangle,
-%     anchor=north west,
-%     line width=0.4pt,
-%     inner sep=0.3333em,
-%     text width={\daywidth/#2-0.6666em-0.4pt},
-%     minimum height=#1*\hourheight,
-%     align=center
-% }}
 \tikzset{course/.style 2 args={
     xshift=(0.5334em+0.8pt)/2,
     yshift=-0.1em,
@@ -103,15 +88,14 @@
   \begin{minipage}{5in}
     \vtop{
       \textsf{
-      {\huge !!!NAME!!!} \\
-      \large{!!!EMAIL!!! !!!INFO!!! \\ }
-    \textsf{\small{
-    !!!FILENAME!!! \\
-    !!!DATE!!!
+      {\huge %%USER_NAME%%} \\
+      \large{%%EMAIL%% %%PHONE_NUMBER%% \\ }
+    \textsf{\small{ %%FILENAME%% \\
+    %%PRINTED_DATE%%
     }}
     }
     }
-  \end{minipage} 
+  \end{minipage}
 
 \vspace{0.5in}
 
@@ -148,14 +132,14 @@
     \node[anchor=north] at (3.5,6.5) {\textsf{Wednesday}};
     \node[anchor=north] at (4.5,6.5) {\textsf{Thursday}};
     \node[anchor=north] at (5.5,6.5) {\textsf{Friday}};
-   
+
 
     % Write the entries. Note that the x coordinate is 1 (for Monday) plus an
     % appropriate amount of shifting. The y coordinate is simply the starting
     % time.
 
-!!!SCHEDULE!!!  
-  
+%%CLASS_TIMES%%
+
 \end{tikzpicture}
 
 \end{center}

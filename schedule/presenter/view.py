@@ -110,7 +110,7 @@ class View:
             gui_tag = f"gui_tag_{gui_block_id}"
             self.gui_blocks[gui_tag] = block
 
-            text = self.get_block_text(block)
+            text = self.get_block_text(block, scale = self.gui.get_scale(),resource_type = self.resource_type)
             day, start_time, duration = self._block_to_floats(block)
 
             self.gui.draw_block(resource_type=self.resource_type,
@@ -301,12 +301,13 @@ class View:
     # ----------------------------------------------------------------------------------------------------------------
     # get block text
     # ----------------------------------------------------------------------------------------------------------------
-    def get_block_text(self, block: Block):
+    @staticmethod
+    def get_block_text( block: Block, resource_type, scale=1):
         """
         :param block: The block object
+        :param scale: the scale of the view
+        :param resource_type: Teacher | Stream | Lab
         """
-        scale = self.gui.get_scale()
-        resource_type = self.resource_type
 
         # course & section & streams
         course_number = ""

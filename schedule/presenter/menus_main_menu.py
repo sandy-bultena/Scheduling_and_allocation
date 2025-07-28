@@ -32,10 +32,6 @@ for event_name in get_args(MAIN_MENU_EVENT_HANDLER_NAMES):
 def set_menu_event_handler(name: MAIN_MENU_EVENT_HANDLER_NAMES, handler: Callable[[], None]):
     MAIN_MENU_EVENT_HANDLERS[name] = handler
 
-# ---------------------------------------------------------------------------------------------
-# in progress... converting this code into one giant dictionary structure
-# ---------------------------------------------------------------------------------------------
-
 
 def main_menu() -> tuple[list[str], dict[str, ToolbarItem], list[MenuItem]]:
     menu = list()
