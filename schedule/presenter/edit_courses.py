@@ -52,7 +52,7 @@ ASSIGN_SUBS = {
 # =====================================================================================================================
 def _update_section(descr:str, section: Section, teachers: list[Teacher], labs: list[Lab], streams: list[Stream],
                     blocks: list[tuple[float, float, float]]):
-    section.descr = descr
+    section.name = descr
     section.remove_all_teachers()
     section.remove_all_labs()
     section.remove_all_blocks()

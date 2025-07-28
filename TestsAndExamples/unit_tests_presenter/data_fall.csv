@@ -249,7 +249,7 @@ add_lab,P326
 ,id,allocation
 add_section_teacher,Katalifos_Helen,5.0
 
-section,,Section 2,5,28
+section,,2,Section 2,28
 add_stream,2B
 add_block,,Tuesday,12.5,2.0,1
 add_block_teacher,Katalifos_Helen

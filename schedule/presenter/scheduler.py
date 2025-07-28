@@ -20,7 +20,7 @@ from schedule.exceptions import CouldNotReadFileError
 from schedule.gui_generics.read_only_text_tk import ReadOnlyText
 from schedule.presenter.view import View
 from schedule.presenter.views_controller import ViewsController
-from schedule.Export.view_export_canvases import PDFCanvas, LatexCanvas
+from schedule.export.view_export_canvases import PDFCanvas, LatexCanvas
 from schedule.gui_pages.view_canvas_tk import ViewCanvasTk
 
 class CanvasType(Enum):
