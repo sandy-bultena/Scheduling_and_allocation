@@ -2,7 +2,7 @@ import pytest
 import sys
 from os import path
 
-from schedule.model import Lab, WeekDay, ClockTime
+from schedule.model import Lab, WeekDay
 from schedule.model.time_slot import TimeSlot
 
 
@@ -33,8 +33,8 @@ def test_descr_setter():
 
 
 def test_add_unavailable():
-    time_slot1 = TimeSlot(WeekDay.Wednesday, ClockTime("12:30"), 3.5, False)
-    time_slot2 = TimeSlot(WeekDay.Thursday, ClockTime("12:30"), 3.5, False)
+    time_slot1 = TimeSlot(WeekDay.Wednesday, 12.5, 3.5, False)
+    time_slot2 = TimeSlot(WeekDay.Thursday, 12.5, 3.5, False)
     lab = Lab()
     lab.add_unavailable_slot(time_slot1)
     lab.add_unavailable_slot(time_slot2)
@@ -45,7 +45,7 @@ def test_remove_unavailable_good():
     """Verifies that remove_unavailable_slot() can remove a TimeSlot from Lab based on the received
     TimeSlot ID. """
     day = WeekDay.Monday
-    start = ClockTime("8:30")
+    start = 8.5
     dur = 2.0
     lab = Lab()
     t1 = lab.add_unavailable_slot(TimeSlot(day, start, dur))
@@ -58,10 +58,10 @@ def test_remove_unavailable_good():
 def test_unavailable():
     """Verifies that unavailable() returns a list of all unavailable TimeSlots for this Lab."""
     day_1 = WeekDay.Monday
-    start_1 = ClockTime("8:30")
+    start_1 = 8.5
     dur_1 = 2.0
     day_2 = WeekDay.Tuesday
-    start_2 = ClockTime("10:00")
+    start_2 = 10.0
     dur_2 = 1.5
     lab = Lab()
     lu1 = lab.add_unavailable_slot(TimeSlot(day_1, start_1, dur_1))

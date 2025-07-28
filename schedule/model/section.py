@@ -32,7 +32,8 @@ from __future__ import annotations
 import re
 from typing import TYPE_CHECKING, Optional
 from schedule.Utilities.id_generator import IdGenerator
-from .block import Block
+from . import WeekDay
+from .block import Block, DEFAULT_DURATION, DEFAULT_START, DEFAULT_DAY
 from .model_exceptions import InvalidHoursForSectionError
 
 # stuff that we need just for type checking, not for actual functionality
@@ -40,7 +41,6 @@ if TYPE_CHECKING:
     from .teacher import Teacher
     from .lab import Lab
     from .stream import Stream
-    from .time_slot import TimeSlot
     from .course import Course
 
 DEFAULT_HOURS = 3
@@ -99,13 +99,13 @@ class Section:
         - When setting, will automatically calculate the total hours if the section has blocks.
         """
         if self.blocks():
-            return sum((b.time_slot.duration for b in self.blocks()))
+            return sum((b.duration for b in self.blocks()))
         return self.course.hours_per_week
 
     @hours.setter
     def hours(self, val):
         if self.blocks():
-            self._hours = sum((b.time_slot.duration for b in self.blocks()))
+            self._hours = sum((b.duration for b in self.blocks()))
         else:
             val = _validate_hours(val)
             self._hours = val
@@ -142,9 +142,10 @@ class Section:
         for block in self.blocks():
             self.remove_block(block)
 
-    def add_block(self, time_slot: TimeSlot, block_id=None)->Block:
+    def add_block(self, day: WeekDay = DEFAULT_DAY, start: float = DEFAULT_START,
+                  duration: float=DEFAULT_DURATION, movable=True, block_id=None)->Block:
         """ Creates and Assign a block to this section"""
-        block = Block(self, time_slot, block_id)
+        block = Block(self, day, start, duration, movable=movable, block_id=block_id)
         self._blocks.add(block)
         return block
 

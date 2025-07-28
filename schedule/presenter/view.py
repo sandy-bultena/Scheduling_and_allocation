@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Optional
 from schedule.Tk import MenuItem, MenuType
 from schedule.Utilities.id_generator import IdGenerator
 from schedule.gui_pages.view_dynamic_tk import ViewDynamicTk
-from schedule.model import Block, Teacher, Stream, Lab, Schedule, ScheduleTime
+from schedule.model import Block, Teacher, Stream, Lab, Schedule
 from schedule.model.enums import ResourceType
 if TYPE_CHECKING:
     from schedule.presenter.views_controller import ViewsController
@@ -71,7 +71,7 @@ class View:
         toggle movability for block, and inform View Controller
         :param block: the block that needs its 'movable' option toggled
         """
-        block.time_slot.movable = not block.time_slot.movable
+        block.movable = not block.movable
 
         # very important, let the gui controller _know_ that the gui block has been modified
         self.views_controller.notify_block_movable_toggled( block)
@@ -117,8 +117,8 @@ class View:
                                 day=day, start_time=start_time, duration=duration,
                                 text=text,
                                 gui_block_id=gui_tag,
-                                movable=block.movable())
-            self.gui.colour_block(gui_tag, self.resource_type, block.movable(), conflict=block.conflict)
+                                movable=block.movable)
+            self.gui.colour_block(gui_tag, self.resource_type, block.movable, conflict=block.conflict)
 
     # ----------------------------------------------------------------------------------------------------------------
     # is block in this view?
@@ -151,9 +151,8 @@ class View:
         """
         Update block and conflict information as the user is dragging the gui block
         :param gui_id: the id of the gui representation of the block
-        :param day: the position of the gui block
-        :param start_time: the start time of the gui block
-        :param duration: (not sure if we need this, TBD)
+        :param gui_block_day: the position of the gui block
+        :param gui_block_start_time: the start time of the gui block
         """
 
         block: Block = self.gui_blocks.get(gui_id,None)
@@ -162,16 +161,16 @@ class View:
 
         # capture the info about the block before it starts moving
         if self._block_original_start_time is None and self._block_original_day is None:
-            self._block_original_start_time = block.time_slot.time_start.hours
-            self._block_original_day = block.time_slot.day.value
+            self._block_original_start_time = block.start
+            self._block_original_day = block.day.value
 
         # update the block by snapping to time and day, although it doesn't update the gui block
-        block.time_slot.time_start = ScheduleTime(gui_block_start_time)
-        block.time_slot.snap_to_day(gui_block_day)
-        block.time_slot.snap_to_time()
+        block.start = gui_block_start_time
+        block.snap_to_day(gui_block_day)
+        block.snap_to_time()
         self.schedule.calculate_conflicts()
         self.refresh_block_colours()
-        self.gui.colour_block(gui_id, self.resource_type, is_movable=block.movable(), conflict = block.conflict)
+        self.gui.colour_block(gui_id, self.resource_type, is_movable=block.movable, conflict = block.conflict)
 
         # very important, let the gui controller _know_ that the gui block has been moved
         self.views_controller.notify_block_move(self.resource.number, block, gui_block_day, gui_block_start_time)
@@ -191,26 +190,26 @@ class View:
 
         # set the gui block coordinates to match the block
         # (which is constantly being snapped to grid during the move process)
-        self.gui.move_gui_block(gui_id, block.time_slot.day.value,block.time_slot.time_start.hours)
+        self.gui.move_gui_block(gui_id, block.day.value,block.start)
 
         # has the block actually moved?
         if self._block_original_start_time is None or self._block_original_day is None:
             return
 
-        if (self._block_original_start_time == block.time_slot.time_start.hours and
-            self._block_original_day == block.time_slot.day.value):
+        if (self._block_original_start_time == block.start and
+            self._block_original_day == block.day):
             return
 
         # very important, let the gui controller _know_ that the gui block has been moved
-        self.views_controller.notify_block_move(self.resource.number, block, block.time_slot.day.value,
-                                                block.time_slot.time_start.hours)
+        self.views_controller.notify_block_move(self.resource.number, block, block.day.value,
+                                                block.start)
 
         # new action by user, so clear all 'redo'
         self.views_controller.remove_all_redoes()
 
         # save the action so that it can be undone
-        self.views_controller.save_action_block_move(block, self._block_original_day, block.time_slot.day.value,
-                                                     self._block_original_start_time, block.time_slot.time_start.hours)
+        self.views_controller.save_action_block_move(block, self._block_original_day, block.day.value,
+                                                     self._block_original_start_time, block.start)
 
         # reset the 'start move' info
         self._block_original_start_time = None
@@ -297,7 +296,7 @@ class View:
         """Go through all blocks, and adjust colours as required"""
 
         for gui_tag, block in self.gui_blocks.items():
-            self.gui.colour_block(gui_tag, self.resource_type, is_movable=block.movable(), conflict = block.conflict)
+            self.gui.colour_block(gui_tag, self.resource_type, is_movable=block.movable, conflict = block.conflict)
 
     # ----------------------------------------------------------------------------------------------------------------
     # get block text
@@ -362,7 +361,7 @@ class View:
     @staticmethod
     def _block_to_floats( block) -> tuple[int,float,float]:
         """take a block and return number representations of its properties"""
-        return block.time_slot.day.value, block.time_slot.time_start.hours, block.time_slot.duration
+        return block.day.value, block.start, block.duration
 
     # ----------------------------------------------------------------------------------------------------------------
     # get gui id from block

@@ -2,7 +2,7 @@ from typing import Any, Optional
 
 import pytest
 
-from schedule.model import Schedule, SemesterType, TimeSlot, WeekDay, ScheduleTime
+from schedule.model import Schedule, SemesterType, TimeSlot, WeekDay
 from schedule.gui_pages.edit_courses_tk import EditCoursesTk
 from schedule.presenter.edit_courses import EditCourses
 
@@ -147,8 +147,8 @@ def schedule_obj():
     c_001 = schedule.add_update_course("001","BasketWeaving", SemesterType.fall )
     s_001_1 = c_001.add_section("1", section_id=1)
     s_001_1.add_stream(st1)
-    b_001_1_1 = s_001_1.add_block(TimeSlot(WeekDay.Monday, ScheduleTime( 8) ))
-    b_001_1_2 = s_001_1.add_block(TimeSlot(WeekDay.Monday, ScheduleTime( 10) ))
+    b_001_1_1 = s_001_1.add_block(WeekDay.Monday, 8 )
+    b_001_1_2 = s_001_1.add_block(WeekDay.Monday,  10 )
     b_001_1_1.add_teacher(t1)
     b_001_1_2.add_teacher(t1)
     b_001_1_1.add_lab(l1)
@@ -156,8 +156,8 @@ def schedule_obj():
 
     s_001_2 = c_001.add_section("2",section_id=2)
     s_001_2.add_stream(st2)
-    b_001_2_1 = s_001_2.add_block(TimeSlot(WeekDay.Tuesday, ScheduleTime( 8) ))
-    b_001_2_2 = s_001_2.add_block(TimeSlot(WeekDay.Tuesday, ScheduleTime( 10) ))
+    b_001_2_1 = s_001_2.add_block(WeekDay.Tuesday,  8 )
+    b_001_2_2 = s_001_2.add_block(WeekDay.Tuesday,  10 )
     b_001_2_1.add_teacher(t2)
     b_001_2_2.add_teacher(t3)
     b_001_2_1.add_lab(l2)
@@ -166,11 +166,11 @@ def schedule_obj():
 
     c_002 = schedule.add_update_course("002","Thumb Twiddling", SemesterType.fall )
     s_002_1 = c_002.add_section("1",)
-    b_002_1_1 = s_002_1.add_block(TimeSlot(WeekDay.Monday, ScheduleTime( 8) ))
-    b_002_1_2 = s_002_1.add_block(TimeSlot(WeekDay.Monday, ScheduleTime( 10) ))
+    b_002_1_1 = s_002_1.add_block(WeekDay.Monday,  8 )
+    b_002_1_2 = s_002_1.add_block(WeekDay.Monday,  10 )
     s_002_2 = c_002.add_section("2",)
-    b_002_2_1 = s_002_2.add_block(TimeSlot(WeekDay.Tuesday, ScheduleTime( 8) ))
-    b_002_2_2 = s_002_2.add_block(TimeSlot(WeekDay.Tuesday, ScheduleTime( 10) ))
+    b_002_2_1 = s_002_2.add_block(WeekDay.Tuesday,  8 )
+    b_002_2_2 = s_002_2.add_block(WeekDay.Tuesday,  10 )
 
 
 

@@ -303,8 +303,8 @@ class Course:
             text += "-" * 50 + "\n"
 
             # Blocks
-            for b in sorted(s.blocks(), key=lambda x: x.time_slot):
-                text += f"{b.time_slot}\n"
+            for b in sorted(s.blocks()):
+                text += f"{b}\n"
                 text += "\tlab_ids: " + ", ".join([str(lab) for lab in b.labs()]) + "\n"
                 text += "\tteacher_ids: "
                 text += ", ".join([str(t) for t in b.teachers()])

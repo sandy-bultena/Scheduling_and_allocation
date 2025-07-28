@@ -5,8 +5,8 @@ from schedule.gui_dialogs.add_edit_block_dialog_tk import AddEditBlockDialogTk
 from schedule.gui_dialogs.add_section_dialog_tk import AddSectionDialogTk
 from schedule.gui_dialogs.edit_course_dialog_tk import EditCourseDialogTk
 from schedule.gui_dialogs.edit_section_dialog_tk import EditSectionDialogTk
-from schedule.model import Schedule, ResourceType, Section, Block, Teacher, Lab, Stream, Course, TimeSlot, ScheduleTime, \
-    WeekDay, ClockTime
+from schedule.model import Schedule, ResourceType, Section, Block, Teacher, Lab, Stream, Course,\
+    WeekDay
 from schedule.gui_pages import EditCoursesTk
 from schedule.presenter.edit_courses_tree_and_resources import EditCoursePopupMenuActions
 
@@ -51,17 +51,17 @@ ASSIGN_SUBS = {
 # update a section with teachers and blocks and labs and streams
 # =====================================================================================================================
 def _update_section(descr:str, section: Section, teachers: list[Teacher], labs: list[Lab], streams: list[Stream],
-                    blocks: list[tuple[str, str, float]]):
+                    blocks: list[tuple[float, float, float]]):
     section.descr = descr
     section.remove_all_teachers()
     section.remove_all_labs()
     section.remove_all_blocks()
     section.remove_all_streams()
     for b in blocks:
-        day = WeekDay[b[0]]
-        start = ClockTime(b[1])
+        day = WeekDay(round(b[0]))
+        start = b[1]
         hrs = b[2]
-        section.add_block(TimeSlot(day, start, hrs))
+        section.add_block(day, start, hrs)
     for t in teachers:
         section.add_teacher(t)
     for l in labs:
@@ -240,7 +240,7 @@ class EditCourses:
 
         def apply_changes(course_number: str, course_name:str, hours_per_week: float,
                           allocation: bool, num_sections:int, teachers:list[Teacher],
-                          labs:list[Lab],  blocks:list[tuple[str,str,float]]):
+                          labs:list[Lab],  blocks:list[tuple[float,float,float]]):
             if course_number not in (c.number for c in self.schedule.courses()):
                 this_course = self.schedule.add_update_course(number = course_number)
             else:
@@ -253,10 +253,10 @@ class EditCourses:
             for _ in range(num_sections):
                 section = this_course.add_section()
                 for b in blocks:
-                    day = WeekDay[b[0]]
-                    start = ClockTime(b[1])
+                    day = WeekDay(round(b[0]))
+                    start = b[1]
                     hrs = b[2]
-                    section.add_block(TimeSlot(day, start, hrs))
+                    section.add_block(day, start, hrs)
                 for t in teachers:
                     section.add_teacher(t)
                 for l in labs:
@@ -286,7 +286,7 @@ class EditCourses:
             course_allocation = course.needs_allocation
             if len(course.sections()) != 0:
                 for b in course.sections()[0].blocks():
-                    block_data.append((b.time_slot.day.name, str(b.time_slot.time_start), str(b.time_slot.duration)))
+                    block_data.append((b.day.name, b.start, b.duration))
 
             non_assigned_teachers, assigned_teachers = list_minus_list(self.schedule.teachers(), course.teachers())
             non_assigned_labs, assigned_labs = list_minus_list(self.schedule.labs(), course.labs())
@@ -344,7 +344,7 @@ class EditCourses:
         text = section.title
         block_data = []
         for b in section.blocks():
-            block_data.append((b.time_slot.day.name, str(b.time_slot.time_start), str(b.time_slot.duration)))
+            block_data.append((b.day.name, b.start, b.duration))
         non_assigned_teachers, assigned_teachers = list_minus_list(self.schedule.teachers(),section.teachers())
         non_assigned_labs, assigned_labs = list_minus_list(self.schedule.labs(),section.labs())
         non_assigned_streams, assigned_streams = list_minus_list(self.schedule.streams(), section.streams())
@@ -371,7 +371,7 @@ class EditCourses:
         """
         def _apply_changes(number: int, hours, teachers, labs):
             for i in range(number):
-                block = section.add_block(TimeSlot(start=ScheduleTime(8),duration=hours))
+                block = section.add_block(start=8,duration=hours)
                 for t in teachers:
                     block.add_teacher(t)
                 for l in labs:
@@ -392,7 +392,7 @@ class EditCourses:
         def _apply_changes(_, hours, teachers, labs):
             block.remove_all_labs()
             block.remove_all_teachers()
-            block.time_slot.duration = hours
+            block.duration = hours
             for t in teachers:
                 block.add_teacher(t)
             for l in labs:
@@ -406,7 +406,7 @@ class EditCourses:
         AddEditBlockDialogTk(
             frame = self.frame,
             add_edit_type = "edit",
-            duration = block.time_slot.duration,
+            duration = block.duration,
             assigned_teachers = list(block.teachers()),
             non_assigned_teachers= non_assigned_teachers,
             non_assigned_labs=non_assigned_labs,

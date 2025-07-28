@@ -31,7 +31,7 @@ class EditResourcesTkTest(EditResourcesTk):
         self.delete_handler = event_delete_handler
         self.save_handler = event_save_handler
 
-    def initialize_columns(self, column_descriptions: list[DEColumnDescription]):
+    def initialize_columns(self, column_descriptions: list[DEColumnDescription], disabled=[]):
         self.called_initialize_columns = True
         self.column_descriptions = column_descriptions
 

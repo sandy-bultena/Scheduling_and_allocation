@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Callable, Optional, Literal
 
 from schedule.gui_pages.views_controller_tk import ViewsControllerTk
-from schedule.model import ResourceType, Schedule, Stream, Teacher, Lab, Block, ScheduleTime
+from schedule.model import ResourceType, Schedule, Stream, Teacher, Lab, Block
 from schedule.presenter.view import View
 
 RESOURCE = Teacher | Lab | Stream
@@ -244,8 +244,8 @@ class ViewsController:
                                          from_day = action.to_day, from_time=action.to_time,
                                          to_day = action.from_day, to_time=action.from_time,
                                          ))
-                action.block.time_slot.time_start = ScheduleTime(action.from_time)
-                action.block.time_slot.snap_to_day(action.from_day)
+                action.block.start = action.from_time
+                action.block.snap_to_day(action.from_day)
                 self.schedule.calculate_conflicts()
                 self.notify_block_move(None, action.block, action.from_day, action.from_time)
             case 'change_resource':
@@ -260,7 +260,7 @@ class ViewsController:
                                                     to_resource=action.from_resource)
             case 'toggle_movable':
                 other_list.append(Action(action='toggle_movable', block=action.block, was_movable=not action.was_movable))
-                action.block.time_slot.movable = action.was_movable
+                action.block.movable = action.was_movable
                 self.notify_block_movable_toggled(action.block)
 
 

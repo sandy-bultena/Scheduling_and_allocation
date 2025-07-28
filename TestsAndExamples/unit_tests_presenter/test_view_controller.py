@@ -2,11 +2,9 @@ from __future__ import annotations
 from typing import Callable
 
 import pytest
-from unittest.mock import patch
 
-import schedule.presenter.view
-from schedule.model import TimeSlot, WeekDay, SemesterType, ScheduleTime, Schedule, ResourceType, ConflictType
-from schedule.presenter.views_controller import ViewsController, Action
+from schedule.model import WeekDay, SemesterType, ResourceType, ConflictType
+from schedule.presenter.views_controller import ViewsController
 
 # =====================================================================================================================
 # Dummy classes
@@ -14,7 +12,7 @@ from schedule.presenter.views_controller import ViewsController, Action
 """Provides code to deal with user modifying the gui view.  Most actions are passed onto the View Controller"""
 
 from schedule.Utilities.id_generator import IdGenerator
-from schedule.model import Block, Teacher, Stream, Lab, Schedule, ScheduleTime
+from schedule.model import Block, Teacher, Stream, Lab, Schedule
 
 RESOURCE = Lab | Stream | Teacher
 
@@ -105,8 +103,8 @@ def schedule_obj():
     c_001 = schedule.add_update_course("001","BasketWeaving", SemesterType.fall )
     s_001_1 = c_001.add_section("1", section_id=1)
     s_001_1.add_stream(st1)
-    b_001_1_1 = s_001_1.add_block(TimeSlot(WeekDay.Monday, ScheduleTime( 8) ))
-    b_001_1_2 = s_001_1.add_block(TimeSlot(WeekDay.Monday, ScheduleTime( 10) ))
+    b_001_1_1 = s_001_1.add_block(WeekDay.Monday,  8 )
+    b_001_1_2 = s_001_1.add_block(WeekDay.Monday,  10 )
     b_001_1_1.add_teacher(t1)
     b_001_1_2.add_teacher(t1)
     b_001_1_1.add_lab(l1)
@@ -114,8 +112,8 @@ def schedule_obj():
 
     s_001_2 = c_001.add_section("2",section_id=2)
     s_001_2.add_stream(st2)
-    b_001_2_1 = s_001_2.add_block(TimeSlot(WeekDay.Tuesday, ScheduleTime( 8) ))
-    b_001_2_2 = s_001_2.add_block(TimeSlot(WeekDay.Tuesday, ScheduleTime( 10) ))
+    b_001_2_1 = s_001_2.add_block(WeekDay.Tuesday,  8 )
+    b_001_2_2 = s_001_2.add_block(WeekDay.Tuesday,  10 )
     b_001_2_1.add_teacher(t2)
     b_001_2_2.add_teacher(t3)
     b_001_2_1.add_lab(l2)
@@ -124,11 +122,11 @@ def schedule_obj():
 
     c_002 = schedule.add_update_course("002","Thumb Twiddling", SemesterType.fall )
     s_002_1 = c_002.add_section("1",)
-    b_002_1_1 = s_002_1.add_block(TimeSlot(WeekDay.Monday, ScheduleTime( 8) ))
-    b_002_1_2 = s_002_1.add_block(TimeSlot(WeekDay.Monday, ScheduleTime( 10) ))
+    b_002_1_1 = s_002_1.add_block(WeekDay.Monday,  8 )
+    b_002_1_2 = s_002_1.add_block(WeekDay.Monday,  10 )
     s_002_2 = c_002.add_section("2",)
-    b_002_2_1 = s_002_2.add_block(TimeSlot(WeekDay.Tuesday, ScheduleTime( 8) ))
-    b_002_2_2 = s_002_2.add_block(TimeSlot(WeekDay.Tuesday, ScheduleTime( 10) ))
+    b_002_2_1 = s_002_2.add_block(WeekDay.Tuesday,  8 )
+    b_002_2_2 = s_002_2.add_block(WeekDay.Tuesday,  10 )
 
 
 
@@ -186,8 +184,8 @@ def test_refresh(schedule_obj, gui):
     blocks = schedule_obj.get_blocks_for_teacher(teacher)
     block1 = blocks[0]
     block2 = blocks[1]
-    block1.time_slot.day = block2.time_slot.day
-    block1.time_slot.time_start = block2.time_slot.time_start
+    block1.day = block2.day
+    block1.start = block2.start
     assert not block1.conflict
     assert not block2.conflict
 
@@ -228,7 +226,7 @@ def test_block_moved(schedule_obj, gui, monkeypatch):
 
     # execute
     REFRESH_COLOURS_CALLED = 0
-    vc.notify_block_move("", block1, block1.time_slot.day.value, block1.time_slot.time_start.hours)
+    vc.notify_block_move("", block1, block1.day.value, block1.start)
 
     # verify
     assert dirty_flag_method()
@@ -256,7 +254,7 @@ def test_block_moved_view_updated(schedule_obj, gui, monkeypatch):
 
     # execute
     MOVE_GUI_BLOCK_TO = 0
-    vc.notify_block_move(teacher.number, block1, block1.time_slot.day.value, block1.time_slot.time_start.hours)
+    vc.notify_block_move(teacher.number, block1, block1.day.value, block1.start)
 
     # verify
     assert MOVE_GUI_BLOCK_TO == 1
@@ -284,7 +282,7 @@ def test_block_movable_changed(schedule_obj, gui, monkeypatch):
     assert not block1.conflict
 
     # execute
-    block1.time_slot.movable = not block1.movable()
+    block1.movable = not block1.movable
     vc.notify_block_movable_toggled(block1)
 
     # validate
@@ -394,10 +392,10 @@ def test_undos_from_saved_actions(schedule_obj, gui, monkeypatch):
     block1, block2 = blocks
 
     # execute
-    vc.save_action_block_move(block1, from_day=5, to_day=block1.time_slot.day.value,
-                              from_time=0, to_time=block1.time_slot.time_start.hours)
+    vc.save_action_block_move(block1, from_day=5, to_day=block1.day.value,
+                              from_time=0, to_time=block1.start)
     vc.save_action_block_resource_changed(ResourceType.teacher, block1, from_resource=teacher2, to_resource=teacher)
-    vc.save_action_block_movable_toggled(block2,  block2.movable())
+    vc.save_action_block_movable_toggled(block2,  block2.movable)
 
     # validate
     undos = vc._undo
@@ -406,16 +404,16 @@ def test_undos_from_saved_actions(schedule_obj, gui, monkeypatch):
     a1,a2,a3 = undos
     assert a1.action == "move"
     assert a1.from_day == 5
-    assert a1.to_day == block1.time_slot.day.value
+    assert a1.to_day == block1.day.value
     assert a1.from_time == 0
-    assert a1.to_time == block1.time_slot.time_start.hours
+    assert a1.to_time == block1.start
 
     assert a2.action == "change_resource"
     assert a2.to_resource == teacher
     assert a2.from_resource == teacher2
 
     assert a3.action == "toggle_movable"
-    assert a3.was_movable == block2.movable()
+    assert a3.was_movable == block2.movable
 
 def test_undos_actual_undo(schedule_obj, gui, monkeypatch):
     """create 3 actions, then undo all changes, one by one
@@ -429,11 +427,11 @@ def test_undos_actual_undo(schedule_obj, gui, monkeypatch):
     blocks = schedule_obj.get_blocks_for_teacher(teacher)
     block1, block2 = blocks
 
-    original_movable = block2.movable()
-    block2.movable = not block2.time_slot.movable
+    original_movable = block2.movable
+    block2.movable = not block2.movable
 
-    vc.save_action_block_move(block1, from_day=5, to_day=block1.time_slot.day.value,
-                              from_time=14, to_time=block1.time_slot.time_start.hours)
+    vc.save_action_block_move(block1, from_day=5, to_day=block1.day.value,
+                              from_time=14, to_time=block1.start)
     vc.save_action_block_resource_changed(ResourceType.teacher, block1, from_resource=teacher2, to_resource=teacher)
     vc.save_action_block_movable_toggled(block2,  original_movable)
 
@@ -443,7 +441,7 @@ def test_undos_actual_undo(schedule_obj, gui, monkeypatch):
     # validate
     assert len(vc._undo) == 2
     assert len(vc._redo) == 1
-    assert block2.time_slot.movable == original_movable
+    assert block2.movable == original_movable
 
     # execute
     vc.undo()
@@ -459,8 +457,8 @@ def test_undos_actual_undo(schedule_obj, gui, monkeypatch):
     # validate
     assert len(vc._undo) == 0
     assert len(vc._redo) == 3
-    assert block1.time_slot.day.value == 5
-    assert block1.time_slot.time_start.hours == 14
+    assert block1.day.value == 5
+    assert block1.start == 14
 
 def test_redos(schedule_obj, gui, monkeypatch):
     """create 3 actions, then undo all changes, and then redo them
@@ -474,12 +472,12 @@ def test_redos(schedule_obj, gui, monkeypatch):
     blocks = schedule_obj.get_blocks_for_teacher(teacher)
     block1, block2 = blocks
 
-    original_time = block1.time_slot.time_start.hours
-    original_movable = block2.movable()
-    block2.movable = not block2.time_slot.movable
+    original_time = block1.start
+    original_movable = block2.movable
+    block2.movable = not block2.movable
 
-    vc.save_action_block_move(block1, from_day=5, to_day=block1.time_slot.day.value,
-                              from_time=14, to_time=block1.time_slot.time_start.hours)
+    vc.save_action_block_move(block1, from_day=5, to_day=block1.day.value,
+                              from_time=14, to_time=block1.start)
     vc.save_action_block_resource_changed(ResourceType.teacher, block1, from_resource=teacher2, to_resource=teacher)
     vc.save_action_block_movable_toggled(block2,  original_movable)
 
@@ -494,9 +492,9 @@ def test_redos(schedule_obj, gui, monkeypatch):
     # validate
     assert len(vc._undo) == 3
     assert len(vc._redo) == 0
-    assert block2.time_slot.movable != original_movable
+    assert block2.movable != original_movable
     assert block1 in schedule_obj.get_blocks_for_teacher(teacher)
-    assert block1.time_slot.time_start.hours == original_time
+    assert block1.start == original_time
 
 def test_undo_redo_no_action_required(schedule_obj, gui, monkeypatch):
     """no pending actions,

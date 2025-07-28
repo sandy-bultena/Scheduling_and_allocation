@@ -23,18 +23,26 @@ from __future__ import annotations
 import copy
 from typing import TYPE_CHECKING, Optional
 from schedule.Utilities.id_generator import IdGenerator
+from schedule.model.enums import WeekDay
+from schedule.model.time_slot import TimeSlot
 from .enums import ConflictType
 OptionalId = Optional[int]
 
 # stuff that we need just for type checking, not for actual functionality
 if TYPE_CHECKING:
-    from .time_slot import TimeSlot, ClockTime
     from .lab import Lab
     from .teacher import Teacher
     from .section import Section
     from .stream import Stream
 
+DEFAULT_DAY = WeekDay.Monday
+DEFAULT_START = 8.0
+DEFAULT_DURATION = 1.5
 
+# -----------------------------------------------------------------------------------------------------------
+# Design Note: Keeping time slot a separate thing, so that we can sync blocks more easily
+#              but... hiding the interface to make the block API easier to use
+# -----------------------------------------------------------------------------------------------------------
 class Block:
     """
     Describes a block which is a specific time slot for teaching part of a section of a course.
@@ -49,12 +57,24 @@ class Block:
     # Constructor
     # =================================================================
 
-    def __init__(self, section: Section, time_slot: TimeSlot, block_id: OptionalId = None) -> None:
-        """Creates a new Block object.
+    def __init__(self, section: Section,
+                 day: WeekDay | float = DEFAULT_DAY,
+                 start: float = DEFAULT_START,
+                 duration: float = DEFAULT_DURATION,
+                 movable: bool = True,
+                 block_id: OptionalId = None) -> None:
+        """
+        Creates a new block object (class time)
+        :param section:
+        :param day:
+        :param start:
+        :param duration:
+        :param movable:
+        :param block_id:
         """
         self._sync: list[Block] = []
         self.section = section
-        self.time_slot = time_slot
+        self._time_slot = TimeSlot(day, start, duration, movable)
 
         self._teachers: set[Teacher] = set()
         self._labs: set[Lab] = set()
@@ -73,11 +93,62 @@ class Block:
 
     def description(self) -> str:
         """Returns text string that describes this Block."""
-        return str(self.time_slot)
+        return str(self._time_slot)
 
-    def movable(self) -> bool:
-        """Can the block be moved, yes or no"""
-        return self.time_slot.movable
+    # ------------------------------------------------------------------------
+    # time slot properties and functions
+    # ------------------------------------------------------------------------
+    @property
+    def start(self) -> float:
+        return self._time_slot.start
+
+    @start.setter
+    def start(self, value: float):
+        self._time_slot.start = value
+
+    @property
+    def day(self) -> WeekDay:
+        return self._time_slot.day
+
+    @day.setter
+    def day(self, value: WeekDay|float):
+        if isinstance(value,int) or isinstance(value,float):
+            self._time_slot.day = WeekDay(int(value))
+        else:
+            self._time_slot.day = value
+
+    @property
+    def end(self):
+        return self._time_slot.end
+
+    @property
+    def duration(self)->float:
+        return self._time_slot.duration
+
+    @duration.setter
+    def duration(self, value: float):
+        self._time_slot.duration = value
+
+    @property
+    def movable(self)->bool:
+        return self._time_slot.movable
+
+    @movable.setter
+    def movable(self, value: bool):
+        self._time_slot.movable = value
+
+    def snap_to_time(self):
+        self._time_slot.snap_to_time()
+
+    def snap_to_day(self, fractional_day: float) -> bool:
+        return self._time_slot.snap_to_day(fractional_day)
+
+    def conflicts_time(self, other: Block) -> bool:
+        """
+        Tests if the current Block conflicts with another TimeSlot.
+        :param other: other Block
+        """
+        return self._time_slot.conflicts_time(other._time_slot)
 
     # ------------------------------------------------------------------------
     # Conflicts
@@ -155,7 +226,7 @@ class Block:
         (i.e., changing the time_start time of this Block will change the time_start time of the
         synced_blocks block)."""
         self._sync.append(block)
-        block.time_slot = self.time_slot
+        block._time_slot = self._time_slot
         for b in self._sync:
             b._sync.append(self)
 
@@ -167,7 +238,7 @@ class Block:
                 b._sync.remove(self)
         if block in self._sync:
             self._sync.remove(block)
-            block.time_slot = copy.copy(block.time_slot)
+            block._time_slot = copy.copy(block._time_slot)
 
     # ------------------------------------------------------------------------
     # string representation of object
@@ -175,7 +246,7 @@ class Block:
     def __str__(self) -> str:
         """Returns a text string that describes the Block."""
         text = ""
-        text += f"{self.time_slot} "
+        text += f"{self._time_slot} "
         text += ", ".join(str(lab.number) for lab in self.labs())
         text += f" for {self.section.title}"
 
@@ -185,7 +256,7 @@ class Block:
         return f"{self.id} - {self.description()}"
 
     def __lt__(self,other):
-        return self.time_slot < other.time_slot
+        return self._time_slot < other._time_slot
 
     def __eq__(self, other):
         return self.id == other.id

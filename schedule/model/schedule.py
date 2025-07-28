@@ -393,7 +393,7 @@ class Schedule:
                     # blocks
                     for b in s.blocks():
                         if b.has_teacher(teacher):
-                            text += f"\t{b.time_slot} "
+                            text += f"\t{b} "
                             text += ", ".join(str(lab) for lab in b.labs()) + "\n"
         return text
 

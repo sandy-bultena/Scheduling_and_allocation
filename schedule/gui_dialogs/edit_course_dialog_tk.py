@@ -7,7 +7,8 @@ from tkinter.simpledialog import Dialog
 from typing import Callable, Literal, TYPE_CHECKING
 
 from schedule.gui_dialogs.utilities import set_style, entry_float, entry_int, validate_float, validate_int, \
-    validate_class_times_equals_course_time, refresh_gui_blocks
+    validate_class_times_equals_course_time, refresh_gui_blocks, get_block_info_from_row_data, \
+    get_clock_string_from_hours
 from schedule.gui_generics.add_remove_tk import AddRemoveTk
 if TYPE_CHECKING:
     from schedule.model import Lab, Teacher
@@ -28,7 +29,7 @@ class EditCourseDialogTk(Dialog):
                  non_assigned_teachers: list[Teacher],
                  assigned_labs: list[Lab] = None,
                  non_assigned_labs: list[Lab],
-                 current_blocks: list[tuple[str,str,str]] = None,
+                 current_blocks: list[tuple[str,float,float]] = None,
                  apply_changes: Callable[[str, str, float, bool, int, list, list, list], None]):
 
         set_style(frame)
@@ -94,8 +95,8 @@ class EditCourseDialogTk(Dialog):
         self.block_frames = Frame(frame)
         for index, block_info in enumerate(self.current_blocks):
             opt_day = StringVar(value=block_info[0])
-            opt_hour = StringVar(value=block_info[1])
-            opt_duration = StringVar(value=block_info[2])
+            opt_hour = StringVar(value=get_clock_string_from_hours(block_info[1]))
+            opt_duration = StringVar(value=str(block_info[2]))
             self.row_data.append((opt_day, opt_hour, opt_duration))
 
         # ------------------------------------------------------------------------------------------------------------
@@ -153,11 +154,7 @@ class EditCourseDialogTk(Dialog):
     # apply changes
     # ================================================================================================================
     def apply(self):
-        new_blocks=[]
-        for i,b in enumerate(self.row_data):
-            d = [x.get() for x in b]
-            d[2] = float(d[2].strip().split(" ")[0])
-            new_blocks.append(tuple(d))
+        new_blocks=get_block_info_from_row_data(self.row_data)
         self._apply_changes(self.course_number_tk.get(), self.course_name_tk.get(),
                             float(self.course_hours_tk.get()),self.course_allocation_tk.get(),
                             int(self.num_sections_tk.get()), self._assigned_teachers,

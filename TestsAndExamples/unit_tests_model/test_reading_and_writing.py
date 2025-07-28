@@ -7,6 +7,14 @@ import pytest
 
 from schedule.model import schedule as s
 
+def test_read():
+    """stupidest simplest test whatsoever"""
+
+    # reading doesn't crash
+    # TODO: not a good test
+    schedule = s.Schedule(path.dirname(__file__) + "/data_test_good_input.csv")
+
+
 
 def test_read_write():
     """stupidest simplest test whatsoever"""
@@ -42,4 +50,4 @@ def test_blocks_movable_is_correct():
     blocks = schedule.get_blocks_for_teacher(teacher)
     for b in blocks:
         assert b.movable()
-        
+

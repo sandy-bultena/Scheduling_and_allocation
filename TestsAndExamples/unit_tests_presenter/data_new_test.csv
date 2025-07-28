@@ -8,5 +8,5 @@
 ,,DESCRIPTION,OF,FIELDS
 ,number,name,semester,needs allocation,hours_per_week,COURSE
 ,id,number,name,students,SECTION
-,id,day,time_start,duration,movable,BLOCK
+,id,day,start,duration,movable,BLOCK
 

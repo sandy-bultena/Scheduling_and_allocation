@@ -9,7 +9,7 @@ from tkinter.simpledialog import Dialog
 from typing import Callable, TYPE_CHECKING
 
 from schedule.gui_dialogs.utilities import validate_class_times_equals_course_time, get_block_info_from_row_data, \
-    refresh_gui_blocks
+    refresh_gui_blocks, get_clock_string_from_hours
 from schedule.gui_generics.add_remove_tk import AddRemoveTk
 if TYPE_CHECKING:
     from schedule.model import Stream, Lab, Teacher
@@ -36,7 +36,7 @@ class EditSectionDialogTk(Dialog):
                  non_assigned_labs: list[Lab],
                  assigned_streams: list[Stream] = None,
                  non_assigned_streams: list[Stream],
-                 current_blocks: list[tuple[str,str,str]] = None,
+                 current_blocks: list[tuple[str,float,float]] = None,
                  course_hours: float,
 
                  apply_changes: Callable[[str, list, list, list, list], None]):
@@ -94,8 +94,8 @@ class EditSectionDialogTk(Dialog):
         self.block_frames = Frame(frame)
         for index, block_info in enumerate(self.current_blocks):
             opt_day = StringVar(value=block_info[0])
-            opt_hour = StringVar(value=block_info[1])
-            opt_duration = StringVar(value=block_info[2])
+            opt_hour = StringVar(value=get_clock_string_from_hours(block_info[1]))
+            opt_duration = StringVar(value=str(block_info[2]))
             self.row_data.append((opt_day, opt_hour, opt_duration))
 
 

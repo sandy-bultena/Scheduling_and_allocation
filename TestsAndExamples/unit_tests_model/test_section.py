@@ -3,10 +3,8 @@ import re
 import pytest
 
 from schedule.model.section import Section
-import schedule.model.section as sections_module
-from schedule.model import Block, WeekDay, ClockTime, Course
-from schedule.model import TimeSlot, ConflictType
-from schedule.model import InvalidHoursForSectionError
+from schedule.model import Block, WeekDay, Course
+from schedule.model import ConflictType
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -51,7 +49,7 @@ def test_id():
 def test_id_with_id_given():
     """Verifies that the id property works as intended."""
 
-    existing_id = 12
+    existing_id = 912
     section1 = Section(course, section_id=existing_id)
     assert section1.id == existing_id
     section2 = Section(course)
@@ -73,7 +71,7 @@ def test_constructor_default_values():
 def test_section_created_success():
     """Checks that Section is created correctly"""
     number = "3A"
-    hours = 2
+
     name = "My Section"
     s = Section(course, number, name)
     assert s.name == name
@@ -85,9 +83,9 @@ def test_hours_are_block_hours():
     s = Section(course)
     hours = 22
     s.course.hours = hours
-    block1 = s.add_block(TimeSlot(WeekDay.Monday, ClockTime("9:30"), 3))
-    block2 = s.add_block(TimeSlot(WeekDay.Monday, ClockTime("10:30"), 3.5))
-    assert s.hours == (block1.time_slot.duration + block2.time_slot.duration)
+    block1 = s.add_block(WeekDay.Monday, 9.5, 3)
+    block2 = s.add_block(WeekDay.Monday, 10.5, 3.5)
+    assert s.hours == (block1.duration + block2.duration)
 
 
 def test_hours_are_course_hours_if_no_blocks():
@@ -118,16 +116,16 @@ def test_set_num_students():
 def test_added_hours_ignored_if_blocks():
     """Checks that added hours will be ignored if blocks are set_default_fonts_and_colours"""
     s = Section(course)
-    block1 = s.add_block(TimeSlot(WeekDay.Monday, ClockTime("9:30"), 3))
-    block2 = s.add_block(TimeSlot(WeekDay.Monday, ClockTime("10:30"), 3.5))
+    block1 = s.add_block(WeekDay.Monday, 9.5, 3)
+    block2 = s.add_block(WeekDay.Monday, 10.5, 3.5)
     s.add_hours(20)
-    assert s.hours == (block1.time_slot.duration + block2.time_slot.duration)
+    assert s.hours == (block1.duration + block2.duration)
 
 
 def test_is_conflicted_detects_conflicts_correctly():
     """Checks that the is_conflicted method correctly picks up conflicted_number blocks"""
     s = Section(course)
-    block1 = s.add_block(TimeSlot(WeekDay.Monday, ClockTime("10:30"), 3))
+    block1 = s.add_block(WeekDay.Monday, 10.5, 3)
     block1.add_conflict(ConflictType.LUNCH)
     assert s.is_conflicted()
 
@@ -135,9 +133,9 @@ def test_is_conflicted_detects_conflicts_correctly():
 def test_is_conflicted_detects_ok_correctly():
     """Checks that the is_conflicted method doesn't return false positive"""
     s = Section(course)
-    s.add_block(TimeSlot('Mon', '13:00', 2))
-    s.add_block(TimeSlot('Mon', '13:00', 2))
-    s.add_block(TimeSlot('Mon', '13:00', 2))
+    s.add_block(WeekDay.Monday, 13, 2)
+    s.add_block(WeekDay.Monday, 13, 2)
+    s.add_block(WeekDay.Monday, 13, 2)
     assert not s.is_conflicted()
 
 
@@ -165,16 +163,16 @@ def test_string_representation_with_no_name():
 def test_add_block_valid():
     """Checks that a valid blocks can be added"""
     s = Section(course)
-    b = s.add_block(TimeSlot(WeekDay.Monday, ClockTime('13:00'), 2))
+    b = s.add_block(WeekDay.Monday, 13, 2)
     assert b in s.blocks()
 
 
 def test_get_block_by_id_valid():
     """Checks that blocks can be retrieved by id"""
     s = Section(course)
-    b1 = s.add_block(TimeSlot('Mon', '13:00', 2))
+    b1 = s.add_block(WeekDay.Monday, 13, 2)
     b1_id = b1.id
-    s.add_block(TimeSlot('tue', "12:00", 5))
+    s.add_block(WeekDay.Tuesday, 12, 5)
     assert s.get_block_by_id(b1_id) == b1
 
 
@@ -187,8 +185,8 @@ def test_get_block_by_id_invalid():
 def test_remove_block_valid():
     """Checks that when passed a valid blocks, it will be removed"""
     s = Section(course)
-    b1 = s.add_block(TimeSlot('Mon', '13:00', 2))
-    b2 = s.add_block(TimeSlot('Mon', '13:00', 2))
+    b1 = s.add_block(WeekDay.Monday, 13, 2)
+    b2 = s.add_block(WeekDay.Monday, 13, 2)
     s.remove_block(b1)
     assert b1 not in s.blocks()
     assert b2 in s.blocks()
@@ -201,7 +199,7 @@ def test_remove_block_valid():
 def test_assign_lab_valid():
     """Checks that a valid lab can be added, if there is a block"""
     s = Section(course)
-    s.add_block(TimeSlot(WeekDay.Monday, ClockTime('13:00'), 2))
+    s.add_block(WeekDay.Monday, 13, 2)
     lab = Lab()
     s.add_lab(lab)
     assert lab in s.labs()
@@ -210,7 +208,7 @@ def test_assign_lab_valid():
 def test_remove_lab_valid():
     """Checks that when passed a valid lab, it will be removed & deleted"""
     s = Section(course)
-    s.add_block(TimeSlot(WeekDay.Monday, ClockTime('13:00'), 2))
+    s.add_block(WeekDay.Monday, 13, 2)
     lab = Lab()
     s.add_lab(lab)
     s.remove_lab(lab)
@@ -220,7 +218,7 @@ def test_remove_lab_valid():
 def test_remove_lab_not_there():
     """Checks that when passed not-included lab, it will still be 'removed' """
     s = Section(course)
-    s.add_block(TimeSlot(WeekDay.Monday, ClockTime('13:00'), 2))
+    s.add_block(WeekDay.Monday, 13, 2)
     lab = Lab()
     s.remove_lab(lab)
     assert lab not in s.labs()
@@ -373,8 +371,8 @@ def test_remove_all_deletes_all_teachers():
 
 def test_teachers_in_blocks_in_teachers_property():
     s = Section(course)
-    b1: Block = s.add_block(TimeSlot(WeekDay.Monday, ClockTime("13:00"), 1.5))
-    b2: Block = s.add_block(TimeSlot(WeekDay.Monday, ClockTime("13:00"), 1.5))
+    b1: Block = s.add_block(WeekDay.Monday, 13, 1.5)
+    b2: Block = s.add_block(WeekDay.Monday, 13, 1.5)
     t1 = Teacher()
     t2 = Teacher()
     t3 = Teacher()

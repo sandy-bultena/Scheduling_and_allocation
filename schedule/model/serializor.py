@@ -4,8 +4,7 @@ from typing import Any, Optional, TYPE_CHECKING, Iterable
 
 import csv
 
-from . import ClockTime
-from .time_slot import TimeSlot
+from . import TimeSlot
 from .enums import ResourceType, SemesterType
 from .enums import WeekDay
 
@@ -43,7 +42,7 @@ class CSVSerializor:
             for lab in sorted(schedule.labs()):
                 w.writerow(["lab", lab.number, lab.description])
                 for unavail in lab.unavailable_slots():
-                    w.writerow(["unavailable", "", unavail.day, unavail.time_start, unavail.duration,
+                    w.writerow(["unavailable", "", unavail.day, unavail.start, unavail.duration,
                                 int(unavail.movable)])
             w.writerow([])
 
@@ -66,7 +65,7 @@ class CSVSerializor:
             w.writerow([None, None, 'DESCRIPTION', 'OF', 'FIELDS'])
             w.writerow([None, 'number', 'name', 'semester', 'needs allocation', 'hours_per_week', 'COURSE'])
             w.writerow([None, 'id', 'number', 'name', 'students', 'SECTION'])
-            w.writerow([None, 'id', 'day', 'time_start', 'duration', 'movable', 'BLOCK'])
+            w.writerow([None, 'id', 'day', 'start', 'duration', 'movable', 'BLOCK'])
             w.writerow([])
             for course in sorted(schedule.courses()):
                 w.writerow(["course", course.number, course.name, course.semester.value,
@@ -80,8 +79,8 @@ class CSVSerializor:
                         w.writerow(["add_stream", s.number])
 
                     for block in section.blocks():
-                        w.writerow(["add_block", None, block.time_slot.day.name, block.time_slot.time_start,
-                                    block.time_slot.duration, int(block.time_slot.movable)])
+                        w.writerow(["add_block", None, block.day.name, block.start,
+                                    block.duration, int(block.movable)])
                         for teacher in sorted(block.teachers(), key=lambda t: t.number):
                             w.writerow(["add_block_teacher", teacher.number])
                         for lab in sorted(block.labs(), key=lambda ll: ll.number):
@@ -121,7 +120,7 @@ class CSVSerializor:
         block_obj: Optional[Block] = None
 
         for row in reader:
-            print(f"{row}")
+            # print(f"{row}")
             if not row or row[0] == "":
                 continue
 
@@ -136,7 +135,7 @@ class CSVSerializor:
                 case "unavailable" if current_obj.resource_type == ResourceType.lab:
                     (day, start, duration, movable) = row[1:5]
                     current_obj.add_unavailable_slot(TimeSlot(
-                        day=WeekDay.get_from_string(day), start=ClockTime(start), duration=float(duration), movable=bool(int(movable))))
+                        day=WeekDay.get_from_string(day), start=start, duration=float(duration), movable=bool(int(movable))))
 
                 case 'stream':
                     (number, descr) = row[1:3]
@@ -180,8 +179,8 @@ class CSVSerializor:
                     (day, start, duration, movable) = row[2:6]
                     x = WeekDay.get_from_string(day)
                     block_obj: Block = section_obj.add_block(
-                        TimeSlot(day=WeekDay.get_from_string(day), start=ClockTime(start), duration=float(duration),
-                                 movable=bool(int(movable))))
+                        day=WeekDay.get_from_string(day), start=float(start), duration=float(duration),
+                                 movable=bool(int(movable)))
 
                 case "add_block_teacher" if block_obj is not None:
                     t: Optional[Teacher] = schedule.get_teacher_by_number(row[1])

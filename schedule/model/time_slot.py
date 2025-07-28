@@ -3,19 +3,28 @@
 """
 
 from __future__ import annotations
-import re
-from .enums import WeekDay
-from .schedule_time import ScheduleTime, ClockTime
+from schedule.model.enums import WeekDay
 
 MINUTE_BLOCK_SIZE = 30
 MINIMUM_DURATION = 0.5
 DEFAULT_DAY = WeekDay.Monday
-DEFAULT_START = "8:00"
+DEFAULT_START = 8.0
 DEFAULT_HOURS = 8
 DEFAULT_DURATION = 1.5
 MIN_START_TIME = 8
 MAX_END_TIME = 18
 MAXIMUM_DURATION = 8
+
+def get_hour_minutes_from_hours(hours: float) -> (int, int):
+    """converts number of hours (as a float) to integer hour and integer minutes"""
+    hour = int(hours)
+    minute = (hours % 1) * 60
+    return hour, int(minute)
+
+def get_clock_string_from_hours(hours: float)->str:
+    hour,minute = get_hour_minutes_from_hours(hours)
+    return f"{hour}:{minute:02d}"
+
 
 
 class TimeSlot:
@@ -25,7 +34,7 @@ class TimeSlot:
     """
 
     def __init__(self, day: WeekDay = DEFAULT_DAY,
-                 start: ScheduleTime = DEFAULT_START,
+                 start: float = DEFAULT_START,
                  duration: float = DEFAULT_DURATION,
                  movable: bool = True):
         """
@@ -35,40 +44,39 @@ class TimeSlot:
         :param movable: Whether this time_slot can be moved or not.
         """
         self.day: WeekDay = day
-        self.time_start: ScheduleTime = start
+        self.start: float = start
         self.duration: float = min(max(duration, MINIMUM_DURATION), MAXIMUM_DURATION)
         self.movable: bool = movable
 
     @property
-    def time_end(self) -> ScheduleTime:
-        hours = self.time_start.hours + self.duration
-        return ScheduleTime(hours)
+    def end(self) -> float:
+        return self.start + self.duration
 
     # ====================================
     # snap_to_time
     # ====================================
-    def snap_to_time(self) -> bool:
-        """
-        :return: True if the time_start time or duration were modified
-        """
+    def snap_to_time(self):
 
         # it's not movable!
         if not self.movable:
-            return False
+            return
 
         hour_fraction = int(60/MINUTE_BLOCK_SIZE)
+
         # duration needs to be snapped to the same time span
         duration = max(MINIMUM_DURATION, round(self.duration * hour_fraction) / hour_fraction)
-        changed = abs(duration - self.duration) > 0.01
         self.duration = duration
 
-        # snap the scheduled time
-        changed = changed or self.time_start.snap_to_time(duration=duration,
-                                                          round_to_minutes=MINUTE_BLOCK_SIZE,
-                                                          min_start_time=MIN_START_TIME,
-                                                          max_end_time=MAX_END_TIME)
+        # snap to the number of minutes in the block size
+        start = max(self.start, MIN_START_TIME)
+        if start + duration > MAX_END_TIME:
+            start = MAX_END_TIME - duration
+        hour, minute = get_hour_minutes_from_hours(start)
+        minute = round(minute / MINUTE_BLOCK_SIZE) * MINUTE_BLOCK_SIZE
 
-        return changed
+        # update scheduled_time
+        self.start = hour + minute/60
+
 
     # =================================================================
     # snap_to_day
@@ -104,10 +112,10 @@ class TimeSlot:
             return False
 
         # Calculate the time_start/end for each blocks within error factor.
-        self_start = self.time_start.hours + delta
-        self_end = self.time_start.hours + self.duration - delta
-        other_start = other.time_start.hours + delta
-        other_end = other.time_start.hours + other.duration - delta
+        self_start = self.start + delta
+        self_end = self.start + self.duration - delta
+        other_start = other.start + delta
+        other_end = other.start + other.duration - delta
 
         conflict1 = other_start < self_start < other_end or other_start < self_end < other_end
         conflict2 = self_start >= other_start and self_end <= other_end
@@ -116,15 +124,16 @@ class TimeSlot:
 
     def __eq__(self, other):
         return (self.day == other.day
-                and self.time_start == other.time_start
+                and self.start == other.start
                 and self.duration == other.duration)
 
     def __lt__(self, other):
-        return ((self.day, self.time_start, self.duration) <
-                (other.day, other.time_start, other.duration))
+        return ((self.day, self.start, self.duration) <
+                (other.day, other.start, other.duration))
 
     def __str__(self):
-        return f"{self.day.name}: {self.time_start} to {self.time_end}"
+        return (f"{self.day.name}: {get_clock_string_from_hours(self.start)} "
+                f"to {get_clock_string_from_hours(self.end)}")
 
     def __repr__(self):
         return str(self)

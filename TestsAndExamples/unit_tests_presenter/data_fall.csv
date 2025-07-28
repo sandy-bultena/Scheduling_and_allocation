@@ -40,20 +40,20 @@ course,350-823,Human Relations,1,1,3.0
 
 section,,1,Section 1,0
 add_stream,3A
-add_block,,Tuesday,14:30,3.0,0
+add_block,,Tuesday,14.5,3.0,0
 
 section,,2,Section 2,0
 add_stream,3B
-add_block,,Thursday,14:30,3.0,0
+add_block,,Thursday,14.5,3.0,0
 
 course,420-1B4,Computerized Systems,1,1,4.0
 
 section,,1,Section 1,17
-add_block,,Tuesday,15:00,2.0,0
+add_block,,Tuesday,15.0,2.0,0
 add_block_teacher,Bultena_Sandy
 add_block_teacher,Buschinelli_Mauricio
 add_lab,P325
-add_block,,Thursday,15:00,2.0,0
+add_block,,Thursday,15.0,2.0,0
 add_block_teacher,Bultena_Sandy
 add_block_teacher,Buschinelli_Mauricio
 add_lab,P325
@@ -67,39 +67,39 @@ course,420-1N6,Tech Support,1,1,6.0
 
 section,,1,Section 1,29
 add_stream,1A
-add_block,,Monday,11:30,1.5,1
+add_block,,Monday,11.5,1.5,1
 add_lab,P107
 add_lab,P325
-add_block,,Monday,13:00,1.5,1
+add_block,,Monday,13.0,1.5,1
 add_lab,P107
 add_lab,P325
-add_block,,Friday,8:30,3.0,1
+add_block,,Friday,8.5,3.0,1
 add_lab,P327
 
 section,,2,Section 2,30
 add_stream,1B
-add_block,,Thursday,11:30,1.5,1
+add_block,,Thursday,11.5,1.5,1
 add_lab,P107
 add_lab,P325
-add_block,,Thursday,13:00,1.5,1
+add_block,,Thursday,13.0,1.5,1
 add_lab,P107
 add_lab,P325
-add_block,,Friday,14:30,3.0,1
+add_block,,Friday,14.5,3.0,1
 add_lab,P325
 
 course,420-1P6,Programming I,1,1,6.0
 
 section,,1,Section 1,19
 add_stream,1A
-add_block,,Monday,8:30,1.5,1
+add_block,,Monday,8.5,1.5,1
 add_block_teacher,Fagen_Larry
 add_lab,P107
 add_lab,P325
-add_block,,Wednesday,8:30,1.5,1
+add_block,,Wednesday,8.5,1.5,1
 add_block_teacher,Fagen_Larry
 add_lab,P107
 add_lab,P325
-add_block,,Thursday,8:30,3.0,1
+add_block,,Thursday,8.5,3.0,1
 add_block_teacher,Fagen_Larry
 add_lab,P325
 
@@ -109,14 +109,14 @@ add_section_teacher,Fagen_Larry,6.0
 
 section,,2,Section 2,30
 add_stream,1B
-add_block,,Monday,11:30,1.5,1
+add_block,,Monday,11.5,1.5,1
 add_block_teacher,Fagen_Larry
 add_lab,P327
-add_block,,Wednesday,11:30,1.5,1
+add_block,,Wednesday,11.5,1.5,1
 add_block_teacher,Fagen_Larry
 add_lab,P107
 add_lab,P327
-add_block,,Friday,8:30,3.0,1
+add_block,,Friday,8.5,3.0,1
 add_block_teacher,Fagen_Larry
 add_lab,P325
 
@@ -128,16 +128,16 @@ course,420-1T5,Productivity Tools,1,1,6.0
 
 section,,1,Section 1,28
 add_stream,1A
-add_block,,Monday,14:30,1.5,1
+add_block,,Monday,14.5,1.5,1
 add_block_teacher,Buschinelli_Mauricio
 add_lab,P325
-add_block,,Wednesday,14:30,1.5,1
+add_block,,Wednesday,14.5,1.5,1
 add_block_teacher,Buschinelli_Mauricio
 add_lab,P325
-add_block,,Thursday,11:30,1.5,1
+add_block,,Thursday,11.5,1.5,1
 add_block_teacher,Buschinelli_Mauricio
 add_lab,P327
-add_block,,Thursday,13:00,1.5,1
+add_block,,Thursday,13.0,1.5,1
 add_block_teacher,Buschinelli_Mauricio
 add_lab,P322
 
@@ -147,13 +147,13 @@ add_section_teacher,Buschinelli_Mauricio,6.0
 
 section,,2,Section 2,30
 add_stream,1B
-add_block,,Monday,10:00,1.5,1
+add_block,,Monday,10.0,1.5,1
 add_block_teacher,Buschinelli_Mauricio
 add_lab,P325
-add_block,,Tuesday,11:30,3.0,1
+add_block,,Tuesday,11.5,3.0,1
 add_block_teacher,Buschinelli_Mauricio
 add_lab,P325
-add_block,,Wednesday,10:00,1.5,1
+add_block,,Wednesday,10.0,1.5,1
 add_block_teacher,Buschinelli_Mauricio
 add_lab,P325
 
@@ -165,49 +165,49 @@ course,420-3D6,Database,1,1,6.0
 
 section,,1,Section 1,26
 add_stream,2A
-add_block,,Monday,14:30,3.0,1
+add_block,,Monday,14.5,3.0,1
 add_lab,P326
-add_block,,Wednesday,14:30,3.0,1
+add_block,,Wednesday,14.5,3.0,1
 add_lab,P326
 
 section,,2,Section 2,26
 add_stream,2B
-add_block,,Tuesday,14:30,3.0,1
+add_block,,Tuesday,14.5,3.0,1
 add_lab,P326
-add_block,,Friday,14:30,3.0,1
+add_block,,Friday,14.5,3.0,1
 add_lab,P326
 
 course,420-3N5,Operating Systems,1,1,5.0
 
 section,,1,Section 1,26
 add_stream,2A
-add_block,,Monday,8:30,2.0,1
+add_block,,Monday,8.5,2.0,1
 add_lab,P326
-add_block,,Monday,11:30,1.5,1
+add_block,,Monday,11.5,1.5,1
 add_lab,P326
-add_block,,Friday,10:00,1.5,1
+add_block,,Friday,10.0,1.5,1
 add_lab,P326
 
 section,,2,Section 2,26
 add_stream,2B
-add_block,,Monday,8:30,1.5,1
+add_block,,Monday,8.5,1.5,1
 add_lab,P326
-add_block,,Thursday,12:30,2.0,1
+add_block,,Thursday,12.5,2.0,1
 add_lab,P326
-add_block,,Friday,8:30,1.5,1
+add_block,,Friday,8.5,1.5,1
 add_lab,P326
 
 course,420-3P5,Programming III,1,1,5.0
 
 section,,1,Section1,26
 add_stream,2A
-add_block,,Monday,13:00,1.5,1
+add_block,,Monday,13.0,1.5,1
 add_block_teacher,Mourtada_Aref
 add_lab,P326
-add_block,,Wednesday,13:00,1.5,1
+add_block,,Wednesday,13.0,1.5,1
 add_block_teacher,Mourtada_Aref
 add_lab,P326
-add_block,,Thursday,20:30,2.0,1
+add_block,,Thursday,20.5,2.0,1
 add_block_teacher,Mourtada_Aref
 add_lab,P326
 
@@ -217,13 +217,13 @@ add_section_teacher,Mourtada_Aref,5.0
 
 section,,2,Section 2,26
 add_stream,2B
-add_block,,Monday,10:00,1.5,1
+add_block,,Monday,10.0,1.5,1
 add_block_teacher,Mourtada_Aref
 add_lab,P326
-add_block,,Wednesday,10:00,1.5,1
+add_block,,Wednesday,10.0,1.5,1
 add_block_teacher,Mourtada_Aref
 add_lab,P326
-add_block,,Thursday,14:30,2.0,1
+add_block,,Thursday,14.5,2.0,1
 add_block_teacher,Mourtada_Aref
 add_lab,P326
 
@@ -235,13 +235,13 @@ course,420-3W5,Web Programming I,1,1,5.0
 
 section,,1,Section 1,27
 add_stream,2A
-add_block,,Tuesday,9:30,2.0,1
+add_block,,Tuesday,9.5,2.0,1
 add_block_teacher,Katalifos_Helen
 add_lab,P326
-add_block,,Wednesday,11:30,1.5,1
+add_block,,Wednesday,11.5,1.5,1
 add_block_teacher,Katalifos_Helen
 add_lab,P326
-add_block,,Friday,11:30,1.5,1
+add_block,,Friday,11.5,1.5,1
 add_block_teacher,Katalifos_Helen
 add_lab,P326
 
@@ -251,13 +251,13 @@ add_section_teacher,Katalifos_Helen,5.0
 
 section,,Section 2,5,28
 add_stream,2B
-add_block,,Tuesday,12:30,2.0,1
+add_block,,Tuesday,12.5,2.0,1
 add_block_teacher,Katalifos_Helen
 add_lab,P326
-add_block,,Wednesday,8:30,1.5,1
+add_block,,Wednesday,8.5,1.5,1
 add_block_teacher,Katalifos_Helen
 add_lab,P326
-add_block,,Friday,13:00,1.5,1
+add_block,,Friday,13.0,1.5,1
 add_block_teacher,Katalifos_Helen
 add_lab,P326
 
@@ -269,10 +269,10 @@ course,420-506,Web Programming,1,1,6.0
 
 section,,1,Section 1,21
 add_stream,3A
-add_block,,Monday,13:00,3.0,1
+add_block,,Monday,13.0,3.0,1
 add_block_teacher,Singh_Vik
 add_lab,P327
-add_block,,Thursday,8:30,3.0,1
+add_block,,Thursday,8.5,3.0,1
 add_block_teacher,Singh_Vik
 add_lab,P327
 
@@ -282,10 +282,10 @@ add_section_teacher,Singh_Vik,6.0
 
 section,,2,Section2,17
 add_stream,3B
-add_block,,Tuesday,10:00,3.0,1
+add_block,,Tuesday,10.0,3.0,1
 add_block_teacher,Singh_Vik
 add_lab,P322
-add_block,,Friday,10:00,3.0,1
+add_block,,Friday,10.0,3.0,1
 add_block_teacher,Singh_Vik
 add_lab,P322
 
@@ -297,10 +297,10 @@ course,420-516,Integration Project,1,1,6.0
 
 section,,1,Section 1,23
 add_stream,3A
-add_block,,Tuesday,10:00,3.0,1
+add_block,,Tuesday,10.0,3.0,1
 add_block_teacher,Scotnotis_Claudiu
 add_lab,P327
-add_block,,Thursday,13:00,3.0,1
+add_block,,Thursday,13.0,3.0,1
 add_block_teacher,Scotnotis_Claudiu
 add_lab,P327
 
@@ -310,10 +310,10 @@ add_section_teacher,Scotnotis_Claudiu,6.0
 
 section,,2,Section 2,19
 add_stream,3B
-add_block,,Tuesday,10:00,3.0,1
+add_block,,Tuesday,10.0,3.0,1
 add_block_teacher,Scotnotis_Claudiu
 add_lab,P327
-add_block,,Thursday,13:00,3.0,1
+add_block,,Thursday,13.0,3.0,1
 add_block_teacher,Scotnotis_Claudiu
 add_lab,P327
 
@@ -325,71 +325,71 @@ course,420-523,Telecommunications,1,1,3.0
 
 section,,1,Section 1,22
 add_stream,3A
-add_block,,Wednesday,13:00,1.5,1
+add_block,,Wednesday,13.0,1.5,1
 add_lab,P327
-add_block,,Friday,11:30,1.5,1
+add_block,,Friday,11.5,1.5,1
 add_lab,P327
 
 section,,2,Section 2,20
 add_stream,3B
-add_block,,Monday,13:00,1.5,1
+add_block,,Monday,13.0,1.5,1
 add_lab,P322
-add_block,,Wednesday,14:30,1.5,1
+add_block,,Wednesday,14.5,1.5,1
 add_lab,P327
 
 course,420-543,UNIX Networking,1,1,3.0
 
 section,,1,Section 1,22
 add_stream,3A
-add_block,,Wednesday,8:30,1.5,1
+add_block,,Wednesday,8.5,1.5,1
 add_lab,P322
-add_block,,Friday,13:00,1.5,1
+add_block,,Friday,13.0,1.5,1
 add_lab,P327
 
 section,,2,Section 2,20
 add_stream,3A
-add_block,,Wednesday,13:00,1.5,1
+add_block,,Wednesday,13.0,1.5,1
 add_lab,P322
-add_block,,Friday,8:30,1.5,1
+add_block,,Friday,8.5,1.5,1
 add_lab,P327
 
 course,420-616,Oracle Technologies,1,1,6.0
 
 section,,1,Section1,21
 add_stream,3A
-add_block,,Monday,10:00,3.0,1
+add_block,,Monday,10.0,3.0,1
 add_lab,P322
-add_block,,Wednesday,10:00,3.0,1
+add_block,,Wednesday,10.0,3.0,1
 add_lab,P322
 
 section,,2,Section2,26
 add_stream,3B
-add_block,,Monday,14:30,3.0,1
+add_block,,Monday,14.5,3.0,1
 add_lab,P322
-add_block,,Thursday,10:00,3.0,1
+add_block,,Thursday,10.0,3.0,1
 add_lab,P322
 
 course,420-DAB,Intro to Computers,4,1,3.0
 
 section,,1,Section 1,28
-add_block,,Monday,10:00,1.5,1
+add_block,,Monday,10.0,1.5,1
 add_lab,P327
-add_block,,Wednesday,10:00,1.5,1
+add_block,,Wednesday,10.0,1.5,1
 add_lab,P327
 
 section,,2,Section 2,29
-add_block,,Monday,8:30,1.5,1
+add_block,,Monday,8.5,1.5,1
 add_lab,P327
-add_block,,Wednesday,8:30,1.5,1
+add_block,,Wednesday,8.5,1.5,1
 add_lab,P327
 
 course,420-DBA,Intro to Programming (graphical),4,1,3.0
 
 section,,1,Section 1,25
-add_block,,Wednesday,13:00,1.5,1
+add_block,,Wednesday,13.0,1.5,1
 add_block_teacher,Rinfret_Denis
 add_lab,P325
-add_block,,Friday,13:00,1.5,1
+add_block,,Friday,13.0,1.5,1
 add_block_teacher,Rinfret_Denis
 add_lab,P325
 
@@ -400,14 +400,14 @@ add_section_teacher,Rinfret_Denis,3.0
 course,420-DBF,Intro to Programming,4,1,3.0
 
 section,,1,Section 1,19
-add_block,,Wednesday,11:30,1.5,1
+add_block,,Wednesday,11.5,1.5,1
 add_lab,P325
-add_block,,Friday,11:30,1.5,1
+add_block,,Friday,11.5,1.5,1
 add_lab,P325
 
 section,,2,Section 2,29
-add_block,,Wednesday,14:30,1.5,1
+add_block,,Wednesday,14.5,1.5,1
 add_lab,P322
-add_block,,Friday,14:30,1.5,1
+add_block,,Friday,14.5,1.5,1
 add_lab,P322
 

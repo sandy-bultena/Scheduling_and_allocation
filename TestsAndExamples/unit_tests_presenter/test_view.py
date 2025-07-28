@@ -4,7 +4,7 @@ import pytest
 from _pytest.fixtures import fixture
 
 from schedule.Tk import MenuItem, MenuType
-from schedule.model import ResourceType, ConflictType, SemesterType, WeekDay, TimeSlot, Schedule, ScheduleTime, Block
+from schedule.model import ResourceType, ConflictType, SemesterType, WeekDay, Schedule, Block
 from schedule.presenter.view import View
 
 
@@ -162,8 +162,8 @@ def schedule_obj():
     c_001 = schedule.add_update_course("001","BasketWeaving", SemesterType.fall )
     s_001_1 = c_001.add_section("1", section_id=1)
     s_001_1.add_stream(st1)
-    b_001_1_1 = s_001_1.add_block(TimeSlot(WeekDay.Monday, ScheduleTime( 8) ))
-    b_001_1_2 = s_001_1.add_block(TimeSlot(WeekDay.Monday, ScheduleTime( 10) ))
+    b_001_1_1 = s_001_1.add_block(WeekDay.Monday,  8 )
+    b_001_1_2 = s_001_1.add_block(WeekDay.Monday,  10 )
     b_001_1_1.add_teacher(t1)
     b_001_1_2.add_teacher(t1)
     b_001_1_1.add_lab(l1)
@@ -171,8 +171,8 @@ def schedule_obj():
 
     s_001_2 = c_001.add_section("2",section_id=2)
     s_001_2.add_stream(st2)
-    b_001_2_1 = s_001_2.add_block(TimeSlot(WeekDay.Tuesday, ScheduleTime( 8) ))
-    b_001_2_2 = s_001_2.add_block(TimeSlot(WeekDay.Tuesday, ScheduleTime( 10) ))
+    b_001_2_1 = s_001_2.add_block(WeekDay.Tuesday,  8 )
+    b_001_2_2 = s_001_2.add_block(WeekDay.Tuesday,  10 )
     b_001_2_1.add_teacher(t2)
     b_001_2_2.add_teacher(t3)
     b_001_2_1.add_lab(l2)
@@ -181,11 +181,11 @@ def schedule_obj():
 
     c_002 = schedule.add_update_course("002","Thumb Twiddling", SemesterType.fall )
     s_002_1 = c_002.add_section("1",)
-    b_002_1_1 = s_002_1.add_block(TimeSlot(WeekDay.Monday, ScheduleTime( 8) ))
-    b_002_1_2 = s_002_1.add_block(TimeSlot(WeekDay.Monday, ScheduleTime( 10) ))
+    b_002_1_1 = s_002_1.add_block(WeekDay.Monday,  8 )
+    b_002_1_2 = s_002_1.add_block(WeekDay.Monday,  10 )
     s_002_2 = c_002.add_section("2",)
-    b_002_2_1 = s_002_2.add_block(TimeSlot(WeekDay.Tuesday, ScheduleTime( 8) ))
-    b_002_2_2 = s_002_2.add_block(TimeSlot(WeekDay.Tuesday, ScheduleTime( 10) ))
+    b_002_2_1 = s_002_2.add_block(WeekDay.Tuesday,  8 )
+    b_002_2_2 = s_002_2.add_block(WeekDay.Tuesday,  10 )
 
 
 
@@ -235,9 +235,9 @@ def test_draw_blocks_called_during_init(schedule_obj, view_control, gui):
     for gui_id in view.gui_blocks:
         block: Block = view.gui_blocks[gui_id]
         assert gui_id in gui.draw_blocks_info
-        assert gui.draw_blocks_info[gui_id] == (block.time_slot.day.value, block.time_slot.time_start.hours,
-                                                block.time_slot.duration, block.movable())
-        assert gui.colour_blocks_info[gui_id] == (ResourceType.teacher, block.movable(), block.conflict )
+        assert gui.draw_blocks_info[gui_id] == (block.day, block.start,
+                                                block.duration, block.movable)
+        assert gui.colour_blocks_info[gui_id] == (ResourceType.teacher, block.movable, block.conflict )
 
 
 def test_draw_blocks(schedule_obj, view_control, gui):
@@ -263,9 +263,9 @@ def test_draw_blocks(schedule_obj, view_control, gui):
     for gui_id in view.gui_blocks:
         block: Block = view.gui_blocks[gui_id]
         assert gui_id in gui.draw_blocks_info
-        assert gui.draw_blocks_info[gui_id] == (block.time_slot.day.value, block.time_slot.time_start.hours,
-                                                block.time_slot.duration, block.movable())
-        assert gui.colour_blocks_info[gui_id] == (ResourceType.teacher, block.movable(), block.conflict )
+        assert gui.draw_blocks_info[gui_id] == (block.day, block.start,
+                                                block.duration, block.movable)
+        assert gui.colour_blocks_info[gui_id] == (ResourceType.teacher, block.movable, block.conflict )
 
 def test_view_keeps_track_of_blocks_and_gui_ids(schedule_obj, view_control, gui):
     """Create the view
@@ -320,7 +320,7 @@ def test_toggle_movable(schedule_obj, view_control, gui):
     view = View(view_control,"", schedule_obj, resource=teacher, gui=gui )
     gui_id = list(view.gui_blocks.keys())[0]
     block = view.gui_blocks[gui_id]
-    block.time_slot.movable = True
+    block.movable = True
     menu = gui.get_popup_menu_handler(gui_id)
 
     # execute
@@ -329,13 +329,13 @@ def test_toggle_movable(schedule_obj, view_control, gui):
             m.command()
 
     # verify
-    assert not block.movable()
+    assert not block.movable
 
     # execute
     view.toggle_is_movable(block)
 
     # verify
-    assert block.movable()
+    assert block.movable
     assert view_control.remove_redoes
     assert view_control.notified_toggled == block
     assert view_control.action_toggle == (block, False)
@@ -353,7 +353,7 @@ def test_move_block_to_different_resource(schedule_obj, view_control, gui):
     view = View(view_control,"", schedule_obj, resource=teacher, gui=gui )
     gui_id = list(view.gui_blocks.keys())[0]
     block = view.gui_blocks[gui_id]
-    block.time_slot.movable = True
+    block.movable = True
     menu = gui.get_popup_menu_handler(gui_id)
 
     # execute
@@ -422,18 +422,18 @@ def test_gui_block_is_moving(schedule_obj, view_control, gui):
     view = View(view_control,"", schedule_obj, resource=teacher, gui=gui )
     gui_id = list(view.gui_blocks.keys())[0]
     block = view.gui_blocks[gui_id]
-    o_day = block.time_slot.day.value
+    o_day = block.day.value
 
     # execute
-    gui.gui_block_is_moving_handler( gui_id,  block.time_slot.day.value-0.2, 9.45)
+    gui.gui_block_is_moving_handler( gui_id,  block.day.value-0.2, 9.45)
 
     # validate
     assert view_control.block_move['block'] == block
     assert view_control.block_move['id'] == teacher.number
-    assert view_control.block_move['day'] == block.time_slot.day.value-0.2
+    assert view_control.block_move['day'] == block.day.value-0.2
 
-    assert block.time_slot.day.value == o_day
-    assert block.time_slot.time_start.hours == 9.50
+    assert block.day.value == o_day
+    assert block.start == 9.50
 
     assert block.conflict
 
@@ -453,16 +453,16 @@ def test_gui_block_has_dropped(schedule_obj, view_control, gui):
     view = View(view_control,"", schedule_obj, resource=teacher, gui=gui )
     gui_id = list(view.gui_blocks.keys())[0]
     block = view.gui_blocks[gui_id]
-    o_day = block.time_slot.day.value
-    o_start = block.time_slot.time_start.hours
+    o_day = block.day
+    o_start = block.start
     gui.gui_block_is_moving_handler( gui_id,  3, 9.45)
 
     # execute
     gui.gui_block_has_dropped_handler( gui_id)
 
     # validate
-    assert block.time_slot.day.value == 3
-    assert block.time_slot.time_start.hours == 9.5
+    assert block.day.value == 3
+    assert block.start == 9.5
 
     assert block.conflict
 

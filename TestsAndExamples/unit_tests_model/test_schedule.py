@@ -1,12 +1,11 @@
 import pytest
 
-from schedule.model import WeekDay, ClockTime
+from schedule.model import WeekDay
 from schedule.model.schedule import Schedule
 from schedule.model.course import Course
 from schedule.model.teacher import Teacher
 from schedule.model.lab import Lab
 from schedule.model.stream import Stream
-from schedule.model.time_slot import TimeSlot
 
 
 # ============================================================================
@@ -294,9 +293,9 @@ def test_remove_lab_complex():
     c1 = s.add_update_course("C1")
     s1 = c1.add_section("1")
     s2 = c1.add_section("2")
-    b1 = s1.add_block(TimeSlot(WeekDay.get_from_string('MOnday'), ClockTime('9:00'), 1))
-    b2 = s1.add_block(TimeSlot(WeekDay.get_from_string('MONDAY'), ClockTime('10:00'), 1))
-    b3 = s2.add_block(TimeSlot(WeekDay.get_from_string('mon'), ClockTime('10:00'), 1))
+    b1 = s1.add_block(WeekDay.get_from_string('MOnday'), 9.0, 1)
+    b2 = s1.add_block(WeekDay.get_from_string('MONDAY'), 10.0, 1)
+    b3 = s2.add_block(WeekDay.get_from_string('mon'), 10.0, 1)
     s1.add_lab(o2)
     b3.add_lab(o2)
     c1.add_lab(o1)
@@ -471,9 +470,9 @@ def test_blocks():
     s1 = c1.add_section("1")
     s2 = c1.add_section("2")
     sections = s.sections()
-    b1 = s1.add_block(TimeSlot(WeekDay.Monday, ClockTime('9:00'), 1))
-    b2 = s1.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
-    b3 = s2.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
+    b1 = s1.add_block(WeekDay.Monday, 9.0, 1)
+    b2 = s1.add_block(WeekDay.Monday, 10.0, 1)
+    b3 = s2.add_block(WeekDay.Monday, 10.0, 1)
 
     assert len(s.blocks()) == 3
     x = s.blocks()
@@ -502,12 +501,12 @@ def test_get_sections_for_teacher():
     s3 = c2.add_section("1")
     s4 = c2.add_section("2")
 
-    b1 = s1.add_block(TimeSlot(WeekDay.Monday, ClockTime('9:00'), 1))
-    b2 = s1.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
-    b3 = s2.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
-    b4 = s3.add_block(TimeSlot(WeekDay.Monday, ClockTime('9:00'), 1))
-    b5 = s3.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
-    b6 = s4.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
+    b1 = s1.add_block(WeekDay.Monday, 9.0, 1)
+    b2 = s1.add_block(WeekDay.Monday, 10.0, 1)
+    b3 = s2.add_block(WeekDay.Monday, 10.0, 1)
+    b4 = s3.add_block(WeekDay.Monday, 9.0, 1)
+    b5 = s3.add_block(WeekDay.Monday, 10.0, 1)
+    b6 = s4.add_block(WeekDay.Monday, 10.0, 1)
 
     c1.add_teacher(t1)
     c2.add_teacher(t2)
@@ -547,12 +546,12 @@ def test_get_sections_for_stream():
     s3 = c2.add_section("1")
     s4 = c2.add_section("2")
 
-    b1 = s1.add_block(TimeSlot(WeekDay.Monday, ClockTime('9:00'), 1))
-    b2 = s1.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
-    b3 = s2.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
-    b4 = s3.add_block(TimeSlot(WeekDay.Monday, ClockTime('9:00'), 1))
-    b5 = s3.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
-    b6 = s4.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
+    b1 = s1.add_block(WeekDay.Monday, 9.0, 1)
+    b2 = s1.add_block(WeekDay.Monday, 10.0, 1)
+    b3 = s2.add_block(WeekDay.Monday, 10.0, 1)
+    b4 = s3.add_block(WeekDay.Monday, 9.0, 1)
+    b5 = s3.add_block(WeekDay.Monday, 10.0, 1)
+    b6 = s4.add_block(WeekDay.Monday, 10.0, 1)
 
     c1.add_teacher(t1)
     c2.add_teacher(t2)
@@ -591,12 +590,12 @@ def test_get_blocks_for_teacher():
     s3 = c2.add_section("1")
     s4 = c2.add_section("2")
 
-    b1 = s1.add_block(TimeSlot(WeekDay.Monday, ClockTime('9:00'), 1))
-    b2 = s1.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
-    b3 = s2.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
-    b4 = s3.add_block(TimeSlot(WeekDay.Monday, ClockTime('9:00'), 1))
-    b5 = s3.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
-    b6 = s4.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
+    b1 = s1.add_block(WeekDay.Monday, 9.0, 1)
+    b2 = s1.add_block(WeekDay.Monday, 10.0, 1)
+    b3 = s2.add_block(WeekDay.Monday, 10.0, 1)
+    b4 = s3.add_block(WeekDay.Monday, 9.0, 1)
+    b5 = s3.add_block(WeekDay.Monday, 10.0, 1)
+    b6 = s4.add_block(WeekDay.Monday, 10.0, 1)
 
     c1.add_teacher(t1)
     c2.add_teacher(t2)
@@ -637,12 +636,12 @@ def test_get_blocks_in_lab():
     s3 = c2.add_section("1")
     s4 = c2.add_section("2")
 
-    b1 = s1.add_block(TimeSlot(WeekDay.Monday, ClockTime('9:00'), 1))
-    b2 = s1.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
-    b3 = s2.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
-    b4 = s3.add_block(TimeSlot(WeekDay.Monday, ClockTime('9:00'), 1))
-    b5 = s3.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
-    b6 = s4.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
+    b1 = s1.add_block(WeekDay.Monday, 9.0, 1)
+    b2 = s1.add_block(WeekDay.Monday, 10.0, 1)
+    b3 = s2.add_block(WeekDay.Monday, 10.0, 1)
+    b4 = s3.add_block(WeekDay.Monday, 9.0, 1)
+    b5 = s3.add_block(WeekDay.Monday, 10.0, 1)
+    b6 = s4.add_block(WeekDay.Monday, 10.0, 1)
 
     c1.add_teacher(t1)
     c2.add_teacher(t2)
@@ -685,12 +684,12 @@ def test_get_blocks_for_stream():
     s3 = c2.add_section("1")
     s4 = c2.add_section("2")
 
-    b1 = s1.add_block(TimeSlot(WeekDay.Monday, ClockTime('9:00'), 1))
-    b2 = s1.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
-    b3 = s2.add_block(TimeSlot(WeekDay.Monday, ClockTime('11:00'), 1))
-    b4 = s3.add_block(TimeSlot(WeekDay.Tuesday, ClockTime('9:00'), 1))
-    b5 = s3.add_block(TimeSlot(WeekDay.Tuesday, ClockTime('10:00'), 1))
-    b6 = s4.add_block(TimeSlot(WeekDay.Tuesday, ClockTime('11:00'), 1))
+    b1 = s1.add_block(WeekDay.Monday, 9.0, 1)
+    b2 = s1.add_block(WeekDay.Monday, 10.0, 1)
+    b3 = s2.add_block(WeekDay.Monday, 11.0, 1)
+    b4 = s3.add_block(WeekDay.Tuesday, 9.0, 1)
+    b5 = s3.add_block(WeekDay.Tuesday, 10.0, 1)
+    b6 = s4.add_block(WeekDay.Tuesday, 11.0, 1)
 
     c1.add_teacher(t1)
     c2.add_teacher(t2)
@@ -735,12 +734,12 @@ def test_get_blocks_for_obj():
     s3 = c2.add_section("1")
     s4 = c2.add_section("2")
 
-    b1 = s1.add_block(TimeSlot(WeekDay.Monday, ClockTime('9:00'), 1))
-    b2 = s1.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
-    b3 = s2.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
-    b4 = s3.add_block(TimeSlot(WeekDay.Monday, ClockTime('9:00'), 1))
-    b5 = s3.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
-    b6 = s4.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
+    b1 = s1.add_block(WeekDay.Monday, 9.0, 1)
+    b2 = s1.add_block(WeekDay.Monday, 10.0, 1)
+    b3 = s2.add_block(WeekDay.Monday, 10.0, 1)
+    b4 = s3.add_block(WeekDay.Monday, 9.0, 1)
+    b5 = s3.add_block(WeekDay.Monday, 10.0, 1)
+    b6 = s4.add_block(WeekDay.Monday, 10.0, 1)
 
     c1.add_teacher(t1)
     c2.add_teacher(t2)
@@ -780,12 +779,12 @@ def test_clear_all():
     s3 = c2.add_section("1")
     s4 = c2.add_section("2")
 
-    b1 = s1.add_block(TimeSlot(WeekDay.Monday, ClockTime('9:00'), 1))
-    b2 = s1.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
-    b3 = s2.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
-    b4 = s3.add_block(TimeSlot(WeekDay.Monday, ClockTime('9:00'), 1))
-    b5 = s3.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
-    b6 = s4.add_block(TimeSlot(WeekDay.Monday, ClockTime('10:00'), 1))
+    b1 = s1.add_block(WeekDay.Monday, 9.0, 1)
+    b2 = s1.add_block(WeekDay.Monday, 10.0, 1)
+    b3 = s2.add_block(WeekDay.Monday, 10.0, 1)
+    b4 = s3.add_block(WeekDay.Monday, 9.0, 1)
+    b5 = s3.add_block(WeekDay.Monday, 10.0, 1)
+    b6 = s4.add_block(WeekDay.Monday, 10.0, 1)
 
     c1.add_teacher(t1)
     c2.add_teacher(t2)

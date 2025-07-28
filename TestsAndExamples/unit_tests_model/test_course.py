@@ -228,8 +228,8 @@ def test_blocks_good():
     Course. """
     course = Course("abc")
     section = course.add_section("420")
-    block1 = section.add_block(TimeSlot())
-    block2 = section.add_block(TimeSlot())
+    block1 = section.add_block()
+    block2 = section.add_block()
     blocks = course.blocks()
     assert len(blocks) == 2 and block1 in blocks and block2 in blocks
 
@@ -321,8 +321,8 @@ def test_assign_lab_good():
     # NOTE: labs are only saved if we have blocks
     section = course.add_section("420",  "Section 1")
     section2 = course.add_section("421",  "Section 1")
-    section.add_block(TimeSlot())
-    section2.add_block(TimeSlot())
+    section.add_block()
+    section2.add_block()
     lab = Lab()
     course.add_lab(lab)
     assert lab in section.labs()

@@ -2,6 +2,30 @@ from functools import partial
 from tkinter import Frame, Entry, StringVar, ttk, Button
 from tkinter.messagebox import showerror, askyesno
 
+from schedule.model import WeekDay
+import pprint
+
+
+# ================================================================================================================
+# clock conversion
+# ================================================================================================================
+def get_hour_minutes_from_hours(hours: float) -> (int, int):
+    """converts number of hours (as a float) to integer hour and integer minutes"""
+    hour = int(hours)
+    minute = (hours % 1) * 60
+    return hour, int(minute)
+
+def get_clock_string_from_hours(hours: float)->str:
+    hour,minute = get_hour_minutes_from_hours(hours)
+    return f"{hour}:{minute:02d}"
+
+def get_hours_from_str(hours:str)->float:
+    hour = hours
+    minute = 0
+    if ":" in hours:
+        hour,minute = hours.split(":")
+    return int(float(hour)) + int(float(minute))/60
+
 # ================================================================================================================
 # Number validation
 # ================================================================================================================
@@ -147,17 +171,26 @@ def set_style(frame):
 # ================================================================================================================
 # blocks
 # ================================================================================================================
-def get_block_info_from_row_data(block_row_data) -> list:
+def get_block_info_from_row_data(block_row_data: list[StringVar]) -> list[tuple[float,float,float]]:
     """
-    Convert string (day, start_time, duration) to str(day), str(start_time), float(duration)
+    Convert string (day, start_time, duration) to int(day), float(start_time), float(duration)
     :param block_row_data:
     :return: updated list
     """
     new_blocks = []
+    print("\n\n==========")
     for i, b in enumerate(block_row_data):
         d = [x.get() for x in b]
-        d[2] = float(d[2].strip().split(" ")[0])
-        new_blocks.append(tuple(d))
+        pprint.pp(d)
+        day = WeekDay[d[0]].value
+        start_str = (d[1].strip().split(" ")[0])
+        start = get_hours_from_str(start_str)
+        duration = float(d[2].strip().split(" ")[0])
+        new_blocks.append((day,start,duration))
+    print("==========")
+    pprint.pp(new_blocks)
+    print("==========\n\n")
+
     return new_blocks
 
 def refresh_gui_blocks(self,):
