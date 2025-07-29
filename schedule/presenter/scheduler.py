@@ -1,8 +1,5 @@
+"""entry point for the gui scheduler"""
 from __future__ import annotations
-
-import asyncio
-import inspect
-from asyncio import sleep
 
 from dataclasses import dataclass, field
 from enum import Enum
@@ -65,8 +62,10 @@ class Scheduler:
     NB_stream = "Streams"
 
     def __init__(self, bin_dir: DIRECTORY, gui: Optional[SchedulerTk] = None):
-        # self.bin_dir: Optional[DIRECTORY] = None
-        # self.user_base_dir: Optional[DIRECTORY] = None
+        """
+        :param bin_dir: where this executable file exists
+        :param gui: creates gui if not already defined
+        """
 
         self.view_controller: Optional[ ViewsController] = None
         self.preferences: Preferences = Preferences()
@@ -105,6 +104,7 @@ class Scheduler:
         set_menu_event_handler("file_open", self.open_menu_event)
         set_menu_event_handler("file_save", self.save_menu_event)
         set_menu_event_handler("file_save_as", self.save_as_menu_event)
+        set_menu_event_handler("validate", self.validate)
         set_menu_event_handler("file_exit", self.exit_event)
         set_main_page_event_handler("file_exit", self.exit_event)
         set_main_page_event_handler("file_open", self.open_menu_event)
@@ -136,6 +136,7 @@ class Scheduler:
     # ============================================================================================
     @property
     def schedule_filename(self):
+        """The filename associated with this file"""
         return self._schedule_filename
 
     @schedule_filename.setter
@@ -147,6 +148,7 @@ class Scheduler:
 
     @property
     def previous_filename(self):
+        """what was the last opened file"""
         return self._previous_filename
 
     @previous_filename.setter
@@ -161,6 +163,7 @@ class Scheduler:
     # ============================================================================================
     @property
     def dirty_flag(self) -> bool:
+        """is the data different than what was saved on disk?"""
         return self._dirty_flag
 
     @dirty_flag.setter
@@ -176,20 +179,24 @@ class Scheduler:
     # Event handlers - file open/close/save/new
     # ============================================================================================
     def new_menu_event(self):
+        """create a new file"""
         self.schedule = Schedule()
         self.schedule_filename = ""
         self.gui.create_standard_page(self._required_tabs)
         self.dirty_flag = True
 
     def open_menu_event(self):
+        """open a file"""
         filename = self.gui.select_file_to_open()
         self._open_file(filename)
 
     def open_previous_file_event(self):
+        """open previously opened file"""
         filename = self.preferences.previous_file()
         self._open_file(filename)
 
     def _open_file(self, filename: str):
+        """generic open file method"""
         if filename:
             try:
                 schedule = Schedule(filename)
@@ -202,12 +209,15 @@ class Scheduler:
                 self.gui.show_error("Read File", str(e))
 
     def save_menu_event(self):
+        """save file"""
         self._save_schedule(self.schedule_filename)
 
     def save_as_menu_event(self):
+        """save as file"""
         self._save_schedule(None)
 
     def _save_schedule(self, filename: Optional[str]):
+        """generic save file method"""
 
         if self.schedule is None:
             self.gui.show_error("Save Schedule", "There is no schedule to save!")
@@ -226,6 +236,7 @@ class Scheduler:
     # Event handlers - semester change
     # ============================================================================================
     def semester_change(self, *_):
+        """semester has been changed"""
         self.preferences.semester(self.gui.current_semester)
         self.previous_filename = self.preferences.previous_file()
         self.preferences.save()
@@ -235,6 +246,7 @@ class Scheduler:
     # ============================================================================================
 
     def exit_event(self):
+        """program is exiting"""
         if self.dirty_flag:
             ans = self.gui.ask_yes_no("File", "Save File?")
             if ans:
@@ -248,6 +260,11 @@ class Scheduler:
     # notebook tab has changed
     # ==================================================================
     def notebook_tab_has_changed(self, name: str, frame):
+        """
+        the standard page notebook tab has been change
+        :param name: name of the tab
+        :param frame: container where the gui is stored
+        """
         self.current_tab = name
         if name == self.NB_overview_course:
             self.update_course_text(frame)
@@ -271,6 +288,7 @@ class Scheduler:
     # (what teacher_ids/lab_ids/stream_ids) can we create schedules for?
     # ==================================================================
     def update_choices_of_resource_views(self, frame):
+        """provide buttons to choose which view the user wants to look at"""
         self.view_controller = ViewsController(self.set_dirty_method, frame, self.schedule)
         self.view_controller.refresh()
 
@@ -341,9 +359,6 @@ class Scheduler:
         data_entry.refresh()
 
 
-
-        pass
-
     # ==================================================================
     # print_views
     # - print the schedule 'views'
@@ -407,8 +422,12 @@ class Scheduler:
             cn.save()
 
 
-
-
+    def validate(self):
+        msg = self.schedule.validate()
+        if len(msg) != 0:
+            self.gui.show_message(title="Validate", msg="\n".join(msg))
+        else:
+            self.gui.show_message(title="Validate", msg="Everything is ok!")
 
 
     # ==================================================================

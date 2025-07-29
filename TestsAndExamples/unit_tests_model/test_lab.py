@@ -17,7 +17,7 @@ def test_number_getter():
 
 
 def test_descr_getter():
-    """Verifies that Lab's descr getter works as intended."""
+    """Verifies that Lab's name getter works as intended."""
     room = "R-101"
     descr = "Worst place in the world."
     lab = Lab(room, descr)
@@ -25,7 +25,7 @@ def test_descr_getter():
 
 
 def test_descr_setter():
-    """Verifies that the descr setter works as intended."""
+    """Verifies that the name setter works as intended."""
     lab = Lab()
     descr = "Worst place in the world."
     lab.descr = descr

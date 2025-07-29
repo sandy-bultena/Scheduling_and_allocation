@@ -142,7 +142,7 @@ class Section:
         for block in self.blocks():
             self.remove_block(block)
 
-    def add_block(self, day: WeekDay = DEFAULT_DAY, start: float = DEFAULT_START,
+    def add_block(self, day: WeekDay | float = DEFAULT_DAY, start: float = DEFAULT_START,
                   duration: float=DEFAULT_DURATION, movable=True, block_id=None)->Block:
         """ Creates and Assign a block to this section"""
         block = Block(self, day, start, duration, movable=movable, block_id=block_id)
@@ -292,6 +292,15 @@ class Section:
     def remove_all_streams(self):
         """ Removes all streams from this section """
         self._streams.clear()
+
+    # --------------------------------------------------------
+    # clear everything from the stream
+    # --------------------------------------------------------
+    def clear(self):
+        self.remove_all_teachers()
+        self.remove_all_streams()
+        self.remove_all_labs()
+        self.remove_all_blocks()
 
     # --------------------------------------------------------
     # add_hours

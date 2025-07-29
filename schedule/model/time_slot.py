@@ -33,7 +33,7 @@ class TimeSlot:
         it is allowed to move.
     """
 
-    def __init__(self, day: WeekDay = DEFAULT_DAY,
+    def __init__(self, day: WeekDay | float = DEFAULT_DAY ,
                  start: float = DEFAULT_START,
                  duration: float = DEFAULT_DURATION,
                  movable: bool = True):
@@ -43,6 +43,8 @@ class TimeSlot:
         :param duration: How long this class lasts, in hours.
         :param movable: Whether this time_slot can be moved or not.
         """
+        if isinstance(day, float) or isinstance(day, int):
+            day = WeekDay(round(day))
         self.day: WeekDay = day
         self.start: float = start
         self.duration: float = min(max(duration, MINIMUM_DURATION), MAXIMUM_DURATION)

@@ -21,7 +21,8 @@ MAIN_MENU_EVENT_HANDLER_NAMES = Literal[
     "print_text",
     "print_latex_teacher",
     "print_latex_lab",
-    "print_latex_streams"
+    "print_latex_streams",
+    "validate"
 ]
 
 MAIN_MENU_EVENT_HANDLERS: dict[MAIN_MENU_EVENT_HANDLER_NAMES, Callable[[], None]] = {}
@@ -69,6 +70,11 @@ def main_menu() -> tuple[list[str], dict[str, ToolbarItem], list[MenuItem]]:
 
     file_menu.add_child(MenuItem(menu_type=MenuType.Separator))
 
+    file_menu.add_child(MenuItem(menu_type=MenuType.Command,
+                                 label='Validate',
+                                 command=lambda *_: MAIN_MENU_EVENT_HANDLERS["validate"]()
+                                 )
+                        )
     file_menu.add_child(MenuItem(menu_type=MenuType.Command,
                                  label='Exit',
                                  accelerator='Ctrl-e',

@@ -1,10 +1,16 @@
+"""
+This module contains all the gui code that is related to the course tree view
+
+There is a course tree
+There is three lists of resources (for drag'n'dropping onto the tree)
+
+"""
 from __future__ import annotations
 
 import time
-import tkinter
+import tkinter as tk
 from tkinter import ttk
 from functools import partial
-from tkinter import *
 from typing import Callable, Any, TYPE_CHECKING
 import re
 
@@ -24,6 +30,9 @@ if TYPE_CHECKING:
     TREE_OBJECT = Any
 
 
+# ====================================================================================================================
+# default stuff
+# ====================================================================================================================
 def _default_menu(obj, parent_obj, iid, parent_iid) -> list[MenuItem]:
     menu = MenuItem(name=str(obj), label=str(obj), menu_type=MenuType.Command, command=lambda: None)
     return [menu, ]
@@ -36,9 +45,9 @@ def _default_resource_menu(resource_type: ResourceType, obj) -> list[MenuItem]:
     return [menu_title, menu]
 
 
-# =================================================================
+# ====================================================================================================================
 # Edit courses GUI_Pages
-# =================================================================
+# ====================================================================================================================
 
 class EditCoursesTk:
     """A page that allows user to edit courses, assign resources, sections, blocks, etc
@@ -59,10 +68,10 @@ class EditCoursesTk:
     Fonts: fac.TkFonts = fac.fonts
     Text_style_defn: dict[str, str] = {'bg': colours.WorkspaceColour, 'fg': colours.SelectedForeground}
 
-    # ========================================================================
+    # -----------------------------------------------------------------------------------------------------------------
     # constructor
-    # ========================================================================
-    def __init__(self, frame: Frame):
+    # -----------------------------------------------------------------------------------------------------------------
+    def __init__(self, frame: tk.Frame):
         """create the EditCourse page
         :param frame: container object for the gui stuff
         """
@@ -72,9 +81,7 @@ class EditCoursesTk:
         if self.Fonts is None:
             self.Fonts = fac.TkFonts(frame.winfo_toplevel())
 
-        # ----------------------------------------------------------------
         # call backs (should be defined by presenter)
-        # ----------------------------------------------------------------
         self.handler_tree_edit: Callable[[TREE_OBJECT, TREE_OBJECT, str, str], None] \
             = lambda obj, parent_obj, tree_id, parent_id: print(f"Edit {str(obj)}")
         self.handler_new_course: Callable[[], None] = lambda: None
@@ -87,27 +94,21 @@ class EditCoursesTk:
         self.handler_drop_resource: Callable[[ RESOURCE_OBJECT, TREE_OBJECT, str], None] = \
             lambda source_obj, target_obj, tree_id: None
 
-        # ----------------------------------------------------------------
         # create lists to keep track of widgets and objects for all resources
         # (teachers/streams/labs)
-        # ----------------------------------------------------------------
-        self.resource_Listbox: dict[ResourceType, Listbox] = dict()
+        self.resource_Listbox: dict[ResourceType, tk.Listbox] = dict()
         self.resource_objects: dict[ResourceType, list[RESOURCE_OBJECT]] = dict()
         for rt in ResourceType:
             self.resource_objects[rt] = list()
 
-        # ----------------------------------------------------------------
-        # using grid, create right and left panels
-        # ----------------------------------------------------------------
-
-        # remove anything that is already there
+        # remove anything that is already in the frame
         for widget in frame.winfo_children():
             widget.destroy()
 
         # make panels
-        right_panel = Frame(frame)
+        right_panel = tk.Frame(frame)
         right_panel.grid(row=0, column=1, sticky='nsew')
-        left_panel = Frame(frame)
+        left_panel = tk.Frame(frame)
         left_panel.grid(row=0, column=0, sticky='nsew')
 
         # calculate min_width of left panel based on screen size
@@ -118,9 +119,7 @@ class EditCoursesTk:
         frame.grid_columnconfigure(1, weight=1)
         frame.grid_rowconfigure(0, weight=1)
 
-        # ----------------------------------------------------------------
         # make the gui contents
-        # ----------------------------------------------------------------
         self.course_ttkTreeView = self._make_treeview(left_panel)
         self._make_resource_list_widgets(right_panel)
         self._make_button_row(right_panel)
@@ -131,16 +130,16 @@ class EditCoursesTk:
         right_panel.grid_rowconfigure(2, weight=1)
         right_panel.grid_rowconfigure(3, weight=0)
 
-    # ###################################################################
-    # Public Methods
-    # ###################################################################
+    # -----------------------------------------------------------------------------------------------------------------
+    # Public Methods for manipulating the tree object
+    # -----------------------------------------------------------------------------------------------------------------
     def update_resource_type_objects(self, resource_type: ResourceType, objs: tuple[RESOURCE_OBJECT, ...]):
         """
         Updates the Listbox widget with Labs/Teachers/Streams string representations
         :param resource_type: what view resource_type are you updating?
         :param objs: all the objects that you want in the list
         """
-        widget: Listbox = self.resource_Listbox[resource_type]
+        widget: tk.Listbox = self.resource_Listbox[resource_type]
         widget.delete(0, 'end')
         self.resource_objects[resource_type].clear()
         for obj in objs:
@@ -150,9 +149,9 @@ class EditCoursesTk:
     def add_tree_item(self, parent_id: str, name: str, child: TREE_OBJECT, hide: bool = True) -> str:
         """add an object to the tree, as a child of the parent
         :param parent_id: an existing tree object that will become the parent of this new child
-        :param name: the name of the child
+        :param name: the name of
         :param child: the child
-        :param hide: hide the children?)
+        :param hide: hide the children?
         :return: The id of the tree element
         """
         tag = "bold" if parent_id is None or parent_id == "" else "normal"
@@ -181,21 +180,48 @@ class EditCoursesTk:
         for child in self.course_ttkTreeView.get_children():
             self.course_ttkTreeView.delete(child)
 
-    # ###################################################################
-    # Events
-    # ###################################################################
+    # -----------------------------------------------------------------------------------------------------------------
+    # Resource Event - pop-up menu for teacher/stream/lab
+    # -----------------------------------------------------------------------------------------------------------------
+    def _cmd_show_resource_type_menu(self, resource_type: ResourceType, e: tk.Event):
+        """bound method for right click on resource list
+                calls handler: handler_resource_create_menu
+        """
 
-    def _cmd_double_click_teacher(self, e: tkinter.Event):
-        """bound method for double click on a teacher object,
+        if resource_type is ResourceType.none:
+            return
+        widget: tk.Listbox = self.resource_Listbox[resource_type]
+        index = widget.nearest(e.y)
+        widget.select_clear(0, 'end')
+        widget.selection_set(index, index)
+        obj = self.resource_objects[resource_type][index]
+
+        # get menu info from callback routine
+        menu = tk.Menu(self.frame.winfo_toplevel(), tearoff=0)
+        menu_details = self.handler_resource_create_menu(resource_type, obj)
+        generate_menu(self.frame.winfo_toplevel(), menu_details, menu)
+        try:
+            menu.tk_popup(e.x_root, e.y_root)
+        finally:
+            menu.grab_release()
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Resource Event - double click teacher on resource view
+    # -----------------------------------------------------------------------------------------------------------------
+    def _cmd_double_click_teacher(self, e: tk.Event):
+        """bound method for double-click on a teacher object,
                 calls handler: handler_show_teacher_stat
         """
-        widget: Listbox = self.resource_Listbox[ResourceType.teacher]
+        widget: tk.Listbox = self.resource_Listbox[ResourceType.teacher]
         index = widget.nearest(e.y)
         widget.select_clear(0, 'end')
         widget.selection_set(index, index)
         obj = self.resource_objects[ResourceType.teacher][index]
         self.handler_show_teacher_stat(obj)
 
+    # -----------------------------------------------------------------------------------------------------------------
+    # Tree Event - show editor for selected element (course, stream, block)
+    # -----------------------------------------------------------------------------------------------------------------
     def _cmd_edit_selection(self, *_):
         """bound method for <keypress Enter> or <double click> on treeview, or clicking 'Edit Selection' button
                 calls handler: handler_tree_edit
@@ -215,35 +241,10 @@ class EditCoursesTk:
 
         self.handler_tree_edit(obj,parent_obj,  iid, parent_iid)
 
-    def _cmd_show_resource_type_menu(self, resource_type: ResourceType, e: tkinter.Event):
-        """bound method for right click on resource list
-                calls handler: handler_resource_create_menu
-        """
-
-        if resource_type is ResourceType.none:
-            return
-        widget: Listbox = self.resource_Listbox[resource_type]
-        index = widget.nearest(e.y)
-        widget.select_clear(0, 'end')
-        widget.selection_set(index, index)
-        obj = self.resource_objects[resource_type][index]
-
-        # get menu info from callback routine
-        menu = Menu(self.frame.winfo_toplevel(), tearoff=0)
-        menu_details = self.handler_resource_create_menu(resource_type, obj)
-        generate_menu(self.frame.winfo_toplevel(), menu_details, menu)
-        try:
-            menu.tk_popup(e.x_root, e.y_root)
-        finally:
-            menu.grab_release()
-
-    def _new_course_btn_pressed(self, *_):
-        """bound method for clicking 'new course' button
-                calls handler: handler_new_course"""
-
-        self.handler_new_course()
-
-    def _cmd_show_tree_menu(self, e: tkinter.Event):
+    # -----------------------------------------------------------------------------------------------------------------
+    # Tree Events - pop-up menu for course/stream/block
+    # -----------------------------------------------------------------------------------------------------------------
+    def _cmd_show_tree_menu(self, e: tk.Event):
         """bound method for right click on tree item
                 calls handler: handler_tree_create_popup
         """
@@ -262,7 +263,7 @@ class EditCoursesTk:
         parent_obj = tv.get_obj_from_id(parent_iid)
 
         # get menu info from callback routine
-        menu = Menu(self.frame.winfo_toplevel(), tearoff=0)
+        menu = tk.Menu(self.frame.winfo_toplevel(), tearoff=0)
         menu_details = self.handler_tree_create_popup(obj, parent_obj, iid, parent_iid)
         generate_menu(self.frame.winfo_toplevel(), menu_details, menu)
         try:
@@ -270,12 +271,15 @@ class EditCoursesTk:
         finally:
             menu.grab_release()
 
-    def _resource_on_start_drag(self, e: Event, info_data: dict) -> str:
+    # -----------------------------------------------------------------------------------------------------------------
+    # Event Drag 'n' Drop start
+    # -----------------------------------------------------------------------------------------------------------------
+    def _resource_on_start_drag(self, e: tk.Event, info_data: dict) -> str:
         """bound event if a resource widget is about to be dragged from a resource listbox"""
 
         # what resource type is it?
         info_data["resource_type"] = ResourceType.none
-        lb: Listbox = e.widget
+        lb: tk.Listbox = e.widget
         rtype: ResourceType = ResourceType.none
         for rt in self.resource_Listbox:
             if lb == self.resource_Listbox[rt]:
@@ -293,7 +297,10 @@ class EditCoursesTk:
         # return string to be used in the drag indicator
         return lb.get(index)
 
-    def _resource_on_drag(self, e: Event, info_data: dict, target: Widget) -> bool:
+    # -----------------------------------------------------------------------------------------------------------------
+    # Event Drag 'n' Drop moving
+    # -----------------------------------------------------------------------------------------------------------------
+    def _resource_on_drag(self, e: tk.Event, info_data: dict, target: tk.Widget) -> bool:
         """bound event while the resource list object is being dragged around
                 calls handler: handler_drag_resource"""
 
@@ -303,9 +310,7 @@ class EditCoursesTk:
 
         tv_y_pos = e.y_root - tv.winfo_rooty()
 
-        # -------------------------------------------------------------------------------------------------
         # a resource widget can only be dropped on the self.course_ttkTreeView
-        # -------------------------------------------------------------------------------------------------
         if target == tv:
 
             # get position of mouse within the treeview widget, and identify item in treeview under mouse
@@ -314,29 +319,28 @@ class EditCoursesTk:
 
             # if we have a valid id...
             if iid:
-                tv.item(iid, open=True)
+                #tv.item(iid, open=True)
                 target_obj: TREE_OBJECT = tv.get_obj_from_id(iid)
                 resource_type: ResourceType = info_data["resource_type"]
 
                 # check with 'user' if this is a valid item for dropping source onto target
                 if self.handler_drag_resource(resource_type, target_obj):
+                    tv.item(iid, open=True)
                     info_data["target_obj"] = target_obj
                     info_data["tree_id"] = iid
                     tv.selection_set(iid)
                     return True
 
-        # -------------------------------------------------------------------------------------------------
         # if mouse above or below tv view, then force scroll, but have a time delay to make it more
         # manageable
-        # -------------------------------------------------------------------------------------------------
         elif tv_y_pos < 0:
-            if info_data.get('start_time', None) is not None and time.time() - info_data['start_time'] < 0.5:
+            if info_data.get('start_time', None) is not None and time.time() - info_data['start_time'] < 0.05:
                 return False
             info_data['start_time'] = time.time()
             n1,n2 = self.tree_scrolled.yview()
             self.tree_scrolled.yview_moveto(max(7/8*n1 - 1/8*n2,0))
         elif tv_y_pos > 0:
-            if info_data.get('start_time', None) is not None and time.time() - info_data['start_time'] < 0.5:
+            if info_data.get('start_time', None) is not None and time.time() - info_data['start_time'] < 0.05:
                 return False
             info_data['start_time'] = time.time()
             n1,n2 = self.tree_scrolled.yview()
@@ -344,7 +348,10 @@ class EditCoursesTk:
 
         return False
 
-    def _resource_on_drop(self, e: Event, info_data: dict, target: Widget):
+    # -----------------------------------------------------------------------------------------------------------------
+    # Event Drag 'n' Drop end
+    # -----------------------------------------------------------------------------------------------------------------
+    def _resource_on_drop(self, e: tk.Event, info_data: dict, target: tk.Widget):
         """bound event when a resource item is dropped
                 calls handler: handler_drop_resource"""
 
@@ -354,12 +361,24 @@ class EditCoursesTk:
             tree_id: str = info_data["tree_id"]
             self.handler_drop_resource(source_obj, target_obj, tree_id )
 
-    # ###################################################################
-    # Private Methods
-    # ###################################################################
+    # -----------------------------------------------------------------------------------------------------------------
+    # Button Events - new course
+    # -----------------------------------------------------------------------------------------------------------------
+    def _new_course_btn_pressed(self, *_):
+        """bound method for clicking 'new course' button
+                calls handler: handler_new_course"""
 
-    def _make_treeview(self, left_panel: Frame):
-        """make tree representing all courses, sections, blocks, resources"""
+        self.handler_new_course()
+
+    # =================================================================================================================
+    # Private Methods
+    # =================================================================================================================
+
+    def _make_treeview(self, left_panel: tk.Frame):
+        """
+        make tree representing all courses, sections, blocks, resource
+        :param left_panel: where to put stuff
+        """
         style = ttk.Style()
         style.configure('Treeview', rowheight=25)  # Adjust '30' to your desired height
         self.tree_scrolled: Scrolled = Scrolled(left_panel, 'AdvancedTreeview', scrollbars='se')
@@ -378,27 +397,27 @@ class EditCoursesTk:
         """make a list widget for teachers/labs/streams"""
 
         # the scrolled method requires an empty frame, or else, it messes up.
-        f = Frame(panel)
+        f = tk.Frame(panel)
         f.grid(column=0, stick='nsew', row=0)
-        Label(f, text="Teachers", font=self.Fonts.bold).pack()
-        sf = Frame(f)
+        tk.Label(f, text="Teachers", font=self.Fonts.bold).pack()
+        sf = tk.Frame(f)
         sf.pack(fill='both', expand=1)
         s: Scrolled = Scrolled(sf, 'Listbox', scrollbars='e')
         s.widget.bind('<Double-Button-1>', self._cmd_double_click_teacher)
         self.resource_Listbox[ResourceType.teacher] = s.widget
 
-        f = Frame(panel)
+        f = tk.Frame(panel)
         f.grid(column=0, stick='nsew', row=1)
-        Label(f, text="Labs", font=self.Fonts.bold).pack()
-        sf = Frame(f)
+        tk.Label(f, text="Labs", font=self.Fonts.bold).pack()
+        sf = tk.Frame(f)
         sf.pack(fill='both', expand=1)
         s: Scrolled = Scrolled(sf, 'Listbox', scrollbars='e')
         self.resource_Listbox[ResourceType.lab] = s.widget
 
-        f = Frame(panel)
+        f = tk.Frame(panel)
         f.grid(column=0, stick='nsew', row=2)
-        Label(f, text="Streams", font=self.Fonts.bold).pack()
-        sf = Frame(f)
+        tk.Label(f, text="Streams", font=self.Fonts.bold).pack()
+        sf = tk.Frame(f)
         sf.pack(fill='both', expand=1)
         s: Scrolled = Scrolled(sf, 'Listbox', scrollbars='e')
         self.resource_Listbox[ResourceType.stream] = s.widget
@@ -420,13 +439,13 @@ class EditCoursesTk:
 
             self.resource_Listbox[resource_type].unbind('<Motion>')
 
-    def _make_button_row(self, panel: Frame):
+    def _make_button_row(self, panel: tk.Frame):
         """make the button row for creating new courses, editing selections, etc"""
-        button_row = Frame(panel)
+        button_row = tk.Frame(panel)
         button_row.grid(column=0, sticky='nsew', row=3)
-        btn_new_course = Button(button_row, text="New Course", width=11,
+        btn_new_course = tk.Button(button_row, text="New Course", width=11,
                                 command=lambda: self._new_course_btn_pressed())
         btn_new_course.pack(side='left')
-        btn_edit_selection = Button(button_row, text="Edit Selection", width=11,
+        btn_edit_selection = tk.Button(button_row, text="Edit Selection", width=11,
                                     command=lambda: self._cmd_edit_selection())
         btn_edit_selection.pack(side='left')

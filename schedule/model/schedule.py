@@ -450,3 +450,129 @@ class Schedule:
         for block in self.get_blocks_for_obj(resource):
             conflict = block.conflict | conflict
         return conflict
+
+    # --------------------------------------------------------
+    # validate that the schedule is good
+    # --------------------------------------------------------
+    def validate(self) -> list[str]:
+        """Validates that the schedule makes sense"""
+        msg = []
+
+         # each course that has allocation has at least one teacher assigned
+        for course in self.courses():
+            if course.needs_allocation:
+                if len(course.teachers()) == 0:
+                    msg.append(f"WARNING: Course {course.number} has no teachers")
+
+        # each block should have at least one lab
+        for block in self.blocks():
+            if len(block.labs()) == 0:
+                msg.append(f"WARNING: {block.section.course.number}, {block.section.number} {block} has no assigned labs")
+
+        # each course that has blocks/sections, block time should equal class time
+        for course in self.courses():
+            for section in course.sections():
+                duration = sum((b.duration for b in section.blocks()))
+                if duration != course.hours_per_week:
+                    msg.append(
+                        f"WARNING: {course.number} hours ({course.hours_per_week}) "
+                        f"does not match assigned class time ({duration})")
+
+        return msg
+
+    # *** These functions were created so that the gui dialog boxes call model, instead of having
+    #     model logic in the presenter
+
+    # -------------------------------------------------------------------------------------------------------------
+    # update a section with teachers and blocks and labs and streams
+    # -------------------------------------------------------------------------------------------------------------
+    def update_section(self, section: Section, name: str, teachers: list[Teacher], labs: list[Lab], streams: list[Stream],
+                        blocks: list[tuple[float, float, float]]):
+        """
+        update a section with teachers and blocks and labs and streams
+        :param section:
+        :param name: description of the section
+        :param teachers: a list of teachers to add to the section
+        :param labs: a list of labs to add to the section
+        :param streams: a list of streams to add to the section
+        :param blocks: a list of tuples (day, start, duration), where day is an integer
+        """
+        section.name = name
+        section.clear()
+
+        for b in blocks:
+            section.add_block(*b)
+        for t in teachers:
+            section.add_teacher(t)
+        for l in labs:
+            section.add_lab(l)
+        for s in streams:
+            section.add_stream(s)
+
+    # -------------------------------------------------------------------------------------------------------------
+    # Section - add/edit dialog apply
+    # -------------------------------------------------------------------------------------------------------------
+    def add_sections(self, course, number: int, blocks):
+        """
+        create a new section
+        :param course: the course that this section belongs to
+        :param number: the number of sections to add
+        :param blocks: a list of tuples (day, start, duration), where day is an integer
+        """
+        for i in range(number):
+            section = course.add_section()
+            self.update_section(section, section.name, [], [], [], blocks)
+
+    # -------------------------------------------------------------------------------------------------------------
+    # Blocks - add dialog apply
+    # -------------------------------------------------------------------------------------------------------------
+    def add_blocks(self, section: Section, number: int, hours, teachers, labs):
+        for i in range(number):
+            block = section.add_block(duration=hours)
+            for t in teachers:
+                block.add_teacher(t)
+            for l in labs:
+                block.add_lab(l)
+
+    # -------------------------------------------------------------------------------------------------------------
+    # Blocks - edit dialog apply
+    # -------------------------------------------------------------------------------------------------------------
+    def edit_block(self, block, _, hours, teachers, labs):
+        block.remove_all_labs()
+        block.remove_all_teachers()
+        block.duration = hours
+        for t in teachers:
+            block.add_teacher(t)
+        for l in labs:
+            block.add_lab(l)
+
+    # -------------------------------------------------------------------------------------------------------------
+    # Course - add/edit dialog apply changes
+    # -------------------------------------------------------------------------------------------------------------
+    def add_edit_course(self, course_number: str, course_name: str, hours_per_week: float,
+                                      allocation: bool, num_sections: int, teachers: list[Teacher],
+                                      labs: list[Lab], blocks: list[tuple[float, float, float]]):
+        """
+        Apply changes from course add/edit dialog box
+        :param course_number: a unique number
+        :param course_name:
+        :param hours_per_week:
+        :param allocation: do you need to assign a teacher
+        :param num_sections:
+        :param teachers: teachers to assign to all sections of this course
+        :param labs: labs to assign to all sections of this course
+        :param blocks: blocks to assign to all sections of this course
+        """
+        if course_number not in (c.number for c in self.courses()):
+            course = self.add_update_course(number=course_number)
+        else:
+            course = self.get_course_by_number(course_number)
+
+        course.name = course_name
+        course.hours_per_week = hours_per_week
+        course.needs_allocation = allocation
+        course.remove_all_sections()
+        for _ in range(num_sections):
+            section = course.add_section()
+            self.update_section(section, "", teachers, labs, [], blocks)
+
