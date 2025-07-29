@@ -19,7 +19,7 @@ def main():
     main_page.schedule_filename = "This file name should appear in the status bar"
 
     # create the front page with _logo
-    option_frame = main_page.create_front_page_base()
+    option_frame = main_page.create_welcome_page_base()
 
     # define what the _notebook pages are supposed to look like on the standard page
     notebook_info = get_notebook_info()

@@ -1,3 +1,14 @@
+"""
+# ============================================================================
+# Create a Notebook
+#
+# EVENT HANDLERS
+#
+#   tab_changed_handler(tab_name, frame)
+#
+# ============================================================================
+
+"""
 from dataclasses import dataclass, field
 from functools import partial
 from tkinter.ttk import Notebook
@@ -30,6 +41,13 @@ class NoteBookFrameTk:
     def __init__(self, mw: Toplevel, main_page_frame: Frame,
                  tabs_info: Optional[list[TabInfoProtocol]] = None,
                  tab_changed_handler: Callable[[str, Frame], None] = lambda *_: None):
+        """
+        create the notebook(s)
+        :param mw: toplevel window
+        :param main_page_frame: where the current notebook frame should be placed
+        :param tabs_info: what tabs do you need
+        :param tab_changed_handler: who you gonna call?... ghost busters!
+        """
 
         self._default_notebook_page = None
         self.tabs_info = tabs_info
@@ -49,6 +67,11 @@ class NoteBookFrameTk:
     # create notebook pages
     # ===================================================================================
     def recursive_notebook_creation(self, notebook_frame: Frame, tabs_info: list[TabInfoProtocol]):
+        """
+        recursive calling of notebook creation
+        :param notebook_frame:
+        :param tabs_info:
+        """
 
         if tabs_info is None:
             return
@@ -89,7 +112,11 @@ class NoteBookFrameTk:
 
 
     def _tab_changed(self, notebook: Notebook, *_):
-        """calls the tab changed callback when the tab has changed"""
+        """
+        calls the tab changed callback when the tab has changed
+        :param notebook:
+        :param _: tk events?
+        """
         index = notebook.index(notebook.select())
         tab_name, frame  = self.tab_frames.get((notebook,index), None)
         _expose_widgets(frame)

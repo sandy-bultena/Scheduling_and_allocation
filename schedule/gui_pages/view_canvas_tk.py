@@ -1,10 +1,14 @@
 """
-**********************************************************************************************************************
-* Code that draws the View stuff.  No other functionality.                                                           *
-* PURPOSE: To provide a simple class that can be used to draw schedules where the canvas object is NOT a Tk object   *
-*          example: PDF or Latex                                                                                     *
-**********************************************************************************************************************
+# ============================================================================
+# Code that draws the View stuff.  No other functionality.
+#
+# PURPOSE: To provide a simple class that can be used to draw schedules where the canvas object can
+#          be a generic canvas:  PDF, Tk.Canvas, HTML, etc.
+#
+# EVENT HANDLERS: None
+# ============================================================================
 """
+
 import tkinter
 from typing import Protocol, Optional
 
@@ -39,10 +43,13 @@ LATEST_TIME = max(Times.keys())
 # what is the minimal requirements for the canvas object to have if we want to draw
 # =====================================================================================================================
 class GenericCanvas(Protocol):
-    def create_line(self, x1:float, y1:float, x2:float, y2:float, fill:str="grey", dash="", tags:str = ""): ...
-    def create_text(self, x:float, y:float, text:str="", fill:str='black', tags:str = "")->int:...
+    def __init__(self, title="Title", schedule_name="sub_title", filename=None):...
+    def create_line(self, x1:float, y1:float, x2:float, y2:float, fill:str="grey", dash="", tags: str|tuple=""):...
+    def addtag_withtag(self,*args,**kwargs):...
+    def create_text(self, x:float, y:float, text:str="", fill:str='black', tags:str|tuple="")->int:...
     def create_rectangle(self, coords:tuple[float,float,float,float], fill:str='grey', outline:str='grey',
-                                        tags:str="")->int: ...
+                                        tags:str|tuple="")->int:...
+    def save(self):...
 
 
 # =====================================================================================================================
@@ -218,6 +225,7 @@ class ViewCanvasTk:
         """
         returns the coordinates of the gui block, None if gui block doesn't exist
         :param gui_block_id:
+        :return: a list of 4 floats, or 'None'
         """
         obj_id = self.canvas.find_withtag(f"{ViewCanvasTk.Rectange_Tag_Name} && {gui_block_id}")
         if len(obj_id) < 1:
@@ -245,6 +253,9 @@ class ViewCanvasTk:
 
         return day, time, duration
 
+    # =================================================================
+    # gui block to day, time, duration (float)
+    # =================================================================
     def gui_block_to_day_time_duration(self, gui_block_id) ->Optional[tuple[float,float,float]]:
         """
         Gets day/time/duration for given gui block if block exists
@@ -261,13 +272,13 @@ class ViewCanvasTk:
     # =================================================================
     # get_coords
     # =================================================================
-    def get_coords(self, day, start, duration=1):
+    def get_coords(self, day:float, start: float, duration: float=1.0):
         """Determines the canvas coordinates based on day, time_start time, and duration.
             :param start:
             :param day:
             :param duration:
         """
-        (x, x2) = self._days_x_coords(day)
+        (x, x2) = self._days_x_coords(round(day))
         (y, y2) = self._time_y_coords(start, duration)
 
         return x, y, x2, y2
@@ -288,7 +299,12 @@ class ViewCanvasTk:
     # =================================================================
     # using scale info, get the x limits for a specific day
     # =================================================================
-    def _days_x_coords(self, day: int):
+    def _days_x_coords(self, day: int) -> tuple[float,float]:
+        """
+        what can be the maximum and minimum number for day
+        :param day:
+        :return: minimum_x, maximum_x
+        """
 
         x_offset = self.scale.x_offset * self.scale.x_width_scale + self.scale.x_origin
         x = x_offset + (day - 1) * self.scale.x_width_scale
@@ -301,5 +317,6 @@ class ViewCanvasTk:
     # update scale
     # ==================================================================
     def adjust_scale(self, factor):
+        """change the scale information based on the scaling factor"""
         self.scale = DrawingScale(factor)
 

@@ -5,12 +5,13 @@
 # - create new resource
 # - delete resource
 #
+# Events triggered by EditResourcesTk
+#       delete_obj(row_data)
+#       save(all_data)
 #
 # ============================================================================
 """
 
-
-from time import sleep
 from typing import Optional, Callable
 
 from schedule.model import Schedule, ResourceType

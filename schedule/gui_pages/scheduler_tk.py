@@ -1,3 +1,17 @@
+"""
+# ============================================================================
+# MAIN PAGE - Gui entry point to the Scheduler Program
+#
+# - inherits from class MainPageTk
+#
+# EVENT HANDLERS - to set handlers, use 'set_main_page_event_handler'
+#   file_open
+#   file_new
+#   file_open_previous
+#   file_exit
+#   semester changed
+# ============================================================================
+"""
 import os.path
 
 from typing import Callable, Optional, Literal, get_args
@@ -49,6 +63,12 @@ class SchedulerTk(MainPageBaseTk):
     # constructor
     # ========================================================================
     def __init__(self, title: str, preferences: Preferences, bin_dir: str):
+        """
+        create object - starts with welcome page displayed
+        :param title: Sir, Ma'am, Her Royal Highness
+        :param preferences: what d'ya want, what d'ya really really want?
+        :param bin_dir: the directory that the logo for this app is located
+        """
         self.preferences: Preferences = preferences
         self.previous_file_button: Optional[Button] = None
         self._schedule_filename = ""
@@ -108,7 +128,7 @@ class SchedulerTk(MainPageBaseTk):
     # ========================================================================
     def create_front_page(self, semester):
         """Creates the very first page that is shown to the user."""
-        option_frame = super().create_front_page_base()
+        option_frame = super().create_welcome_page_base()
 
         # --------------------------------------------------------------
         # which semester?
