@@ -1,9 +1,33 @@
 """
-This module contains all the gui code that is related to the course tree view
-
-There is a course tree
-There is three lists of resources (for drag'n'dropping onto the tree)
-
+# ============================================================================
+# This module contains all the gui code that is related to the course tree view
+# - There is a course tree
+# - There is three lists of resources (for drag'n'dropping onto the tree)
+#
+# EVENT HANDLERS
+#
+#   double-click: edit the selected tree object
+#       handler_tree_edit(selected_obj, parent_obj, tree_id)
+#
+#   button: create a new course (button)
+#       handler_new_course()
+#
+#   tree right-click: return drop-down menu info
+#       handler_tree_create_popup(selected_obj, parent_obj, tree_id, parent_id)->list[MenuItem]
+#
+#   resource right-click: return drop-down menu info
+#       handler_resource_create_menu(resource_type, object)->list[MenuItem]
+#
+#   teacher double-click:
+#       handler_show_teacher_stat(teacher)
+#
+#   resource object being dragged over tree, return bool to indicate valid drop site
+#       handler_drag_resource(resource_type, tree_object) -> bool
+#
+#   resource object dropped on tree object
+#       handler_drop_resource(resource_obj, tree_obj, tree_id)
+#
+# ============================================================================
 """
 from __future__ import annotations
 
@@ -51,16 +75,6 @@ def _default_resource_menu(resource_type: ResourceType, obj) -> list[MenuItem]:
 
 class EditCoursesTk:
     """A page that allows user to edit courses, assign resources, sections, blocks, etc
-
-    event handlers
-      1. ``handler_tree_edit``             edit the selected tree object (double click or return)
-      2. ``handler_new_course``            create a new course (button)
-      3. ``handler_tree_create_popup``      create a drop-down menu specific to the selected tree object (right click)
-      4. ``handler_resource_create_menu``  create a drop-down menu specific to the selected resource object (right click)
-      5. ``handler_show_teacher_stat``     no idea ??
-      6. ``handler_drag_resource``         return true/false if dragged object is over a valid drop site
-      7. ``handler_drop_resource``         drop dragged object onto source object
-
     :param frame: the frame to hold all the gui elements
 
     """

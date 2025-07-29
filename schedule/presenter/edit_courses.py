@@ -1,7 +1,33 @@
 """
-Manages the "edit course" page of the scheduler
-- deals with the tree, and the resource lists
+# ============================================================================
+# Creates a tree of all the courses, and lists of all the resources
+# - can add/modify/delete all objects through the tree object
+# - can drag resources onto courses
+#
+# Events triggered by EditCoursesTk
+#       tree_event_edit_tree_obj(selected_obj, parent_obj, tree_id)
+#       button_event_create_new_course()
+#       tree_event_create_tree_popup(selected_obj, parent_obj, tree_id, parent_id)->list[MenuItem]
+#       resource_event_create_resource_menu(resource_type, object)->list[MenuItem]
+#       resource_event_show_teacher_stat(teacher)
+#       resource_drag_event_is_valid_drop(resource_type, tree_object) -> bool
+#       resource_dropped_event(resource_obj, tree_obj, tree_id)
+#
+# Events triggered by EditCoursePopupMenuActions
+#       edit_block_dialog(selected_object, tree_id)
+#       add_blocks_dialog(selected_object, tree_id)
+#       edit_section_dialog(selected_object, tree_id)
+#       edit_course_dialog(selected_object, tree_id)
+#       remove_selected_from_parent(parent_object, selected_object, tree_parent_id))
+#       modify_course_needs_allocation(selected_object, true_false, tree_id)
+#       add_section_dialog(selected_object, tree_id)
+#       assign_selected_to_parent(selected_object, resource, tree_id)
+#       remove_selected_from_parent(selected_object, resource, tree_id)
+#       remove_all_types_from_selected_object(resource_type_string, selected_object, tree_id)
+#
+# ============================================================================
 """
+
 from functools import partial
 from typing import Optional, Callable, Any, TYPE_CHECKING, Literal
 
@@ -85,14 +111,14 @@ class EditCourses:
         self.tree_ids: dict[str, str] = {}
 
 
-        # set all the event required handlers
-        self.gui.handler_tree_edit = self.edit_tree_obj
-        self.gui.handler_new_course = self.create_new_course
-        self.gui.handler_tree_create_popup = self.create_tree_popup
-        self.gui.handler_resource_create_menu = self.create_resource_menu
-        self.gui.handler_show_teacher_stat = self.show_teacher_stat
-        self.gui.handler_drag_resource = self.is_valid_drop
-        self.gui.handler_drop_resource = self.object_dropped
+        # set all the event required handlers for EditResourcesTk
+        self.gui.handler_tree_edit = self.tree_event_edit_tree_obj
+        self.gui.handler_new_course = self.button_event_create_new_course
+        self.gui.handler_tree_create_popup = self.tree_event_create_tree_popup
+        self.gui.handler_resource_create_menu = self.resource_event_create_resource_menu
+        self.gui.handler_show_teacher_stat = self.resource_event_show_teacher_stat
+        self.gui.handler_drag_resource = self.resource_drag_event_is_valid_drop
+        self.gui.handler_drop_resource = self.resource_dropped_event
 
     # -----------------------------------------------------------------------------------------------------------------
     # tree - refresh everything
@@ -172,7 +198,7 @@ class EditCourses:
     # -------------------------------------------------------------------------------------------------------------
     # Tree - edit object
     # -------------------------------------------------------------------------------------------------------------
-    def edit_tree_obj(self, obj: Any,  parent_obj: Any, tree_id: str, parent_id: str):
+    def tree_event_edit_tree_obj(self, obj: Any, parent_obj: Any, tree_id: str, parent_id: str):
         """
         Given a particular tree object, edit it (Blocks, Section, Course)
         :param obj: Any tree object, but will ignore it if it is not a Block, Section or Course
@@ -191,7 +217,7 @@ class EditCourses:
     # -------------------------------------------------------------------------------------------------------------
     # Tree - popup menu
     # -------------------------------------------------------------------------------------------------------------
-    def create_tree_popup(self, selected_obj: Any, parent_object, tree_path:str, tree_parent_path) -> list[MenuItem]:
+    def tree_event_create_tree_popup(self, selected_obj: Any, parent_object, tree_path:str, tree_parent_path) -> list[MenuItem]:
         """
         Create a pop-up menu based on the selected object
 
@@ -207,7 +233,7 @@ class EditCourses:
     # -------------------------------------------------------------------------------------------------------------
     # Course - add dialog
     # -------------------------------------------------------------------------------------------------------------
-    def create_new_course(self):
+    def button_event_create_new_course(self):
         """
         Create a new course
         """
@@ -453,17 +479,17 @@ class EditCourses:
     # -------------------------------------------------------------------------------------------------------------
     # create a pop-up menu for the resource list item
     # -------------------------------------------------------------------------------------------------------------
-    def create_resource_menu(self, view: ResourceType, obj: RESOURCE_OBJECT) -> list[MenuItem]: ...
+    def resource_event_create_resource_menu(self, view: ResourceType, obj: RESOURCE_OBJECT) -> list[MenuItem]: ...
 
     # -------------------------------------------------------------------------------------------------------------
     # respond to a double click on a teacher resource
     # -------------------------------------------------------------------------------------------------------------
-    def show_teacher_stat(self, teacher: ResourceType ): ...
+    def resource_event_show_teacher_stat(self, teacher: ResourceType): ...
 
     # -------------------------------------------------------------------------------------------------------------
     # can the resource object be added to the selected tree object?
     # -------------------------------------------------------------------------------------------------------------
-    def is_valid_drop(self, resource_type: ResourceType, destination: TREE_OBJECT) -> bool:
+    def resource_drag_event_is_valid_drop(self, resource_type: ResourceType, destination: TREE_OBJECT) -> bool:
         """
         is the destination object a legimate object to accept as a parent for this resource type?
         :param resource_type:
@@ -491,7 +517,7 @@ class EditCourses:
     # -------------------------------------------------------------------------------------------------------------
     # a resource object has been dropped on a course object
     # -------------------------------------------------------------------------------------------------------------
-    def object_dropped(self, resource: RESOURCE_OBJECT, destination: TREE_OBJECT, tree_id):
+    def resource_dropped_event(self, resource: RESOURCE_OBJECT, destination: TREE_OBJECT, tree_id):
         """
         a resource object has been dropped onto a course object, so assign this resource to this object
         :param resource:

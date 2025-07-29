@@ -1,15 +1,27 @@
+"""
+# ============================================================================
+# Basically a Tk::TableEntry object with some restrictions
+#
+# The first column I<must> be a unique identifier for the corresponding data
+# object, and can not be edited.
+#
+# EVENT HANDLERS
+#
+#   button-click: delete the data in this row (code is in Tk::TableEntry)
+#       event_delete_handler(row_data)
+#
+#   leave form event: save the data (data is a 2d list of strings)
+#       event_save_handler(all_data)
+#
+# ============================================================================
+
+"""
+from asyncio import sleep
 from typing import *
 from ..Tk.TableEntry import TableEntry
 from dataclasses import dataclass
 from tkinter import *
 from ..Tk.InitGuiFontsAndColours import TkColours
-
-"""
-Basically a Tk::TableEntry object with some restrictions
-
-The first column I<must> be a unique identifier for the corresponding data
-object, and can not be edited.
-"""
 
 
 # ============================================================================
@@ -27,11 +39,11 @@ class DEColumnDescription:
 # class: EditResourcesTk
 # ============================================================================
 class EditResourcesTk:
-
+    Currently_saving = 0
     def __init__(self,
                  parent: Frame,
                  event_delete_handler: Callable[[list[str], ...], None] = lambda x, *_: None,
-                 event_save_handler: Callable[[...], None] = lambda *_: None,
+                 event_save_handler: Callable[[list[list[str]]], None] = lambda *_: None,
                  colours: Optional[TkColours] = None,
                  ):
         # remove anything that was already in the frame
@@ -73,7 +85,7 @@ class EditResourcesTk:
         # NOTE: If weird shit is happening, give up and use a 'Save' button
         # ... clicking the 'Delete' triggers a 'Leave'...
         # --------------------------------------------------------------------------
-        self.data_entry.bind('<Leave>', func=self.save_handler)
+        self.data_entry.bind('<Leave>', func=self.save)
 
     def refresh(self, data: list[list[Any]]):
         """
@@ -93,13 +105,31 @@ class EditResourcesTk:
 
     def get_all_data(self) -> list[list[str]]:
         """
-        reads the data stored in teh TableEntry widget
+        reads the data stored in the TableEntry widget
         :return: a list of rows, which is a list of columns with the data
         """
         data: list = list()
         for row in range(self.data_entry.number_of_rows):
             data.append(self.data_entry.read_row(row))
         return data
+
+    def save(self, *_):
+        """save the data in the table"""
+        # Just in case saving is already in progress, wait before continuing.
+        if self.Currently_saving > 2:
+            return  # 2 is too many.
+        if self.Currently_saving:
+            sleep(2)
+        self.Currently_saving += 1
+
+        # call event handler with data
+        all_data = self.get_all_data()
+        self.save_handler(all_data)
+
+        # reset currently saving
+        self.Currently_saving -= 1
+
+
 
 
 """

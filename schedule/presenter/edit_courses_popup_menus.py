@@ -7,6 +7,17 @@
 #   show_scheduable_menu    # right-click popup menu for teacher/stream/labs lists
 #
 # NOTE: this module is dependent on functions in EditCourses
+#       edit_block_dialog(selected_object, tree_id)
+#       add_blocks_dialog(selected_object, tree_id)
+#       edit_section_dialog(selected_object, tree_id)
+#       edit_course_dialog(selected_object, tree_id)
+#       remove_selected_from_parent(parent_object, selected_object, tree_parent_id))
+#       modify_course_needs_allocation(selected_object, true_false, tree_id)
+#       add_section_dialog(selected_object, tree_id)
+#       assign_selected_to_parent(selected_object, resource, tree_id)
+#       remove_selected_from_parent(selected_object, resource, tree_id)
+#       remove_all_types_from_selected_object(resource_type_string, selected_object, tree_id)
+#
 # ============================================================================
 """
 from __future__ import annotations
@@ -289,112 +300,3 @@ class EditCoursePopupMenuActions:
 
 
 
-"""
-
-# ============================================================================
-# create popup menus for streams/labs/teacher
-# - menus are dynamic, depending on the current schedule, and what
-#   type of object was selected
-# ============================================================================
-sub show_scheduable_menu {
-    my $Schedule   = shift;
-    my $sel_obj_id = shift;
-    my $type       = shift;
-    my $sel_obj    = $Schedule->get_object_by_id_and_type( $sel_obj_id, $type );
-
-    my $menu    = [];
-    my $courses = [];
-
-    push @$menu,
-      [
-        "command", "Delete $type",
-        -command => [ \&EditCourses::remove_scheduable, $type, $sel_obj ]
-      ];
-
-    push @$menu,
-      [
-        'cascade', "Add $type to Course",
-        -tearoff   => 0,
-        -menuitems => $courses
-      ];
-
-    # ------------------------------------------------------------------------
-    # all courses
-    # ------------------------------------------------------------------------
-    foreach my $course ( sort { &_sort_by_alphabet } $Schedule->courses->list )
-    {
-        my $sections = [];
-        push @$courses,
-          [
-            'cascade', $course->short_description,
-            -tearoff   => 0,
-            -menuitems => $sections
-          ];
-        if ( $type ne 'stream' ) {
-            push @$sections,
-              [
-                'command',
-                'All Sections',
-                -command => [
-                    \&EditCourses::assign_obj2_to_obj1,
-                    $course,
-                    $sel_obj,
-                    "Schedule/Course" . $course->id,
-                ]
-              ];
-        }
-
-        # --------------------------------------------------------------------
-        # all sections per course
-        # --------------------------------------------------------------------
-        foreach my $section ( sort { &_sort_by_number } $course->sections ) {
-            my $blocks = [];
-            push @$sections,
-              [ "cascade", "$section", -tearoff => 0, -menuitems => $blocks ];
-            push @$blocks,
-              [
-                'command',
-                'All Blocks',
-                -command => [
-                    \&EditCourses::assign_obj2_to_obj1,
-                    $section,
-                    $sel_obj,
-                    "Schedule/Course" . $course->id . "/Section" . $section->id
-                ]
-              ];
-
-            # ----------------------------------------------------------------
-            # all blocks per section
-            # ---------------------------------------------------------------
-            if ( $type ne 'stream' ) {
-                foreach
-                  my $block ( sort { &_sort_by_block_id } $section->blocks )
-                {
-                    push @$blocks,
-                      [
-                        'command',
-                        "$block",
-                        -command => [
-                            \&EditCourses::assign_obj2_to_obj1,
-                            $block,
-                            $sel_obj,
-                            "Schedule/Course"
-                              . $course->id
-                              . "/Section"
-                              . $section->id
-                              . "/Block"
-                              . $block->id
-                        ]
-                      ];
-
-                }
-            }
-
-        }
-
-    }
-    return $menu;
-}
-
-
-"""

@@ -1,13 +1,15 @@
+"""
+# ============================================================================
+# Gathers info for main menus and toolbars for scheduler, and gives them default commands
+# - to set the commands, use methods 'set_menu_event_handler'
+#
+# NOTE: this does not actually create the gui menu, it just gathers the info
+# ============================================================================
+"""
 from __future__ import annotations
 
 from typing import Callable, Literal, get_args, Any
 from schedule.Tk.menu_and_toolbars import MenuItem, MenuType, ToolbarItem
-
-# =============================================================================
-# NOTE: This is the only presenter code that relies on schedule.Tk code
-#      ... BUT ... it is only to define types of menues, toolbars, etc, it isn't
-#                  reliant on Tk itself
-# =============================================================================
 
 MAIN_MENU_EVENT_HANDLER_NAMES = Literal[
     "file_new",

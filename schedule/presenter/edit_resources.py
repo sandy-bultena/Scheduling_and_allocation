@@ -1,3 +1,15 @@
+"""
+# ============================================================================
+# Create a list of all resources
+# - edit properties
+# - create new resource
+# - delete resource
+#
+#
+# ============================================================================
+"""
+
+
 from time import sleep
 from typing import Optional, Callable
 
@@ -18,7 +30,6 @@ property_conversions_from_str = {
 # Class Edit Resources
 # ============================================================================
 class EditResources:
-    Currently_saving = 0
 
     # =================================================================
     # constructor
@@ -124,18 +135,9 @@ class EditResources:
     # ------------------------------------------------------------------------
     # Save updated data
     # ------------------------------------------------------------------------
-    def save(self, *_):
+    def save(self, all_data):
         """Save any changes that the user entered in the GUI_Pages form."""
 
-        # Just in case saving is already in progress, wait before continuing.
-        if EditResources.Currently_saving > 2:
-            return  # 2 is too many.
-        if EditResources.Currently_saving:
-            sleep(2)
-        EditResources.Currently_saving += 1
-
-        # Get data from the GUI_Pages object.
-        all_data = self.gui.get_all_data()
         needs_updating = self._check_for_changed_resources(all_data)
 
         # do we need to change anything?
@@ -150,7 +152,6 @@ class EditResources:
             self._update_resource(**init_arguments)
 
         # all done saving, decrement number of files currently being saved
-        EditResources.Currently_saving -= 1
         self.dirty_flag_method(changes)
         self.refresh()
 
@@ -158,7 +159,7 @@ class EditResources:
     # delete object
     # =================================================================
     def delete_obj(self, data: list[str], *_):
-        """Save delete requests, to be processed later."""
+        """Save delete requests, to be processed later. Note that all data is given in string representation"""
         obj = None
         for index, column in enumerate(self.column_descriptions):
             if column.unique_id and data[index]:

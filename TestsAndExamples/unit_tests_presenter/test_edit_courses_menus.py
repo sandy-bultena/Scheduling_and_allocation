@@ -242,7 +242,7 @@ def test_create_tree_menu_for_teacher(gui, dirty, schedule_obj):
     parent_id = gui.get_parent(tree_id)
 
     # execute
-    menu = ec.create_tree_popup(teacher, block, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(teacher, block, tree_id, parent_id)
 
     # verify
     assert len([mi for mi in menu if mi.label == 'Remove Teacher']) == 1
@@ -263,7 +263,7 @@ def test_create_tree_menu_for_teacher_remove_teacher(gui, dirty, schedule_obj):
     tree_id = gui.get_iid_from_name_with_parent_id(f"{teacher.firstname} {teacher.lastname}", parent_id)
 
 
-    menu = ec.create_tree_popup(teacher, block, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(teacher, block, tree_id, parent_id)
     mi = [mi for mi in menu if mi.label == 'Remove Teacher'][0]
 
     # execute
@@ -295,7 +295,7 @@ def test_create_tree_menu_for_lab(gui, dirty, schedule_obj):
     parent_id = gui.get_parent(tree_id)
 
     # execute
-    menu = ec.create_tree_popup(lab, block, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(lab, block, tree_id, parent_id)
 
     # verify
     assert len([mi for mi in menu if mi.label == 'Remove Lab']) == 1
@@ -313,7 +313,7 @@ def test_create_tree_menu_for_lab_remove_lab(gui, dirty, schedule_obj, valid_tre
     lab = block.labs()[0]
     tree_id = gui.get_iid_from_name_with_parent_id(lab.number, ".001.001.001")
     parent_id = gui.get_parent(tree_id)
-    menu = ec.create_tree_popup(lab, block, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(lab, block, tree_id, parent_id)
     mi = [mi for mi in menu if mi.label == 'Remove Lab'][0]
 
 
@@ -345,7 +345,7 @@ def test_create_tree_menu_for_block(gui, dirty, schedule_obj):
     parent_id = gui.get_parent(tree_id)
 
     # execute
-    menu = ec.create_tree_popup(block, section, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(block, section, tree_id, parent_id)
 
     # verify
     assert len([mi for mi in menu if mi.label == 'Remove Class Time']) == 1
@@ -371,7 +371,7 @@ def test_tree_menu_for_section_remove_block(gui, dirty, schedule_obj):
     block = section.blocks()[0]
     tree_id = ".001.001.001"
     parent_id = gui.get_parent(tree_id)
-    menu = ec.create_tree_popup(block, section, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(block, section, tree_id, parent_id)
     mi = [mi for mi in menu if mi.label == 'Remove Class Time'][0]
     assert gui.get_iid_from_name_with_parent_id("Class Time: Monday: 8:00 to 9:30", parent_id)
 
@@ -398,7 +398,7 @@ def test_tree_menu_for_block_add_teacher_sub_menu(gui, dirty, schedule_obj):
     parent_id = gui.get_parent(tree_id)
 
     # execute
-    menu = ec.create_tree_popup(block, section, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(block, section, tree_id, parent_id)
 
     # verify
     mi = [mi for mi in menu if mi.label == 'Add Teacher'][0]
@@ -423,7 +423,7 @@ def test_tree_menu_for_block_add_teacher(gui, dirty, schedule_obj):
     block2 = section.blocks()[1]
     tree_id = ".001.001.001"
     parent_id = gui.get_parent(tree_id)
-    menu = ec.create_tree_popup(block, section, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(block, section, tree_id, parent_id)
     mi = [mi for mi in menu if mi.label == "Add Teacher"]
     add_menu = mi[0].children[1]        # John Doe
 
@@ -455,7 +455,7 @@ def test_tree_menu_for_block_add_lab_sub_menu(gui, dirty, schedule_obj):
     parent_id = gui.get_parent(tree_id)
 
     # execute
-    menu = ec.create_tree_popup(block, section, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(block, section, tree_id, parent_id)
 
     # verify
     mi = [mi for mi in menu if mi.label == "Add Lab"]
@@ -480,7 +480,7 @@ def test_tree_menu_for_block_add_lab(gui, dirty, schedule_obj):
     block = section.blocks()[0]
     tree_id = ".001.001.001"
     parent_id = gui.get_parent(tree_id)
-    menu = ec.create_tree_popup(block, section, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(block, section, tree_id, parent_id)
     mi = [mi for mi in menu if mi.label == "Add Lab"]
     add_menu = mi[0].children[0]
 
@@ -510,7 +510,7 @@ def test_tree_menu_for_block_remove_all_sub_menu(gui, dirty, schedule_obj):
     parent_id = gui.get_parent(tree_id)
 
     # execute
-    menu = ec.create_tree_popup(block, section, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(block, section, tree_id, parent_id)
 
     # verify
     mi = [mi for mi in menu if mi.label == 'Remove All'][0]
@@ -534,7 +534,7 @@ def test_tree_menu_for_blocks_remove_all_labs(gui, dirty, schedule_obj):
     block = section.blocks()[0]
     tree_id = ".001.001.001"
     parent_id = gui.get_parent(tree_id)
-    menu = ec.create_tree_popup(block, section, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(block, section, tree_id, parent_id)
     mi = [mi for mi in menu if mi.label == 'Remove All'][0]
     sub_menu = mi.children
 
@@ -565,7 +565,7 @@ def test_tree_menu_for_block_remove_all_teachers(gui, dirty, schedule_obj):
     block = section.blocks()[0]
     tree_id = ".001.001.001"
     parent_id = gui.get_parent(tree_id)
-    menu = ec.create_tree_popup(block, section, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(block, section, tree_id, parent_id)
     mi = [mi for mi in menu if mi.label == 'Remove All'][0]
     sub_menu = mi.children
 
@@ -600,7 +600,7 @@ def test_create_tree_menu_for_section(gui, dirty, schedule_obj):
     parent_id = gui.get_parent(tree_id)
 
     # execute
-    menu = ec.create_tree_popup(section, course, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(section, course, tree_id, parent_id)
 
     # verify
     assert len([mi for mi in menu if mi.label == 'Edit Section']) == 1
@@ -631,7 +631,7 @@ def test_tree_menu_for_section_edit_section(gui, dirty, schedule_obj):
     section = course.get_section_by_id(1)
     tree_id = ".001.001"
     parent_id = gui.get_parent(tree_id)
-    menu = ec.create_tree_popup(section, course, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(section, course, tree_id, parent_id)
 
     ec.edit_section_dialog = edit_dialog_test
     mi = [mi for mi in menu if mi.label == 'Edit Section'][0]
@@ -656,7 +656,7 @@ def test_tree_menu_for_section_remove_section(gui, dirty, schedule_obj):
     section = course.get_section_by_id(1)
     tree_id = ".001.001"
     parent_id = gui.get_parent(tree_id)
-    menu = ec.create_tree_popup(section, course, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(section, course, tree_id, parent_id)
     mi = [mi for mi in menu if mi.label == 'Remove Section'][0]
     assert gui.get_iid_from_name_with_parent_id("Section 1  (1A calculus available)", ".001")
 
@@ -685,7 +685,7 @@ def test_tree_menu_for_section_add_blocks(gui, dirty, schedule_obj):
     section = course.get_section_by_id(1)
     tree_id = ".001.001"
     parent_id = gui.get_parent(tree_id)
-    menu = ec.create_tree_popup(section, course, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(section, course, tree_id, parent_id)
     ec.add_blocks_dialog = add_dialog_test
     mi = [mi for mi in menu if mi.label == 'Add Class Times'][0]
 
@@ -709,7 +709,7 @@ def test_tree_menu_for_section_add_teacher_sub_menu(gui, dirty, schedule_obj):
     parent_id = gui.get_parent(tree_id)
 
     # execute
-    menu = ec.create_tree_popup(section, course, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(section, course, tree_id, parent_id)
 
     # verify
     mi = [mi for mi in menu if mi.label == 'Add Teacher'][0]
@@ -732,7 +732,7 @@ def test_tree_menu_for_section_add_teacher(gui, dirty, schedule_obj):
     section = course.get_section_by_id(1)
     tree_id = ".001.001"
     parent_id = gui.get_parent(tree_id)
-    menu = ec.create_tree_popup(section, course, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(section, course, tree_id, parent_id)
     mi = [mi for mi in menu if mi.label == "Add Teacher"]
     add_menu = mi[0].children[1]        # John Doe
 
@@ -761,7 +761,7 @@ def test_tree_menu_for_section_add_stream_sub_menu(gui, dirty, schedule_obj):
     parent_id = gui.get_parent(tree_id)
 
     # execute
-    menu = ec.create_tree_popup(section, course, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(section, course, tree_id, parent_id)
 
     # verify
     mi = [mi for mi in menu if mi.label == "Add Stream"]
@@ -784,7 +784,7 @@ def test_tree_menu_for_section_add_stream(gui, dirty, schedule_obj):
     section = course.get_section_by_id(1)
     tree_id = ".001.001"
     parent_id = gui.get_parent(tree_id)
-    menu = ec.create_tree_popup(section, course, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(section, course, tree_id, parent_id)
     mi = [mi for mi in menu if mi.label == "Add Stream"]
     add_menu = mi[0].children[1]
 
@@ -809,7 +809,7 @@ def test_tree_menu_for_section_add_lab_sub_menu(gui, dirty, schedule_obj):
     parent_id = gui.get_parent(tree_id)
 
     # execute
-    menu = ec.create_tree_popup(section, course, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(section, course, tree_id, parent_id)
 
     # verify
     mi = [mi for mi in menu if mi.label == "Add Lab"]
@@ -833,7 +833,7 @@ def test_tree_menu_for_section_add_lab(gui, dirty, schedule_obj):
     section = course.get_section_by_id(1)
     tree_id = ".001.001"
     parent_id = gui.get_parent(tree_id)
-    menu = ec.create_tree_popup(section, course, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(section, course, tree_id, parent_id)
     mi = [mi for mi in menu if mi.label == "Add Lab"]
     add_menu = mi[0].children[0]
 
@@ -861,7 +861,7 @@ def test_tree_menu_for_section_remove_all_sub_menu(gui, dirty, schedule_obj):
     parent_id = gui.get_parent(tree_id)
 
     # execute
-    menu = ec.create_tree_popup(section, course, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(section, course, tree_id, parent_id)
 
     # verify
     mi = [mi for mi in menu if mi.label == 'Remove All'][0]
@@ -886,7 +886,7 @@ def test_tree_menu_for_section_remove_all_blocks(gui, dirty, schedule_obj):
     section = course.get_section_by_id(1)
     tree_id = ".001.001"
     parent_id = gui.get_parent(tree_id)
-    menu = ec.create_tree_popup(section, course, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(section, course, tree_id, parent_id)
     mi = [mi for mi in menu if mi.label == 'Remove All'][0]
     sub_menu = mi.children
 
@@ -911,7 +911,7 @@ def test_tree_menu_for_section_remove_all_streams(gui, dirty, schedule_obj):
     section = course.get_section_by_id(1)
     tree_id = ".001.001"
     parent_id = gui.get_parent(tree_id)
-    menu = ec.create_tree_popup(section, course, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(section, course, tree_id, parent_id)
     mi = [mi for mi in menu if mi.label == 'Remove All'][0]
     sub_menu = mi.children
 
@@ -935,7 +935,7 @@ def test_tree_menu_for_section_remove_all_labs(gui, dirty, schedule_obj):
     section = course.get_section_by_id(1)
     tree_id = ".001.001"
     parent_id = gui.get_parent(tree_id)
-    menu = ec.create_tree_popup(section, course, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(section, course, tree_id, parent_id)
     mi = [mi for mi in menu if mi.label == 'Remove All'][0]
     sub_menu = mi.children
 
@@ -965,7 +965,7 @@ def test_tree_menu_for_section_remove_all_teachers(gui, dirty, schedule_obj):
     section = course.get_section_by_id(1)
     tree_id = ".001.001"
     parent_id = gui.get_parent(tree_id)
-    menu = ec.create_tree_popup(section, course, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(section, course, tree_id, parent_id)
     mi = [mi for mi in menu if mi.label == 'Remove All'][0]
     sub_menu = mi.children
 
@@ -995,7 +995,7 @@ def test_create_tree_menu_for_course(gui, dirty, schedule_obj):
     parent_id = gui.get_iid_from_name(tree_id)
 
     # execute
-    menu = ec.create_tree_popup(schedule_obj.get_course_by_number("001"), None, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(schedule_obj.get_course_by_number("001"), None, tree_id, parent_id)
 
     # verify
     assert len([mi for mi in menu if mi.label == 'Edit Course']) == 1
@@ -1019,7 +1019,7 @@ def test_tree_menu_for_course_edit_course(gui, dirty, schedule_obj):
 
     # prepare
     ec = EditCourses(dirty, None, schedule_obj, gui)
-    menu = ec.create_tree_popup(schedule_obj.get_course_by_number("001"), None, "001", "")
+    menu = ec.tree_event_create_tree_popup(schedule_obj.get_course_by_number("001"), None, "001", "")
     ec.edit_course_dialog = edit_course_dialog_test
     mi = [mi for mi in menu if mi.label == 'Edit Course'][0]
 
@@ -1042,7 +1042,7 @@ def test_tree_menu_for_course_remove_course(gui, dirty, schedule_obj):
     tree_id = gui.get_iid_from_name("001 BasketWeaving")
     parent_id = gui.get_iid_from_name(tree_id)
 
-    menu = ec.create_tree_popup(schedule_obj.get_course_by_number("001"), None, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(schedule_obj.get_course_by_number("001"), None, tree_id, parent_id)
     mi = [mi for mi in menu if mi.label == 'Remove Course'][0]
 
     # execute
@@ -1067,7 +1067,7 @@ def test_tree_menu_for_course_unset_needs_allocation(gui, dirty, schedule_obj):
     tree_id = gui.get_iid_from_name("001 BasketWeaving")
     parent_id = gui.get_iid_from_name(tree_id)
 
-    menu = ec.create_tree_popup(schedule_obj.get_course_by_number("001"), None, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(schedule_obj.get_course_by_number("001"), None, tree_id, parent_id)
     mi = [mi for mi in menu if "allocation" in mi.label and 'Unset' in mi.label][0]
 
     # execute
@@ -1091,7 +1091,7 @@ def test_tree_menu_for_course_set_needs_allocation(gui, dirty, schedule_obj):
     course.needs_allocation = False
     assert not schedule_obj.get_course_by_number("001").needs_allocation
 
-    menu = ec.create_tree_popup(schedule_obj.get_course_by_number("001"), None, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(schedule_obj.get_course_by_number("001"), None, tree_id, parent_id)
     mi = [mi for mi in menu if "allocation" in mi.label and 'Set' in mi.label][0]
 
     # execute
@@ -1114,7 +1114,7 @@ def test_tree_menu_for_course_add_sections(gui, dirty, schedule_obj):
     # prepare
     ec = EditCourses(dirty, None, schedule_obj, gui)
     ec.refresh()
-    menu = ec.create_tree_popup(schedule_obj.get_course_by_number("001"), None, "001", "")
+    menu = ec.tree_event_create_tree_popup(schedule_obj.get_course_by_number("001"), None, "001", "")
     ec.add_section_dialog = add_section_dialog_test
     mi = [mi for mi in menu if mi.label == 'Add Sections'][0]
 
@@ -1136,7 +1136,7 @@ def test_tree_menu_for_course_add_teacher_sub_menu(gui, dirty, schedule_obj):
     schedule_obj.add_update_teacher("Mickey","Mouse")
 
     # execute
-    menu = ec.create_tree_popup(schedule_obj.get_course_by_number("001"), None, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(schedule_obj.get_course_by_number("001"), None, tree_id, parent_id)
 
     # verify
     mi = [mi for mi in menu if mi.label == "Add Teacher"]
@@ -1157,7 +1157,7 @@ def test_tree_menu_for_course_add_teacher(gui, dirty, schedule_obj):
     tree_id = gui.get_iid_from_name("001 BasketWeaving")
     parent_id = gui.get_iid_from_name(tree_id)
     schedule_obj.add_update_teacher("Mickey","Mouse")
-    menu = ec.create_tree_popup(schedule_obj.get_course_by_number("001"), None, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(schedule_obj.get_course_by_number("001"), None, tree_id, parent_id)
     mi = [mi for mi in menu if mi.label == "Add Teacher"]
     add_menu = mi[0].children[1]
 
@@ -1182,7 +1182,7 @@ def test_tree_menu_for_course_add_stream_sub_menu(gui, dirty, schedule_obj):
     parent_id = gui.get_iid_from_name(tree_id)
 
     # execute
-    menu = ec.create_tree_popup(schedule_obj.get_course_by_number("001"), None, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(schedule_obj.get_course_by_number("001"), None, tree_id, parent_id)
 
     # verify
     mi = [mi for mi in menu if mi.label == "Add Stream"]
@@ -1201,7 +1201,7 @@ def test_tree_menu_for_course_add_stream(gui, dirty, schedule_obj):
     ec = EditCourses(dirty, None, schedule_obj, gui)
     tree_id = gui.get_iid_from_name("001 BasketWeaving")
     parent_id = gui.get_iid_from_name(tree_id)
-    menu = ec.create_tree_popup(schedule_obj.get_course_by_number("001"), None, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(schedule_obj.get_course_by_number("001"), None, tree_id, parent_id)
     mi = [mi for mi in menu if mi.label == "Add Stream"]
     add_menu = mi[0].children[1]
 
@@ -1223,7 +1223,7 @@ def test_tree_menu_for_course_add_lab_sub_menu(gui, dirty, schedule_obj):
     parent_id = gui.get_iid_from_name(tree_id)
 
     # execute
-    menu = ec.create_tree_popup(schedule_obj.get_course_by_number("001"), None, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(schedule_obj.get_course_by_number("001"), None, tree_id, parent_id)
 
     # verify
     mi = [mi for mi in menu if mi.label == "Add Lab"]
@@ -1243,7 +1243,7 @@ def test_tree_menu_for_course_add_lab(gui, dirty, schedule_obj):
     ec.refresh()
     tree_id = gui.get_iid_from_name("001 BasketWeaving")
     parent_id = gui.get_iid_from_name(tree_id)
-    menu = ec.create_tree_popup(schedule_obj.get_course_by_number("001"), None, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(schedule_obj.get_course_by_number("001"), None, tree_id, parent_id)
     mi = [mi for mi in menu if mi.label == "Add Lab"]
     add_menu = mi[0].children[0]
 
@@ -1268,7 +1268,7 @@ def test_tree_menu_for_course_remove_all_sub_menu(gui, dirty, schedule_obj):
     parent_id = gui.get_iid_from_name(tree_id)
 
     # execute
-    menu = ec.create_tree_popup(schedule_obj.get_course_by_number("001"), None, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(schedule_obj.get_course_by_number("001"), None, tree_id, parent_id)
 
     # verify
     mi = [mi for mi in menu if mi.label == 'Remove All'][0]
@@ -1291,7 +1291,7 @@ def test_tree_menu_for_course_remove_all_sections(gui, dirty, schedule_obj):
     ec.refresh()
     tree_id = gui.get_iid_from_name("001 BasketWeaving")
     parent_id = gui.get_iid_from_name(tree_id)
-    menu = ec.create_tree_popup(schedule_obj.get_course_by_number("001"), None, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(schedule_obj.get_course_by_number("001"), None, tree_id, parent_id)
     mi = [mi for mi in menu if mi.label == 'Remove All'][0]
     sub_menu = mi.children
 
@@ -1315,7 +1315,7 @@ def test_tree_menu_for_course_remove_all_streams(gui, dirty, schedule_obj):
     ec.refresh()
     tree_id = gui.get_iid_from_name("001 BasketWeaving")
     parent_id = gui.get_iid_from_name(tree_id)
-    menu = ec.create_tree_popup(schedule_obj.get_course_by_number("001"), None, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(schedule_obj.get_course_by_number("001"), None, tree_id, parent_id)
     mi = [mi for mi in menu if mi.label == 'Remove All'][0]
     sub_menu = mi.children
 
@@ -1338,7 +1338,7 @@ def test_tree_menu_for_course_remove_all_labs(gui, dirty, schedule_obj):
     ec.refresh()
     tree_id = gui.get_iid_from_name("001 BasketWeaving")
     parent_id = gui.get_iid_from_name(tree_id)
-    menu = ec.create_tree_popup(schedule_obj.get_course_by_number("001"), None, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(schedule_obj.get_course_by_number("001"), None, tree_id, parent_id)
     mi = [mi for mi in menu if mi.label == 'Remove All'][0]
     sub_menu = mi.children
 
@@ -1366,7 +1366,7 @@ def test_tree_menu_for_course_remove_all_teachers(gui, dirty, schedule_obj):
     ec.refresh()
     tree_id = gui.get_iid_from_name("001 BasketWeaving")
     parent_id = gui.get_iid_from_name(tree_id)
-    menu = ec.create_tree_popup(schedule_obj.get_course_by_number("001"), None, tree_id, parent_id)
+    menu = ec.tree_event_create_tree_popup(schedule_obj.get_course_by_number("001"), None, tree_id, parent_id)
     mi = [mi for mi in menu if mi.label == 'Remove All'][0]
     sub_menu = mi.children
 
