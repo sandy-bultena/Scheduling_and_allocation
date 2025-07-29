@@ -1,4 +1,24 @@
-"""Provides code to deal with user modifying the gui view.  Most actions are passed onto the View Controller"""
+"""
+# ============================================================================
+# A view of the class times for a specific resource
+#
+# Events triggered by ViewDynamicTk
+#   popup(gui_id)
+#   draw_blocks()
+#   on_closing(_*)
+#   open_companion_view(gui_id)
+#   gui_block_is_moving(gui_id,  gui_block_day, gui_block_start_time)
+#   gui_block_has_dropped(gui_id)
+#
+# Methods called from ViewsController
+#   close()
+#   draw()
+#   is_block_in_view(moved_block)
+#   move_gui_block_to(moved_block, day, start_time)
+#   refresh_block_colours()
+#
+# ============================================================================
+"""
 from __future__ import annotations
 import re
 from functools import partial
@@ -25,6 +45,13 @@ _gui_block_ids = IdGenerator()
 class View:
     """View - describes the visual representation of a Schedule."""
     def __init__(self, views_controller: ViewsController, frame, schedule: Schedule, resource: RESOURCE, gui:ViewDynamicTk=None):
+        """
+        :param views_controller: somebody needs to be in control
+        :param frame: container
+        :param schedule:
+        :param resource:
+        :param gui: doesn't need to be set except when setting up for a test suite
+        """
         self.views_controller = views_controller
         self.frame = frame
         self.resource = resource

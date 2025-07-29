@@ -1,3 +1,21 @@
+"""
+# ============================================================================
+# Code that draws the View stuff.
+#
+# PURPOSE: Provides all the gui interactions with the View
+#
+#
+# EVENT HANDLERS:
+#         get_popup_menu_handler(gui_block_id)
+#         refresh_blocks_handler()
+#         on_closing_handler())
+#         double_click_block_handler(gui_id)
+#         gui_block_is_moving_handler(gui_id, day, start)
+#         gui_block_has_dropped_handler(gui_id)
+#         undo_handler()
+#         redo_handler())
+# ============================================================================
+"""
 from __future__ import annotations
 
 from functools import partial

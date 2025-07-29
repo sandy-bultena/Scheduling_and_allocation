@@ -1,14 +1,19 @@
 """
-This is the central control for launching any or all of the Views
-(the things that allow you to move blocks around)
-
-For each schedule item view, there will be:
-* A button to open the view for that schedule item
-* The button colour will reflect the Conflict status for that schedule item
-    * Due to the inability to change the background colour of a button on a MAC, we will use
-      borders around our button to indicate the various colour statuses of our scheduled items
-
+# ============================================================================
+# This is the central control for launching any or all of the Views
+# (the things that allow you to move blocks around)
+#
+# For each schedule item view, there will be:
+#  * A button to open the view for that schedule item
+#  * The button colour will reflect the Conflict status for that schedule item
+#     * Due to the inability to change the background colour of a button on a MAC, we will use
+#       borders around our button to indicate the various colour statuses of our scheduled items
+#
+# EVENT HANDLERS:
+#    btn_callback(resource)
+# ============================================================================
 """
+
 from __future__ import annotations
 
 import platform
@@ -23,23 +28,26 @@ from schedule.model.enums import ConflictType, ResourceType
 from schedule.Tk import InitGuiFontsAndColours as fac
 
 
-
 class ViewsControllerTk:
     colours: fac.TkColours = fac.colours
     Fonts: fac.TkFonts = fac.fonts
 
+    # ============================================================================
+    # constructor
+    # ============================================================================
     def __init__(self, parent: Frame, resources:dict[ResourceType,list], btn_callback: Callable):
         """
         Initialize this manager
         :param parent: where to put the gui objects
         """
+
         # remove anything that was already in the frame
+        self.parent = parent
+
         for widget in parent.winfo_children():
             widget.destroy()
 
-
-        self.parent = parent
-
+        # set fonts
         if self.Fonts is None:
             self.Fonts = fac.TkFonts(parent.winfo_toplevel())
         scrolled_frame = Scrolled(parent, "Frame").widget
@@ -47,6 +55,8 @@ class ViewsControllerTk:
         self._button_refs: dict[str, Button] = {}
 
         Label(scrolled_frame,text="Edit Class Times for ...", font=self.Fonts.big, anchor='center').pack(expand=1,fill='both', pady=20)
+
+        # for each resource, create a bunch of buttons that can launch views
         for resource_type in (ResourceType.teacher, ResourceType.lab, ResourceType.stream):
             l_frame = LabelFrame(scrolled_frame, text=resource_type.name)
             l_frame.pack(expand=1,fill='both', padx=5,pady=15)
@@ -58,19 +68,22 @@ class ViewsControllerTk:
                 self._button_refs[resource.number] = Button(l_frame, text=str(resource), highlightthickness=4, command=command, width=15)
                 self._button_refs[resource.number].grid(column = col, row=row, sticky='nsew',ipadx=20, ipady=10, padx=2, pady=2)
 
+        # adjust the width of the window so that we don't need left/right scroll
         mw = self.parent.winfo_toplevel()
         mw.update_idletasks()
         current_height = mw.winfo_height()
         w = min(mw.winfo_reqwidth(), mw.winfo_screenwidth()-50)
         mw.geometry(f"{w}x{current_height}")
 
+    # ============================================================================
+    # set button colour
+    # ============================================================================
     def set_button_colour(self, button_id: str, resource_type, view_conflict: ConflictType = None):
         """
-        Sets the colour according to the conflict resource_type
-        :param resource_type:
+        set the colour of the button according to the conflict
         :param button_id:
-        :param view_conflict: conflict for the view associated with this button
-        :return:
+        :param resource_type:
+        :param view_conflict:
         """
         btn = self._button_refs.get(button_id, None)
         if btn is None:

@@ -1,4 +1,27 @@
-"""entry point for the gui scheduler"""
+"""
+# ============================================================================
+# Main entry point to the schedule application
+#
+# Events triggered by menus_main_menu toolbar and menu events
+#       new_menu_event()
+#       open_menu_event()
+#       save_menu_event()
+#       save_as_menu_event()
+#       validate()
+#       exit_event()
+#       print_views(resource_type, canvas)
+#
+# Events triggered from the welcome page
+#       exit_event()
+#       open_menu_event()
+#       new_menu_event()
+#       open_previous_file_event()
+#       self.semester_change()
+#
+# ============================================================================
+"""
+
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -14,7 +37,7 @@ from schedule.presenter.edit_courses import EditCourses
 
 from .menus_main_menu import set_menu_event_handler, main_menu
 from schedule.Utilities import Preferences
-from schedule.gui_pages import SchedulerTk, set_main_page_event_handler
+from schedule.gui_pages.scheduler_tk import SchedulerTk, set_main_page_event_handler
 from schedule.model import Schedule, ResourceType
 from schedule.exceptions import CouldNotReadFileError
 from schedule.gui_generics.read_only_text_tk import ReadOnlyText
@@ -297,9 +320,11 @@ class Scheduler:
     # A text representation of the schedules
     # ==================================================================
     def update_overview(self, frame):
+        """not required to do anything"""
         pass
 
     def update_course_text(self, frame):
+        """update text describing all the courses"""
         text: list[str] = list()
         if self.schedule is None:
             text.append('There is no schedule, please open one')
@@ -313,6 +338,7 @@ class Scheduler:
         data_entry.write(text)
 
     def update_teacher_text(self, frame):
+        """udpate the text describing all the teacher duties"""
         text = []
         if not self.schedule.teachers:
             text.append('No teachers defined in this schedule')
@@ -324,36 +350,36 @@ class Scheduler:
 
     # ==================================================================
     # update_edit_teachers
-    # - A page where teacher_ids can be added/modified or deleted
     # ==================================================================
     def update_edit_teachers(self, frame):
+        """A page where teacher can be added/modified or deleted"""
         data_entry = EditResources(self.set_dirty_method, frame, ResourceType.teacher, self.schedule)
         data_entry.schedule = self.schedule
         data_entry.refresh()
 
     # ==================================================================
     # update_edit_streams
-    # - A page where stream_ids can be added/modified or deleted
     # ==================================================================
     def update_edit_streams(self, frame):
+        """A page where stream_ids can be added/modified or deleted"""
         data_entry = EditResources(self.set_dirty_method, frame, ResourceType.stream, self.schedule)
         data_entry.schedule = self.schedule
         data_entry.refresh()
 
     # ==================================================================
     # update_edit_labs
-    # - A page where lab_ids can be added/modified or deleted
     # ==================================================================
     def update_edit_labs(self, frame):
+        """A page where lab_ids can be added/modified or deleted"""
         data_entry = EditResources(self.set_dirty_method, frame, ResourceType.lab, self.schedule)
         data_entry.schedule = self.schedule
         data_entry.refresh()
 
     # ==================================================================
     # draw_edit_courses
-    # - A page where courses can be added/modified or deleted
     # ==================================================================
     def update_edit_courses(self, frame):
+        """A page where courses can be added/modified or deleted"""
         data_entry = EditCourses(self.set_dirty_method, frame, self.schedule)
         data_entry.schedule = self.schedule
         data_entry.refresh()
@@ -361,13 +387,16 @@ class Scheduler:
 
     # ==================================================================
     # print_views
-    # - print the schedule 'views'
-    # - resource_type defines the output resource_type, PDF, Latex
     # ==================================================================
-    def print_views(self, resource_type, canvas_type):
+    def print_views(self, resource_type, canvas_type: CanvasType):
+        """
+        print the schedule 'views'
+        :param resource_type:
+        :param canvas_type: pdf or latex
+        :return:
+        """
 
         # no schedule yet
-
         if not self.schedule:
             self.gui.show_error("Export", "Cannot export - There is no schedule")
 
@@ -422,7 +451,11 @@ class Scheduler:
             cn.save()
 
 
+    # ==================================================================
+    # validate
+    # ==================================================================
     def validate(self):
+        """check if the schedule is valid, show result to user"""
         msg = self.schedule.validate()
         if len(msg) != 0:
             self.gui.show_message(title="Validate", msg="\n".join(msg))
@@ -431,8 +464,7 @@ class Scheduler:
 
 
     # ==================================================================
-    # update_edit_teachers
-    # - A page where teacher_ids can be added/modified or deleted
+    # schedule has been modified, update gui as required
     # ==================================================================
     def set_dirty_method(self, value: Optional[bool] = None) -> bool:
 

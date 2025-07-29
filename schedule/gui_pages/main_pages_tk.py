@@ -207,7 +207,7 @@ class MainPageBaseTk:
         # frame
         main_page_frame = Frame(mw, borderwidth=1, relief='ridge')
         main_page_frame.pack(side='top', expand=1, fill='both')
-        self._notebook_frame = NoteBookFrameTk(self.mw.winfo_toplevel(), main_page_frame, notebook_pages_info,
+        self._notebook_frame = NoteBookFrameTk(self.mw, main_page_frame, notebook_pages_info,
                                                self.notebook_tab_changed_handler)
 
 
@@ -256,6 +256,8 @@ class MainPageBaseTk:
     def _create_toplevel(self, title):
         """Create the top level window, specify fonts and colors"""
         # create main window and frames
+        """Create the top level window, specify fonts and colors"""
+        # create main window and frames
         mw = Tk()
         mw.title(title)
         mw.geometry(f"{WELCOME_HEIGHT}x{WELCOME_WIDTH}")
@@ -267,7 +269,7 @@ class MainPageBaseTk:
         # https://stackoverflow.com/questions/8691655/how-to-put-a-tkinter-window-on-top-of-the-others/8691795
         mw.lift()
         mw.call('wm', 'attributes', '.', '-topmost', True)
-        mw.after_idle(self.mw.call, 'wm', 'attributes', '.', '-topmost', False)
+        mw.after_idle(mw.call, 'wm', 'attributes', '.', '-topmost', False)
         mw.focus_force()
 
         return mw

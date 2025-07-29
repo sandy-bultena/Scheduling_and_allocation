@@ -1,4 +1,30 @@
-from dataclasses import dataclass
+"""
+# ============================================================================
+# The controller of all the views
+#
+# Events triggered by ViewsControllerTk
+#   call_view(resource)
+#
+# Events triggered by ViewDynamicTk
+#   undo()
+#   redo()
+#
+# Feedback from Views
+#   open_companion_view(block)
+#
+#   notify_block_movable_toggled( block)
+#   notify_move_block_to_resource(resource_type,block,from_resource,resource)
+#   notify_block_move(self.resource.number, block, gui_block_day, gui_block_start_time)
+#
+#   save_action_block_movable_toggled(block, not block.movable)
+#   save_action_block_move(block, from_day, to_day, from_start, to_start)
+#   save_action_block_resource_changed(resource_type, block,from_resource,to_resource)
+#
+#   remove_all_redoes()
+#   view_is_closing(self.resource)
+# ============================================================================
+"""
+
 from typing import Callable, Optional, Literal
 
 from schedule.gui_pages.views_controller_tk import ViewsControllerTk
