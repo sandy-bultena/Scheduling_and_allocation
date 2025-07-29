@@ -1,9 +1,10 @@
 """Dialog box to edit a 'section' object"""
 from __future__ import annotations
 
-from tkinter import *
-from tkinter.messagebox import  showerror
-from tkinter.simpledialog import Dialog
+import tkinter as tk
+import tkinter.messagebox as tk_message_box
+import tkinter.simpledialog as simpledialog
+# from tkinter.simpledialog import Dialog
 from typing import Callable, Literal, TYPE_CHECKING
 
 from schedule.gui_dialogs.utilities import set_style, entry_float, entry_int, validate_float, validate_int, \
@@ -15,8 +16,8 @@ if TYPE_CHECKING:
 
 
 
-class EditCourseDialogTk(Dialog):
-    def __init__(self, frame:Frame,
+class EditCourseDialogTk(simpledialog.Dialog):
+    def __init__(self, frame:tk.Frame,
                  edit_or_add: Literal['edit','add'],
                  existing_course_numbers: list = None,
                  *,
@@ -37,11 +38,11 @@ class EditCourseDialogTk(Dialog):
         self.top_frame = frame
         self.edit_or_add = edit_or_add
         self.existing_course_numbers = [] if existing_course_numbers is None else existing_course_numbers
-        self.course_number_tk = StringVar(value = course_number)
-        self.course_name_tk = StringVar(value = course_name)
-        self.course_hours_tk = StringVar(value=str(course_hours))
-        self.course_allocation_tk = BooleanVar(value=course_allocation)
-        self.num_sections_tk = StringVar(value = str(num_sections))
+        self.course_number_tk = tk.StringVar(value = course_number)
+        self.course_name_tk = tk.StringVar(value = course_name)
+        self.course_hours_tk = tk.StringVar(value=str(course_hours))
+        self.course_allocation_tk = tk.BooleanVar(value=course_allocation)
+        self.num_sections_tk = tk.StringVar(value = str(num_sections))
         self._assigned_teachers = assigned_teachers if assigned_teachers is not None else []
         self._non_assigned_teachers = non_assigned_teachers
         self._assigned_labs = assigned_labs  if assigned_labs is not None else []
@@ -61,52 +62,52 @@ class EditCourseDialogTk(Dialog):
     # ================================================================================================================
     # The content of the main body of the dialog box
     # ================================================================================================================
-    def body(self, frame:Frame):
+    def body(self, frame:tk.Frame):
 
         # ------------------------------------------------------------------------------------------------------------
         # Course
         # ------------------------------------------------------------------------------------------------------------
-        course_info_frame = Frame(frame)
-        Label(course_info_frame, text="Course number", anchor='e', width=15).grid(row=0, column=0, sticky='nsew')
-        en_course_number = Entry(course_info_frame, textvariable=self.course_number_tk,)
+        course_info_frame = tk.Frame(frame)
+        tk.Label(course_info_frame, text="Course number", anchor='e', width=15).grid(row=0, column=0, sticky='nsew')
+        en_course_number = tk.Entry(course_info_frame, textvariable=self.course_number_tk,)
         en_course_number.grid(row=0, column=1, sticky='nsew')
         if self.edit_or_add == 'edit':
             en_course_number.config(state='readonly')
 
-        Label(course_info_frame, text="Course name", anchor='e', width=15).grid(row=1, column=0, sticky='nsew')
-        en_course_name = Entry(course_info_frame, textvariable=self.course_name_tk,)
+        tk.Label(course_info_frame, text="Course name", anchor='e', width=15).grid(row=1, column=0, sticky='nsew')
+        en_course_name = tk.Entry(course_info_frame, textvariable=self.course_name_tk,)
         en_course_name.grid(row=1, column=1, sticky='nsew')
 
-        Label(course_info_frame, text="Hours per week", anchor='e', width=15).grid(row=2, column=0, sticky='nsew')
+        tk.Label(course_info_frame, text="Hours per week", anchor='e', width=15).grid(row=2, column=0, sticky='nsew')
         en_course_name = entry_float(course_info_frame, textvariable=self.course_hours_tk)
         en_course_name.grid(row=2, column=1, sticky='nsew')
 
-        Label(course_info_frame, text="Needs Allocation", anchor='e', width=15).grid(row=3, column=0, sticky='nsew')
-        en_course_name = Checkbutton(course_info_frame, text="", offvalue=False, onvalue=True, variable=self.course_allocation_tk, width=20)
+        tk.Label(course_info_frame, text="Needs Allocation", anchor='e', width=15).grid(row=3, column=0, sticky='nsew')
+        en_course_name = tk.Checkbutton(course_info_frame, text="", offvalue=False, onvalue=True, variable=self.course_allocation_tk, width=20)
         en_course_name.grid(row=3, column=1, sticky='nsew')
 
         # ------------------------------------------------------------------------------------------------------------
         # Sections/Blocks
         # ------------------------------------------------------------------------------------------------------------
-        Label(course_info_frame, text="Number of Sections", anchor='e', width=20).grid(row=4, column=0, sticky='nsew')
+        tk.Label(course_info_frame, text="Number of Sections", anchor='e', width=20).grid(row=4, column=0, sticky='nsew')
         description = entry_int(course_info_frame, textvariable=self.num_sections_tk)
         description.grid(row=4, column=1, sticky='nsew')
 
-        self.block_frames = Frame(frame)
+        self.block_frames = tk.Frame(frame)
         for index, block_info in enumerate(self.current_blocks):
-            opt_day = StringVar(value=block_info[0])
-            opt_hour = StringVar(value=get_clock_string_from_hours(block_info[1]))
-            opt_duration = StringVar(value=str(block_info[2]))
+            opt_day = tk.StringVar(value=block_info[0])
+            opt_hour = tk.StringVar(value=get_clock_string_from_hours(block_info[1]))
+            opt_duration = tk.StringVar(value=str(block_info[2]))
             self.row_data.append((opt_day, opt_hour, opt_duration))
 
         # ------------------------------------------------------------------------------------------------------------
         # Teacher/Lab/Stream Add/Remove
         # ------------------------------------------------------------------------------------------------------------
-        teacher_assignments_frame = Frame(frame)
+        teacher_assignments_frame = tk.Frame(frame)
         AddRemoveTk(teacher_assignments_frame, self._non_assigned_teachers, self._assigned_teachers,
                     "Assign Teacher to all Classes", "Remove Teacher from all Classes",height=10)
 
-        lab_assignments_frame = Frame(frame)
+        lab_assignments_frame = tk.Frame(frame)
         AddRemoveTk(lab_assignments_frame, self._non_assigned_labs, self._assigned_labs,
                      "Assign Lab to all Classes","Remove Lab from all Classes", height=10)
 
@@ -123,12 +124,12 @@ class EditCourseDialogTk(Dialog):
         return description
 
     def add_new_block(self):
-        self.row_data.append((StringVar(value="Monday"),StringVar(value="8:00"), StringVar(value="1.5")))
+        self.row_data.append((tk.StringVar(value="Monday"), tk.StringVar(value="8:00"), tk.StringVar(value="1.5")))
         self.refresh()
 
     def refresh(self):
         refresh_gui_blocks(self)
-        Button(self.block_frames, text="Add New Class Time", command=self.add_new_block).pack(expand=1, fill='y')
+        tk.Button(self.block_frames, text="Add New Class Time", command=self.add_new_block).pack(expand=1, fill='y')
 
     # ================================================================================================================
     # validate before applying
@@ -137,7 +138,7 @@ class EditCourseDialogTk(Dialog):
     def validate(self):
         if self.edit_or_add == 'add':
             if self.course_number_tk.get() in self.existing_course_numbers:
-                showerror("Course Number",f"Course number '{self.course_number_tk.get()}' already exists")
+                tk_message_box.showerror("Course Number",f"Course number '{self.course_number_tk.get()}' already exists")
                 return False
         if not validate_float(self.course_hours_tk.get(),"Course hours", "The number of hours per week must be a valid float!"):
             return False

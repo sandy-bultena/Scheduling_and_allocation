@@ -19,7 +19,7 @@ from typing import Callable, Optional, Literal, get_args
 from ..Utilities.Preferences import Preferences
 
 from .main_pages_tk import MainPageBaseTk
-from tkinter import *
+import tkinter as tk
 from tkinter import ttk
 
 BUTTON_WIDTH = 50
@@ -52,12 +52,6 @@ class SchedulerTk(MainPageBaseTk):
     """
     GUI_Pages Code for the main Scheduling application window. Inherits from MainPageBaseTk.
     """
-    # ========================================================================
-    # class variables
-    # ========================================================================
-    _overview_notebook: Optional[ttk.Notebook] = None
-    _overview_teacher_textbox: Optional[Text] = None
-    _overview_course_textbox: Optional[Text] = None
 
     # ========================================================================
     # constructor
@@ -70,13 +64,13 @@ class SchedulerTk(MainPageBaseTk):
         :param bin_dir: the directory that the logo for this app is located
         """
         self.preferences: Preferences = preferences
-        self.previous_file_button: Optional[Button] = None
+        self.previous_file_button: Optional[tk.Button] = None
         self._schedule_filename = ""
 
         super().__init__(title, preferences)
         MainPageBaseTk.bin_dir = bin_dir
-        self._current_semester: StringVar = StringVar()  # bound to semester_frame radio buttons
-        self._previous_file: StringVar = StringVar(value="None")  # bound to previous_file_button
+        self._current_semester: tk.StringVar = tk.StringVar()  # bound to semester_frame radio buttons
+        self._previous_file: tk.StringVar = tk.StringVar(value="None")  # bound to previous_file_button
 
     @property
     def current_semester(self):
@@ -134,13 +128,13 @@ class SchedulerTk(MainPageBaseTk):
         # which semester?
         # --------------------------------------------------------------
         self._current_semester.set(str(semester))
-        semester_frame = Frame(option_frame, background=self.colours.DataBackground)
+        semester_frame = tk.Frame(option_frame, background=self.colours.DataBackground)
         semester_frame.pack(side="top", fill="y", expand=1)
-        radio_fall = Radiobutton(semester_frame, text='Fall',
+        radio_fall = tk.Radiobutton(semester_frame, text='Fall',
                                  background=self.colours.DataBackground, variable=self._current_semester,
                                  font=self.fonts.big,
                                  value='fall')
-        radio_winter = Radiobutton(semester_frame, text='Winter',
+        radio_winter = tk.Radiobutton(semester_frame, text='Winter',
                                    background=self.colours.DataBackground, variable=self._current_semester,
                                    font=self.fonts.big,
                                    value='winter')
@@ -157,14 +151,14 @@ class SchedulerTk(MainPageBaseTk):
                     self.previous_file_button.configure(state='normal')
                 else:
                     self.previous_file_button.configure(state='disabled')
-            except TclError:
+            except tk.TclError:
                 pass
         self._previous_file.trace('w', _previous_file_change_event)
 
         # --------------------------------------------------------------
         # open previous schedule file buttons
         # -------------------------------------------------------------
-        self.previous_file_button = Button(
+        self.previous_file_button = tk.Button(
             option_frame,
             justify="right",
             font=self.fonts.big,
@@ -181,7 +175,7 @@ class SchedulerTk(MainPageBaseTk):
         # --------------------------------------------------------------
         # create new schedule file option
         # --------------------------------------------------------------
-        Button(
+        tk.Button(
             option_frame,
             text="Create NEW Schedule File",
             font=self.fonts.big,
@@ -196,7 +190,7 @@ class SchedulerTk(MainPageBaseTk):
         # --------------------------------------------------------------
         # open schedule file option
         # --------------------------------------------------------------
-        Button(
+        tk.Button(
             option_frame,
             text="Browse for Schedule File",
             font=self.fonts.big,
@@ -209,7 +203,7 @@ class SchedulerTk(MainPageBaseTk):
         ).pack(side="top", fill="y", expand=0, padx=5, pady=5)
 
         # a growable and shrinkable frame which makes resizing look better
-        Frame(
+        tk.Frame(
             option_frame, background=self.colours.DataBackground
         ).pack(expand=1, fill="both")
 
@@ -218,72 +212,3 @@ class SchedulerTk(MainPageBaseTk):
         # --------------------------------------------------------------
         MAIN_PAGE_EVENT_HANDLERS["semester_change"]()
 
-    # ========================================================================
-    # semester has changed, so update semester and update current file
-    # ========================================================================
-
-    # def set_views_manager(self, my_views_manager):
-    #     """Defines the code that manages the view"""
-    #     self.views_manager = my_views_manager
-    #
-    # def update_for_new_schedule_and_show_page(self, default_page_id):
-    #     global views_manager
-    #     # TODO: Determine if this is ViewsManager, or ViewsManagerTk.
-    #     views_manager.destroy_all()
-    #     super().update_for_new_schedule_and_show_page(default_page_id)
-    #
-    # # endregion
-    #
-    # def draw_view_choices(self, default_tab: str, all_resources: AllResources,
-    #                       btn_callback: Callable = lambda: None):
-    #     """The ViewsManager can create schedule views for all teacher_ids/lab_ids etc.
-    #
-    #     The allowable views depend on the schedules, so this function needs to be called whenever
-    #     the schedule changes.
-    #
-    #     Draws the buttons to access any of the available views.
-    #
-    #     Parameters:
-    #         default_tab: Name of _notebook tab to draw on.
-    #         all_resources: A list of resource_type objects (teacher_ids/lab_ids/etc.)
-    #         btn_callback: A callback function called whenever the ViewsManager is asked to create a
-    #         view."""
-    #     f = self.pages[default_tab.lower()]
-    #
-    #     views_manager.gui.reset_button_refs()
-    #
-    #     # global frame
-    #     if SchedulerTk.frame:
-    #         SchedulerTk.frame.destroy()
-    #
-    #     SchedulerTk.frame = Frame(f)
-    #     SchedulerTk.frame.pack(expand=1, fill=BOTH)
-    #
-    #     # TODO: View choice frames have positioning issues due to Scrolled's use of pack. Buttons are not centered.
-    #     for resource_type in all_resources.valid_types():
-    #         view_choices_frame = LabelFrame(
-    #             SchedulerTk.frame,
-    #             text=all_resources.by_type(resource_type).title)
-    #         view_choices_frame.pack(expand=1, fill=BOTH)
-    #
-    #         view_choices_scrolled_frame = Scrolled(view_choices_frame, 'Frame', scrollbars="osoe")
-    #         # view_choices_scrolled_frame = ScrolledFrame(view_choices_frame)
-    #         view_choices_scrolled_frame.pack(expand=1, fill=BOTH)
-    #
-    #         # NOTE: Program was crashing inside this function call because
-    #         # view_choices_scrolled_frame already has children managed by pack, while the
-    #         # function is trying to add buttons managed by grid to view_choices_scrolled_frame.
-    #         # Tcl doesn't like it when children of the same notebook use different geometry managers.
-    #         views_manager.gui.create_buttons_for_frame(
-    #             view_choices_scrolled_frame,
-    #             all_resources.by_type(resource_type),
-    #             btn_callback
-    #         )
-    #
-    # tbox3: Scrolled = None
-    # tbox = None
-    # tbox2: Scrolled = None
-    #
-    # _overview_notebook = None
-    # overview_pages: dict[str, Frame] = {}
-    #

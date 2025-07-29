@@ -2,9 +2,8 @@
 from __future__ import annotations
 import re
 
-from tkinter import *
+import tkinter as tk
 import tkinter.font as tkFont
-from tkinter import ttk
 from tkinter.simpledialog import Dialog
 from typing import Callable
 
@@ -23,7 +22,7 @@ def time_to_hours(string_time:str) -> float:
 
 
 class AddSectionDialogTk(Dialog):
-    def __init__(self, frame:Frame,
+    def __init__(self, frame:tk.Frame,
                  *,
                  course_description: str,
                  course_hours: float,
@@ -37,8 +36,8 @@ class AddSectionDialogTk(Dialog):
         self.top_frame = frame
         self._apply_changes = apply_changes
 
-        self.description = StringVar(value = "")
-        self.number_of_sections = StringVar(value="1")
+        self.description = tk.StringVar(value = "")
+        self.number_of_sections = tk.StringVar(value="1")
 
         set_style(frame)
         dialog_title = "Add Section(s)"
@@ -57,30 +56,30 @@ class AddSectionDialogTk(Dialog):
     # ================================================================================================================
     # The content of the main body of the dialog box
     # ================================================================================================================
-    def body(self, frame:Frame):
+    def body(self, frame:tk.Frame):
         tk_validate_is_number = self.top_frame.register(self._is_int)
 
         # ------------------------------------------------------------------------------------------------------------
         # Info
         # ------------------------------------------------------------------------------------------------------------
-        course_info_frame = Frame(frame)
-        section_info_frame = Frame(frame)
-        lbl = Label(course_info_frame,text=self.course_description, anchor='center',width=20)
+        course_info_frame = tk.Frame(frame)
+        section_info_frame = tk.Frame(frame)
+        lbl = tk.Label(course_info_frame,text=self.course_description, anchor='center',width=20)
         lbl.pack(expand=1,fill='both',padx=15,pady=5)
         default_font = tkFont.nametofont(lbl.cget("font"))
         family = default_font["family"]
         size = default_font["size"] + 2
         lbl.config(font=(family, size))
 
-        Label(section_info_frame, text="How many sections?", anchor='e', width=20).pack(side='left', padx=10, pady=5)
-        en_number = Entry(section_info_frame, textvariable=self.number_of_sections, validate='key',
+        tk.Label(section_info_frame, text="How many sections?", anchor='e', width=20).pack(side='left', padx=10, pady=5)
+        en_number = tk.Entry(section_info_frame, textvariable=self.number_of_sections, validate='key',
                             validatecommand=(tk_validate_is_number, '%P', '%s'))
         en_number.pack(side='left', padx=10, pady=5)
 
         # ------------------------------------------------------------------------------------------------------------
         # Blocks
         # ------------------------------------------------------------------------------------------------------------
-        self.block_frames = Frame(frame)
+        self.block_frames = tk.Frame(frame)
 
         # ------------------------------------------------------------------------------------------------------------
         # layout
@@ -97,12 +96,12 @@ class AddSectionDialogTk(Dialog):
     # refresh blocks
     # ================================================================================================================
     def add_new_block(self):
-        self.row_data.append((StringVar(value="Monday"),StringVar(value="8:00"), StringVar(value="1.5")))
+        self.row_data.append((tk.StringVar(value="Monday"),tk.StringVar(value="8:00"), tk.StringVar(value="1.5")))
         self.refresh()
 
     def refresh(self):
         refresh_gui_blocks(self)
-        Button(self.block_frames, text="Add New Class", command=self.add_new_block).pack(expand=1, fill='y')
+        tk.Button(self.block_frames, text="Add New Class", command=self.add_new_block).pack(expand=1, fill='y')
 
 
     # ================================================================================================================

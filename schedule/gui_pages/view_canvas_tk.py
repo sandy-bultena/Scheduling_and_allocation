@@ -9,7 +9,7 @@
 # ============================================================================
 """
 
-import tkinter
+import tkinter as tk
 from typing import Protocol, Optional
 
 import schedule.Utilities.Colour as Colour
@@ -65,7 +65,7 @@ class ViewCanvasTk:
     # =================================================================
     # __init__
     # =================================================================
-    def __init__(self, canvas: tkinter.Canvas | GenericCanvas, scale_factor: float = 1, fill_colour="black"):
+    def __init__(self, canvas: tk.Canvas | GenericCanvas, scale_factor: float = 1, fill_colour="black"):
         """Draws the Schedule timetable on the specified canvas.
             :param canvas: what to draw on
             :param scale_factor: scaling factors

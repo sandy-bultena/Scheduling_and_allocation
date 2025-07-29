@@ -20,7 +20,7 @@ from asyncio import sleep
 from typing import *
 from ..Tk.TableEntry import TableEntry
 from dataclasses import dataclass
-from tkinter import *
+import tkinter as tk
 from ..Tk.InitGuiFontsAndColours import TkColours
 
 
@@ -41,7 +41,7 @@ class DEColumnDescription:
 class EditResourcesTk:
     Currently_saving = 0
     def __init__(self,
-                 parent: Frame,
+                 parent: tk.Frame,
                  event_delete_handler: Callable[[list[str], ...], None] = lambda x, *_: None,
                  event_save_handler: Callable[[list[list[str]]], None] = lambda *_: None,
                  colours: Optional[TkColours] = None,

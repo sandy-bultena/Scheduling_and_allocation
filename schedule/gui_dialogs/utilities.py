@@ -1,6 +1,7 @@
 from functools import partial
-from tkinter import Frame, Entry, StringVar, ttk, Button
-from tkinter.messagebox import showerror, askyesno
+import tkinter as tk
+from tkinter import ttk
+import tkinter.messagebox as message_box
 
 from schedule.model import WeekDay
 import pprint
@@ -30,7 +31,7 @@ def get_hours_from_str(hours:str)->float:
 # Number validation
 # ================================================================================================================
 
-def register_number_funcs(frame:Frame):
+def register_number_funcs(frame:tk.Frame):
     """this allows us to pass extra stuff from Entry validation
     :param frame: any Tk object
     """
@@ -38,7 +39,7 @@ def register_number_funcs(frame:Frame):
     tk_is_float = frame.winfo_toplevel().register(partial(_is_float, frame))
     return tk_is_int, tk_is_float
 
-def entry_float(frame: Frame, textvariable: StringVar ) -> Entry:
+def entry_float(frame: tk.Frame, textvariable: tk.StringVar ) -> tk.Entry:
     """
     An entry widget that only accepts floats (note... '' and '.' would be valid, so you still need to check later)
     :param frame:
@@ -46,12 +47,12 @@ def entry_float(frame: Frame, textvariable: StringVar ) -> Entry:
     :return: the entry widget with validation
     """
     _,tk_is_float = register_number_funcs(frame)
-    return Entry(frame,
+    return tk.Entry(frame,
                            textvariable=textvariable,
                            validate='key',
                            validatecommand=(tk_is_float, '%P', '%s'))
 
-def entry_int(frame: Frame, textvariable: StringVar ) -> Entry:
+def entry_int(frame: tk.Frame, textvariable: tk.StringVar ) -> tk.Entry:
     """
     An entry widget that only accepts ints (note... '' and would be valid, so you still need to check later)
     :param frame:
@@ -59,12 +60,12 @@ def entry_int(frame: Frame, textvariable: StringVar ) -> Entry:
     :return: the entry widget with validation
     """
     tk_is_int,_ = register_number_funcs(frame)
-    return Entry(frame,
+    return tk.Entry(frame,
                            textvariable=textvariable,
                            validate='key',
                            validatecommand=(tk_is_int, '%P', '%s'))
 
-def _is_int(frame: Frame, number: str, *_) -> bool:
+def _is_int(frame: tk.Frame, number: str, *_) -> bool:
     """
     Validation for the string that is currently in an Entry widget
     :param number: the number that would result if this validation returns True
@@ -80,7 +81,7 @@ def _is_int(frame: Frame, number: str, *_) -> bool:
         return False
 
 
-def _is_float(frame: Frame, number: str, _: str) -> bool:
+def _is_float(frame: tk.Frame, number: str, _: str) -> bool:
     """
     Validation for the string that is currently in an Entry widget
     :param number: the number that would result if this validation returns True
@@ -109,7 +110,7 @@ def validate_float(number:str, title, msg)-> bool:
     try:
         float(number)
     except ValueError:
-        showerror(title, msg)
+        message_box.showerror(title, msg)
         return False
     return True
 
@@ -124,7 +125,7 @@ def validate_int(number:str, title, msg)-> bool:
     try:
         int(number)
     except ValueError:
-        showerror(title, msg)
+        message_box.showerror(title, msg)
         return False
     return True
 
@@ -146,7 +147,7 @@ def validate_class_times_equals_course_time(block_row_data, course_hours: float)
         return True
 
     else:
-        return askyesno("Class Times", f"Total allocated class times ({total})\n"
+        return message_box.askyesno("Class Times", f"Total allocated class times ({total})\n"
                                        f"does not equal course time ({course_hours})"
                                        f"\n\nDo you wish to continue?")
 
@@ -171,7 +172,7 @@ def set_style(frame):
 # ================================================================================================================
 # blocks
 # ================================================================================================================
-def get_block_info_from_row_data(block_row_data: list[StringVar]) -> list[tuple[float,float,float]]:
+def get_block_info_from_row_data(block_row_data: list[tk.StringVar]) -> list[tuple[float,float,float]]:
     """
     Convert string (day, start_time, duration) to int(day), float(start_time), float(duration)
     :param block_row_data:
@@ -216,13 +217,13 @@ def refresh_gui_blocks(self,):
             instance.row_data.pop(i)
             instance.refresh_blocks()
 
-        row_frame = Frame(self.block_frames)
+        row_frame = tk.Frame(self.block_frames)
         row_frames.append(row_frame)
         row_frame.pack(expand=1, fill='both', padx=10, pady=2)
 
         opt_day, opt_hour, opt_duration = block_info
 
-        btn_delete = Button(row_frame, text="remove", command=remove_block)
+        btn_delete = tk.Button(row_frame, text="remove", command=remove_block)
         om_day = ttk.Combobox(row_frame, textvariable=opt_day, state="readonly", values=days,
                               style="MyCustom.TCombobox")
         om_time = ttk.Combobox(row_frame, textvariable=opt_hour, state="readonly", values=start_times,

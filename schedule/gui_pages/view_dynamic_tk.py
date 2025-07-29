@@ -8,18 +8,18 @@
 # EVENT HANDLERS:
 #         get_popup_menu_handler(gui_block_id)
 #         refresh_blocks_handler()
-#         on_closing_handler())
+#         on_closing_handler()
 #         double_click_block_handler(gui_id)
 #         gui_block_is_moving_handler(gui_id, day, start)
 #         gui_block_has_dropped_handler(gui_id)
 #         undo_handler()
-#         redo_handler())
+#         redo_handler()
 # ============================================================================
 """
 from __future__ import annotations
 
 from functools import partial
-from tkinter import *
+import tkinter as tk
 from typing import Callable
 
 from schedule.Tk import generate_menu, MenuItem, MenuType
@@ -46,9 +46,9 @@ class ViewDynamicTk:
     # =================================================================================================================
     # Init
     # =================================================================================================================
-    def __init__(self, frame: Frame, title: str, resource_type: ResourceType,):
+    def __init__(self, frame: tk.Frame, title: str, resource_type: ResourceType,):
         """
-        creates a dynamic view to see all of the blocks, where they are, movable, changeable, etc
+        creates a dynamic view to see all of the blocks, where they are, movable, changeable, etc.
         :param frame: where to put the view
         :param title: title of the toplevel window (displayed in the top bar)
         :param resource_type: What type of view is this
@@ -85,7 +85,7 @@ class ViewDynamicTk:
         # ------------------------------------------------------------------------------------------------------------
         # create a new toplevel window for this view
         # ------------------------------------------------------------------------------------------------------------
-        tl = Toplevel(self.mw)
+        tl = tk.Toplevel(self.mw)
         self.toplevel = tl
         tl.protocol('WM_DELETE_WINDOW', self.destroy)
         tl.resizable(False, False)
@@ -94,17 +94,17 @@ class ViewDynamicTk:
         # ------------------------------------------------------------------------------------------------------------
         # Create bar at top to show Colour coding of conflicts
         # ------------------------------------------------------------------------------------------------------------
-        f = Frame(tl)
+        f = tk.Frame(tl)
         f.pack(expand=1, fill="x")
 
         for c in get_conflict_colour_info(resource_type):
-            Label(f, text=c['text'], width=10, background=c['bg'], foreground=c['fg']) \
+            tk.Label(f, text=c['text'], width=10, background=c['bg'], foreground=c['fg']) \
                 .pack(side='left', expand=1, fill="x")
 
         # ------------------------------------------------------------------------------------------------------------
         # add canvas
         # ------------------------------------------------------------------------------------------------------------
-        cn = Canvas(tl, height=DEFAULT_CANVAS_HEIGHT, width=DEFAULT_CANVAS_WIDTH, background="white")
+        cn = tk.Canvas(tl, height=DEFAULT_CANVAS_HEIGHT, width=DEFAULT_CANVAS_WIDTH, background="white")
         cn.pack()
         self.cn = cn
 
@@ -114,16 +114,16 @@ class ViewDynamicTk:
         # ------------------------------------------------------------------------------------------------------------
         # create scale menu and redo/undo menu
         # ------------------------------------------------------------------------------------------------------------
-        main_menu = Menu(self.mw)
+        main_menu = tk.Menu(self.mw)
         tl.configure(menu=main_menu)
 
-        view_menu = Menu(main_menu, tearoff=0)
+        view_menu = tk.Menu(main_menu, tearoff=0)
         main_menu.add_cascade(menu=view_menu, label="View", underline=0)
         view_menu.add_command(label="50%", underline=0, command=partial(self.draw, 0.50))
         view_menu.add_command(label="75%", underline=0, command=partial(self.draw, 0.75))
         view_menu.add_command(label="100%", underline=0, command=partial(self.draw, 1.00))
 
-        undo_menu = Menu(main_menu, tearoff=0)
+        undo_menu = tk.Menu(main_menu, tearoff=0)
         main_menu.add_cascade(menu=undo_menu, label="Undo/Redo")
         undo_menu.add_command(label="Undo", accelerator="ctrl-z", command=self._undo)
         undo_menu.add_cascade(label="Redo", accelerator="ctrl-y", command=self._redo)
@@ -176,7 +176,7 @@ class ViewDynamicTk:
 
     def draw(self, scale_factor: float = 1.0):
         """
-        Draw the view, calls event handler refresh_blocks_handler to get info about the blocks"
+        Draw the view, calls event handler refresh_blocks_handler to get info about the blocks
         :param scale_factor:
         :return:
         """
@@ -248,7 +248,7 @@ class ViewDynamicTk:
         try:
             cn.itemconfigure(f"{self.view_canvas.Rectange_Tag_Name} && {gui_block_id}", fill=colour)
             cn.itemconfigure(f"{self.view_canvas.Text_Tag_Name} && {gui_block_id}", fill=text_colour)
-        except TclError:
+        except tk.TclError:
             pass
 
     # =================================================================================================================
@@ -273,7 +273,7 @@ class ViewDynamicTk:
     # =================================================================================================================
     # menus, popups and double-clicks
     # =================================================================================================================
-    def _post_menu(self, e: Event):
+    def _post_menu(self, e: tk.Event):
         """
         Display pop up menu for specific gui block
         :param e: the Tk event that triggered this handler
@@ -286,14 +286,14 @@ class ViewDynamicTk:
             return
 
         # create the menu and display
-        menu = Menu(self.toplevel, tearoff=0)
+        menu = tk.Menu(self.toplevel, tearoff=0)
         generate_menu(self.toplevel, menu_details, menu)
         try:
             menu.tk_popup(e.x_root, e.y_root)
         finally:
             menu.grab_release()
 
-    def _double_clicked(self, _: Event):
+    def _double_clicked(self, _: tk.Event):
         """
         call event handler because gui block was double-clicked
         """
@@ -304,11 +304,11 @@ class ViewDynamicTk:
     # =================================================================================================================
     # undo/ redo
     # =================================================================================================================
-    def _undo(self, _: Event = None):
+    def _undo(self, _: tk.Event = None):
         """calls the "undo" handler"""
         self.undo_handler()
 
-    def _redo(self, _: Event = None):
+    def _redo(self, _: tk.Event = None):
         """calls the "redo" handler"""
         self.redo_handler()
 
@@ -336,7 +336,7 @@ class ViewDynamicTk:
     # ============================================================================
     # Dragging Guiblocks around
     # ============================================================================
-    def _select_gui_block_to_move(self, event: Event):
+    def _select_gui_block_to_move(self, event: tk.Event):
 
         gui_block_id = self.view_canvas.get_gui_block_id_from_selected_item()
         self.cn.tag_raise(gui_block_id, 'all')
@@ -352,7 +352,7 @@ class ViewDynamicTk:
         # bind for release of mouse up
         self.cn.bind("<ButtonRelease-1>", partial(self._gui_block_has_stopped_moving, gui_block_id))
 
-    def _gui_block_is_moving(self, gui_block_id, original_x, original_y, event: Event):
+    def _gui_block_is_moving(self, gui_block_id, original_x, original_y, event: tk.Event):
 
         # unbind moving while we process
         self.cn.bind("<Motion>", "")
@@ -369,7 +369,7 @@ class ViewDynamicTk:
         # rebind for motion
         self.cn.bind("<Motion>", partial(self._gui_block_is_moving, gui_block_id, event.x, event.y))
 
-    def _gui_block_has_stopped_moving(self, gui_block_id, _: Event):
+    def _gui_block_has_stopped_moving(self, gui_block_id, _: tk.Event):
         self.cn.tag_bind(self.view_canvas.Movable_Tag_Name, "<Button-1>", self._select_gui_block_to_move)
         self.cn.bind("<Motion>", "")
         self.cn.bind("<ButtonRelease-1>", "")

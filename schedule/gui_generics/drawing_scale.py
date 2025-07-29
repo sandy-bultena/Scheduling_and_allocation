@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 
 DEFAULT_X_OFFSET: float = 1
 DEFAULT_Y_OFFSET: float = 1

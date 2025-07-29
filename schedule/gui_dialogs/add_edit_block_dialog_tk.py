@@ -1,8 +1,7 @@
 """Dialog box to edit a 'block' object"""
 from __future__ import annotations
 
-import tkinter
-from tkinter import *
+import tkinter as tk
 
 from tkinter.simpledialog import Dialog
 from typing import Callable, Literal
@@ -12,7 +11,7 @@ from schedule.gui_generics.add_remove_tk import AddRemoveTk
 
 
 class AddEditBlockDialogTk(Dialog):
-    def __init__(self, frame:Frame,
+    def __init__(self, frame:tk.Frame,
                  add_edit_type: Literal['add', 'edit'],
                  duration: float,
                  assigned_teachers: list,
@@ -30,8 +29,8 @@ class AddEditBlockDialogTk(Dialog):
         self._non_assigned_labs = non_assigned_labs
         self._apply_changes = apply_changes
 
-        self.tk_duration = tkinter.StringVar(value=str(duration))
-        self.tk_new_blocks = tkinter.StringVar(value="1")
+        self.tk_duration = tk.StringVar(value=str(duration))
+        self.tk_new_blocks = tk.StringVar(value="1")
         if add_edit_type == 'edit':
             self.tk_new_blocks.set("0")
 
@@ -41,22 +40,22 @@ class AddEditBlockDialogTk(Dialog):
     # ================================================================================================================
     # The content of the main body of the dialog box
     # ================================================================================================================
-    def body(self, frame:Frame):
+    def body(self, frame:tk.Frame):
 
         # ------------------------------------------------------------------------------------------------------------
         # for adding blocks only
         # ------------------------------------------------------------------------------------------------------------
-        number_of_blocks_frame = Frame(frame)
+        number_of_blocks_frame = tk.Frame(frame)
         if self.add_edit_type == 'add':
-            Label(number_of_blocks_frame, text="Number of Classes:", anchor='e', width=20).pack(side='left', padx=10, pady=5)
+            tk.Label(number_of_blocks_frame, text="Number of Classes:", anchor='e', width=20).pack(side='left', padx=10, pady=5)
             duration_entry = entry_float(number_of_blocks_frame,textvariable=self.tk_new_blocks)
             duration_entry.pack(side='left', padx=10, pady=5)
 
         # ------------------------------------------------------------------------------------------------------------
         # duration
         # ------------------------------------------------------------------------------------------------------------
-        entry_frame = Frame(frame)
-        Label(entry_frame, text="Duration:", anchor='e', width=20).pack(side='left',padx=10,pady=5)
+        entry_frame = tk.Frame(frame)
+        tk.Label(entry_frame, text="Duration:", anchor='e', width=20).pack(side='left',padx=10,pady=5)
         duration_entry = entry_int(entry_frame, textvariable=self.tk_duration)
         duration_entry.pack(side='left',padx=10, pady=5)
 
@@ -64,11 +63,11 @@ class AddEditBlockDialogTk(Dialog):
         # ------------------------------------------------------------------------------------------------------------
         # Teacher/Lab Add/Remove
         # ------------------------------------------------------------------------------------------------------------
-        teacher_assignments_frame = Frame(frame)
+        teacher_assignments_frame = tk.Frame(frame)
         AddRemoveTk(teacher_assignments_frame, self._non_assigned_teachers, self._assigned_teachers,
                      "Assign Teacher to Class", "Remove Teacher from Class")
 
-        lab_assignments_frame = Frame(frame)
+        lab_assignments_frame = tk.Frame(frame)
         AddRemoveTk(lab_assignments_frame, self._non_assigned_labs, self._assigned_labs,
                      "Assign Lab to Class","Remove Lab from Class")
 

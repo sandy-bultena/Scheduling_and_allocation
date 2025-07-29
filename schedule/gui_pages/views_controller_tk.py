@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import platform
 from functools import partial
-from tkinter import *
+import tkinter as tk
 from typing import Callable
 
 from schedule.Tk import Scrolled
@@ -35,7 +35,7 @@ class ViewsControllerTk:
     # ============================================================================
     # constructor
     # ============================================================================
-    def __init__(self, parent: Frame, resources:dict[ResourceType,list], btn_callback: Callable):
+    def __init__(self, parent: tk.Frame, resources:dict[ResourceType,list], btn_callback: Callable):
         """
         Initialize this manager
         :param parent: where to put the gui objects
@@ -52,20 +52,20 @@ class ViewsControllerTk:
             self.Fonts = fac.TkFonts(parent.winfo_toplevel())
         scrolled_frame = Scrolled(parent, "Frame").widget
 
-        self._button_refs: dict[str, Button] = {}
+        self._button_refs: dict[str, tk.Button] = {}
 
-        Label(scrolled_frame,text="Edit Class Times for ...", font=self.Fonts.big, anchor='center').pack(expand=1,fill='both', pady=20)
+        tk.Label(scrolled_frame,text="Edit Class Times for ...", font=self.Fonts.big, anchor='center').pack(expand=1,fill='both', pady=20)
 
         # for each resource, create a bunch of buttons that can launch views
         for resource_type in (ResourceType.teacher, ResourceType.lab, ResourceType.stream):
-            l_frame = LabelFrame(scrolled_frame, text=resource_type.name)
+            l_frame = tk.LabelFrame(scrolled_frame, text=resource_type.name)
             l_frame.pack(expand=1,fill='both', padx=5,pady=15)
 
             for index,resource in enumerate(resources[resource_type]):
                 row = int(index/4)
                 col = index-row*4
                 command = partial(btn_callback, resource)
-                self._button_refs[resource.number] = Button(l_frame, text=str(resource), highlightthickness=4, command=command, width=15)
+                self._button_refs[resource.number] = tk.Button(l_frame, text=str(resource), highlightthickness=4, command=command, width=15)
                 self._button_refs[resource.number].grid(column = col, row=row, sticky='nsew',ipadx=20, ipady=10, padx=2, pady=2)
 
         # adjust the width of the window so that we don't need left/right scroll

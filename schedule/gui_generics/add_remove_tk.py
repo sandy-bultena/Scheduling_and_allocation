@@ -4,14 +4,13 @@ AddRemoveTk
 Creates two list boxes where you can transfer items from one list to another, just by clicking on an item
 
 """
-from tkinter import *
-from typing import Callable, Any
+import tkinter as tk
 
 from schedule.Tk import Scrolled
 from functools import partial
 
 class AddRemoveTk:
-    def __init__(self, frame: Frame,
+    def __init__(self, frame: tk.Frame,
                  add_list: list,
                  remove_list: list,
                  add_text="Add to",
@@ -32,20 +31,20 @@ class AddRemoveTk:
         self.adds = add_list
         self.removes = remove_list
 
-        f = Frame(self.frame)
+        f = tk.Frame(self.frame)
         f.grid(column=0, stick='nsew', row=0)
-        Label(f, text=self.add_text).pack()
-        sf = Frame(f)
+        tk.Label(f, text=self.add_text).pack()
+        sf = tk.Frame(f)
         sf.pack(fill='both', expand=1)
         s: Scrolled = Scrolled(sf, 'Listbox', scrollbars='oe', height=height)
         self.add_listbox = s.widget
         self.add_listbox.configure(borderwidth="5", relief="sunken")
         s.widget.bind('<Button-1>', partial(self._cmd_click, 'add'))
 
-        f = Frame(self.frame)
+        f = tk.Frame(self.frame)
         f.grid(column=1, stick='nsew', row=0)
-        Label(f, text=self.remove_text).pack()
-        sf = Frame(f)
+        tk.Label(f, text=self.remove_text).pack()
+        sf = tk.Frame(f)
         sf.pack(fill='both', expand=1)
         s: Scrolled = Scrolled(sf, 'Listbox', scrollbars='oe', height=height)
         self.remove_listbox = s.widget
@@ -70,7 +69,7 @@ class AddRemoveTk:
             pass
         self.removes.remove(obj)
 
-    def _cmd_click(self, which: str, e: Event):
+    def _cmd_click(self, which: str, e: tk.Event):
         if which == "add":
             widget = self.add_listbox
             index = widget.nearest(e.y)

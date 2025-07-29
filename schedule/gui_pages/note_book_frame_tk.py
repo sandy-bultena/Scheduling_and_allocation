@@ -11,8 +11,8 @@
 """
 from dataclasses import dataclass, field
 from functools import partial
-from tkinter.ttk import Notebook
-from tkinter import *
+import tkinter.ttk as ttk
+import tkinter as tk
 from typing import Optional, Callable, Protocol, Any
 
 
@@ -38,9 +38,9 @@ class NoteBookFrameTk:
     # ===================================================================================
     # constructor
     # ===================================================================================
-    def __init__(self, mw: Toplevel, main_page_frame: Frame,
+    def __init__(self, mw: tk.Toplevel, main_page_frame: tk.Frame,
                  tabs_info: Optional[list[TabInfoProtocol]] = None,
-                 tab_changed_handler: Callable[[str, Frame], None] = lambda *_: None):
+                 tab_changed_handler: Callable[[str, tk.Frame], None] = lambda *_: None):
         """
         create the notebook(s)
         :param mw: toplevel window
@@ -53,7 +53,7 @@ class NoteBookFrameTk:
         self.tabs_info = tabs_info
         self.mw = mw
         self.frame = main_page_frame
-        self.tab_frames: dict[tuple[Notebook,int], tuple[str,Frame]] = {}
+        self.tab_frames: dict[tuple[ttk.Notebook,int], tuple[str,tk.Frame]] = {}
         self.tab_changed_handler = tab_changed_handler
         self.main_notebook_frame = None
         self.notebook = []
@@ -66,7 +66,7 @@ class NoteBookFrameTk:
     # ===================================================================================
     # create notebook pages
     # ===================================================================================
-    def recursive_notebook_creation(self, notebook_frame: Frame, tabs_info: list[TabInfoProtocol]):
+    def recursive_notebook_creation(self, notebook_frame: tk.Frame, tabs_info: list[TabInfoProtocol]):
         """
         recursive calling of notebook creation
         :param notebook_frame:
@@ -79,7 +79,7 @@ class NoteBookFrameTk:
         if self.notebook is None:
             self.notebook = []
         # Create notebook if required
-        notebook = Notebook(notebook_frame)
+        notebook = ttk.Notebook(notebook_frame)
         self.notebook.append(notebook)
         notebook.pack(expand=1, fill='both')
 
@@ -88,7 +88,7 @@ class NoteBookFrameTk:
 
         for info in tabs_info:
             # create a frame and add to the notebook
-            frame = Frame(self.mw, **info.frame_args)
+            frame = tk.Frame(self.mw, **info.frame_args)
             notebook.add(frame, text=info.label)
             notebook_index = notebook.index(frame)
 
@@ -111,7 +111,7 @@ class NoteBookFrameTk:
         notebook.bind("<<NotebookTabChanged>>", partial(self._tab_changed, notebook))
 
 
-    def _tab_changed(self, notebook: Notebook, *_):
+    def _tab_changed(self, notebook: ttk.Notebook, *_):
         """
         calls the tab changed callback when the tab has changed
         :param notebook:

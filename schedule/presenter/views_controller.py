@@ -332,6 +332,6 @@ class ViewsController:
     # kill bill!
     # ----------------------------------------------------------------------------------------------------------------
     def kill_all_views(self):
-        """visious!"""
+        """vicious!"""
         for view in self._views.values():
             view.close()

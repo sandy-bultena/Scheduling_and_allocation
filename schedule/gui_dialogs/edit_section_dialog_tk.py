@@ -2,7 +2,7 @@
 from __future__ import annotations
 import re
 
-from tkinter import *
+import tkinter as tk
 import tkinter.font as tkFont
 from tkinter import ttk
 from tkinter.simpledialog import Dialog
@@ -26,7 +26,7 @@ def time_to_hours(string_time:str) -> float:
 
 
 class EditSectionDialogTk(Dialog):
-    def __init__(self, frame:Frame,
+    def __init__(self, frame:tk.Frame,
                  *,
                  course_description: str,
                  section_description: str = "",
@@ -55,7 +55,7 @@ class EditSectionDialogTk(Dialog):
         self._non_assigned_streams = non_assigned_streams
         self._apply_changes = apply_changes
 
-        self.description = StringVar(value = section_description)
+        self.description = tk.StringVar(value = section_description)
 
         self.style = ttk.Style(frame.winfo_toplevel())
         self.style.configure("MyCustom.TCombobox",
@@ -71,46 +71,46 @@ class EditSectionDialogTk(Dialog):
     # ================================================================================================================
     # The content of the main body of the dialog box
     # ================================================================================================================
-    def body(self, frame:Frame):
+    def body(self, frame:tk.Frame):
 
         # ------------------------------------------------------------------------------------------------------------
         # Info
         # ------------------------------------------------------------------------------------------------------------
-        course_info_frame = Frame(frame)
-        section_info_frame = Frame(frame)
-        lbl = Label(course_info_frame,text=self.course_description, anchor='center',width=20)
+        course_info_frame = tk.Frame(frame)
+        section_info_frame = tk.Frame(frame)
+        lbl = tk.Label(course_info_frame,text=self.course_description, anchor='center',width=20)
         lbl.pack(expand=1,fill='both',padx=15,pady=5)
         default_font = tkFont.nametofont(lbl.cget("font"))
         family = default_font["family"]
         size = default_font["size"] + 2
         lbl.config(font=(family, size))
-        Label(section_info_frame, text="Section Description", anchor='e', width=20).pack(side='left', padx=10, pady=5)
-        description = Entry(section_info_frame, textvariable=self.description,)
+        tk.Label(section_info_frame, text="Section Description", anchor='e', width=20).pack(side='left', padx=10, pady=5)
+        description = tk.Entry(section_info_frame, textvariable=self.description,)
         description.pack(side='left', padx=10, pady=5)
 
         # ------------------------------------------------------------------------------------------------------------
         # Blocks
         # ------------------------------------------------------------------------------------------------------------
-        self.block_frames = Frame(frame)
+        self.block_frames = tk.Frame(frame)
         for index, block_info in enumerate(self.current_blocks):
-            opt_day = StringVar(value=block_info[0])
-            opt_hour = StringVar(value=get_clock_string_from_hours(block_info[1]))
-            opt_duration = StringVar(value=str(block_info[2]))
+            opt_day = tk.StringVar(value=block_info[0])
+            opt_hour = tk.StringVar(value=get_clock_string_from_hours(block_info[1]))
+            opt_duration = tk.StringVar(value=str(block_info[2]))
             self.row_data.append((opt_day, opt_hour, opt_duration))
 
 
         # ------------------------------------------------------------------------------------------------------------
         # Teacher/Lab/Stream Add/Remove
         # ------------------------------------------------------------------------------------------------------------
-        teacher_assignments_frame = Frame(frame)
+        teacher_assignments_frame = tk.Frame(frame)
         AddRemoveTk(teacher_assignments_frame, self._non_assigned_teachers, self._assigned_teachers,
                     "Assign Teacher to all Classes", "Remove Teacher from all Classes",height=6)
 
-        lab_assignments_frame = Frame(frame)
+        lab_assignments_frame = tk.Frame(frame)
         AddRemoveTk(lab_assignments_frame, self._non_assigned_labs, self._assigned_labs,
                     "Assign Lab to all Classes","Remove Lab from all Classes", height=6)
 
-        stream_assignments_frame = Frame(frame)
+        stream_assignments_frame = tk.Frame(frame)
         AddRemoveTk(stream_assignments_frame, self._non_assigned_streams, self._assigned_streams,
                      "Assign Stream to Section","Remove Stream from Section", height=6)
 
@@ -129,12 +129,12 @@ class EditSectionDialogTk(Dialog):
         return description
 
     def add_new_block(self):
-        self.row_data.append((StringVar(value="Monday"),StringVar(value="8:00"), StringVar(value="1.5")))
+        self.row_data.append((tk.StringVar(value="Monday"), tk.StringVar(value="8:00"), tk.StringVar(value="1.5")))
         self.refresh_blocks()
 
     def refresh_blocks(self):
         refresh_gui_blocks(self)
-        Button(self.block_frames, text="Add New Class Time", command=self.add_new_block).pack(expand=1, fill='y')
+        tk.Button(self.block_frames, text="Add New Class Time", command=self.add_new_block).pack(expand=1, fill='y')
 
     # ================================================================================================================
     # are blocks set up properly?

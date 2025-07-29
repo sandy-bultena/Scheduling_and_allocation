@@ -14,8 +14,8 @@ import platform
 from functools import partial
 
 from tkinter.ttk import Notebook
-from tkinter import *
-from tkinter import filedialog as fd
+import tkinter as tk
+from tkinter import filedialog as tk_fd
 from typing import Optional, TYPE_CHECKING, Callable
 
 from tkinter.messagebox import showerror, showinfo, askyesnocancel
@@ -56,17 +56,17 @@ class MainPageBaseTk:
         self.dark_mode = False
         self.colours: Optional[TkColours] = None
         self.fonts: Optional[TkFonts] = None
-        self.dict_of_frames: dict[str, Frame] = dict()
-        self.logo: Optional[PhotoImage] = None
-        self.mw: Optional[Tk] = None
-        self.notebook_tab_changed_handler: Callable[[str,Frame], None] = lambda a,b: None
+        self.dict_of_frames: dict[str, tk.Frame] = dict()
+        self.logo: Optional[tk.PhotoImage] = None
+        self.mw: Optional[tk.Tk] = None
+        self.notebook_tab_changed_handler: Callable[[str,tk.Frame], None] = lambda a,b: None
 
         # private properties
         self._preferences = preferences
         self._notebook_frame: Optional[NoteBookFrameTk] = None
         self._wait = None
         self.notebook_tabs_info: list[TabInfoProtocol] | None = None
-        self._front_page_frame: Optional[Frame] = None
+        self._front_page_frame: Optional[tk.Frame] = None
         self._toolbar = None
         self._default_notebook_page: int = 0
         self._top_level_notebook: Optional[Notebook] = None
@@ -78,10 +78,10 @@ class MainPageBaseTk:
         self.colours, self.fonts = set_default_fonts_and_colours(self.mw, invert=self.dark_mode)
 
         # set the filename so that it can be bound later
-        self._status_bar_file_info: StringVar = StringVar(value="None")
+        self._status_bar_file_info: tk.StringVar = tk.StringVar(value="None")
 
         # set the dirty text so it can be bound later
-        self._status_bar_dirty: StringVar = StringVar(value="")
+        self._status_bar_dirty: tk.StringVar = tk.StringVar(value="")
 
     # ===================================================================================
     # properties
@@ -115,7 +115,7 @@ class MainPageBaseTk:
         """
 
         # create menu
-        menu_bar = Menu(self.mw)
+        menu_bar = tk.Menu(self.mw)
         generate_menu(self.mw, menu_details, menu_bar)
         self.mw.configure(menu=menu_bar)
 
@@ -132,27 +132,27 @@ class MainPageBaseTk:
         mw = self.mw
 
         # draw frame and labels for current filename and dirty flag
-        status_frame = Frame(mw, borderwidth=0, relief='flat')
+        status_frame = tk.Frame(mw, borderwidth=0, relief='flat')
         status_frame.pack(side='bottom', expand=0, fill='x')
 
-        Label(status_frame, textvariable=self._status_bar_file_info, borderwidth=1, relief='ridge',
+        tk.Label(status_frame, textvariable=self._status_bar_file_info, borderwidth=1, relief='ridge',
               anchor='w',
               ).pack(side='left', expand=1, fill='x')
 
-        Label(status_frame, textvariable=self._status_bar_dirty, borderwidth=1, relief='ridge', width=15,
+        tk.Label(status_frame, textvariable=self._status_bar_dirty, borderwidth=1, relief='ridge', width=15,
               foreground=self.colours.DirtyColour).pack(side='right', fill='x')
 
     # ===================================================================================
     # welcome page
     # ===================================================================================
-    def create_welcome_page_base(self, logo: PhotoImage | None = None) -> Frame:
+    def create_welcome_page_base(self, logo: tk.PhotoImage | None = None) -> tk.Frame:
         """
         Creates the very first page that is shown to the user
         :param logo: image to use as part of the front page header
         :return: the frame for the super class to use to add whatever they want
         """
         mw = self.mw
-        self._front_page_frame = Frame(mw, borderwidth=10, relief='flat', background=self.colours.DataBackground)
+        self._front_page_frame = tk.Frame(mw, borderwidth=10, relief='flat', background=self.colours.DataBackground)
         self._front_page_frame.pack(side='top', expand=1, fill='both')
         if logo is None:
             logo = FindImages.get_logo(MainPageBaseTk.bin_dir)
@@ -160,26 +160,26 @@ class MainPageBaseTk:
         # create an image object of the _logo
         # ... for some weird reason, if logo is not part of 'self', then it doesn't work
         # Weird, right?
-        self.logo = PhotoImage(file=logo)
+        self.logo = tk.PhotoImage(file=logo)
 
         # frame and label
-        Label(self._front_page_frame, image=self.logo, borderwidth=0, relief='flat') \
+        tk.Label(self._front_page_frame, image=self.logo, borderwidth=0, relief='flat') \
             .pack(side='left', expand=0)
 
         # --------------------------------------------------------------
         # frame for holding buttons for starting the scheduling/allocation tasks
         # --------------------------------------------------------------
-        option_frame = Frame(
+        option_frame = tk.Frame(
             self._front_page_frame,
             background=self.colours.DataBackground,
             borderwidth=10,
             relief='flat')
         option_frame.pack(side='left', expand=1, fill='both')
 
-        Frame(option_frame, background=self.colours.DataBackground).pack(expand=1, fill='both')
-        center_frame = Frame(option_frame, background=self.colours.DataBackground)
+        tk.Frame(option_frame, background=self.colours.DataBackground).pack(expand=1, fill='both')
+        center_frame = tk.Frame(option_frame, background=self.colours.DataBackground)
         center_frame.pack(expand=0, fill='both')
-        Frame(option_frame, background=self.colours.DataBackground).pack(expand=1, fill='both')
+        tk.Frame(option_frame, background=self.colours.DataBackground).pack(expand=1, fill='both')
 
         return center_frame
 
@@ -205,7 +205,7 @@ class MainPageBaseTk:
         self._front_page_frame.destroy()
 
         # frame
-        main_page_frame = Frame(mw, borderwidth=1, relief='ridge')
+        main_page_frame = tk.Frame(mw, borderwidth=1, relief='ridge')
         main_page_frame.pack(side='top', expand=1, fill='both')
         self._notebook_frame = NoteBookFrameTk(self.mw, main_page_frame, notebook_pages_info,
                                                self.notebook_tab_changed_handler)
@@ -218,11 +218,11 @@ class MainPageBaseTk:
     # choose file
     # ========================================================================
     def select_file_to_save(self) -> str:
-        return self._select_file(partial(fd.asksaveasfilename,
+        return self._select_file(partial(tk_fd.asksaveasfilename,
                                          defaultextension="csv", title="Save File As"))
 
     def select_file_to_open(self) -> str:
-        return self._select_file(partial(fd.askopenfilename,
+        return self._select_file(partial(tk_fd.askopenfilename,
                                          title='Open a file for ' + str(self._preferences.semester())))
 
     def _select_file(self, select_gui) -> str:
@@ -258,7 +258,7 @@ class MainPageBaseTk:
         # create main window and frames
         """Create the top level window, specify fonts and colors"""
         # create main window and frames
-        mw = Tk()
+        mw = tk.Tk()
         mw.title(title)
         mw.geometry(f"{WELCOME_HEIGHT}x{WELCOME_WIDTH}")
 
@@ -289,7 +289,7 @@ class MainPageBaseTk:
 
         self._wait = self.mw.winfo_toplevel()
         self._wait.title = title
-        Label(self._wait, text=msg).pack(expand=1, fill='both')
+        tk.Label(self._wait, text=msg).pack(expand=1, fill='both')
 
         self._wait.geometry('300x450')
         self.mw.update()
