@@ -33,8 +33,6 @@ from typing import Optional, TYPE_CHECKING, Any, Callable
 from schedule.presenter.edit_resources import EditResources
 from schedule.presenter.edit_courses import EditCourses
 
-# from .ViewsHubControl import ViewsHubControl
-
 from .menus_main_menu import set_menu_event_handler, main_menu
 from schedule.Utilities import Preferences
 from schedule.gui_pages.scheduler_tk import SchedulerTk, set_main_page_event_handler
@@ -147,7 +145,7 @@ class Scheduler:
         (self._toolbar_buttons, self._button_properties, self._menu) = main_menu()
 
         self.gui.create_menu_and_toolbars(self._toolbar_buttons, self._button_properties, self._menu)
-        self.gui.create_front_page(self.preferences.semester())
+        self.gui.create_welcome_page(self.preferences.semester())
         self.gui.create_status_bar()
         self.gui.notebook_tab_changed_handler = self.notebook_tab_has_changed
 
@@ -205,6 +203,8 @@ class Scheduler:
         """create a new file"""
         self.schedule = Schedule()
         self.schedule_filename = ""
+        if self.view_controller is not None:
+            self.view_controller.kill_all_views()
         self.gui.create_standard_page(self._required_tabs)
         self.dirty_flag = True
 
@@ -226,6 +226,8 @@ class Scheduler:
                 self.schedule = schedule
                 self.schedule_filename = filename
                 self.dirty_flag = False
+                if self.view_controller is not None:
+                    self.view_controller.kill_all_views()
                 self.gui.create_standard_page(self._required_tabs)
 
             except CouldNotReadFileError as e:

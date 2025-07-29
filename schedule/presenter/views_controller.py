@@ -248,6 +248,9 @@ class ViewsController:
     # undo/redo last actions
     # ----------------------------------------------------------------------------------------------------------------
     def undo(self):
+        """
+        undo whatever action remains in the undo list
+        """
         if len(self._undo) == 0:
             return
 
@@ -255,13 +258,25 @@ class ViewsController:
         self._process_action(action, self._redo)
 
     def redo(self):
+        """
+        redo whatever action remains in the redo list
+        """
         if len(self._redo) == 0:
             return
 
         action = self._redo.pop()
         self._process_action(action, self._undo)
 
+    # ----------------------------------------------------------------------------------------------------------------
+    # process the undo/redo action
+    # ----------------------------------------------------------------------------------------------------------------
     def _process_action(self, action, other_list):
+        """
+        process the undo/redo action
+        :param action: the action to do
+        :param other_list: what list to move this action to... undo->redo and vice versa
+        :return:
+        """
         match action.action:
             case 'move':
                 other_list.append(Action(action='move', block= action.block,
@@ -289,16 +304,34 @@ class ViewsController:
 
 
 
+    # ----------------------------------------------------------------------------------------------------------------
+    # no more redoes
+    # ----------------------------------------------------------------------------------------------------------------
     def remove_all_redoes(self):
+        """Remove all redoes from the redo list"""
         self._redo.clear()
 
+    # ----------------------------------------------------------------------------------------------------------------
+    # redraw all the views and update button choices
+    # ----------------------------------------------------------------------------------------------------------------
     def redraw_all(self):
+        """redraw all the views and update button choices"""
+
         for resource, view in self._views.items():
             teacher_numbers = (x.number for x in self.schedule.teachers())
             lab_numbers = (x.number for x in self.schedule.labs())
             stream_numbers = (x.number for x in self.schedule.streams())
+
+            # if the resource for this view has been deleted from the schedule, then close the view
             if resource not in teacher_numbers and resource not in stream_numbers and resource not in lab_numbers:
                 view.close()
             else:
                 view.draw()
 
+    # ----------------------------------------------------------------------------------------------------------------
+    # kill bill!
+    # ----------------------------------------------------------------------------------------------------------------
+    def kill_all_views(self):
+        """visious!"""
+        for view in self._views.values():
+            view.close()

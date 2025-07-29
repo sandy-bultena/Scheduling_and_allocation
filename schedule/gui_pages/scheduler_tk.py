@@ -126,7 +126,7 @@ class SchedulerTk(MainPageBaseTk):
     # ========================================================================
     # create front page
     # ========================================================================
-    def create_front_page(self, semester):
+    def create_welcome_page(self, semester):
         """Creates the very first page that is shown to the user."""
         option_frame = super().create_welcome_page_base()
 
@@ -152,11 +152,13 @@ class SchedulerTk(MainPageBaseTk):
         self._current_semester.trace('w', MAIN_PAGE_EVENT_HANDLERS["semester_change"])
 
         def _previous_file_change_event(*_):
-            if self._previous_file != "None":
-                self.previous_file_button.configure(state='normal')
-            else:
-                self.previous_file_button.configure(state='disabled')
-
+            try:
+                if self._previous_file != "None":
+                    self.previous_file_button.configure(state='normal')
+                else:
+                    self.previous_file_button.configure(state='disabled')
+            except TclError:
+                pass
         self._previous_file.trace('w', _previous_file_change_event)
 
         # --------------------------------------------------------------
