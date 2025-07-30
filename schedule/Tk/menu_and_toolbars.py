@@ -68,9 +68,12 @@ class ToolbarItem:
     image: Optional[str] = None
 
 
-def generate_menu(mw, menu_details: list[MenuItem], parent: Menu):
+def generate_menu(mw, menu_details: Optional[list[MenuItem]], parent: Menu):
     """Create a gui menu bar based off of the menu_details"""
 
+    if menu_details is None:
+        return
+    
     for menu_item in menu_details:
 
         # Cascading menu

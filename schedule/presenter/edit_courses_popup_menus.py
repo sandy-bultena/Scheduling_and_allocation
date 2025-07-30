@@ -22,10 +22,11 @@
 """
 from __future__ import annotations
 
+from functools import partial
 from typing import TYPE_CHECKING
 
 from schedule.Tk import MenuItem, MenuType
-from schedule.model import Course, Teacher, ResourceType, Section, Block, Lab
+from schedule.model import Course, Teacher, ResourceType, Section, Block, Lab, Stream, Schedule
 
 if TYPE_CHECKING:
     from schedule.presenter.edit_courses import EditCourses
@@ -36,7 +37,7 @@ if TYPE_CHECKING:
 # ... each menu type will then call the appropriate 'presenter' code that will manage the modifications to the
 #     tree/list menus in the EditCourse gui
 # ====================================================================================================================
-class EditCoursePopupMenuActions:
+class CreateTreePopupMenuActions:
     """Creates all the pop menu items, dependent on the selected object, and their sub-menus if required
 
         Each menu type will then call the appropriate 'presenter' code that will manage the modifications to the
@@ -299,4 +300,86 @@ class EditCoursePopupMenuActions:
         menu_list.append(sub_menu)
 
 
+# ====================================================================================================================
+# Creates all the pop menu items, and their sub-menus if required
+# ... each menu type will then call the appropriate 'presenter' code that will manage the modifications to the
+#     tree/list menus in the EditCourse gui
+# ====================================================================================================================
+class CreateResourcePopupMenuActions:
+    """Creates all the pop menu items, dependent on the selected object, and their sub-menus if required
+
+        Each menu type will then call the appropriate 'presenter' code that will manage the modifications to the
+        tree/list menus in the EditCourse gui
+    """
+    def __init__(self, presenter: EditCourses, schedule: Schedule, resource_type:ResourceType, resource: Lab|Stream|Teacher):
+        """
+        :param presenter: The presenter that is handling all the logic
+        :param resource_type
+        :param resource: The object that is the target of this menu
+        """
+        self.presenter = presenter
+        self.resource_type = resource_type
+        self.resource = resource
+        self.schedule = schedule
+
+    # ================================================================================================================
+    # Create pop up menu based on the selected object
+    # ================================================================================================================
+    def create_resource_popup_menus(self):
+        """create popup menus for trees
+
+        menus are dynamic, depending on the current schedule, and what tree item was selected
+        """
+
+
+        # ------------------------------------------------------------------------------------------------------------
+        # create a menu for entire friggin course schedule (teacher and labs)
+        # ------------------------------------------------------------------------------------------------------------
+        menu_course = []
+        if self.resource_type != ResourceType.stream:
+
+            for course in self.schedule.courses():
+                menu_section = [MenuItem(label=course.number, menu_type=MenuType.Command,
+                                         command=partial(self._add_all_sections, self.resource, course))]
+
+                for section in course.sections():
+                    menu_block = [MenuItem(label=str(section), menu_type=MenuType.Command,
+                                           command=partial(self._add_all_blocks, self.resource, course,
+                                                           section))]
+
+                    for block in section.blocks():
+                        menu_block.append(MenuItem(label=str(block), menu_type=MenuType.Command,
+                                                   command=partial(self._add_course_section_block, self.resource, course, section, block )))
+                    menu_section.append(MenuItem(label=str(section), menu_type=MenuType.Cascade,
+                                                 children=menu_block))
+                menu_course.append(MenuItem(label=course.number, menu_type=MenuType.Cascade, children=menu_section))
+            menu_list: list[MenuItem] = [MenuItem(label="Add to Course ...", menu_type=MenuType.Cascade, children=menu_course),]
+        else:
+
+            for course in self.schedule.courses():
+                menu_section = []
+
+                for section in course.sections():
+                    menu_section.append(MenuItem(label=str(section), menu_type=MenuType.Command,
+                                           command=partial(self._add_all_blocks, self.resource, course,
+                                                           section)))
+                menu_course.append(MenuItem(label=course.number, menu_type=MenuType.Cascade, children=menu_section))
+
+            menu_list: list[MenuItem] = [
+                MenuItem(label="Add to Course ...", menu_type=MenuType.Cascade, children=menu_course), ]
+
+        return menu_list
+
+    # ================================================================================================================
+    # Private methods that create the MenuList items
+    # ================================================================================================================
+
+    def _add_all_sections(self, resource, course):
+        self.presenter.assign_selected_to_parent(selected=resource, parent=course)
+
+    def _add_all_blocks(self, resource, __course, section):
+        self.presenter.assign_selected_to_parent(selected=resource, parent=section)
+
+    def _add_course_section_block(self, resource, __course, __section, block):
+        self.presenter.assign_selected_to_parent(selected=resource, parent=block)
 

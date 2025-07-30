@@ -112,16 +112,6 @@ def test_set_num_students():
     s.num_students = num
     assert s.num_students == num
 
-
-def test_added_hours_ignored_if_blocks():
-    """Checks that added hours will be ignored if blocks are set_default_fonts_and_colours"""
-    s = Section(course)
-    block1 = s.add_block(WeekDay.Monday, 9.5, 3)
-    block2 = s.add_block(WeekDay.Monday, 10.5, 3.5)
-    s.add_hours(20)
-    assert s.hours == (block1.duration + block2.duration)
-
-
 def test_is_conflicted_detects_conflicts_correctly():
     """Checks that the is_conflicted method correctly picks up conflicted_number blocks"""
     s = Section(course)

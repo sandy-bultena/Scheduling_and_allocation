@@ -5,15 +5,15 @@
 # - can drag resources onto courses
 #
 # Events triggered by EditCoursesTk
-#       tree_event_edit_tree_obj(selected_obj, parent_obj, tree_id)
 #       button_event_create_new_course()
+#       tree_event_edit_tree_obj(selected_obj, parent_obj, tree_id)
 #       tree_event_create_tree_popup(selected_obj, parent_obj, tree_id, parent_id)->list[MenuItem]
-#       resource_event_create_resource_menu(resource_type, object)->list[MenuItem]
+#       resource_event_create_resource_popup(resource_type, object)->list[MenuItem]
 #       resource_event_show_teacher_stat(teacher)
 #       resource_drag_event_is_valid_drop(resource_type, tree_object) -> bool
 #       resource_dropped_event(resource_obj, tree_obj, tree_id)
 #
-# Events triggered by EditCoursePopupMenuActions
+# Events triggered by CreateTreePopupMenuActions
 #       edit_block_dialog(selected_object, tree_id)
 #       add_blocks_dialog(selected_object, tree_id)
 #       edit_section_dialog(selected_object, tree_id)
@@ -38,7 +38,7 @@ from schedule.gui_dialogs.edit_course_dialog_tk import EditCourseDialogTk
 from schedule.gui_dialogs.edit_section_dialog_tk import EditSectionDialogTk
 from schedule.model import Schedule, ResourceType, Section, Block, Teacher, Lab, Stream, Course
 from schedule.gui_pages import EditCoursesTk
-from schedule.presenter.edit_courses_popup_menus import EditCoursePopupMenuActions
+from schedule.presenter.edit_courses_popup_menus import CreateTreePopupMenuActions, CreateResourcePopupMenuActions
 
 RESOURCE_OBJECT = Teacher | Lab | Stream
 TREE_OBJECT = Any
@@ -115,7 +115,7 @@ class EditCourses:
         self.gui.handler_tree_edit = self.tree_event_edit_tree_obj
         self.gui.handler_new_course = self.button_event_create_new_course
         self.gui.handler_tree_create_popup = self.tree_event_create_tree_popup
-        self.gui.handler_resource_create_menu = self.resource_event_create_resource_menu
+        self.gui.handler_resource_create_menu = self.resource_event_create_resource_popup
         self.gui.handler_show_teacher_stat = self.resource_event_show_teacher_stat
         self.gui.handler_drag_resource = self.resource_drag_event_is_valid_drop
         self.gui.handler_drop_resource = self.resource_dropped_event
@@ -227,7 +227,7 @@ class EditCourses:
         :param tree_parent_path: the id of the tree item that is the parent of the selected
         :return:
         """
-        popup = EditCoursePopupMenuActions(self, selected_obj, parent_object, tree_path, tree_parent_path)
+        popup = CreateTreePopupMenuActions(self, selected_obj, parent_object, tree_path, tree_parent_path)
         return popup.create_tree_popup_menus()
 
     # -------------------------------------------------------------------------------------------------------------
@@ -441,7 +441,7 @@ class EditCourses:
     # -------------------------------------------------------------------------------------------------------------
     # Tree Popup or dropped object - assign resource to selected tree item
     # -------------------------------------------------------------------------------------------------------------
-    def assign_selected_to_parent(self, parent, selected, parent_id):
+    def assign_selected_to_parent(self, parent, selected, parent_id = -1):
         """
         assign selected resource object to the parent
         :param parent: Course/Section/block object
@@ -449,12 +449,17 @@ class EditCourses:
         :param parent_id: tree id of the parent object
         :return:
         """
+        print(f"{parent=},{selected=}")
         obj_type = str(type(selected)).lower()
         key = obj_type.split(".")[-1][0:-2]
+        print(obj_type, key)
         ASSIGN_SUBS[key](parent,selected)
 
-        obj_type = str(type(parent)).lower()
-        key = obj_type.split(".")[-1][0:-2]
+        if parent_id == -1:
+            key = 'schedule'
+        else:
+            obj_type = str(type(parent)).lower()
+            key = obj_type.split(".")[-1][0:-2]
         REFRESH_SUBS[key](self,parent_id, parent)
         self.set_dirty_flag(True)
 
@@ -479,12 +484,22 @@ class EditCourses:
     # -------------------------------------------------------------------------------------------------------------
     # create a pop-up menu for the resource list item
     # -------------------------------------------------------------------------------------------------------------
-    def resource_event_create_resource_menu(self, view: ResourceType, obj: RESOURCE_OBJECT) -> list[MenuItem]: ...
+    def resource_event_create_resource_popup(self, resource_type: ResourceType, resource: RESOURCE_OBJECT) -> list[MenuItem]:
+        """
+        Create a pop-up menu based on the selected resource object
+
+        :param resource_type: is it a teacher/lab/stream?
+        :param resource: selected object
+        """
+        popup = CreateResourcePopupMenuActions(self, self.schedule, resource_type, resource)
+        return popup.create_resource_popup_menus()
+
 
     # -------------------------------------------------------------------------------------------------------------
     # respond to a double click on a teacher resource
     # -------------------------------------------------------------------------------------------------------------
-    def resource_event_show_teacher_stat(self, teacher: ResourceType): ...
+    def resource_event_show_teacher_stat(self, teacher: Teacher):
+        print(teacher)
 
     # -------------------------------------------------------------------------------------------------------------
     # can the resource object be added to the selected tree object?

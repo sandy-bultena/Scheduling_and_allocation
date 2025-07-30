@@ -77,7 +77,7 @@ class Section:
         # LEAVE IN:
         # Allows for teacher allocations to be tracked & calculated correctly in AllocationManager,
         # since Blocks are ignored there
-        self._teachers: set[Teacher] = set()
+        self._allocation_teachers: set[Teacher] = set()
         self._streams: set[Stream] = set()
         self._allocation: dict[Teacher:float] = dict()
         self._blocks: set[Block] = set()
@@ -95,20 +95,11 @@ class Section:
     @property
     def hours(self) -> float:
         """
-        Gets and sets the number of hours per week of the section
-        - When setting, will automatically calculate the total hours if the section has blocks.
+        How many hours does the course have or how many hours does the blocks add up to?
         """
         if self.blocks():
             return sum((b.duration for b in self.blocks()))
         return self.course.hours_per_week
-
-    @hours.setter
-    def hours(self, val):
-        if self.blocks():
-            self._hours = sum((b.duration for b in self.blocks()))
-        else:
-            val = _validate_hours(val)
-            self._hours = val
 
     @property
     def id(self) -> int:
@@ -198,7 +189,7 @@ class Section:
         """ Gets all teachers assigned to all blocks in this section and
         any teachers that were explicitly assigned to this section"""
         teachers = set()
-        teachers.update(self._teachers)
+        teachers.update(self._allocation_teachers)
         for b in self.blocks():
             teachers.update(b.teachers())
         return tuple(sorted(teachers))
@@ -206,7 +197,7 @@ class Section:
     def section_defined_teachers(self) -> tuple[Teacher, ...]:
         """gets only teachers that were explicitly assigned to this section in allocation manager"""
         teachers = set()
-        teachers.update(self._teachers)
+        teachers.update(self._allocation_teachers)
         return tuple(sorted(teachers))
 
 
@@ -214,14 +205,14 @@ class Section:
         """ Assign a teacher to the section """
         for b in self.blocks():
             b.add_teacher(teacher)
-        self._teachers.add(teacher)
+        self._allocation_teachers.add(teacher)
         self._allocation[teacher] = self.hours
 
     def remove_teacher(self, teacher: Teacher):
         """ Removes teacher from all blocks in this section """
         for b in self.blocks():
             b.remove_teacher(teacher)
-        self._teachers.discard(teacher)
+        self._allocation_teachers.discard(teacher)
         if teacher in self._allocation:
             del self._allocation[teacher]
 
@@ -232,7 +223,7 @@ class Section:
 
     def has_teacher(self, teacher: Teacher) -> bool:
         """ Checks if section has teacher """
-        answer = teacher in self._teachers
+        answer = teacher in self._allocation_teachers
         for b in self.blocks():
             answer = answer or b.has_teacher(teacher)
         return answer
@@ -301,15 +292,6 @@ class Section:
         self.remove_all_streams()
         self.remove_all_labs()
         self.remove_all_blocks()
-
-    # --------------------------------------------------------
-    # add_hours
-    # --------------------------------------------------------
-    def add_hours(self, val: float | int):
-        """ Adds hours to section's weekly total """
-        val = _validate_hours(val)
-        self.hours += val
-        return self.hours
 
     # --------------------------------------------------------
     # string representation

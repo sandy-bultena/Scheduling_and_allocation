@@ -3,7 +3,7 @@
 # A view of the class times for a specific resource
 #
 # Events triggered by ViewDynamicTk
-#   popup(gui_id)
+#   tree_popup_menu(gui_id)
 #   draw_blocks()
 #   on_closing(_*)
 #   open_companion_view(gui_id)
@@ -77,7 +77,7 @@ class View:
             self.gui = gui
 
         # Need to set handlers here, instead on constructor, so that it is easier for testing
-        self.gui.get_popup_menu_handler = self.popup_menu
+        self.gui.get_popup_menu_handler = self.tree_popup_menu
         self.gui.refresh_blocks_handler = self.draw_blocks
         self.gui.on_closing_handler = self.on_closing
         self.gui.double_click_block_handler = self.open_companion_view
@@ -248,7 +248,7 @@ class View:
     # ----------------------------------------------------------------------------------------------------------------
     # get popup menu (get_popup_menu_handler)
     # ----------------------------------------------------------------------------------------------------------------
-    def popup_menu(self, gui_id) -> Optional[list[MenuItem]]:
+    def tree_popup_menu(self, gui_id) -> Optional[list[MenuItem]]:
         """
         Create a pop-up menu that is unique to this gui_id
         :param gui_id:
@@ -267,17 +267,21 @@ class View:
                 resources = set(self.schedule.labs()) - set(block.labs())
 
         # create the menu
-        menu_list: list[MenuItem] = [MenuItem(menu_type=MenuType.Command, label=f"Toggle 'is_movable' property",
+        toggle_str = "Unset 'movable' option" if block.movable else "Set 'movable' option"
+        menu_list: list[MenuItem] = [MenuItem(menu_type=MenuType.Command, label=toggle_str,
                                               command=partial(self.toggle_is_movable, block))]
 
         if len(resources):
             menu_list.append(MenuItem(menu_type=MenuType.Separator))
 
+        resource_list = []
         for resource in sorted(resources):
-            menu_list.append(MenuItem(menu_type=MenuType.Command, label=f"Move to {resource}",
+            resource_list.append(MenuItem(menu_type=MenuType.Command, label=f"{resource}",
                                       command=partial(self.move_resource, block, resource)
-                                      )
-                             )
+                                      ))
+        menu_list.append(MenuItem(menu_type=MenuType.Cascade, label=f"Move class to {self.resource_type.name} ...",
+                         children=resource_list))
+
         return menu_list
 
     # ----------------------------------------------------------------------------------------------------------------
