@@ -22,6 +22,8 @@ from .main_pages_tk import MainPageBaseTk
 import tkinter as tk
 from tkinter import ttk
 
+from ..gui_generics.read_only_text_tk import ReadOnlyTextTk
+
 BUTTON_WIDTH = 50
 MAX_LEN_OF_DISPLAYED_FILENAME = 60
 
@@ -211,4 +213,10 @@ class SchedulerTk(MainPageBaseTk):
         # update the current file and/or button
         # --------------------------------------------------------------
         MAIN_PAGE_EVENT_HANDLERS["semester_change"]()
+
+    def show_text(self, title, text:list[str]):
+        tl = tk.Toplevel(self.mw)
+        tl.protocol('WM_DELETE_WINDOW', tl.destroy)
+        tl.title(title)
+        ro = ReadOnlyTextTk(tl, text, height=20, width=50, scrollbars='e')
 

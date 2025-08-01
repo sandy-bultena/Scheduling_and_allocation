@@ -86,7 +86,7 @@ class CSVSerializor:
                         for lab in sorted(block.labs(), key=lambda ll: ll.number):
                             w.writerow(["add_lab", lab.number])
 
-                    if len(section.section_defined_teachers()) != 0:
+                    if len(section.blocks())==0 and len(section.section_defined_teachers()) != 0:
                         w.writerow([])
                         w.writerow([None, None, None, 'adds teacher to all defined blocks'])
                         w.writerow([None, 'id', 'allocation'])
@@ -120,7 +120,7 @@ class CSVSerializor:
         block_obj: Optional[Block] = None
 
         for row in reader:
-            # print(f"{row}")
+            print(f"{row}")
             if not row or row[0] == "":
                 continue
 

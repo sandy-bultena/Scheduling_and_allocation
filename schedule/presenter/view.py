@@ -10,6 +10,10 @@
 #   gui_block_is_moving(gui_id,  gui_block_day, gui_block_start_time)
 #   gui_block_has_dropped(gui_id)
 #
+# From pop-up menu
+#   is_movable(block,gui_id)
+#   move_resource(block,resource)
+#
 # Methods called from ViewsController
 #   close()
 #   draw()
@@ -93,12 +97,13 @@ class View:
     # ----------------------------------------------------------------------------------------------------------------
     # get popup menu (get_popup_menu_handler)
     # ----------------------------------------------------------------------------------------------------------------
-    def toggle_is_movable(self, block: Block):
+    def toggle_is_movable(self, block: Block, gui_id:str):
         """
         toggle movability for block, and inform View Controller
         :param block: the block that needs its 'movable' option toggled
         """
         block.movable = not block.movable
+        self.gui.modify_movable(gui_id, block.movable)
 
         # very important, let the gui controller _know_ that the gui block has been modified
         self.views_controller.notify_block_movable_toggled( block)
@@ -269,7 +274,7 @@ class View:
         # create the menu
         toggle_str = "Unset 'movable' option" if block.movable else "Set 'movable' option"
         menu_list: list[MenuItem] = [MenuItem(menu_type=MenuType.Command, label=toggle_str,
-                                              command=partial(self.toggle_is_movable, block))]
+                                              command=partial(self.toggle_is_movable, block, gui_id))]
 
         if len(resources):
             menu_list.append(MenuItem(menu_type=MenuType.Separator))

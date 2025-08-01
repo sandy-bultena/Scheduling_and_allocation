@@ -16,7 +16,17 @@
 #       open_menu_event()
 #       new_menu_event()
 #       open_previous_file_event()
-#       self.semester_change()
+#       semester_change()
+#
+# Notebook change events
+#       update_course_text(frame)
+#       update_teacher_text(frame)
+#       update_choices_of_resource_views(frame)
+#       update_overview(frame)
+#       update_edit_courses(frame)
+#       update_edit_teachers(frame)
+#       update_edit_labs(frame)
+#       update_edit_streams(frame)
 #
 # ============================================================================
 """
@@ -38,7 +48,7 @@ from schedule.Utilities import Preferences
 from schedule.gui_pages.scheduler_tk import SchedulerTk, set_main_page_event_handler
 from schedule.model import Schedule, ResourceType
 from schedule.exceptions import CouldNotReadFileError
-from schedule.gui_generics.read_only_text_tk import ReadOnlyText
+from schedule.gui_generics.read_only_text_tk import ReadOnlyTextTk
 from schedule.presenter.view import View
 from schedule.presenter.views_controller import ViewsController
 from schedule.export.view_export_canvases import PDFCanvas, LatexCanvas
@@ -126,7 +136,7 @@ class Scheduler:
         set_menu_event_handler("file_save", self.save_menu_event)
         set_menu_event_handler("file_save_as", self.save_as_menu_event)
         set_menu_event_handler("validate", self.validate)
-        set_menu_event_handler("file_exit", self.exit_event)
+        set_menu_event_handler("file_exit", self.menu_exit_event)
         set_main_page_event_handler("file_exit", self.exit_event)
         set_main_page_event_handler("file_open", self.open_menu_event)
         set_main_page_event_handler("file_new", self.new_menu_event)
@@ -277,6 +287,9 @@ class Scheduler:
             if ans:
                 self.save_menu_event()
 
+    def menu_exit_event(self):
+        self.gui.exit_schedule()
+
     def menu_ignore(self):
         print("still a To Do!!")
         pass
@@ -336,7 +349,7 @@ class Scheduler:
             else:
                 for c in self.schedule.courses():
                     text.append(str(c))
-        data_entry = ReadOnlyText(frame, text)
+        data_entry = ReadOnlyTextTk(frame, text)
         data_entry.write(text)
 
     def update_teacher_text(self, frame):
@@ -347,7 +360,7 @@ class Scheduler:
         else:
             for t in self.schedule.teachers():
                 text.append(self.schedule.teacher_details(t))
-        data_entry = ReadOnlyText(frame, text)
+        data_entry = ReadOnlyTextTk(frame, text)
         data_entry.write(text)
 
     # ==================================================================
@@ -460,7 +473,7 @@ class Scheduler:
         """check if the schedule is valid, show result to user"""
         msg = self.schedule.validate()
         if len(msg) != 0:
-            self.gui.show_message(title="Validate", msg="\n".join(msg))
+            self.gui.show_text(title="Validate", text=msg)
         else:
             self.gui.show_message(title="Validate", msg="Everything is ok!")
 

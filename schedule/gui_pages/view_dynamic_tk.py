@@ -214,6 +214,18 @@ class ViewDynamicTk:
             gui_tag=gui_block_id,
             movable=movable)
 
+    # =================================================================
+    # modify movability of gui block
+    # =================================================================
+    def modify_movable(self, gui_tag: str, movable: bool):
+        """
+        modify movability of gui block
+        :param gui_tag:
+        :param movable:
+        :return:
+        """
+        self.view_canvas.modify_movable(gui_tag, movable)
+
     # =================================================================================================================
     # colour an individual block
     # =================================================================================================================

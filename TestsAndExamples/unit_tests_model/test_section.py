@@ -221,7 +221,6 @@ def test_remove_lab_not_there():
 def test_assign_teacher_valid():
     """Checks that a valid teacher can be added"""
     s = Section(course)
-    s.hours = 15
     t = Teacher()
     s.add_teacher(t)
     assert t in s.teachers()
@@ -240,7 +239,7 @@ def test_get_teacher_allocation_valid():
 def test_assign_teacher_valid_allocation_hours_default_to_section_hours():
     """Checks that a valid teacher can be added, and that the teacher allocation hours is set_default_fonts_and_colours to section hours"""
     s = Section(course)
-    s.hours = 15
+    course.hours = 15
     t = Teacher()
     s.add_teacher(t)
     assert s.get_teacher_allocation(t) == s.hours
@@ -252,7 +251,7 @@ def test_assign_teacher_valid_allocation_hours_default_to_section_hours():
 def test_section_allocation_hours_total_of_teacher_hours():
     """Checks that a valid teacher can be added, and that the teacher allocation hours is set_default_fonts_and_colours to section hours"""
     s = Section(course)
-    s.hours = 15
+    course.hours = 15
     t = Teacher()
     s.add_teacher(t)
     assert s.get_teacher_allocation(t) == s.hours
@@ -266,7 +265,7 @@ def test_set_teacher_allocation_valid():
     """Checks that valid hours can be set_default_fonts_and_colours to valid teacher"""
     s = Section(course)
     t = Teacher()
-    s.hours = 15
+    course.hours = 15
     hours = 12
     s.add_teacher(t)
     s.set_teacher_allocation(t, hours)
@@ -276,7 +275,7 @@ def test_set_teacher_allocation_valid():
 def test_section_allocation_hours_total_of_teacher_hours_after_setting_teacher_allocation():
     """Checks that a valid teacher can be added, and that the teacher allocation hours is set_default_fonts_and_colours to section hours"""
     s = Section(course)
-    s.hours = 15
+    course.hours = 15
     t = Teacher()
     s.add_teacher(t)
     t2 = Teacher()
@@ -434,5 +433,20 @@ def test_remove_all_deletes_all_streams():
     s.add_stream(Stream())
     s.remove_all_streams()
     assert not s.streams()
+
+def test_remove_teacher_from_all_blocks_removes_from_section():
+    s=Section(course)
+    teacher=Teacher()
+    b=s.add_block(1,1,1)
+    b2=s.add_block(1,1,1)
+    s.add_teacher(teacher)
+    assert teacher in b2.teachers()
+    assert teacher in b.teachers()
+
+    b.remove_teacher(teacher)
+    b2.remove_teacher(teacher)
+    assert len(s.teachers()) == 0
+
+
 
 # endregion

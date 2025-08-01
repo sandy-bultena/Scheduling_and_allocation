@@ -283,7 +283,9 @@ Example::
         for data_col in range(0, self.number_of_columns):
             w = self.__get_widget_in_row_col(grid_row, data_col + 1)
             if w:
-                data.append(w.get())
+                value = w.get()
+                value = value.strip()
+                data.append(value)
         return data
 
     # ===================================================================
@@ -449,7 +451,7 @@ Example::
     # ====================================================================================
     # change focus to next cell (bound to Entry widgets)
     # ====================================================================================
-    def __change_focus_to_new_cell(self, w: Entry, x_dir: int, y_dir: int):
+    def __change_focus_to_new_cell(self, w: Entry, x_dir: int, y_dir: int, e:Event=None):
 
         if w:
             w.selection_clear()
@@ -472,7 +474,7 @@ Example::
         # if we have exceeded the number of rows, create a new empty row
         if grid_row > self.number_of_rows:
             self.add_empty_row()
-            self.__scrolled_frame.update_scrollbars()
+            #self.__scrolled_frame.update_scrollbars()
 
         # can't go less than zero
         if grid_row < 0:
@@ -490,7 +492,7 @@ Example::
                 # if we land on a disabled widget, keep moving
                 disabled_list = self.cget("disabled")
                 if disabled_list[grid_col - 1]:
-                    self.__change_focus_to_new_cell(w2, x_dir, y_dir)
+                    self.winfo_toplevel().after(20,lambda:self.__change_focus_to_new_cell(w2, x_dir, y_dir))
 
         self.update()
 
@@ -685,6 +687,7 @@ Example::
         def _disable_widget(w, r, c):
             if column_disabled_list[c - 1]:
                 w.configure(state='disabled')
+                w.configure(takefocus=0)
             else:
                 w.configure(state='normal')
 

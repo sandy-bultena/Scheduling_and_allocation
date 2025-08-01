@@ -56,7 +56,7 @@ class EditResources:
         match view_type:
             case ResourceType.teacher:
                 self.column_descriptions: list[DEColumnDescription] = [
-                    DEColumnDescription(title="ID", width=25, property="teacher_id", unique_id=True),
+                    DEColumnDescription(title="ID", width=5, property="teacher_id", unique_id=True),
                     DEColumnDescription(title="First Name", width=15, property="firstname", unique_id=False),
                     DEColumnDescription(title="Last Name", width=15, property="lastname", unique_id=False),
                     DEColumnDescription(title="RT", width=8, property="release", unique_id=False),
@@ -68,7 +68,7 @@ class EditResources:
 
             case ResourceType.lab:
                 self.column_descriptions: list[DEColumnDescription] = [
-                    DEColumnDescription(title="Room", width=7, property="number", unique_id=True),
+                    DEColumnDescription(title="Room", width=14, property="number", unique_id=True),
                     DEColumnDescription(title="Description", width=50, property="description", unique_id=False),
                 ]
                 self._get_resources = schedule.labs
@@ -78,7 +78,7 @@ class EditResources:
 
             case ResourceType.stream:
                 self.column_descriptions: list[DEColumnDescription] = [
-                    DEColumnDescription(title="Room", width=7, property="number", unique_id=True),
+                    DEColumnDescription(title="Room", width=14, property="number", unique_id=True),
                     DEColumnDescription(title="Description", width=50, property="description", unique_id=False),
                 ]
                 self._get_resources = schedule.streams

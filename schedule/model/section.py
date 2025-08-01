@@ -189,9 +189,11 @@ class Section:
         """ Gets all teachers assigned to all blocks in this section and
         any teachers that were explicitly assigned to this section"""
         teachers = set()
-        teachers.update(self._allocation_teachers)
-        for b in self.blocks():
-            teachers.update(b.teachers())
+        if len(self.blocks()) == 0:
+            teachers.update(self._allocation_teachers)
+        else:
+            for b in self.blocks():
+                teachers.update(b.teachers())
         return tuple(sorted(teachers))
 
     def section_defined_teachers(self) -> tuple[Teacher, ...]:
@@ -223,9 +225,11 @@ class Section:
 
     def has_teacher(self, teacher: Teacher) -> bool:
         """ Checks if section has teacher """
-        answer = teacher in self._allocation_teachers
-        for b in self.blocks():
-            answer = answer or b.has_teacher(teacher)
+        if len(self.blocks()) == 0:
+            answer = teacher in self._allocation_teachers
+        else:
+            for b in self.blocks():
+                answer = b.has_teacher(teacher)
         return answer
 
     # --------------------------------------------------------

@@ -194,6 +194,21 @@ class ViewCanvasTk:
             self.canvas.tag_raise(gui_tag,"baseline")
 
     # =================================================================
+    # modify movability of gui block
+    # =================================================================
+    def modify_movable(self, gui_tag:str, movable: bool):
+        """
+        modify movability of gui block
+        :param gui_tag:
+        :param movable:
+        :return:
+        """
+        if movable:
+            self.canvas.addtag_withtag(self.Movable_Tag_Name, gui_tag)
+        else:
+            self.canvas.dtag(gui_tag, self.Movable_Tag_Name)
+
+    # =================================================================
     # get the gui id from tags
     # =================================================================
     def get_gui_block_id_from_selected_item(self) -> Optional[str]:

@@ -68,13 +68,6 @@ class ViewsControllerTk:
                 self._button_refs[resource.number] = tk.Button(l_frame, text=str(resource), highlightthickness=4, command=command, width=15)
                 self._button_refs[resource.number].grid(column = col, row=row, sticky='nsew',ipadx=20, ipady=10, padx=2, pady=2)
 
-        # adjust the width of the window so that we don't need left/right scroll
-        mw = self.parent.winfo_toplevel()
-        mw.update_idletasks()
-        current_height = mw.winfo_height()
-        w = min(mw.winfo_reqwidth(), mw.winfo_screenwidth()-50)
-        mw.geometry(f"{w}x{current_height}")
-
     # ============================================================================
     # set button colour
     # ============================================================================

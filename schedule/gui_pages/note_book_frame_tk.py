@@ -61,8 +61,8 @@ class NoteBookFrameTk:
 
         self.recursive_notebook_creation(self.frame, tabs_info)
         self.notebook[0].select(self._default_notebook_page)
-        self.frame.winfo_toplevel().after(500, lambda: self._tab_changed(self.notebook[0]))
-        self.frame.winfo_toplevel().after(600, lambda: self.frame.winfo_toplevel().geometry("800x600"))
+        self.frame.winfo_toplevel().after(20, lambda: self._tab_changed(self.notebook[0]))
+        self.frame.winfo_toplevel().after(10, lambda: self.frame.winfo_toplevel().geometry("975x600"))
 
     # ===================================================================================
     # create notebook pages
@@ -122,12 +122,3 @@ class NoteBookFrameTk:
         _expose_widgets(frame)
         self.tab_changed_handler(tab_name, frame)
 
-    # def update_for_new_schedule_and_show_page(self):
-    #     """Reset the GUI_Pages when a new schedule is read."""
-    #
-    #     if self._notebook_frame:
-    #         if self._top_level_notebook:
-    #             self._top_level_notebook.select(self._default_notebook_page)
-    #             self._top_level_notebook.event_generate("<<NotebookTabChanged>>")
-    #     else:
-    #         self.create_standard_page()

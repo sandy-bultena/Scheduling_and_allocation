@@ -458,20 +458,35 @@ class Schedule:
         """Validates that the schedule makes sense"""
         msg = []
 
-         # each course that has allocation has at least one teacher assigned
+        # each course that has allocation has at least one teacher assigned
         for course in self.courses():
+            new_line = ""
             if course.needs_allocation:
                 if len(course.teachers()) == 0:
-                    msg.append(f"WARNING: Course {course.number} has no teachers")
+                    new_line = "\n"
+                    msg.append(f"\nWARNING: Course {course.number} has no teachers")
 
-        # each block should have at least one lab
-        for block in self.blocks():
-            if len(block.labs()) == 0:
-                msg.append(f"WARNING: {block.section.course.number}, {block.section.number} {block} has no assigned labs")
+            # each block should have at least one teacher
+            for block in course.blocks():
+                if new_line=="":
+                    new_line="\n"
+                    msg.append("")
+                if len(block.teachers()) == 0:
+                    msg.append(f"WARNING: {block.section.course.number}, {block.section.number} {block} has no assigned teachers")
 
-        # each course that has blocks/sections, block time should equal class time
-        for course in self.courses():
+            # each block should have at least one lab
+            for block in course.blocks():
+                if new_line=="":
+                    new_line="\n"
+                    msg.append("")
+                if len(block.labs()) == 0:
+                    msg.append(f"WARNING: {block.section.course.number}, {block.section.number} {block} has no assigned labs")
+
+            # each course that has blocks/sections, block time should equal class time
             for section in course.sections():
+                if new_line=="":
+                    new_line="\n"
+                    msg.append("")
                 duration = sum((b.duration for b in section.blocks()))
                 if duration != course.hours_per_week:
                     msg.append(

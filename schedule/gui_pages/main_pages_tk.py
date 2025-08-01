@@ -18,7 +18,7 @@ import tkinter as tk
 from tkinter import filedialog as tk_fd
 from typing import Optional, TYPE_CHECKING, Callable
 
-from tkinter.messagebox import showerror, showinfo, askyesnocancel
+from tkinter.messagebox import showerror, showinfo, askyesno
 
 from schedule.Tk import FindImages
 from schedule.Tk import set_default_fonts_and_colours, TkColours, TkFonts
@@ -188,9 +188,9 @@ class MainPageBaseTk:
     # ===================================================================================
     def create_standard_page(self, notebook_pages_info: Optional[list[TabInfoProtocol]] = None, reset=False):
         """
-        Create the 'normal' page after the main page has fulfilled its purpose
+        Create the 'welcome' page after the main page has fulfilled its purpose
         :param notebook_pages_info: which tabs, and callbacks, etc are in the notebook being created
-        :param reset: should the notebook be re-drawns
+        :param reset: should the notebook be re-drawn
         """
 
         # if the page is already created, do not recreate it
@@ -247,7 +247,7 @@ class MainPageBaseTk:
         showinfo(title=title, message=msg, detail=detail, icon='info')
 
     def ask_yes_no(self, title: str, msg: str, detail: str = ""):
-        return askyesnocancel(title=title, message=msg, detail=detail, icon='info')
+        return askyesno(title=title, message=msg, detail=detail, icon='info')
 
     # ===================================================================================
     # create top level

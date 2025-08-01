@@ -5,7 +5,7 @@ from schedule.Tk import Scrolled
 SCROLLBAR_DIR = Literal["s", "w", "e", "n", "se", "sw", "ne", "nw"]
 
 
-class ReadOnlyText:
+class ReadOnlyTextTk:
     def __init__(self, frame, text: list[str] = None, height: int = 20, width: int = 50, scrollbars: SCROLLBAR_DIR = 'se',
                  wrap="none"):
         # remove any pre-existing widgets in this frame
