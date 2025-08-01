@@ -1,0 +1,10 @@
+
+============ Bugs ================
+* Auto save
+* Maybe Mac menu stuff (a nice to have)
+* Windows, binding to ctrl-s isn't working properly
+* In edit course window, only open tree element if user paused for more than 'x' seconds
+
+============ Done ================
+* Switching between view tabs and back disconnects view from view controller (and the buttons I thing in the view choices)
+* In Scheduler, the view is not updated when teacher is given release i.e. block is still coloured yellow

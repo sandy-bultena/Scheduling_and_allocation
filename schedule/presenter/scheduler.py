@@ -317,7 +317,8 @@ class Scheduler:
     # ==================================================================
     def update_choices_of_resource_views(self, frame):
         """provide buttons to choose which view the user wants to look at"""
-        self.view_controller = ViewsController(self.set_dirty_method, frame, self.schedule)
+        if self.view_controller is None:
+            self.view_controller = ViewsController(self.set_dirty_method, frame, self.schedule)
         self.view_controller.refresh()
 
     # ==================================================================

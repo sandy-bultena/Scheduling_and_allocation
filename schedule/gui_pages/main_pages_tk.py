@@ -208,10 +208,19 @@ class MainPageBaseTk:
         main_page_frame = tk.Frame(mw, borderwidth=1, relief='ridge')
         main_page_frame.pack(side='top', expand=1, fill='both')
         self._notebook_frame = NoteBookFrameTk(self.mw, main_page_frame, notebook_pages_info,
-                                               self.notebook_tab_changed_handler)
+                                               self.weird_mac_crap_tab_change_handler)
 
     def _exit_schedule(self, *_):
         self.mw.destroy()
+
+    def weird_mac_crap_tab_change_handler(self, name, frame):
+        self.recursive_expose(frame)
+        self.notebook_tab_changed_handler(name, frame)
+
+    def recursive_expose(self, widget):
+        for w in widget.winfo_children():
+            self.recursive_expose(w)
+            widget.update()
 
     # ========================================================================
     # choose file

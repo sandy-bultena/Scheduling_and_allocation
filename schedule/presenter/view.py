@@ -26,7 +26,7 @@
 from __future__ import annotations
 import re
 from functools import partial
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Callable
 
 from schedule.Tk import MenuItem, MenuType
 from schedule.Utilities.id_generator import IdGenerator
@@ -48,7 +48,9 @@ _gui_block_ids = IdGenerator()
 # =====================================================================================================================
 class View:
     """View - describes the visual representation of a Schedule."""
-    def __init__(self, views_controller: ViewsController, frame, schedule: Schedule, resource: RESOURCE, gui:ViewDynamicTk=None):
+    def __init__(self, views_controller: ViewsController, frame, schedule: Schedule,
+                 resource: RESOURCE, dirty_flag_method:Callable, gui:ViewDynamicTk=None,
+                 ):
         """
         :param views_controller: somebody needs to be in control
         :param frame: container
@@ -61,6 +63,7 @@ class View:
         self.resource = resource
         self.schedule = schedule
         self.gui_blocks: dict[str, Block] = {}
+        self.dirty_flag_method = dirty_flag_method
 
         # get the resource type from the resource object, and all its blocks
         resource_type = ResourceType.none
@@ -107,6 +110,7 @@ class View:
 
         # very important, let the gui controller _know_ that the gui block has been modified
         self.views_controller.notify_block_movable_toggled( block)
+        self.dirty_flag_method(True)
 
         # new action by user, so clear all 'redo'
         self.views_controller.remove_all_redoes()
@@ -210,6 +214,8 @@ class View:
         # very important, let the gui controller _know_ that the gui block has been moved
         self.views_controller.notify_block_move(self.resource.number, block, gui_block_day, gui_block_start_time)
 
+        # don't set dirty flag until block has dropped!
+
     # ----------------------------------------------------------------------------------------------------------------
     # gui_block_has_dropped (gui_block_has_dropped_handler)
     # ----------------------------------------------------------------------------------------------------------------
@@ -249,6 +255,8 @@ class View:
         # reset the 'start move' info
         self._block_original_start_time = None
         self._block_original_day = None
+
+        self.dirty_flag_method(True)
 
     # ----------------------------------------------------------------------------------------------------------------
     # get popup menu (get_popup_menu_handler)
