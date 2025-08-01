@@ -144,6 +144,12 @@ class EditCoursesTk:
         right_panel.grid_rowconfigure(2, weight=1)
         right_panel.grid_rowconfigure(3, weight=0)
 
+
+        # is the user hovering over a tree element when dragging a resource?
+        self._hover_time = None
+        self._hover_tree_element = None
+
+
     # -----------------------------------------------------------------------------------------------------------------
     # Public Methods for manipulating the tree object
     # -----------------------------------------------------------------------------------------------------------------
@@ -314,6 +320,10 @@ class EditCoursesTk:
     # -----------------------------------------------------------------------------------------------------------------
     # Event Drag 'n' Drop moving
     # -----------------------------------------------------------------------------------------------------------------
+    def _hovering_response(self, iid):
+        tv = self.course_ttkTreeView
+        tv.item(iid, open=True)
+
     def _resource_on_drag(self, e: tk.Event, info_data: dict, target: tk.Widget) -> bool:
         """bound event while the resource list object is being dragged around
                 calls handler: handler_drag_resource"""
@@ -333,13 +343,21 @@ class EditCoursesTk:
 
             # if we have a valid id...
             if iid:
-                #tv.item(iid, open=True)
                 target_obj: TREE_OBJECT = tv.get_obj_from_id(iid)
                 resource_type: ResourceType = info_data["resource_type"]
 
                 # check with 'user' if this is a valid item for dropping source onto target
                 if self.handler_drag_resource(resource_type, target_obj):
-                    tv.item(iid, open=True)
+
+                    # if we are hovering, then open the tree element
+                    if (self._hover_time is not None and self._hover_tree_element is not None
+                            and self._hover_tree_element != iid):
+                        self.frame.after_cancel(self._hover_time)
+
+                    if self._hover_tree_element is None or self._hover_tree_element != iid:
+                        self._hover_tree_element = iid
+                        self._hover_time = self.frame.after(500, self._hovering_response, iid)
+
                     info_data["target_obj"] = target_obj
                     info_data["tree_id"] = iid
                     tv.selection_set(iid)
@@ -374,6 +392,10 @@ class EditCoursesTk:
             source_obj: RESOURCE_OBJECT = info_data["source_obj"]
             tree_id: str = info_data["tree_id"]
             self.handler_drop_resource(source_obj, target_obj, tree_id )
+        if self._hover_time is not None:
+            self.frame.after_cancel(self._hover_time)
+        self._hover_time = None
+        self._hover_tree_element = None
 
     # -----------------------------------------------------------------------------------------------------------------
     # Button Events - new course
