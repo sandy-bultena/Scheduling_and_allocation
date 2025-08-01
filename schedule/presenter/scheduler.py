@@ -43,7 +43,7 @@ from typing import Optional, TYPE_CHECKING, Any, Callable
 from schedule.presenter.edit_resources import EditResources
 from schedule.presenter.edit_courses import EditCourses
 
-from .menus_main_menu import set_menu_event_handler, main_menu
+from .menus_main_menu_scheduler import set_menu_event_handler, main_menu
 from schedule.Utilities import Preferences
 from schedule.gui_pages.scheduler_tk import SchedulerTk, set_main_page_event_handler
 from schedule.model import Schedule, ResourceType
@@ -53,23 +53,11 @@ from schedule.presenter.view import View
 from schedule.presenter.views_controller import ViewsController
 from schedule.export.view_export_canvases import PDFCanvas, LatexCanvas
 from schedule.gui_pages.view_canvas_tk import ViewCanvasTk
+from schedule.presenter.notebook_tab_data import NBTabInfo
 
 class CanvasType(Enum):
     latex = 1
     pdf = 2
-
-# =====================================================================================
-# Notebook book-keeping
-# =====================================================================================
-@dataclass
-class NBTabInfo:
-        name: str
-        label: str
-        subpages: list = field(default_factory=list)
-        frame_args: dict[str, Any] =  field(default_factory=dict)
-        creation_handler: Callable = lambda *_: None
-        is_default_page: bool = False
-
 
 # =====================================================================================
 # Scheduler
@@ -129,7 +117,7 @@ class Scheduler:
         ]
 
         # --------------------------------------------------------------------
-        # create the Gui Main Window
+        # create the Menu and Toolbars
         # --------------------------------------------------------------------
         set_menu_event_handler("file_new", self.new_menu_event)
         set_menu_event_handler("file_open", self.open_menu_event)
@@ -154,6 +142,9 @@ class Scheduler:
 
         (self._toolbar_buttons, self._button_properties, self._menu) = main_menu()
 
+        # --------------------------------------------------------------------
+        # create the Gui Main Window
+        # --------------------------------------------------------------------
         self.gui.create_menu_and_toolbars(self._toolbar_buttons, self._button_properties, self._menu)
         self.gui.create_welcome_page(self.preferences.semester())
         self.gui.create_status_bar()
@@ -264,7 +255,6 @@ class Scheduler:
         if filename is not None and filename != "":
             self.schedule.write_file(filename)
             self.schedule_filename = filename
-            self.gui.show_message("Save File", "File saved as", detail=f"{filename}")
             self.dirty_flag = False
 
     # ============================================================================================

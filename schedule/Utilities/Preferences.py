@@ -66,7 +66,7 @@ class Preferences:
             elif self.semester() == 'winter':
                 directory = self._config['MOST_RECENT'].get('winter_directory', None)
                 filename = self._config['MOST_RECENT'].get('winter_last_file', None)
-            elif self.semester() == 'winter':
+            elif self.semester() == 'summer':
                 directory = self._config['MOST_RECENT'].get('summer_directory', None)
                 filename = self._config['MOST_RECENT'].get('summer_last_file', None)
             else:

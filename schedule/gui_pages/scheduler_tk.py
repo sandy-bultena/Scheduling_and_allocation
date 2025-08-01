@@ -89,7 +89,7 @@ class SchedulerTk(MainPageBaseTk):
     @previous_file.setter
     def previous_file(self, value):
         if value is not None and value != "":
-            basename = os.path.basename(value)
+            basename = os.path.basename(str(value))
             if len(basename) > MAX_LEN_OF_DISPLAYED_FILENAME:
                 basename = "..." + basename[len(basename) - MAX_LEN_OF_DISPLAYED_FILENAME:]
             self._previous_file.set(basename)
