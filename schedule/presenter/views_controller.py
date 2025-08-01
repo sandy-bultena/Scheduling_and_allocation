@@ -132,7 +132,7 @@ class ViewsController:
             self._views[resource.number].gui.raise_to_top()
             return
 
-        self._views[resource.number] = View(self, self.frame, self.schedule, resource)
+        self._views[resource.number] = View(self, self.frame, self.schedule, resource, self.dirty_flag_method)
 
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -141,7 +141,6 @@ class ViewsController:
     def notify_block_move(self, resource_number: Optional[str], moved_block: Block, day: float, start_time:float):
         """A GUI block has been modified in a view, so propagate this information to the other views"""
 
-        self.dirty_flag_method(True)
         self.refresh()
 
         # update any view that has the same block that was moved
@@ -157,7 +156,6 @@ class ViewsController:
     def notify_block_movable_toggled(self, modified_block: Block):
         """A block has been modified in a view, so propagate this information to the other views"""
 
-        self.dirty_flag_method(True)
         self.refresh()
 
         # update any view that has the same block that was moved
@@ -316,6 +314,7 @@ class ViewsController:
     # ----------------------------------------------------------------------------------------------------------------
     def redraw_all(self):
         """redraw all the views and update button choices"""
+        self.schedule.calculate_conflicts()
 
         for resource, view in self._views.items():
             teacher_numbers = (x.number for x in self.schedule.teachers())
