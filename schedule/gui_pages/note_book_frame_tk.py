@@ -18,12 +18,12 @@ from typing import Optional, Callable, Protocol, Any
 
 @dataclass
 class TabInfoProtocol(Protocol):
-        name: str
-        label: str
-        subpages: list = field(default_factory=list)
-        frame_args: dict[str, Any] =  field(default_factory=dict)
-        creation_handler: Callable = lambda *_: None
-        is_default_page: bool = False
+    name: str
+    label: str
+    subpages: list = field(default_factory=list)
+    frame_args: dict[str, Any] = field(default_factory=dict)
+    creation_handler: Callable = lambda *_: None
+    is_default_page: bool = False
 
 
 def _expose_widgets(widget):
@@ -35,6 +35,7 @@ def _expose_widgets(widget):
 
 class NoteBookFrameTk:
     """creates notebook, recursively, until all notebook tabs are created"""
+
     # ===================================================================================
     # constructor
     # ===================================================================================
@@ -53,15 +54,15 @@ class NoteBookFrameTk:
         self.tabs_info = tabs_info
         self.mw = mw
         self.frame = main_page_frame
-        self.tab_frames: dict[tuple[ttk.Notebook,int], tuple[str,tk.Frame]] = {}
+        self.tab_frames: dict[tuple[ttk.Notebook, int], tuple[str, tk.Frame]] = {}
         self.tab_changed_handler = tab_changed_handler
         self.main_notebook_frame = None
         self.notebook = []
 
         self.recursive_notebook_creation(self.frame, tabs_info)
         self.notebook[0].select(self._default_notebook_page)
-        self.frame.winfo_toplevel().after(500, lambda : self._tab_changed(self.notebook[0]))
-
+        self.frame.winfo_toplevel().after(500, lambda: self._tab_changed(self.notebook[0]))
+        self.frame.winfo_toplevel().after(600, lambda: self.frame.winfo_toplevel().geometry("800x600"))
 
     # ===================================================================================
     # create notebook pages
@@ -93,7 +94,7 @@ class NoteBookFrameTk:
             notebook_index = notebook.index(frame)
 
             # save the frame and name for this tab index
-            self.tab_frames[(notebook,notebook_index)] = (info.name, frame)
+            self.tab_frames[(notebook, notebook_index)] = (info.name, frame)
 
             # set the page that should be shown by default
             if info.is_default_page:
@@ -110,7 +111,6 @@ class NoteBookFrameTk:
         # add the binding for changing of events, and include a list of events for each tab change
         notebook.bind("<<NotebookTabChanged>>", partial(self._tab_changed, notebook))
 
-
     def _tab_changed(self, notebook: ttk.Notebook, *_):
         """
         calls the tab changed callback when the tab has changed
@@ -118,10 +118,9 @@ class NoteBookFrameTk:
         :param _: tk events?
         """
         index = notebook.index(notebook.select())
-        tab_name, frame  = self.tab_frames.get((notebook,index), None)
+        tab_name, frame = self.tab_frames.get((notebook, index), None)
         _expose_widgets(frame)
         self.tab_changed_handler(tab_name, frame)
-
 
     # def update_for_new_schedule_and_show_page(self):
     #     """Reset the GUI_Pages when a new schedule is read."""

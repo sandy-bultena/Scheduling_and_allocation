@@ -50,7 +50,8 @@ def entry_float(frame: tk.Frame, textvariable: tk.StringVar ) -> tk.Entry:
     return tk.Entry(frame,
                            textvariable=textvariable,
                            validate='key',
-                           validatecommand=(tk_is_float, '%P', '%s'))
+                           validatecommand=(tk_is_float, '%P', '%s'),
+                            justify='right')
 
 def entry_int(frame: tk.Frame, textvariable: tk.StringVar ) -> tk.Entry:
     """
@@ -63,7 +64,8 @@ def entry_int(frame: tk.Frame, textvariable: tk.StringVar ) -> tk.Entry:
     return tk.Entry(frame,
                            textvariable=textvariable,
                            validate='key',
-                           validatecommand=(tk_is_int, '%P', '%s'))
+                           validatecommand=(tk_is_int, '%P', '%s'),
+                    justify='right')
 
 def _is_int(frame: tk.Frame, number: str, *_) -> bool:
     """
@@ -162,6 +164,9 @@ def set_style(frame):
     :return:
     """
     style = ttk.Style(frame.winfo_toplevel())
+    print(style.lookup("TCombobox","background"))
+    print(style.lookup("TCombobox","fieldbackground"))
+    print(style.lookup("TCombobox","foreground"))
     style.configure("MyCustom.TCombobox",
                          fieldbackground='black',  # Background of the input field
                          background='black',  # Overall widget background
@@ -200,6 +205,7 @@ def refresh_gui_blocks(self,):
     :param self: the object that contains all the block info, frame, etc
     :return:
     """
+    print("refreshing gui block")
     days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
     start_times = []
     for h in range(7, 24):
@@ -215,30 +221,34 @@ def refresh_gui_blocks(self,):
     for index, block_info in enumerate(self.row_data):
         def remove_block(instance=self, i=index):
             instance.row_data.pop(i)
-            instance.refresh_blocks()
+            instance.refresh()
 
         row_frame = tk.Frame(self.block_frames)
+        if row_frame.winfo_toplevel().tk.call('tk', 'windowingsystem') == 'aqua':
+            padx=2
+            pady = 5
+        else:
+            padx = 2
+            pady = 2
         row_frames.append(row_frame)
         row_frame.pack(expand=1, fill='both', padx=10, pady=2)
 
         opt_day, opt_hour, opt_duration = block_info
 
-        btn_delete = tk.Button(row_frame, text="remove", command=remove_block)
-        om_day = ttk.Combobox(row_frame, textvariable=opt_day, state="readonly", values=days,
-                              style="MyCustom.TCombobox")
-        om_time = ttk.Combobox(row_frame, textvariable=opt_hour, state="readonly", values=start_times,
-                               style="MyCustom.TCombobox")
-        om_duration = ttk.Combobox(row_frame, textvariable=opt_duration, state="readonly", values=durations,
-                                   style="MyCustom.TCombobox")
+        btn_delete = tk.Button(row_frame, text="remove",  command=remove_block, padx=2*padx)
+        om_day = ttk.Combobox(row_frame, textvariable=opt_day,  values=days, state="readonly", )
+        om_time = ttk.Combobox(row_frame, textvariable=opt_hour, state="readonly", values=start_times,)
+        om_duration = ttk.Combobox(row_frame, textvariable=opt_duration, state="readonly", values=durations,)
 
         om_day.config(width=8)
         om_time.config(width=5)
         om_duration.config(width=8)
 
-        om_day.pack(side='left', pady=0)
-        om_time.pack(side='left', pady=0)
-        om_duration.pack(side='left', pady=0)
-        btn_delete.pack(side='left', pady=0)
+        om_day.pack(side='left', pady=pady, padx=padx)
+        om_time.pack(side='left', pady=pady, padx=padx)
+        om_duration.pack(side='left', pady=pady, padx=padx)
+        btn_delete.pack(side='left', pady=pady, padx=padx, ipadx=padx)
+
 
 
 

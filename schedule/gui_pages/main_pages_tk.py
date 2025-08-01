@@ -210,7 +210,6 @@ class MainPageBaseTk:
         self._notebook_frame = NoteBookFrameTk(self.mw, main_page_frame, notebook_pages_info,
                                                self.notebook_tab_changed_handler)
 
-
     def _exit_schedule(self, *_):
         self.mw.destroy()
 

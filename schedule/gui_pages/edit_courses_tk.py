@@ -402,8 +402,12 @@ class EditCoursesTk:
         tv.bind('<Key-Return>', self._cmd_edit_selection)
         tv.tag_configure("bold", font=self.Fonts.big)
         tv.tag_configure("normal", font=self.Fonts.normal)
-        tv.bind('<ButtonRelease-2>', self._cmd_show_tree_menu)
-        tv.bind('<ButtonRelease-3>', self._cmd_show_tree_menu)
+        # mac vs windows methods for getting pop up menus
+        if self.frame.winfo_toplevel().tk.call('tk','windowingsystem') == 'aqua':
+            tv.bind('<2>', self._cmd_show_tree_menu)
+            tv.bind('<Control-1>', self._cmd_show_tree_menu)
+        else:
+            tv.bind('<3>', self._cmd_show_tree_menu)
 
         return tv
 
@@ -447,9 +451,18 @@ class EditCoursesTk:
                              on_drop=self._resource_on_drop,
                              on_drag=self._resource_on_drag)
 
-            self.resource_Listbox[resource_type].bind(
-                '<Button-2>',
-                partial(self._cmd_show_resource_type_menu, resource_type))
+            # mac vs windows methods for getting pop up menus
+            if self.frame.winfo_toplevel().tk.call('tk', 'windowingsystem') == 'aqua':
+                self.resource_Listbox[resource_type].bind(
+                    '<Button-2>',
+                    partial(self._cmd_show_resource_type_menu, resource_type))
+                self.resource_Listbox[resource_type].bind(
+                    '<Control-1>',
+                    partial(self._cmd_show_resource_type_menu, resource_type))
+            else:
+                self.resource_Listbox[resource_type].bind(
+                    '<Button-3>',
+                    partial(self._cmd_show_resource_type_menu, resource_type))
 
             self.resource_Listbox[resource_type].unbind('<Motion>')
 

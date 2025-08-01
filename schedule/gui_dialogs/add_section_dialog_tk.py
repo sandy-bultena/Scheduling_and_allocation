@@ -101,7 +101,7 @@ class AddSectionDialogTk(Dialog):
 
     def refresh(self):
         refresh_gui_blocks(self)
-        tk.Button(self.block_frames, text="Add New Class", command=self.add_new_block).pack(expand=1, fill='y')
+        tk.Button(self.block_frames, text="Add New Class Time", command=self.add_new_block,padx=5).pack(expand=1, fill='y')
 
 
     # ================================================================================================================

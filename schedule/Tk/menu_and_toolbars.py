@@ -95,12 +95,14 @@ def generate_menu(mw, menu_details: Optional[list[MenuItem]], parent: Menu):
         if menu_item.accelerator:
             x = re.match(r'ctrl-(.)', menu_item.accelerator, re.RegexFlag.IGNORECASE)
             if x:
-                binding = f"<Control-Key-{x.group(1).lower()}>"
-                mw.bind(binding, menu_item.command)
-
-                # if darwin, also bind the 'command' key for MAC users
-                binding = f"<Command-Key-{x.group(1).lower()}>"
-                mw.bind(binding, menu_item.command)
+                pass
+                # binding = f"<Control-{x.group(1).lower()}>"
+                # print(binding)
+                # mw.bind(binding, menu_item.command)
+                #
+                # # if darwin, also bind the 'command' key for MAC users
+                # binding = f"<Command-{x.group(1).lower()}>"
+                # mw.bind(binding, menu_item.command)
 
 
 def make_toolbar(mw, button_names: list[str], actions: dict[str:ToolbarItem],

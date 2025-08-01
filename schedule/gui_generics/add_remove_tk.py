@@ -38,7 +38,7 @@ class AddRemoveTk:
         sf.pack(fill='both', expand=1)
         s: Scrolled = Scrolled(sf, 'Listbox', scrollbars='oe', height=height)
         self.add_listbox = s.widget
-        self.add_listbox.configure(borderwidth="5", relief="sunken")
+        self.add_listbox.configure(borderwidth="5", relief="ridge")
         s.widget.bind('<Button-1>', partial(self._cmd_click, 'add'))
 
         f = tk.Frame(self.frame)
@@ -48,7 +48,7 @@ class AddRemoveTk:
         sf.pack(fill='both', expand=1)
         s: Scrolled = Scrolled(sf, 'Listbox', scrollbars='oe', height=height)
         self.remove_listbox = s.widget
-        self.remove_listbox.configure(borderwidth="5", relief="sunken")
+        self.remove_listbox.configure(borderwidth="5", relief="ridge")
         s.widget.bind('<Button-1>', partial(self._cmd_click, 'remove'))
 
         self.refresh()

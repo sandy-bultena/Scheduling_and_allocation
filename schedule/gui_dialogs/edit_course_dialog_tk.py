@@ -83,8 +83,9 @@ class EditCourseDialogTk(simpledialog.Dialog):
         en_course_name.grid(row=2, column=1, sticky='nsew')
 
         tk.Label(course_info_frame, text="Needs Allocation", anchor='e', width=15).grid(row=3, column=0, sticky='nsew')
-        en_course_name = tk.Checkbutton(course_info_frame, text="", offvalue=False, onvalue=True, variable=self.course_allocation_tk, width=20)
-        en_course_name.grid(row=3, column=1, sticky='nsew')
+        en_allocation = tk.Checkbutton(course_info_frame, text="", offvalue=False, onvalue=True,
+                                       variable=self.course_allocation_tk, width=20, justify='left')
+        en_allocation.grid(row=3, column=1, sticky='w')
 
         # ------------------------------------------------------------------------------------------------------------
         # Sections/Blocks
@@ -129,7 +130,7 @@ class EditCourseDialogTk(simpledialog.Dialog):
 
     def refresh(self):
         refresh_gui_blocks(self)
-        tk.Button(self.block_frames, text="Add New Class Time", command=self.add_new_block).pack(expand=1, fill='y')
+        tk.Button(self.block_frames, text="Add New Class Time", command=self.add_new_block, padx=5).pack(expand=1, fill='y')
 
     # ================================================================================================================
     # validate before applying
