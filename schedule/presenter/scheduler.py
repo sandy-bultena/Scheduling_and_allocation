@@ -206,7 +206,7 @@ class Scheduler:
         self.schedule_filename = ""
         if self.view_controller is not None:
             self.view_controller.kill_all_views()
-        self.gui.create_standard_page(self._required_tabs)
+        self.gui.create_standard_page(self._required_tabs, reset=True)
         self.dirty_flag = True
 
     def open_menu_event(self):
@@ -229,7 +229,7 @@ class Scheduler:
                 self.dirty_flag = False
                 if self.view_controller is not None:
                     self.view_controller.kill_all_views()
-                self.gui.create_standard_page(self._required_tabs)
+                self.gui.create_standard_page(self._required_tabs, reset=True)
 
             except CouldNotReadFileError as e:
                 self.gui.show_error("Read File", str(e))
@@ -299,7 +299,7 @@ class Scheduler:
         elif name == self.NB_overview_teacher:
             self.update_teacher_text(frame)
         elif name == self.NB_schedule:
-            self.update_choices_of_resource_views(frame)
+            self.update_choice_colours(frame)
         elif name == self.NB_overview:
             self.update_overview(frame)
         elif name == self.NB_course:
@@ -312,11 +312,10 @@ class Scheduler:
             self.update_edit_streams(frame)
 
     # ==================================================================
-    # update_choices_of_resource_views
-    # (what teacher_ids/lab_ids/stream_ids) can we create schedules for?
+    # update choice colours
     # ==================================================================
-    def update_choices_of_resource_views(self, frame):
-        """provide buttons to choose which view the user wants to look at"""
+    def update_choice_colours(self, frame):
+        """if not already created, create Views Controller, update colours"""
         if self.view_controller is None:
             self.view_controller = ViewsController(self.set_dirty_method, frame, self.schedule)
         self.view_controller.refresh()

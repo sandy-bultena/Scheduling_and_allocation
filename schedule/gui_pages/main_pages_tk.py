@@ -70,6 +70,7 @@ class MainPageBaseTk:
         self._toolbar = None
         self._default_notebook_page: int = 0
         self._top_level_notebook: Optional[Notebook] = None
+        self._main_page_frame: Optional[tk.Frame] = None
 
         # Create the Tk main window
         self.mw = self._create_toplevel(title)
@@ -194,7 +195,7 @@ class MainPageBaseTk:
         """
 
         # if the page is already created, do not recreate it
-        if self._notebook_frame is not None or reset:
+        if self._notebook_frame is not None and not reset:
             if self._notebook_frame.main_notebook_frame:
                 self._notebook_frame.main_notebook_frame.select(self._default_notebook_page)
                 self._notebook_frame.main_notebook_frame.event_generate("<<NotebookTabChanged>>")
@@ -205,9 +206,11 @@ class MainPageBaseTk:
         self._front_page_frame.destroy()
 
         # frame
-        main_page_frame = tk.Frame(mw, borderwidth=1, relief='ridge')
-        main_page_frame.pack(side='top', expand=1, fill='both')
-        self._notebook_frame = NoteBookFrameTk(self.mw, main_page_frame, notebook_pages_info,
+        if self._main_page_frame is not None:
+            self._main_page_frame.destroy()
+        self._main_page_frame = tk.Frame(mw, borderwidth=1, relief='ridge')
+        self._main_page_frame.pack(side='top', expand=1, fill='both')
+        self._notebook_frame = NoteBookFrameTk(self.mw, self._main_page_frame, notebook_pages_info,
                                                self.weird_mac_crap_tab_change_handler)
 
     def _exit_schedule(self, *_):

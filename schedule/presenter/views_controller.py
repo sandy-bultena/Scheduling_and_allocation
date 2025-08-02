@@ -112,6 +112,24 @@ class ViewsController:
         """
         sets the button colours for view choices depending on the most severe conflict for that resource
         """
+
+        # if resources have changed, then we need to close all the views, and create a new gui
+        resources = {
+            ResourceType.teacher: list(self.schedule.teachers()),
+            ResourceType.lab: list(self.schedule.labs()),
+            ResourceType.stream: list(self.schedule.streams())
+        }
+        redrawing = False
+        for resource_type in ResourceType.teacher, ResourceType.lab, ResourceType.stream:
+            if (len(set(self.resources[resource_type]) - set(resources[resource_type])) != 0
+                or len(set(resources[resource_type]) - set(self.resources[resource_type])) != 0):
+                redrawing = True
+                break
+        if redrawing:
+            self.resources = resources
+            self.gui = ViewsControllerTk(self.frame, self.resources, self.call_view)
+
+        # update the colours
         self.schedule.calculate_conflicts()
         for resource_type in self.resources:
             for resource in self.resources[resource_type]:

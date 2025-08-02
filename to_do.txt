@@ -9,3 +9,5 @@
 * Switching between view tabs and back disconnects view from view controller (and the buttons I thing in the view choices)
 * In Scheduler, the view is not updated when teacher is given release i.e. block is still coloured yellow
 * In edit course window, only open tree element if user paused for more than '1/2' seconds
+* when refreshing the gui-choices page in Scheduler, resources are not updated to reflect any changes
+* when new schedule opened in scheduler, notebook pages are not updated
