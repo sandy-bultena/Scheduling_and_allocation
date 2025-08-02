@@ -12,6 +12,7 @@ from schedule.presenter.edit_resources import EditResources
 from schedule.presenter.menus_main_menu_allocation import set_menu_event_handler_allocation, main_menu_allocation
 from schedule.model import Schedule, SemesterType, ResourceType
 from schedule.presenter.notebook_tab_data import NBTabInfo
+from schedule.presenter.student_numbers import StudentNumbers
 
 
 # =====================================================================================
@@ -37,7 +38,7 @@ class AllocationManager:
     NB_winter = "Winter"
     NB_winter_course = "Winter Courses"
     NB_winter_teacher = "Winter Teachers"
-    NB_winter_students = "Fall Students"
+    NB_winter_students = "Winter Students"
 
     def __init__(self, bin_dir: DIRECTORY, gui: Optional[AllocationManagerTk] = None):
 
@@ -258,7 +259,7 @@ class AllocationManager:
         self.gui.exit_schedule()
 
     def go(self):
-        print("goes")
+
         for semester in SemesterType.fall, SemesterType.winter:
             if self._schedule_filenames[semester] == "":
                 print("creating new schedule for ", semester)
@@ -346,6 +347,8 @@ class AllocationManager:
     # ==================================================================
     def update_edit_students(self, frame, semester):
         print("hi", semester, frame)
+        data_entry = StudentNumbers(frame, self.schedules[semester])
+        data_entry.refresh()
 
     # ==================================================================
     # schedule has been modified, update gui as required

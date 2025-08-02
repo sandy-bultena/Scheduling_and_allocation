@@ -81,10 +81,6 @@ class EditResourcesTk:
         )
         self.data_entry.pack(side='top', expand=True, fill='both')
 
-        # --------------------------------------------------------------------------
-        # NOTE: If weird shit is happening, give up and use a 'Save' button
-        # ... clicking the 'Delete' triggers a 'Leave'...
-        # --------------------------------------------------------------------------
         self.data_entry.bind('<Leave>', func=self.save)
 
     def refresh(self, data: list[list[Any]]):

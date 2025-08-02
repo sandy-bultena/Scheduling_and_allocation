@@ -14,30 +14,26 @@ class StudentNumbers:
     # Constructor
     # =======================================================================================================
 
-    def __init__(self, frame, schedules: dict[SemesterType, Schedule]):
+    def __init__(self, frame, schedule: Schedule):
         self.frame = frame
         self.data: StudentData = StudentData()
-        self.schedules: dict[SemesterType, Schedule] = schedules
+        self.schedule = schedule
 
         self.refresh()
-        self.gui: StudentNumbersTk = StudentNumbersTk(self.frame, self.data.semesters)
+        self.gui: StudentNumbersTk = StudentNumbersTk(self.frame, self.data.courses)
 
     # =======================================================================================================
     # gather data
     # =======================================================================================================
     def refresh(self):
 
-        for semester in SemesterType:
-            if semester not in self.schedules.keys():
-                continue
+        for course in (c for c in self.schedule.courses() if c.needs_allocation):
+            self.data.add_course(course.number)
 
-            schedule: Schedule = self.schedules[semester]
+            for section in course.sections():
+                section_data = SectionData(section.name, section.num_students, partial(event_handler, section))
+                self.data.add_section(course.number, section_data)
 
-            for course in schedule.courses():
-                self.data.add_course(course)
-
-                for section in course.sections():
-                    self.data.add_section(course,section, partial(event_handler, section))
         return self.data
 
 
@@ -46,28 +42,24 @@ def event_handler(section: Section, number:int):
 
 class StudentData:
     def __init__(self):
-        self.semesters:dict[SemesterType, dict[CourseData, list[SectionData]]] = {}
-        for semester in SemesterType:
-            self.semesters[semester] = {}
+        self.courses: dict[str, list[SectionData]] = {}
 
-    def add_course(self, semester, course):
-        self.semesters[semester][CourseData(course)] = []
+    def add_course(self, course_name:str):
+        self.courses[course_name] = []
 
-    def add_section(self, semester, course, section, number, handler):
-        self.semesters[semester][course].append(SectionData(section, number, handler))
+    def add_section(self, course_name,  section_data):
+        self.courses[course_name].append(section_data)
+
     def clear(self):
-        for semester in SemesterType:
-            self.semesters[semester].clear()
+        self.courses.clear()
 
+    def __iter__(self):
+        return self.courses
 
-class CourseData:
-    def __init__(self, course_name):
-        self.name = course_name
-        self.sections:dict[SectionData, list[SectionData]] = {}
 
 class SectionData:
-    def __init__(self, section_name, number, handler):
+    def __init__(self, section_name, number_of_students, handler):
         self.name = section_name
-        self.number_of_students = number
+        self.number_of_students = number_of_students
         self.handler = handler
 
