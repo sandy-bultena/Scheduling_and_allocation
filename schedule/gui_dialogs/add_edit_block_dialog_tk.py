@@ -5,7 +5,7 @@ import tkinter as tk
 
 from tkinter.simpledialog import Dialog
 from typing import Callable, Literal
-from schedule.gui_dialogs.utilities import  entry_float, entry_int, validate_float, validate_int
+from schedule.gui_generics.number_validations import  entry_float, entry_int, validate_float, validate_int
 
 from schedule.gui_generics.add_remove_tk import AddRemoveTk
 

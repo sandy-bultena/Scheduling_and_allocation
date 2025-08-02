@@ -7,7 +7,8 @@ import tkinter.font as tkFont
 from tkinter.simpledialog import Dialog
 from typing import Callable
 
-from schedule.gui_dialogs.utilities import set_style, validate_int, validate_class_times_equals_course_time, \
+from schedule.gui_generics.number_validations import validate_int
+from schedule.gui_dialogs.dialog_utilities import set_style, validate_class_times_equals_course_time, \
     get_block_info_from_row_data, refresh_gui_blocks
 
 

@@ -7,9 +7,10 @@ import tkinter.simpledialog as simpledialog
 # from tkinter.simpledialog import Dialog
 from typing import Callable, Literal, TYPE_CHECKING
 
-from schedule.gui_dialogs.utilities import set_style, entry_float, entry_int, validate_float, validate_int, \
-    validate_class_times_equals_course_time, refresh_gui_blocks, get_block_info_from_row_data, \
-    get_clock_string_from_hours
+from schedule.gui_generics.number_validations import validate_int, entry_float, entry_int, validate_float
+from schedule.gui_dialogs.dialog_utilities import set_style, validate_class_times_equals_course_time, \
+    get_block_info_from_row_data, refresh_gui_blocks, get_clock_string_from_hours
+
 from schedule.gui_generics.add_remove_tk import AddRemoveTk
 if TYPE_CHECKING:
     from schedule.model import Lab, Teacher

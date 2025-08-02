@@ -8,8 +8,8 @@ from tkinter import ttk
 from tkinter.simpledialog import Dialog
 from typing import Callable, TYPE_CHECKING
 
-from schedule.gui_dialogs.utilities import validate_class_times_equals_course_time, get_block_info_from_row_data, \
-    refresh_gui_blocks, get_clock_string_from_hours
+from schedule.gui_dialogs.dialog_utilities import validate_class_times_equals_course_time, \
+    get_block_info_from_row_data, refresh_gui_blocks, get_clock_string_from_hours
 from schedule.gui_generics.add_remove_tk import AddRemoveTk
 
 if TYPE_CHECKING:
