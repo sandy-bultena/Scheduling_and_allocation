@@ -27,6 +27,10 @@ EVENT_HANDLER_NAMES = Literal[
     "winter_file_new",
     "winter_file_open_previous",
     "winter_file_open_previous",
+    "summer_file_open",
+    "summer_file_new",
+    "summer_file_open_previous",
+    "summer_file_open_previous",
     "go",
     "exit",
 ]
@@ -44,100 +48,79 @@ def set_main_page_event_handler(name: EVENT_HANDLER_NAMES, handler: Callable[[],
 # ============================================================================
 class AllocationManagerTk(MainPageBaseTk):
 
-    # ========================================================================
+    # ----------------------------------------------------------------------------------------------------------------
     # constructor
-    # ========================================================================
+    # ----------------------------------------------------------------------------------------------------------------
     def __init__(self, title: str, preferences: Preferences = None, bin_dir: str = "."):
         """
         create object - starts with welcome page displayed
         :param title: Sir, Ma'am, Her Royal Highness
-        :param preferences: what d'ya want, what d'ya really really want?
+        :param preferences: what d'ya want, d'ya really really want?
         :param bin_dir: the directory that the logo for this app is located
         """
         print("inside AllocationManagerTk")
         self.preferences: Preferences = preferences
-        self.previous_file_buttons: dict[SemesterType, Optional[tk.Button]] = {
-            SemesterType.fall: None,
-            SemesterType.winter: None,
-        }
+        self.previous_file_buttons: dict[SemesterType, Optional[tk.Button]] = {s: None for s in SemesterType}
 
         super().__init__(title, preferences)
         MainPageBaseTk.bin_dir = bin_dir
 
-        self._previous_files: dict[SemesterType, tk.StringVar] = {
-            SemesterType.fall: tk.StringVar(value="None"),
-            SemesterType.winter: tk.StringVar(value="None")
-        }
+        self._previous_files: dict[SemesterType, tk.StringVar] = {s: tk.StringVar(value="None") for s in SemesterType}
+
         self._schedule_filenames: dict[SemesterType, Optional[tk.StringVar]] = {
-            SemesterType.fall: tk.StringVar(value='Create New'),
-            SemesterType.winter: tk.StringVar(value="Create New"),
-        }
+            s: tk.StringVar(value="Create New") for s in SemesterType}
 
-    @property
-    def previous_file_fall(self):
-        return self._previous_files[SemesterType.fall].get()
-
-    @previous_file_fall.setter
-    def previous_file_fall(self, value):
-        self._configure_previous_file(SemesterType.fall, value)
-
-    @property
-    def previous_file_winter(self):
-        return self._previous_files[SemesterType.winter].get()
-
-    @previous_file_winter.setter
-    def previous_file_winter(self, value):
-        self._configure_previous_file(SemesterType.winter, value)
-
-    @property
-    def schedule_filename_fall(self):
-        return self._schedule_filenames[SemesterType.fall].get()
-
-    @schedule_filename_fall.setter
-    def schedule_filename_fall(self, value: str):
-        if value is not None and value != "":
-            value = os.path.abspath(value)
-            if len(value) > MAX_LEN_OF_DISPLAYED_FILENAME:
-                value = "... " + value[len(value) - MAX_LEN_OF_DISPLAYED_FILENAME:]
-            self._schedule_filenames[SemesterType.fall].set(value)
-        else:
-            self._schedule_filenames[SemesterType.fall].set(value="Create New")
-
-
-    @property
-    def schedule_filename_winter(self):
-        return self._schedule_filenames[SemesterType.winter].get()
-
-    @schedule_filename_winter.setter
-    def schedule_filename_winter(self, value: str):
-        if value is not None and value != "":
-            value = os.path.abspath(value)
-            if len(value) > MAX_LEN_OF_DISPLAYED_FILENAME:
-                value = "... " + value[len(value) - MAX_LEN_OF_DISPLAYED_FILENAME:]
-            self._schedule_filenames[SemesterType.winter].set(value)
-        else:
-            self._schedule_filenames[SemesterType.winter].set(value="Create New")
-
-    def _configure_previous_file(self, semester, value):
-        if value is not None and value != "":
-            basename = os.path.basename(str(value))
-            if len(basename) > MAX_LEN_OF_DISPLAYED_FILENAME:
-                basename = "..." + basename[len(basename) - MAX_LEN_OF_DISPLAYED_FILENAME:]
-            self._previous_files[semester].set(basename)
-        else:
-            self._previous_files[semester].set(value="None")
-
-        try:
-            if self._previous_files[semester] != "None":
-                self.previous_file_buttons[semester].configure(state='normal')
+    # ----------------------------------------------------------------------------------------------------------------
+    # setting the previous file
+    # ----------------------------------------------------------------------------------------------------------------
+    def previous_file(self, semester=SemesterType.any, value:str=None) -> str:
+        """
+        the previous file is saved as a Tk StringVar, and used on a button
+        :param semester:
+        :param value:
+        :return: the current value of the Tk StringVar
+        """
+        if value is not None:
+            if value is not None and value != "":
+                basename = os.path.basename(str(value))
+                if len(basename) > MAX_LEN_OF_DISPLAYED_FILENAME:
+                    basename = "..." + basename[len(basename) - MAX_LEN_OF_DISPLAYED_FILENAME:]
+                self._previous_files[semester].set(basename)
             else:
-                self.previous_file_buttons[semester].configure(state='disabled')
-        except tk.TclError:
-            pass
+                self._previous_files[semester].set(value="None")
 
-    # ========================================================================
+            try:
+                if self._previous_files[semester] != "None":
+                    self.previous_file_buttons[semester].configure(state='normal')
+                else:
+                    self.previous_file_buttons[semester].configure(state='disabled')
+            except tk.TclError:
+                pass
+        return self._previous_files[semester].get()
+
+
+    # ----------------------------------------------------------------------------------------------------------------
+    # setting the schedule filename
+    # ----------------------------------------------------------------------------------------------------------------
+    def schedule_filename(self, semester:SemesterType = SemesterType.any, value:str =""):
+        """
+        the schedule file is saved as a Tk StringVar, and is trimmed down to a smaller size if necessary
+        :param semester:
+        :param value:
+        :return: the current value of the Tk StringVar
+        """
+        if value is not None and value != "":
+            value = os.path.abspath(value)
+            if len(value) > MAX_LEN_OF_DISPLAYED_FILENAME:
+                value = "... " + value[len(value) - MAX_LEN_OF_DISPLAYED_FILENAME:]
+            self._schedule_filenames[semester].set(value)
+        else:
+            self._schedule_filenames[semester].set(value="Create New")
+        return self._schedule_filenames[semester].get()
+
+    # ----------------------------------------------------------------------------------------------------------------
     # override exit event
-    # ========================================================================
+    # ----------------------------------------------------------------------------------------------------------------
     def _exit_schedule(self, *_):
         self.exit_schedule()
 
@@ -145,22 +128,25 @@ class AllocationManagerTk(MainPageBaseTk):
         MAIN_PAGE_EVENT_HANDLERS["exit"]()
         super()._exit_schedule()
 
-    def create_welcome_page(self):
-        """Creates the very first page that is shown to the user."""
+    # ----------------------------------------------------------------------------------------------------------------
+    # create welcome page
+    # ----------------------------------------------------------------------------------------------------------------
+    def create_welcome_page(self, valid_semesters:list[SemesterType]):
+        """
+        Creates the very first page that is shown to the user
+        :param valid_semesters:
+        """
         option_frame = super().create_welcome_page_base()
 
-        # divide frame into two, so that we have fall and winter choices
-        option_frames: dict[SemesterType, tk.LabelFrame] = {
-            SemesterType.fall: tk.LabelFrame(option_frame,text=SemesterType.fall.name,font=self.fonts.big),
-            SemesterType.winter: tk.LabelFrame(option_frame,text=SemesterType.winter.name, font=self.fonts.big)
-        }
-        option_frames[SemesterType.fall].grid(row=0, padx=10,pady=10)
-        option_frames[SemesterType.winter].grid(row=1, padx=10, pady=10)
+        # divide frame into semesters
+        option_frames: dict[SemesterType, tk.LabelFrame] = {}
+        for row,semester in enumerate(valid_semesters):
+            option_frames[semester] = tk.LabelFrame(option_frame,text=semester.name,font=self.fonts.big)
+            option_frames[semester].grid(row=row, padx=10,pady=10)
 
-        for semester in SemesterType.fall, SemesterType.winter:
-            # --------------------------------------------------------------
+        for semester in valid_semesters:
+
             # open previous schedule file buttons
-            # -------------------------------------------------------------
             self.previous_file_buttons[semester]= tk.Button(
                 option_frames[semester],
                 justify="right",
@@ -176,9 +162,7 @@ class AllocationManagerTk(MainPageBaseTk):
             )
             self.previous_file_buttons[semester].pack(side="top", fill="y", expand=0, padx=5, pady=5)
 
-            # --------------------------------------------------------------
             # open schedule file option
-            # --------------------------------------------------------------
             tk.Button(
                 option_frames[semester],
                 text=f"Browse",
@@ -191,9 +175,7 @@ class AllocationManagerTk(MainPageBaseTk):
                 height=2
             ).pack(side="top", fill="y", expand=0, padx=5, pady=5)
 
-            # --------------------------------------------------------------
             # selected file
-            # --------------------------------------------------------------
             frame = tk.Frame(option_frames[semester])
             frame.pack(side="top",fill="y", expand=0, padx=5, pady=5)
             label = tk.Label(frame,text="selected file")
@@ -202,44 +184,9 @@ class AllocationManagerTk(MainPageBaseTk):
             label.pack(side="top")
             entry.pack(side="top",expand=1, fill="y")
 
-        # --------------------------------------------------------------
         # go
-        # --------------------------------------------------------------
         tk.Button(option_frame, text="Go", font=self.fonts.big, padx=20,pady=5,
                   command=MAIN_PAGE_EVENT_HANDLERS['go']).grid(
             row=2, sticky='ew'
         )
 
-
-
-
-#         # --------------------------------------------------------------
-#         # set_default_fonts_and_colours selected schedules to those in the preference file
-#         # --------------------------------------------------------------
-#         for semester in semesters:
-#             _set_file(semester, preferences.get_by_id(f'current_{semester}_id'), preferences.get_by_id(f'current_{semester}_name'))
-#
-#
-# def _set_file(semester, schedule_id, schedule_name):
-#     if schedule_id is None or schedule_name is None:
-#         _all_files_chosen()
-#         return
-#     if semester not in short_scheds:
-#         short_scheds[semester] = StringVar()
-#
-#     schedules[semester] = schedule_id
-#     # limit to the last 30 or fewer characters
-#     display = schedule_name[-short_sched_name:len(schedule_name)]
-#     if len(schedule_name) > short_sched_name:
-#         display = f"(...) {display}"
-#     short_scheds[semester].set(display)
-#
-#     _all_files_chosen()
-#
-#
-# def _all_files_chosen():
-#     enable_flag = "normal"
-#     for semester in semesters:
-#         if semester not in schedules:
-#             enable_flag = 'disabled'
-#     open_button.configure(state=enable_flag)

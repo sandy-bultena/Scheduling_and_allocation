@@ -29,23 +29,25 @@ class NBTabInfo:
 
 DIRECTORY = str
 PATH = str
+VALID_SEMESTERS = [SemesterType.fall, SemesterType.winter]
 
+
+# =====================================================================================
+# Allocation Manager
+# =====================================================================================
 class AllocationManager:
-    NB_fall = "Fall"
-    NB_fall_course = "Fall Courses"
-    NB_fall_teacher = "Fall Teachers"
-    NB_fall_students = "Fall Students"
-    NB_winter = "Winter"
-    NB_winter_course = "Winter Courses"
-    NB_winter_teacher = "Winter Teachers"
-    NB_winter_students = "Winter Students"
+    NB_course = "Courses"
+    NB_teacher = "Teachers"
+    NB_students = "Students"
+
 
     def __init__(self, bin_dir: DIRECTORY, gui: Optional[AllocationManagerTk] = None):
 
         self.preferences: Preferences = Preferences()
-        self.schedules: dict[SemesterType, Optional[Schedule]] = {SemesterType.fall:None, SemesterType.winter:None}
+        self.schedules: dict[SemesterType, Optional[Schedule]] = {s:None for s in VALID_SEMESTERS}
         self._dirty_flag = False
         self.current_tab: Optional[str] = None
+        self.standard_page = None
 
         # gui is optional so that we can test the presenter more readily
         if gui:
@@ -53,23 +55,26 @@ class AllocationManager:
         else:
             self.gui: AllocationManager = AllocationManagerTk('Allocation', self.preferences, bin_dir)
 
-        self._schedule_filenames: dict[SemesterType, PATH] = {
-            SemesterType.fall: "",
-            SemesterType.winter: "",
-        }
+        self._schedule_filenames: dict[SemesterType, PATH] = {s:"" for s in VALID_SEMESTERS}
 
         # --------------------------------------------------------------------
         # required notebook pages
         # --------------------------------------------------------------------
-        fall_course_tab = NBTabInfo(label=self.NB_fall_course, name=self.NB_fall_course)
-        fall_teacher_tab = NBTabInfo(label=self.NB_fall_teacher, name=self.NB_fall_teacher)
-        fall_student_tab = NBTabInfo(label=self.NB_fall_students, name=self.NB_fall_students)
-        winter_course_tab = NBTabInfo(label=self.NB_winter_course, name=self.NB_winter_course)
-        winter_teacher_tab = NBTabInfo(label=self.NB_winter_teacher, name=self.NB_winter_teacher)
-        winter_student_tab = NBTabInfo(label=self.NB_winter_students, name=self.NB_winter_students)
+        course_tab = {}
+        teacher_tab = {}
+        student_tab = {}
+        for semester in VALID_SEMESTERS:
+            course_tab[semester] = NBTabInfo(label=f"{semester.name} {self.NB_course}",
+                                             name=f"{semester.name} {self.NB_course}")
+            teacher_tab[semester] = NBTabInfo(label=f"{semester.name} {self.NB_teacher}",
+                                             name=f"{semester.name} {self.NB_teacher}")
+            student_tab[semester] = NBTabInfo(label=f"{semester.name} {self.NB_students}",
+                                             name=f"{semester.name} {self.NB_students}")
+
         self._required_tabs: list[NBTabInfo] = [
-            NBTabInfo(label=self.NB_fall, name=self.NB_fall, subpages=[fall_course_tab, fall_teacher_tab, fall_student_tab]),
-            NBTabInfo(label=self.NB_winter, name=self.NB_winter, subpages=[winter_course_tab, winter_teacher_tab, winter_student_tab]),
+            NBTabInfo(label=s.name, name=s.name,
+                      subpages=[course_tab[s], teacher_tab[s], student_tab[s]])
+            for s in VALID_SEMESTERS
         ]
 
         # --------------------------------------------------------------------
@@ -82,84 +87,49 @@ class AllocationManager:
         set_menu_event_handler_allocation("file_exit", self.menu_exit_event)
         set_main_page_event_handler("go", self.go)
         set_main_page_event_handler("exit", self.exit_event)
-        set_main_page_event_handler("fall_file_open", partial(self.open_menu_event, SemesterType.fall))
-        set_main_page_event_handler("fall_file_open_previous", partial(self.open_previous_file_event,SemesterType.fall))
-        set_main_page_event_handler("winter_file_open", partial(self.open_menu_event,SemesterType.winter))
-        set_main_page_event_handler("winter_file_open_previous", partial(self.open_previous_file_event,SemesterType.winter))
+        for semester in VALID_SEMESTERS:
+            set_main_page_event_handler(f"{semester.name}_file_open", partial(self.open_menu_event, semester))
+            set_main_page_event_handler(f"{semester.name}_file_open_previous", partial(self.open_previous_file_event,semester))
 
-        (self._toolbar_buttons, self._button_properties, self._menu) = main_menu_allocation()
+        (self._toolbar_buttons, self._button_properties, self._menu) = main_menu_allocation(VALID_SEMESTERS)
 
         # --------------------------------------------------------------------
         # create the Gui Main Window
         # --------------------------------------------------------------------
         self.gui.create_menu_and_toolbars(self._toolbar_buttons, self._button_properties, self._menu)
-        self.gui.create_welcome_page()
+        self.gui.create_welcome_page(VALID_SEMESTERS)
         self.gui.create_status_bar()
         self.gui.notebook_tab_changed_handler = self.notebook_tab_has_changed
 
-
-
         self._previous_filenames: dict[SemesterType, PATH] = {}
-        self.preferences.semester("fall")
-        self.previous_filename_fall = self.preferences.previous_file()
-        self.preferences.semester("winter")
-        self.previous_filename_winter = self.preferences.previous_file()
+        for semester in VALID_SEMESTERS:
+            self.preferences.semester(semester.name)
+            self.previous_filename(semester, self.preferences.previous_file())
 
         self.gui.start_event_loop()
 
 
     # ============================================================================================
-    #  Properties - filenames
+    #  getters/setters - filenames
     # ============================================================================================
-    @property
-    def schedule_filename_fall(self):
-        """The filename associated with this file"""
-        return self._schedule_filenames[SemesterType.fall]
+    def schedule_filename(self, semester: SemesterType=SemesterType.any, value=None) -> str:
+        if value is not None:
+            self._schedule_filenames[semester] = value
+            self.gui.schedule_filename(semester,value)
+            if value != "":
+                self.previous_filename(semester,value)
+        return self._schedule_filenames[semester]
 
-    @schedule_filename_fall.setter
-    def schedule_filename_fall(self, value: Optional[str]):
-        self._schedule_filenames[SemesterType.fall] = value
-        self.gui.schedule_filename_fall = value
-        if value is not None and value != "":
-            self.previous_filename_fall = value
 
-    @property
-    def previous_filename_fall(self):
-        """what was the last opened file"""
-        return self._previous_filenames[SemesterType.fall]
+    def previous_filename(self, semester:SemesterType=SemesterType.any, value=None)->str:
+        if value is not None:
+            self.preferences.semester(semester.name)
+            self.preferences.previous_file(value)
+            self._previous_filenames[semester] = value
+            self.gui.previous_file(semester,value)
+            self.preferences.save()
 
-    @previous_filename_fall.setter
-    def previous_filename_fall(self, value):
-        self.preferences.semester(SemesterType.fall.name)
-        self.preferences.previous_file(value)
-        self._previous_filenames[SemesterType.fall] = value
-        self.gui.previous_file_fall = value
-        self.preferences.save()
-
-    @property
-    def schedule_filename_winter(self):
-        """The filename associated with this file"""
-        return self._schedule_filenames[SemesterType.winter]
-
-    @schedule_filename_winter.setter
-    def schedule_filename_winter(self, value: Optional[str]):
-        self._schedule_filenames[SemesterType.winter] = value
-        self.gui.schedule_filename_winter = value
-        if value is not None and value != "":
-            self.previous_filename_winter = value
-
-    @property
-    def previous_filename_winter(self):
-        """what was the last opened file"""
-        return self._previous_filenames[SemesterType.winter]
-
-    @previous_filename_winter.setter
-    def previous_filename_winter(self, value):
-        self.preferences.semester(SemesterType.winter.name)
-        self.preferences.previous_file(value)
-        self._previous_filenames[SemesterType.winter] = value
-        self.gui.previous_file_winter = value
-        self.preferences.save()
+        return self._previous_filenames[semester]
 
     # ============================================================================================
     # Properties - is data changed (dirty)
@@ -193,16 +163,15 @@ class AllocationManager:
     def _open_file(self, filename: str, semester):
         """generic open file method"""
         if filename:
+            print("\n\n********** Opening file", filename)
             try:
                 schedule = Schedule(filename)
                 self.schedules[semester] = schedule
-                match semester:
-                    case SemesterType.fall:
-                        self.schedule_filename_fall = filename
-                    case SemesterType.winter:
-                        self.schedule_filename_winter = filename
+                self.schedule_filename(semester, filename)
                 self.dirty_flag = False
-                print("opened filename", filename)
+                if self.standard_page is not None:
+                    self.gui.create_standard_page(self._required_tabs)
+
 
             except CouldNotReadFileError as e:
                 self.gui.show_error("Read File", str(e))
@@ -214,12 +183,10 @@ class AllocationManager:
         """create a new file"""
         schedule = Schedule()
         self.schedules[semester] = schedule
-        match semester:
-            case SemesterType.fall:
-                self.schedule_filename_fall = ""
-            case SemesterType.winter:
-                self.schedule_filename_winter = ""
+        self.schedule_filename(semester, "")
         self.dirty_flag = True
+        if self.standard_page is not None:
+            self.gui.create_standard_page(self._required_tabs)
 
     def save_menu_event(self, semester:SemesterType):
         """save file"""
@@ -242,30 +209,33 @@ class AllocationManager:
         if filename is not None and filename != "":
             self.schedules[semester].write_file(filename)
             self.dirty_flag = False
-            match semester:
-                case SemesterType.fall:
-                    self.schedule_filename_fall = filename
-                case SemesterType.winter:
-                    self.schedule_filename_winter = filename
+            self.schedule_filename(semester,filename)
 
+    # ============================================================================================
+    # Event handlers - exit
+    # ============================================================================================
     def exit_event(self):
         """program is exiting"""
         if self.dirty_flag:
             ans = self.gui.ask_yes_no("File", "Save File?")
             if ans:
-                self.save_menu_event(SemesterType.fall)
+                for semester in VALID_SEMESTERS:
+                    self.save_menu_event(semester)
 
     def menu_exit_event(self, _:SemesterType):
         self.gui.exit_schedule()
 
+    # ============================================================================================
+    # Event handlers - go
+    # ============================================================================================
     def go(self):
 
-        for semester in SemesterType.fall, SemesterType.winter:
+        for semester in VALID_SEMESTERS:
             if self._schedule_filenames[semester] == "":
                 print("creating new schedule for ", semester)
                 self.new_menu_event(semester)
 
-        self.gui.create_standard_page(self._required_tabs)
+        self.standard_page = self.gui.create_standard_page(self._required_tabs)
 
         pass
 
@@ -279,49 +249,13 @@ class AllocationManager:
         :param frame: container where the gui is stored
         """
         self.current_tab = name
-        if name == self.NB_fall:
-            pass
-            #self.fall_selected(frame)
-        elif name == self.NB_winter:
-            pass
-            #self.winter_selected(frame)
-        elif name == self.NB_fall_course:
-            self.update_edit_courses(frame, SemesterType.fall)
-        elif name == self.NB_fall_teacher:
-            self.update_edit_teachers(frame, SemesterType.fall)
-        elif name == self.NB_fall_students:
-            self.update_edit_students(frame, SemesterType.fall)
-        elif name == self.NB_winter_course:
-            self.update_edit_courses(frame, SemesterType.winter)
-        elif name == self.NB_winter_teacher:
-            self.update_edit_teachers(frame, SemesterType.winter)
-        elif name == self.NB_winter_students:
-            self.update_edit_students(frame, SemesterType.winter)
-
-        # elif name == self.NB_overview_teacher:
-        #     self.update_teacher_text(frame)
-        # elif name == self.NB_schedule:
-        #     self.update_choices_of_resource_views(frame)
-        # elif name == self.NB_overview:
-        #     self.update_overview(frame)
-        # elif name == self.NB_course:
-        #     self.update_edit_courses(frame)
-        # elif name == self.NB_teacher:
-        #     self.update_edit_teachers(frame)
-        # elif name == self.NB_lab:
-        #     self.update_edit_labs(frame)
-        # elif name == self.NB_stream:
-        #     self.update_edit_streams(frame)
-
-    def fall_selected(self, frame):
-        self.update_edit_courses(frame, SemesterType.fall)
-        self.update_edit_teachers(frame, SemesterType.fall)
-        self.update_edit_students(frame, SemesterType.fall)
-
-    def winter_selected(self, frame):
-        self.update_edit_courses(frame, SemesterType.winter)
-        self.update_edit_teachers(frame, SemesterType.winter)
-        self.update_edit_students(frame, SemesterType.winter)
+        for semester in VALID_SEMESTERS:
+            if name == f"{semester.name} {self.NB_course}":
+                self.update_edit_courses(frame, semester)
+            elif name == f"{semester.name} {self.NB_teacher}":
+                self.update_edit_teachers(frame, semester)
+            elif name == f"{semester.name} {self.NB_students}":
+                self.update_edit_students(frame, semester)
 
     # ==================================================================
     # draw_edit_courses
@@ -360,357 +294,4 @@ class AllocationManager:
         return self.dirty_flag
 
 
-# TODO: Currently crashes when opening the same schedule twice, including when selecting a schedule
-# then re-opening the same semester selector and selecting that schedule again,
-# due to Schedule.Course.Course.add_sections not adding the same section twice
-# based on ID rather than object instance.
 
-#from schedule.model import Schedule
-
-#
-# semesters = ['fall', 'winter']
-# schedules = ScheduleWrapper()
-#
-# dirty = False
-# gui: AllocationManagerTk
-#
-# required_pages: list = []
-# pages_lookup: dict[str, NoteBookPageInfo] = {}
-#
-# preferences = dict()
-#
-# user_base_dir: str = None
-#
-# scenarios: dict[str, Scenario] = {}
-#
-#
-# def main():
-#     global gui
-#     gui = AllocationManagerTk()
-#     get_user_preferences()
-#     create_main_window()
-#     pre_process_stuff()
-#     gui.start_event_loop()
-#
-#
-# # ==================================================================
-# # user _preferences saved in ini file (JSON format)
-# # ==================================================================
-# def get_user_preferences():
-#     global user_base_dir
-#     import platform
-#     import os
-#     O = platform.system().lower()
-#
-#     if 'darwin' in O:
-#         user_base_dir = os.environ["HOME"] # Mac OS linux
-#     elif 'windows' in O:
-#         user_base_dir = os.environ["USERPROFILE"]
-#     else:
-#         user_base_dir = os.environ["HOME"]
-#
-#     read_ini()
-#
-#
-# # ==================================================================
-# # _read_ini
-# # ==================================================================
-# def read_ini():
-#     from os import path
-#
-#     global preferences, current_directory
-#     if user_base_dir and path.isfile(f"{user_base_dir}/.allocation"):
-#         # Perl ver used YAML, but that requires an extra package we're no longer using
-#         # going to use JSON instead, which is built-in
-#
-#         f = open(f"{user_base_dir}/.allocation", 'r')
-#         try:
-#             preferences = json.loads(f.read())
-#         # JSON failed, probably invalid. just ignore it
-#         except json.JSONDecodeError:
-#             pass
-#         finally:
-#             f.close()
-#         current_directory = preferences['current_dir']\
-#             if ('current_dir' in preferences and preferences['current_dir']) else user_base_dir
-#
-#
-# # ==================================================================
-# # _write_ini
-# # ==================================================================
-# def write_ini():
-#     # open file
-#     f = open(f"{user_base_dir}/.allocation", "w")
-#
-#     # write JSON data
-#     json.dump(preferences, f)
-#
-#     # finish up
-#     f.close()
-#
-#
-# # ==================================================================
-# # create_start_window
-# # ==================================================================
-# def create_main_window():
-#     gui.create_start_window()
-#     toolbar_buttons, button_properties, menu = menu_info()
-#     gui.create_menu_and_toolbars(toolbar_buttons, button_properties, menu)
-#     gui.create_welcome_page_base(preferences, semesters, _open_schedule, get_schedule)
-#
-#
-# # ==================================================================
-# # menu_info
-# # ==================================================================
-# def menu_info():
-#     """Define what goes in the menu and _toolbar"""
-#     # button names
-#     buttons = ['open_fall', 'open_winter', 'save']  # ,'new_fall', 'new_winter']
-#
-#     # actions associated w/ the menu items
-#     actions = {
-#         # no longer necessary? new schedules are made directly in the open menu now
-#         # 'new_fall': {
-#         #    'cb': partial(new_schedules, 'fall'),
-#         #    'hn': 'Create new Fall schedule'
-#         # },
-#         # 'new_winter': {
-#         #    'cb': partial(new_schedules, 'winter'),
-#         #    'hn': 'Create new Winter schedule'
-#         # },
-#         'open_fall': {
-#             'code': partial(get_schedule, 'fall'),
-#             'hint': 'Open Fall schedule'
-#         },
-#         'open_winter': {
-#             'code': partial(get_schedule, 'winter'),
-#             'hint': 'Open Winter schedule'
-#         },
-#         'save': {
-#             'code': save_schedule,
-#             'hint': 'Save Schedules'
-#         }
-#     }
-#
-#     # menu structure
-#     menu = [
-#         {
-#             'itemType': 'cascade',
-#             'label': 'File',
-#             'tear_off': 0,
-#             'menuitems': [
-#                 # no longer necessary? new schedules are made directly in the open menu now
-#                 # (using pound, so it isn't read as a string in the list)
-#                 # {
-#                 #    'itemType': 'command',
-#                 #    'label': 'New Fall',
-#                 #    'accelerator': 'Ctrl-n',
-#                 #    'command': actions['new_fall']['cb']
-#                 # },
-#                 # {
-#                 #    'itemType': 'command',
-#                 #    'label': 'New Winter',
-#                 #    'accelerator': 'Ctrl-n',
-#                 #    'command': actions['new_winter']['cb']
-#                 # },
-#                 {
-#                     'itemType': 'command',
-#                     'label': 'Open Fall',
-#                     'accelerator': 'Ctrl-o',
-#                     'command': actions['open_fall']['code']
-#                 },
-#                 {
-#                     'itemType': 'command',
-#                     'label': 'Open Winter',
-#                     'accelerator': 'Ctrl-o',
-#                     'command': actions['open_winter']['code']
-#                 },
-#                 {
-#                     'itemType': 'command',
-#                     'label': 'Save',
-#                     'underline': 0,
-#                     'accelerator': 'Ctrl-s',
-#                     'command': actions['save']['code']
-#                 },
-#                 {
-#                     'itemType': 'command',
-#                     'label': 'Save As',
-#                     'command': save_as_schedule
-#                 },
-#                 {
-#                     'itemType': 'command',
-#                     'label': 'Exit',
-#                     'underline': 0,
-#                     'accelerator': 'Ctrl-e',
-#                     'command': exit_schedule
-#                 },
-#             ]
-#         }
-#     ]
-#
-#     return buttons, actions, menu
-#
-#
-# # ==================================================================
-# # new_schedules; does this need to be implemented? probably not
-# # ==================================================================
-# def new_schedules(semester):
-#     # schedules[semester] = Schedule(None, "", "Pending", scenario.id)
-#     dirty = True
-#     # front_page_done()
-#
-#
-# # ==================================================================
-# # _open_schedule
-# # ==================================================================
-# def get_schedule(semester: str):
-#     from GuiSchedule.ScenarioSelector import ScenarioSelector
-#     from GuiSchedule.ScheduleSelector import ScheduleSelector
-#     # Based on Scheduler.open_schedule
-#
-#     db = create_db()
-#
-#     global scenarios, schedules
-#
-#     for sem in semesters:
-#         if sem not in scenarios:
-#             scenarios[sem] = None
-#
-#     def _get_scenario(func):
-#         global scenarios
-#         scenarios[semester] = func()
-#
-#     if REQUIRES_LOGIN:
-#         pass  # TODO: Implement this
-#     else:
-#         # Open a ScenarioSelector window
-#         ScenarioSelector(parent=gui.mw, db=db, callback=_get_scenario)
-#
-#         if scenarios[semester]:
-#             def _get_schedule(func):
-#                 global schedules
-#                 schedules.schedules[semester] = func()
-#
-#             ScheduleSelector(parent=gui.mw, db=db, scenario=scenarios[semester], callback=_get_schedule)
-#
-#             if schedules.schedules[semester]:
-#                 return schedules.schedules[semester]
-#
-#
-# # ==================================================================
-# # _open_schedule
-# # ==================================================================
-# def _open_schedule():
-#     for semester in semesters:
-#         if semester not in schedules.schedules or not schedules.schedules[semester]: return
-#     front_page_done()
-#
-#
-# def front_page_done():
-#     gui.update_for_new_schedule_and_show_page()
-#     gl.unset_dirty_flag()
-#
-#
-# def pre_process_stuff():
-#     gui.bind_dirty_flag()
-#     define_notebook_pages()
-#     gui.define_notebook_tabs(required_pages)
-#     gui.define_exit_callback(exit_schedule)
-#
-#
-# def define_notebook_pages():
-#     from tkinter import LabelFrame  # BAD, tkinter in presentation
-#     global required_pages
-#     required_pages = [
-#         NoteBookPageInfo("Allocation",
-#                          event_handler=draw_allocation().__next__,
-#                          frame_type=LabelFrame),
-#         NoteBookPageInfo("Student Numbers", draw_student_numbers)
-#     ]
-#
-#     # one page for each semester
-#     sub_notebook = {}
-#     for semester in semesters:
-#         label = semester.capitalize()
-#         sub_notebook[semester] = []
-#
-#         def tab_pressed(sem, *_):
-#             update_edit_courses(sem)
-#             update_edit_teachers(sem)
-#
-#         required_pages.append(NoteBookPageInfo(label, partial(tab_pressed, semester), sub_notebook[semester]))
-#
-#     # Semester Courses and Teachers
-#     for semester in semesters:
-#         label = semester.capitalize()
-#         sub_notebook[semester].append(
-#             (c := NoteBookPageInfo(f"{label} Courses", partial(update_edit_courses, semester))))
-#         sub_notebook[semester].append(
-#             (t := NoteBookPageInfo(f"{label} Teachers", partial(update_edit_teachers, semester)))
-#         )
-#
-#         pages_lookup[f"{label} Courses"] = c
-#         pages_lookup[f"{label} Teachers"] = t
-#
-#     for page in required_pages:
-#         pages_lookup[page.name] = page
-#
-#
-# def exit_schedule():
-#     if gl.is_data_dirty():
-#         answer = gui.question("Save Schedule", "Do you want to save your changes?")
-#         if answer.lower() == 'yes':
-#             save_schedule()
-#         elif answer.lower() == 'cancel':
-#             return
-#
-#     write_ini()
-#     # Perl ver called Tk::exit() here, but it's already being called in MainPageBaseTk
-#
-#
-# def save_schedule():
-#     _save_schedule(0)
-#
-#
-# def save_as_schedule():
-#     _save_schedule(1)
-#
-#
-# def _save_schedule(save_as : int):
-#     for semester in semesters:
-#         if semester not in schedules.schedules:
-#             gui.show_error('Save Schedule', f'Missing allocation file for {semester}')
-#             return
-#
-#     # a bunch of saving stuff here
-#     # uses the YAML file saving, so outdated; needs to be updated eventually
-#     # will need to use autosave anyway
-#
-#
-# # ==================================================================
-# # draw_allocation
-# # ==================================================================
-# # TODO: Finish implementing below functions
-# # Use generators to yield the same object; if de doesn't exist then create it, otherwise yield de
-#
-# def draw_allocation(*_):
-#     f = gui.get_notebook_page(pages_lookup["Allocation"].number)
-#     de: EditAllocation = None
-#     while True:
-#         if de is None:
-#             de = EditAllocation(f, schedules.schedules)
-#         else:
-#             de.draw(schedules.schedules)
-#         yield de
-#
-#
-# def draw_student_numbers(*_):
-#     pass
-#
-#
-# def update_edit_courses(*_):
-#     pass
-#
-#
-# def update_edit_teachers(*_):
-#     pass

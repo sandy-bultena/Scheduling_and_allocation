@@ -30,61 +30,37 @@ def set_menu_event_handler_allocation(name: MAIN_MENU_EVENT_HANDLER_NAMES_ALLOCA
     MAIN_MENU_EVENT_HANDLERS_ALLOCATION[name] = handler
 
 
-def main_menu_allocation() -> tuple[list[str], dict[str, ToolbarItem], list[MenuItem]]:
+def main_menu_allocation(semesters:list[SemesterType]) -> tuple[list[str], dict[str, ToolbarItem], list[MenuItem]]:
+
     menu = list()
-    # NOTE:  if these events are bound, the first parameter passed will be the event.
-    #        - we want to ignore these events, because the event handlers don't need this info
     # -----------------------------------------------------------------------------------------
     # File menu
     # -----------------------------------------------------------------------------------------
     file_menu = MenuItem(name='file', menu_type=MenuType.Cascade, label='File')
-    file_menu.add_child(MenuItem(name='new_fall', menu_type=MenuType.Command,
-                                 label='New Fall Schedule',
-                                 command=lambda *_: MAIN_MENU_EVENT_HANDLERS_ALLOCATION["file_new"](SemesterType.fall)
+    for semester in semesters:
+        file_menu.add_child(MenuItem(name=f"new_{semester.name}", menu_type=MenuType.Command,
+                                 label=f'New {semester.name} Schedule',
+                                 command=lambda *_: MAIN_MENU_EVENT_HANDLERS_ALLOCATION["file_new"](semester)
                                  )
                         )
-    file_menu.add_child(MenuItem(name='new_winter', menu_type=MenuType.Command,
-                                 label='New Winter Schedule',
-                                 command=lambda *_: MAIN_MENU_EVENT_HANDLERS_ALLOCATION["file_new"](SemesterType.winter)
-                                 )
-                        )
-    file_menu.add_child(MenuItem(name='open_fall', menu_type=MenuType.Command,
-                                 label='Open Fall Schedule',
-                                 command=lambda *_: MAIN_MENU_EVENT_HANDLERS_ALLOCATION["file_open"](SemesterType.fall)
-                                 )
-                        )
-    file_menu.add_child(MenuItem(name='open_winter', menu_type=MenuType.Command,
-                                 label='Open Winter Schedule',
-                                 command=lambda *_: MAIN_MENU_EVENT_HANDLERS_ALLOCATION["file_open"](SemesterType.winter)
-                                 )
-                        )
+        file_menu.add_child(MenuItem(name=f'open_{semester.name}', menu_type=MenuType.Command,
+                                     label=f'Open {semester.name} Schedule',
+                                     command=lambda *_: MAIN_MENU_EVENT_HANDLERS_ALLOCATION["file_open"](semester)
+                                     )
+                            )
+        file_menu.add_child(MenuItem(name=f'save_{semester.name}', menu_type=MenuType.Command,
+                                     label=f'Save {semester.name} Schedule',
+                                     command=lambda *_: MAIN_MENU_EVENT_HANDLERS_ALLOCATION["file_save"](semester)
+                                     )
+                            )
+        file_menu.add_child(MenuItem(name=f'save_as_{semester.name}', menu_type=MenuType.Command,
+                                     label=f'Save As ({semester.name})',
+                                     command=lambda *_: MAIN_MENU_EVENT_HANDLERS_ALLOCATION["file_save_as"](semester)
+                                     )
+                            )
 
-    file_menu.add_child(MenuItem(menu_type=MenuType.Separator))
 
-    file_menu.add_child(MenuItem(name='save_fall', menu_type=MenuType.Command,
-                                 label='Save Fall Schedule',
-                                 command=lambda *_: MAIN_MENU_EVENT_HANDLERS_ALLOCATION["file_save"](SemesterType.fall)
-                                 )
-                        )
-    file_menu.add_child(MenuItem(name='save_winter', menu_type=MenuType.Command,
-                                 label='Save Winter Schedule',
-                                 command=lambda *_: MAIN_MENU_EVENT_HANDLERS_ALLOCATION["file_save"](SemesterType.winter)
-                                 )
-                        )
-
-    file_menu.add_child(MenuItem(name='save_as_fall', menu_type=MenuType.Command,
-                                 label='Save As (Fall)',
-                                 command=lambda *_: MAIN_MENU_EVENT_HANDLERS_ALLOCATION["file_save_as"](SemesterType.fall)
-                                 )
-                        )
-
-    file_menu.add_child(MenuItem(name='save_as_winter', menu_type=MenuType.Command,
-                                 label='Save As (Winter)',
-                                 command=lambda *_: MAIN_MENU_EVENT_HANDLERS_ALLOCATION["file_save_as"](SemesterType.winter)
-                                 )
-                        )
-
-    file_menu.add_child(MenuItem(menu_type=MenuType.Separator))
+        file_menu.add_child(MenuItem(menu_type=MenuType.Separator))
 
     file_menu.add_child(MenuItem(menu_type=MenuType.Command,
                                  label='Exit',
