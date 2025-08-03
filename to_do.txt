@@ -4,8 +4,6 @@
 * Maybe Mac menu stuff (a nice to have)
 * Windows, binding to ctrl-s isn't working properly
 * Show teacher stat in scheduler
-* Get preferences working for last directory where file was loaded
-* Scheduler, opening new file gives empty "Scheduler" Tab
 
 ============ Done ================
 * Switching between view tabs and back disconnects view from view controller (and the buttons I thing in the view choices)
@@ -14,3 +12,6 @@
 * when refreshing the gui-choices page in Scheduler, resources are not updated to reflect any changes
 * when new schedule opened in scheduler, notebook pages are not updated
 * working on allocation... opening new schedule once thing is open does not refresh properly
+* Get preferences working for last directory where file was loaded
+* Scheduler, opening new file gives empty "Scheduler" Tab
+* Last fix broke something else

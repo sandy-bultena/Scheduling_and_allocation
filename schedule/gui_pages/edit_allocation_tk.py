@@ -1,4 +1,4 @@
-# COMPLETED
+
 from GUI.AllocationGridTk import AllocationGridTk
 from GUI.FontsAndColoursTk import FontsAndColoursTk
 from Tk.scrolled import Scrolled
@@ -108,22 +108,22 @@ class EditAllocationTk:
         return False
 
     # ============================================================================
-    # set_default_fonts_and_colours the allocation grid cb_data_entry callback for specified semester
+    # set_default_fonts_and_colours the allocation grid data_entry_handler callback for specified semester
     # ============================================================================
     def set_cb_data_entry(self, semester, handler):
-        self.gui_grid(semester).cb_data_entry(handler)
+        self.gui_grid(semester).data_entry_handler(handler)
 
     # ============================================================================
-    # set_default_fonts_and_colours the allocation grid cb_process_data_change callback for specified semester
+    # set_default_fonts_and_colours the allocation grid process_data_change_handler callback for specified semester
     # ============================================================================
     def set_cb_process_data_change(self, semester, handler):
-        self.gui_grid(semester).cb_process_data_change(handler)
+        self.gui_grid(semester).process_data_change_handler(handler)
 
     # ============================================================================
-    # set_default_fonts_and_colours the allocation grid cb_bottom_row_ok callback for specified semester
+    # set_default_fonts_and_colours the allocation grid bottom_row_ok_handler callback for specified semester
     # ============================================================================
     def set_cb_bottom_row_ok(self, semester, handler):
-        self.gui_grid(semester).cb_bottom_row_ok(handler)
+        self.gui_grid(semester).bottom_row_ok_handler(handler)
 
     # ============================================================================
     # bind all the data to the various AllocationGrid entry widgets

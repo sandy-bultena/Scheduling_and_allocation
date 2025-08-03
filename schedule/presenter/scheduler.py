@@ -263,9 +263,10 @@ class Scheduler:
         self.preferences.save()
 
     def refresh_for_newly_opened_file(self):
-        if self.view_controller is not None:
-            self.view_controller.kill_all_views()
-        self.view_controller = None
+        pass
+        # if self.view_controller is not None:
+        #     self.view_controller.kill_all_views()
+        # self.view_controller = None
         self.gui.create_standard_page(self._required_tabs, reset=True)
 
     # ============================================================================================
