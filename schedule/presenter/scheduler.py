@@ -211,7 +211,7 @@ class Scheduler:
 
     def open_menu_event(self):
         """open a file"""
-        filename = self.gui.select_file_to_open()
+        filename = self.gui.select_file_to_open(f"Open Schedule")
         self._open_file(filename)
 
     def open_previous_file_event(self):
@@ -281,7 +281,7 @@ class Scheduler:
         self.gui.exit_schedule()
 
     def menu_ignore(self):
-        print("still a To Do!!")
+        # print("still a To Do!!")
         pass
 
     # ==================================================================

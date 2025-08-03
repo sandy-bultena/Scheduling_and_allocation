@@ -18,7 +18,6 @@ class DragNDropManager:
 
     def __init__(self, colours = TkColours()):
         self.colours = colours
-        print(self.colours)
 
     # ========================================================================
     # add a widget to the 'draggable' list

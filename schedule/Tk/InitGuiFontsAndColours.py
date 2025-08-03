@@ -13,7 +13,6 @@ from typing import Literal, Optional
 import schedule.Utilities.Colour as Colour
 import tkinter.font as tkFont
 operating_system = platform.system().lower()
-print(operating_system)
 
 DEFAULT_FONT_SIZE = 10
 if "darwin" in operating_system:
@@ -127,8 +126,6 @@ class TkColours:
         if os.name == 'darwin' or os.name == "posix":
             # MAC does not allow you to change the background colour of buttons
             self.ButtonForeground = "#000000"
-
-        print(f"inside init_gui_fonts and colours {self.ButtonForeground=}")
 
     def __str__(self):
         str: str = ""

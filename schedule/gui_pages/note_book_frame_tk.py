@@ -61,8 +61,9 @@ class NoteBookFrameTk:
 
         self.recursive_notebook_creation(self.frame, tabs_info)
         self.notebook[0].select(self._default_notebook_page)
-        self.frame.winfo_toplevel().after(20, lambda: self._tab_changed(self.notebook[0]))
-        self.frame.winfo_toplevel().after(10, lambda: self.frame.winfo_toplevel().geometry("975x600"))
+        self.mw.after(20, lambda: self._tab_changed(self.notebook[0]))
+        self.mw.after(10, lambda *_: self.mw.geometry("975x600"))
+
 
     # ===================================================================================
     # create notebook pages
@@ -117,8 +118,11 @@ class NoteBookFrameTk:
         :param notebook:
         :param _: tk events?
         """
-        index = notebook.index(notebook.select())
-        tab_name, frame = self.tab_frames.get((notebook, index), None)
-        _expose_widgets(frame)
-        self.tab_changed_handler(tab_name, frame)
+        try:
+            index = notebook.index(notebook.select())
+            tab_name, frame = self.tab_frames.get((notebook, index), None)
+            _expose_widgets(frame)
+            self.tab_changed_handler(tab_name, frame)
+        except tk.TclError:
+            pass
 

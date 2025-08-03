@@ -1,10 +1,8 @@
-from functools import partial
 import tkinter as tk
 from tkinter import ttk
 import tkinter.messagebox as message_box
 
 from schedule.model import WeekDay
-import pprint
 
 
 # ================================================================================================================
@@ -60,9 +58,6 @@ def set_style(frame):
     :return:
     """
     style = ttk.Style(frame.winfo_toplevel())
-    print(style.lookup("TCombobox","background"))
-    print(style.lookup("TCombobox","fieldbackground"))
-    print(style.lookup("TCombobox","foreground"))
     style.configure("MyCustom.TCombobox",
                          fieldbackground='black',  # Background of the input field
                          background='black',  # Overall widget background
@@ -82,13 +77,11 @@ def get_block_info_from_row_data(block_row_data: list[tk.StringVar]) -> list[tup
     new_blocks = []
     for i, b in enumerate(block_row_data):
         d = [x.get() for x in b]
-        pprint.pp(d)
         day = WeekDay[d[0]].value
         start_str = (d[1].strip().split(" ")[0])
         start = get_hours_from_str(start_str)
         duration = float(d[2].strip().split(" ")[0])
         new_blocks.append((day,start,duration))
-    pprint.pp(new_blocks)
 
     return new_blocks
 

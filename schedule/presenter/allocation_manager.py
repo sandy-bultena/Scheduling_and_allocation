@@ -158,7 +158,7 @@ class AllocationManager:
     def open_menu_event_from_main_page(self, semester):
         """open a file"""
         self.preferences.semester(semester.name)
-        filename = self.gui.select_file_to_open()
+        filename = self.gui.select_file_to_open(f"Open Schedule ({semester.name.upper()})")
         self._open_file(filename, semester)
 
     def open_previous_file_event(self, semester):
@@ -213,11 +213,11 @@ class AllocationManager:
         """generic save file method"""
 
         if self.schedules[semester] is None:
-            self.gui.show_error("Save Schedule", "There is no schedule to save!")
+            self.gui.show_error(f"Save Schedule {semester.name.upper()}", "There is no schedule to save!")
             return
 
         if filename is None or filename == "":
-            filename = self.gui.select_file_to_save()
+            filename = self.gui.select_file_to_save(f"Save Schedule As ({semester.name.upper()})")
 
         if filename is not None and filename != "":
             self.schedules[semester].write_file(filename)

@@ -49,7 +49,6 @@ class AllocationManagerTk(MainPageBaseTk):
         :param preferences: what d'ya want, d'ya really really want?
         :param bin_dir: the directory that the logo for this app is located
         """
-        print("inside AllocationManagerTk")
         self.preferences: Preferences = preferences
         self.previous_file_buttons: dict[SemesterType, Optional[tk.Button]] = {s: None for s in SemesterType}
 

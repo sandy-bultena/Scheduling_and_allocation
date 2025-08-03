@@ -228,13 +228,14 @@ class MainPageBaseTk:
     # ========================================================================
     # choose file
     # ========================================================================
-    def select_file_to_save(self) -> str:
+    def select_file_to_save(self, title:str="Save File As") -> str:
         return self._select_file(partial(tk_fd.asksaveasfilename,
-                                         defaultextension="csv", title="Save File As"))
+                                         defaultextension="csv",
+                                         title=title))
 
-    def select_file_to_open(self) -> str:
+    def select_file_to_open(self, title = "Open Schedule") -> str:
         return self._select_file(partial(tk_fd.askopenfilename,
-                                         title='Open a file for ' + str(self._preferences.semester())))
+                                         title=title))
 
     def _select_file(self, select_gui) -> str:
         current_dir = self._preferences.current_dir() or self._preferences.home_directory()

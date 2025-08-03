@@ -449,10 +449,8 @@ class EditCourses:
         :param parent_id: tree id of the parent object
         :return:
         """
-        print(f"{parent=},{selected=}")
         obj_type = str(type(selected)).lower()
         key = obj_type.split(".")[-1][0:-2]
-        print(obj_type, key)
         ASSIGN_SUBS[key](parent,selected)
 
         if parent_id == -1:
@@ -499,7 +497,7 @@ class EditCourses:
     # respond to a double click on a teacher resource
     # -------------------------------------------------------------------------------------------------------------
     def resource_event_show_teacher_stat(self, teacher: Teacher):
-        print(teacher)
+        pass
 
     # -------------------------------------------------------------------------------------------------------------
     # can the resource object be added to the selected tree object?

@@ -406,7 +406,5 @@ example::
 
         'what' must be  Literal["units", "pages"]
         """
-        print("*** ", number)
         if self.vertical_scrollbar is not None:
-            print("*** ... ", number)
             self._scrollable_object.yview_scroll(number, what)
