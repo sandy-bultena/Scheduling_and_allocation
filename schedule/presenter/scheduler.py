@@ -204,10 +204,8 @@ class Scheduler:
         """create a new file"""
         self.schedule = Schedule()
         self.schedule_filename = ""
-        if self.view_controller is not None:
-            self.view_controller.kill_all_views()
-        self.gui.create_standard_page(self._required_tabs, reset=True)
         self.dirty_flag = True
+        self.refresh_for_newly_opened_file()
 
     def open_menu_event(self):
         """open a file"""
@@ -227,9 +225,7 @@ class Scheduler:
                 self.schedule = schedule
                 self.schedule_filename = filename
                 self.dirty_flag = False
-                if self.view_controller is not None:
-                    self.view_controller.kill_all_views()
-                self.gui.create_standard_page(self._required_tabs, reset=True)
+                self.refresh_for_newly_opened_file()
 
             except CouldNotReadFileError as e:
                 self.gui.show_error("Read File", str(e))
@@ -265,6 +261,12 @@ class Scheduler:
         self.preferences.semester(self.gui.current_semester)
         self.previous_filename = self.preferences.previous_file()
         self.preferences.save()
+
+    def refresh_for_newly_opened_file(self):
+        if self.view_controller is not None:
+            self.view_controller.kill_all_views()
+        self.view_controller = None
+        self.gui.create_standard_page(self._required_tabs, reset=True)
 
     # ============================================================================================
     # Event handlers - exit

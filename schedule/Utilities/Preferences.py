@@ -96,7 +96,7 @@ class Preferences:
                 directory = self._config['MOST_RECENT'].get('fall_directory', None)
             if self.semester() == 'winter':
                 directory = self._config['MOST_RECENT'].get('winter_directory', None)
-            if self.semester() == 'winter':
+            if self.semester() == 'summer':
                 directory = self._config['MOST_RECENT'].get('summer_directory', None)
 
         if directory is not None:
