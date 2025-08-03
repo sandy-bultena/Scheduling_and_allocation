@@ -626,8 +626,6 @@ Example::
         # ---------------------------------------------------------------
         scrolled_frame = Scrolled(self, "Frame", scrollbars="se", border=2, relief="flat")
         scrolled_frame.pack(side='left', fill='both')
-        scrolled_frame.Subwidget('xscrollbar').configure(elementborderwidth=2, relief='ridge', width=12)
-        scrolled_frame.Subwidget('yscrollbar').configure(elementborderwidth=2, relief='ridge', width=12)
         self.__scrolled_frame = scrolled_frame
         self.frame = scrolled_frame.Subwidget("Frame")
 
