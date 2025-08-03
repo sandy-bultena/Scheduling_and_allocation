@@ -8,6 +8,7 @@
 """
 from __future__ import annotations
 
+from functools import partial
 from typing import Callable, Literal, get_args, Any
 from schedule.Tk.menu_and_toolbars import MenuItem, MenuType, ToolbarItem
 from schedule.model import SemesterType
@@ -40,22 +41,22 @@ def main_menu_allocation(semesters:list[SemesterType]) -> tuple[list[str], dict[
     for semester in semesters:
         file_menu.add_child(MenuItem(name=f"new_{semester.name}", menu_type=MenuType.Command,
                                  label=f'New {semester.name} Schedule',
-                                 command=lambda *_: MAIN_MENU_EVENT_HANDLERS_ALLOCATION["file_new"](semester)
+                                 command=partial( MAIN_MENU_EVENT_HANDLERS_ALLOCATION["file_new"],semester)
                                  )
                         )
         file_menu.add_child(MenuItem(name=f'open_{semester.name}', menu_type=MenuType.Command,
                                      label=f'Open {semester.name} Schedule',
-                                     command=lambda *_: MAIN_MENU_EVENT_HANDLERS_ALLOCATION["file_open"](semester)
+                                     command=partial( MAIN_MENU_EVENT_HANDLERS_ALLOCATION["file_open"],semester)
                                      )
                             )
         file_menu.add_child(MenuItem(name=f'save_{semester.name}', menu_type=MenuType.Command,
                                      label=f'Save {semester.name} Schedule',
-                                     command=lambda *_: MAIN_MENU_EVENT_HANDLERS_ALLOCATION["file_save"](semester)
+                                     command=partial( MAIN_MENU_EVENT_HANDLERS_ALLOCATION["file_save"],semester)
                                      )
                             )
         file_menu.add_child(MenuItem(name=f'save_as_{semester.name}', menu_type=MenuType.Command,
                                      label=f'Save As ({semester.name})',
-                                     command=lambda *_: MAIN_MENU_EVENT_HANDLERS_ALLOCATION["file_save_as"](semester)
+                                     command=partial( MAIN_MENU_EVENT_HANDLERS_ALLOCATION["file_save_as"],semester)
                                      )
                             )
 
@@ -65,7 +66,7 @@ def main_menu_allocation(semesters:list[SemesterType]) -> tuple[list[str], dict[
     file_menu.add_child(MenuItem(menu_type=MenuType.Command,
                                  label='Exit',
                                  accelerator='Ctrl-e',
-                                 command=lambda *_: MAIN_MENU_EVENT_HANDLERS_ALLOCATION["file_exit"](SemesterType.summer)
+                                 command=partial( MAIN_MENU_EVENT_HANDLERS_ALLOCATION["file_exit"],SemesterType.summer)
                                  )
                         )
 

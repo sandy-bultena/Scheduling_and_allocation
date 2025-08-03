@@ -71,7 +71,7 @@ class AllocationManager:
             student_tab[semester] = NBTabInfo(label=f"{semester.name} {self.NB_students}",
                                              name=f"{semester.name} {self.NB_students}")
 
-        self._required_tabs: list[NBTabInfo] = [
+        self._notebook_tabs: list[NBTabInfo] = [
             NBTabInfo(label=s.name, name=s.name,
                       subpages=[course_tab[s], teacher_tab[s], student_tab[s]])
             for s in VALID_SEMESTERS
@@ -87,9 +87,8 @@ class AllocationManager:
         set_menu_event_handler_allocation("file_exit", self.menu_exit_event)
         set_main_page_event_handler("go", self.go)
         set_main_page_event_handler("exit", self.exit_event)
-        for semester in VALID_SEMESTERS:
-            set_main_page_event_handler(f"{semester.name}_file_open", partial(self.open_menu_event, semester))
-            set_main_page_event_handler(f"{semester.name}_file_open_previous", partial(self.open_previous_file_event,semester))
+        set_main_page_event_handler("file_open_from_main_page", self.open_menu_event_from_main_page)
+        set_main_page_event_handler("file_open_previous_from_main_page", self.open_previous_file_event_from_main_page)
 
         (self._toolbar_buttons, self._button_properties, self._menu) = main_menu_allocation(VALID_SEMESTERS)
 
@@ -148,13 +147,26 @@ class AllocationManager:
                 self.gui.dirty_text = ""
         self._dirty_flag = value
 
+    # ============================================================================================
+    # Events ... open
+    # ============================================================================================
     def open_menu_event(self, semester):
+        """open a file"""
+        self.open_menu_event_from_main_page(semester)
+        self.gui.create_standard_page(self._notebook_tabs, reset=True)
+
+    def open_menu_event_from_main_page(self, semester):
         """open a file"""
         self.preferences.semester(semester.name)
         filename = self.gui.select_file_to_open()
         self._open_file(filename, semester)
 
     def open_previous_file_event(self, semester):
+        """open previously opened file"""
+        self.open_previous_file_event_from_main_page(semester)
+        self.gui.create_standard_page(self._notebook_tabs, reset=True)
+
+    def open_previous_file_event_from_main_page(self, semester):
         """open previously opened file"""
         self.preferences.semester(semester.name)
         filename = self.preferences.previous_file()
@@ -163,21 +175,20 @@ class AllocationManager:
     def _open_file(self, filename: str, semester):
         """generic open file method"""
         if filename:
-            print("\n\n********** Opening file", filename)
             try:
                 schedule = Schedule(filename)
                 self.schedules[semester] = schedule
                 self.schedule_filename(semester, filename)
                 self.dirty_flag = False
                 if self.standard_page is not None:
-                    self.gui.create_standard_page(self._required_tabs)
+                    self.gui.create_standard_page(self._notebook_tabs)
 
 
             except CouldNotReadFileError as e:
                 self.gui.show_error("Read File", str(e))
 
     # ============================================================================================
-    # Event handlers - file open/close/save/new
+    # Event handlers - new
     # ============================================================================================
     def new_menu_event(self, semester: SemesterType):
         """create a new file"""
@@ -185,9 +196,11 @@ class AllocationManager:
         self.schedules[semester] = schedule
         self.schedule_filename(semester, "")
         self.dirty_flag = True
-        if self.standard_page is not None:
-            self.gui.create_standard_page(self._required_tabs)
+        self.gui.create_standard_page(self._notebook_tabs, reset=True)
 
+    # ============================================================================================
+    # Event handlers - save
+    # ============================================================================================
     def save_menu_event(self, semester:SemesterType):
         """save file"""
         self._save_schedule(self._schedule_filenames[semester], semester)
@@ -214,7 +227,7 @@ class AllocationManager:
     # ============================================================================================
     # Event handlers - exit
     # ============================================================================================
-    def exit_event(self):
+    def exit_event(self, *_):
         """program is exiting"""
         if self.dirty_flag:
             ans = self.gui.ask_yes_no("File", "Save File?")
@@ -228,14 +241,14 @@ class AllocationManager:
     # ============================================================================================
     # Event handlers - go
     # ============================================================================================
-    def go(self):
+    def go(self, _):
 
         for semester in VALID_SEMESTERS:
             if self._schedule_filenames[semester] == "":
                 print("creating new schedule for ", semester)
                 self.new_menu_event(semester)
 
-        self.standard_page = self.gui.create_standard_page(self._required_tabs)
+        self.standard_page = self.gui.create_standard_page(self._notebook_tabs)
 
         pass
 
@@ -280,7 +293,6 @@ class AllocationManager:
     # update_edit_students
     # ==================================================================
     def update_edit_students(self, frame, semester):
-        print("hi", semester, frame)
         data_entry = StudentNumbers(frame, self.schedules[semester])
         data_entry.refresh()
 

@@ -1,6 +1,6 @@
-# COMPLETED
+
 import os.path
-import tkinter
+from functools import partial
 
 from typing import Callable, Optional, Literal, get_args
 
@@ -19,28 +19,19 @@ MAX_LEN_OF_DISPLAYED_FILENAME = 25
 # ============================================================================
 
 EVENT_HANDLER_NAMES = Literal[
-    "fall_file_open",
-    "fall_file_new",
-    "fall_file_open_previous",
-    "fall_file_open_previous",
-    "winter_file_open",
-    "winter_file_new",
-    "winter_file_open_previous",
-    "winter_file_open_previous",
-    "summer_file_open",
-    "summer_file_new",
-    "summer_file_open_previous",
-    "summer_file_open_previous",
+    "file_open_from_main_page",
+    "file_open_previous_from_main_page",
     "go",
     "exit",
 ]
 
-MAIN_PAGE_EVENT_HANDLERS: dict[EVENT_HANDLER_NAMES, Callable[[], None]] = {}
+MAIN_PAGE_EVENT_HANDLERS: dict[EVENT_HANDLER_NAMES, Callable[[SemesterType], None]] = {}
+
 for event_name in get_args(EVENT_HANDLER_NAMES):
-    MAIN_PAGE_EVENT_HANDLERS[event_name] = lambda: print(f"'selected. {event_name}")
+    MAIN_PAGE_EVENT_HANDLERS[event_name] = lambda x: print(f"'selected. {event_name}")
 
 
-def set_main_page_event_handler(name: EVENT_HANDLER_NAMES, handler: Callable[[], None]):
+def set_main_page_event_handler(name: EVENT_HANDLER_NAMES, handler: Callable[[SemesterType], None]):
     MAIN_PAGE_EVENT_HANDLERS[name] = handler
 
 # ============================================================================
@@ -154,7 +145,7 @@ class AllocationManagerTk(MainPageBaseTk):
                 borderwidth=2,
                 background=self.colours.ButtonBackground,
                 foreground=self.colours.ButtonForeground,
-                command=MAIN_PAGE_EVENT_HANDLERS[semester.name+"_file_open_previous"],
+                command=partial(MAIN_PAGE_EVENT_HANDLERS["file_open_previous_from_main_page"],semester),
                 width=BUTTON_WIDTH,
                 height=2,
                 textvariable=self._previous_files[semester],
@@ -170,7 +161,7 @@ class AllocationManagerTk(MainPageBaseTk):
                 borderwidth=2,
                 background=self.colours.ButtonBackground,
                 foreground=self.colours.ButtonForeground,
-                command=MAIN_PAGE_EVENT_HANDLERS[semester.name+"_file_open"],
+                command=partial(MAIN_PAGE_EVENT_HANDLERS["file_open_from_main_page"],semester),
                 width=BUTTON_WIDTH,
                 height=2
             ).pack(side="top", fill="y", expand=0, padx=5, pady=5)
@@ -186,7 +177,7 @@ class AllocationManagerTk(MainPageBaseTk):
 
         # go
         tk.Button(option_frame, text="Go", font=self.fonts.big, padx=20,pady=5,
-                  command=MAIN_PAGE_EVENT_HANDLERS['go']).grid(
+                  command=partial(MAIN_PAGE_EVENT_HANDLERS['go'],SemesterType.any)).grid(
             row=2, sticky='ew'
         )
 

@@ -3,7 +3,6 @@
 * Auto save
 * Maybe Mac menu stuff (a nice to have)
 * Windows, binding to ctrl-s isn't working properly
-* working on allocation... opening new schedule once thing is open does not refresh properly
 
 ============ Done ================
 * Switching between view tabs and back disconnects view from view controller (and the buttons I thing in the view choices)
@@ -11,3 +10,4 @@
 * In edit course window, only open tree element if user paused for more than '1/2' seconds
 * when refreshing the gui-choices page in Scheduler, resources are not updated to reflect any changes
 * when new schedule opened in scheduler, notebook pages are not updated
+* working on allocation... opening new schedule once thing is open does not refresh properly

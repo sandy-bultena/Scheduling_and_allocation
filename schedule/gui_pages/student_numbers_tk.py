@@ -14,10 +14,13 @@ class StudentNumbersTk:
     # ============================================================================================
     # constructor
     # ============================================================================================
-    def __init__(self, frame, data:dict[str, list[SectionData]] = None):
+    def __init__(self, frame: tk.Frame, data:dict[str, list[SectionData]] = None):
         """creates the Panes for each semester"""
 
         self.frame = frame
+        for w in frame.winfo_children():
+            w.destroy()
+
         self.data = data
         self._update_handlers = []
 
@@ -70,13 +73,11 @@ class StudentNumbersTk:
                 entry = entry_int(frame, tk_var)
                 entry.grid(column=1, row=row, sticky='nw')
                 self._update_handlers.append(partial(_update_number, tk_var, section_data.handler))
-                #entry.bind("<Leave>", partial(_update_number, tk_var, section_data.handler))
                 entry.bind("<Return>", lambda e: e.widget.tk_focusNext().focus())
                 entry.bind("<FocusIn>", lambda e: self.pane.see(e.widget))
                 row += 1
 
     def save(self, *_):
-        print("save")
         for handler in self._update_handlers:
             handler()
 
