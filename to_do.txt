@@ -4,6 +4,7 @@
 * Maybe Mac menu stuff (a nice to have)
 * Windows, binding to ctrl-s isn't working properly
 * Show teacher stat in scheduler
+* Need to fix scrolling frame in horizontal view so that I can do easier Allocation Grid
 
 ============ Done ================
 * Switching between view tabs and back disconnects view from view controller (and the buttons I thing in the view choices)

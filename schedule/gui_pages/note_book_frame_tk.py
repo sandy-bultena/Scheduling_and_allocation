@@ -29,6 +29,7 @@ class TabInfoProtocol(Protocol):
 def _expose_widgets(widget):
     """weird shit happens on MAC in that widgets are not shown in tab... this forces them to be shown"""
     widget.event_generate("<Expose>")
+
     for child in widget.winfo_children():
         _expose_widgets(child)
 
@@ -121,8 +122,9 @@ class NoteBookFrameTk:
         try:
             index = notebook.index(notebook.select())
             tab_name, frame = self.tab_frames.get((notebook, index), None)
-            _expose_widgets(frame)
             self.tab_changed_handler(tab_name, frame)
+            notebook.after(10, lambda *_:_expose_widgets(frame))
+            notebook.after(20,lambda *_: notebook.event_generate("<Leave>"))
         except tk.TclError:
             pass
 

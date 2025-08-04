@@ -118,16 +118,20 @@ example::
     # properties
     # ==============================================================================================
     @property
-    def widget(self):
+    def widget(self)->tk.Widget:
         return self._widget
 
     @property
-    def horizontal_scrollbar(self):
+    def horizontal_scrollbar(self)->tk.Scrollbar:
         return self._horizontal_scrollbar
 
     @property
-    def vertical_scrollbar(self):
+    def vertical_scrollbar(self)->tk.Scrollbar:
         return self._vertical_scrollbar
+
+    @property
+    def scroll_widget(self):
+        return self._scrollable_object
 
     # ==============================================================================================
     # constructor
@@ -138,6 +142,8 @@ example::
         a frame will be created (self)
         a widget of widget resource_type will be created inside the frame (self.widget)
         scrollbars will be created as requested (self.horizontal_scrollbar, self.vertical_scrollbar)
+
+        NOTE: parent frame will use 'pack', so you can't "grid" on this parent frame
         """
         # ----------------------------------------------------------------------------------------
         # initialize_columns the holding frame
@@ -248,17 +254,9 @@ example::
         def _configure_interior(event):
             # Update the scrollbars to match the size of the inner frame.
             size = (self._widget.winfo_reqwidth(), self._widget.winfo_reqheight())
-            canvas.config(scrollregion="0 0 %s %s" % size)
-            if self._widget.winfo_reqwidth() != canvas.winfo_width():
-                # Update the canvas's width to fit the inner frame.
-                canvas.config(width=self._widget.winfo_reqwidth())
-        self._widget.bind('<Configure>', _configure_interior)
+            canvas.config(scrollregion=(0,0, *size))
 
-        def _configure_canvas(event):
-            if self._widget.winfo_reqwidth() != canvas.winfo_width():
-                # Update the inner frame's width to fill the canvas.
-                canvas.itemconfigure(self._scrolled_id, width=canvas.winfo_width())
-        canvas.bind('<Configure>', _configure_canvas)
+        self._widget.bind('<Configure>', _configure_interior)
 
     # ===============================================================================================================
     # pass on all 'configure' to the scrollable object
@@ -302,8 +300,8 @@ example::
 
         """
 
-        self.xview(widget)
-        self.yview(widget)
+        self.xview_widget(widget)
+        self.yview_widget(widget)
 
     def yview_moveto(self, fraction):
         """
@@ -325,7 +323,7 @@ example::
         if self._horizontal_scrollbar is not None:
             self._scrollable_object.xview_moveto(fraction)
 
-    def xview(self, widget=None):
+    def xview_widget(self, widget=None):
         """
         No parameters:
             Returns a list containing two elements, both of which are real fractions between 0 and 1.
@@ -349,7 +347,7 @@ example::
             # NOT IMPLEMENTED YET
             pass
 
-    def yview(self, widget=None):
+    def yview_widget(self, widget=None):
         """
         No parameters:
             Returns a list containing two elements, both of which are real fractions between 0 and 1.

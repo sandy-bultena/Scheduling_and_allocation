@@ -1,0 +1,203 @@
+"""Create a scrollable frame, although don't attach any scrollbars"""
+
+from __future__ import annotations
+import tkinter as tk
+from tkinter import ttk
+#from functools import partial
+import schedule.Tk as new_tk
+
+import sys
+import traceback
+from typing import Any, Literal
+
+
+def eprint(*args, **kwargs):
+    print("\n", file=sys.stderr, **kwargs)
+    print(*args, file=sys.stderr, **kwargs)
+    print(traceback.format_stack()[0], file=sys.stderr, **kwargs)
+    exit()
+
+
+###############
+# https://docstore.mik.ua/orelly/perl3/tk/ch06_03.htm
+# Section 6.3.8
+# http://infohost.nmt.edu/tcc/help/pubs/tkinter/web/events.html
+# https://anzeljg.github.io/rin2/book2/2405/docs/tkinter/index.html
+###############
+
+class Pane(tk.Frame):
+
+    # ==============================================================================================
+    # properties
+    # ==============================================================================================
+    @property
+    def frame(self)->tk.Widget:
+        return self._widget
+
+    @property
+    def canvas(self):
+        return self._scrollable_object
+
+    # ==============================================================================================
+    # constructor
+    # ==============================================================================================
+    def __init__(self, parent, **kwargs):
+        tk.Frame.__init__(self, parent)
+        canvas = tk.Canvas(self)
+        canvas.pack(side="left", fill="both", expand=tk.TRUE)
+        self._scrollable_object = canvas
+
+        # Create a frame inside the canvas which will be scrolled with it.
+        self._widget = tk.Frame(canvas)
+        self._scrolled_id = canvas.create_window(0, 0, window=self._widget,
+                                           anchor="nw")
+
+        def _configure_interior(event):
+            # Update the scrollbars to match the size of the inner frame.
+            size = (self._widget.winfo_reqwidth(), self._widget.winfo_reqheight())
+            canvas.config(scrollregion=(0,0, size[0], size[1]))
+
+        self._widget.bind('<Configure>', _configure_interior)
+
+    # ===============================================================================================================
+    # pass on all 'configure' to the scrollable object
+    # ===============================================================================================================
+    def configure(self, **kwargs):
+       self._widget.configure(**kwargs)
+
+    def yview(self, *args):
+        self.canvas.yview(*args)
+
+    def xview(self, *args):
+        self.canvas.xview(*args)
+
+    # ===============================================================================================================
+    # scrolling methods
+    # ===============================================================================================================
+    def see(self, widget, **_kwargs):
+        """Adjusts the view so that widget is visible.
+
+        Additional parameters in options-value pairs can be passed,
+        each option-value pair must be one of the following
+
+        NOT IMPLEMENTED YET
+
+        -anchor => anchor
+        Specifies how to make the widget visible. If not given then as much of the widget as possible is made visable.
+
+        Possible values are n, s, w, e, nw, ne, sw and se.
+        This will cause an edge on the widget to be aligned with the corresponding edge on the pane.
+        for example nw will cause the top left of the widget to be placed at the top left of the pane.
+        s will cause the bottom of the widget to be placed at the bottom of the pane, and as much of
+        the widget as possible made visible in the x direction.
+
+        """
+
+        self.xview_widget(widget)
+        self.yview_widget(widget)
+
+    def yview_moveto(self, fraction):
+        """
+            Adjusts the view in the window so that fraction of the total width of the Scrolloable object is off-screen
+            to the top.
+
+            fraction must be a fraction between 0 and 1.
+        """
+        if self._vertical_scrollbar is not None:
+            self._scrollable_object.yview_moveto(fraction)
+
+    def xview_moveto(self, fraction):
+        """
+            Adjusts the view in the window so that fraction of the total width of the Scrolloable object is off-screen
+            to the left.
+
+            fraction must be a fraction between 0 and 1.
+        """
+        if self._horizontal_scrollbar is not None:
+            self._scrollable_object.xview_moveto(fraction)
+
+    def xview_widget(self, widget=None):
+        """
+        No parameters:
+            Returns a list containing two elements, both of which are real fractions between 0 and 1.
+            The first element gives the position of the left of the window, relative to the scrollable object as a whole
+            (0.5 means it is halfway through the Frame, for example).
+            The second element gives the position of the right of the window, relative to the scrollable object
+            as a whole.
+
+        Tk Widget defined
+            Adjusts the view in the window so that widget is displayed.
+
+         """
+
+        # make sure idle tasks are finished (includes redrawing of changes in geometry)
+        self.update_idletasks()
+
+        if self.horizontal_scrollbar is None:
+            return 0, 1
+
+        if widget is not None:
+            # NOT IMPLEMENTED YET
+            pass
+
+    def yview_widget(self, widget=None):
+        """
+        No parameters:
+            Returns a list containing two elements, both of which are real fractions between 0 and 1.
+            The first element gives the position of the top of the window, relative to the scrollable object as a whole
+            (0.5 means it is halfway through the Frame, for example).
+            The second element gives the position of the bottom of the window, relative to the scrollable object
+            as a whole.
+
+        Tk Widget defined
+            Adjusts the view in the window so that widget is displayed.
+
+        """
+
+        # make sure idle tasks are finished (includes redrawing of changes in geometry)
+        self.update_idletasks()
+
+        if self.vertical_scrollbar is None:
+            return 0, 1  # no scrollbar
+
+        #print("yview:", *args, **kwargs)
+        #return self._scrollable_object.xview(*args, **kwargs)
+        if widget is not None:
+            scrollable_object_height = self._widget.winfo_height()
+            scrollable_object_top = self.widget.winfo_rooty()
+
+            to_be_seen_top = widget.winfo_rooty()
+            to_be_seen_height = widget.winfo_height()
+            to_be_seen_bottom = to_be_seen_top + to_be_seen_height
+
+            scroll_region_height = self._scrollable_object.winfo_height()
+            scroll_region_top = self._scrollable_object.winfo_rooty()
+            scroll_region_bottom = scroll_region_top + scroll_region_height
+
+            if to_be_seen_top < scroll_region_top:
+                dy = to_be_seen_top - scroll_region_top
+                pos = (scroll_region_top - scrollable_object_top + dy) / scrollable_object_height
+                self._scrollable_object.yview_moveto(pos)
+
+            if to_be_seen_bottom > scroll_region_bottom:
+                dy = to_be_seen_bottom - scroll_region_bottom + to_be_seen_height
+                pos = (scroll_region_top - scrollable_object_top + dy) / scrollable_object_height
+                self._scrollable_object.yview_moveto(pos)
+
+        return self.vertical_scrollbar.get()
+
+    def xview_scroll(self, number: int, what: Literal["units", "pages"]) -> None:
+        """ Shift the x-view according to NUMBER which is measured in "units" or "pages" (WHAT).
+
+        'what' must be  Literal["units", "pages"]
+        """
+        if self.horizontal_scrollbar is not None:
+            self._scrollable_object.xview_scroll(number, what)
+
+    def yview_scroll(self, number: int, what: Literal["units", "pages"]) -> None:
+        """ Shift the y-view according to NUMBER which is measured in "units" or "pages" (WHAT).
+
+        'what' must be  Literal["units", "pages"]
+        """
+        if self.vertical_scrollbar is not None:
+            self._scrollable_object.yview_scroll(number, what)
