@@ -5,6 +5,13 @@
 * Windows, binding to ctrl-s isn't working properly
 * Show teacher stat in scheduler
 * Need to fix scrolling frame in horizontal view so that I can do easier Allocation Grid
+* Bind Scroll methods to mousewheel, etc for CourseTree
+* Either shrink or remove "Edit Class Time For" on Schedule tab (it takes too much space)
+* Edit class time pop-up doesn't work
+* in edit block... if a teacher was already assigned to the block, was in neither list
+* in Views, reduce the # of lines of block text if the duration is 1 hour or less
+* make fonts on Notebook tabs larger
+* add ipad around buttons "New Courses" and "Edit Selection" in Edit Course Tab
 
 ============ Done ================
 * Switching between view tabs and back disconnects view from view controller (and the buttons I thing in the view choices)
