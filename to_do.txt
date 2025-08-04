@@ -10,8 +10,8 @@
 * Edit class time pop-up doesn't work
 * in edit block... if a teacher was already assigned to the block, was in neither list
 * in Views, reduce the # of lines of block text if the duration is 1 hour or less
-* make fonts on Notebook tabs larger
-* add ipad around buttons "New Courses" and "Edit Selection" in Edit Course Tab
+* add "teacher:" and "lab:" in front of resources in tree-view
+* adding/removing teacher in tree_view should call schedule.conflicts so that "scheduler" page button colours work properly
 
 ============ Done ================
 * Switching between view tabs and back disconnects view from view controller (and the buttons I thing in the view choices)

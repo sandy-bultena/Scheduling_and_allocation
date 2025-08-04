@@ -494,7 +494,7 @@ class EditCoursesTk:
         button_row.grid(column=0, sticky='nsew', row=3)
         btn_new_course = tk.Button(button_row, text="New Course", width=11,
                                 command=lambda: self._new_course_btn_pressed())
-        btn_new_course.pack(side='left')
+        btn_new_course.pack(side='left', ipadx=10)
         btn_edit_selection = tk.Button(button_row, text="Edit Selection", width=11,
                                     command=lambda: self._cmd_edit_selection())
-        btn_edit_selection.pack(side='left')
+        btn_edit_selection.pack(side='left', ipadx=10)
