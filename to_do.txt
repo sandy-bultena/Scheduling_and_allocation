@@ -8,7 +8,6 @@
 * Bind Scroll methods to mousewheel, etc for CourseTree
 * Edit class time pop-up doesn't work
 * in edit block... if a teacher was already assigned to the block, was in neither list
-* add "teacher:" and "lab:" in front of resources in tree-view
 * adding/removing teacher in tree_view should call schedule.conflicts so that "scheduler" page button colours work properly
 
 ============ Done ================
@@ -21,3 +20,4 @@
 * Get preferences working for last directory where file was loaded
 * Scheduler, opening new file gives empty "Scheduler" Tab
 * Last fix broke something else
+* add "teacher:" and "lab:" in front of resources in tree-view

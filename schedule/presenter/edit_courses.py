@@ -190,10 +190,10 @@ class EditCourses:
         :return:
         """
         self.gui.remove_tree_item_children(block_id)
-        for lab in block.labs():
-            self.gui.add_tree_item(block_id, str(lab), lab, hide)
         for teacher in block.teachers():
-            self.gui.add_tree_item(block_id, str(teacher), teacher, hide)
+            self.gui.add_tree_item(block_id, f"teacher: {str(teacher)}", teacher, hide)
+        for lab in block.labs():
+            self.gui.add_tree_item(block_id, f"lab: {str(lab)}", lab, hide)
 
     # -------------------------------------------------------------------------------------------------------------
     # Tree - edit object
