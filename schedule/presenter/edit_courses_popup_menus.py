@@ -144,7 +144,7 @@ class CreateTreePopupMenuActions:
     def _edit_block(self, menu_list: list[MenuItem]):
         menu_list.append(
             MenuItem(menu_type=MenuType.Command, label="Edit Class Time",
-                     command=lambda *_: self.presenter.edit_block_dialog(self.selected_object, self.tree_id)
+                     command=lambda *_: self.presenter.edit_block_dialog(self.selected_object, self.tree_id, self.tree_parent_id)
                      )
         )
 

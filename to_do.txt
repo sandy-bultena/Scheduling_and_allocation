@@ -4,10 +4,7 @@
 * Maybe Mac menu stuff (a nice to have)
 * Windows, binding to ctrl-s isn't working properly
 * Show teacher stat in scheduler
-* Need to fix scrolling frame in horizontal view so that I can do easier Allocation Grid
 * Bind Scroll methods to mousewheel, etc for CourseTree
-* Edit class time pop-up doesn't work
-* in edit block... if a teacher was already assigned to the block, was in neither list
 * adding/removing teacher in tree_view should call schedule.conflicts so that "scheduler" page button colours work properly
 
 ============ Done ================
@@ -21,3 +18,5 @@
 * Scheduler, opening new file gives empty "Scheduler" Tab
 * Last fix broke something else
 * add "teacher:" and "lab:" in front of resources in tree-view
+* in edit block... if a teacher was already assigned to the block, was in neither list
+* Edit class time pop-up doesn't work

@@ -387,8 +387,8 @@ class EditCourses:
         :param section:
         :param parent_id: the id of the section
         """
-        non_assigned_teachers, assigned_teachers = list_minus_list(self.schedule.teachers(), section.teachers())
-        non_assigned_labs, assigned_labs = list_minus_list(self.schedule.labs(), section.labs())
+        non_assigned_teachers, assigned_teachers = list_minus_list(self.schedule.teachers(), block.teachers())
+        non_assigned_labs, assigned_labs = list_minus_list(self.schedule.labs(), block.labs())
 
         AddEditBlockDialogTk(
             frame = self.frame,
@@ -401,7 +401,7 @@ class EditCourses:
             apply_changes= partial(self.schedule.edit_block, block),
         )
 
-        REFRESH_SUBS["section"](self,parent_id, section)
+        REFRESH_SUBS["section"](self,parent_id, block.section)
         self.set_dirty_flag(True)
 
 
