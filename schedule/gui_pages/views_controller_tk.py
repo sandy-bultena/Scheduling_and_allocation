@@ -54,7 +54,7 @@ class ViewsControllerTk:
 
         self._button_refs: dict[str, tk.Button] = {}
 
-        tk.Label(scrolled_frame,text="Edit Class Times for ...", font=self.Fonts.big, anchor='center').pack(expand=1,fill='both', pady=20)
+        tk.Label(scrolled_frame,text="Edit Class Times for ...", font=self.Fonts.big, anchor='center').pack(expand=1,fill='both', pady=5)
 
         # for each resource, create a bunch of buttons that can launch views
         for resource_type in (ResourceType.teacher, ResourceType.lab, ResourceType.stream):

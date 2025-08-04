@@ -366,27 +366,30 @@ class View:
             stream_numbers = ",".join((stream.number for stream in block.section.streams()))
 
         # labs
-        lab_numbers = ",".join(l.number for l in block.labs())
+        lab_numbers = "\n".join(l.number for l in block.labs())
         lab_numbers = lab_numbers if scale > .75 else lab_numbers[0:11] + "..."
         lab_numbers = lab_numbers if scale > .50 else lab_numbers[0:7] + "..."
-        lab_numbers = lab_numbers if resource_type != ResourceType.lab and scale > .75 else ""
+        lab_numbers = lab_numbers if resource_type == ResourceType.lab and scale > .75 else ""
+        lab_numbers = "" if resource_type == ResourceType.lab and block.duration <= 1 else lab_numbers
 
         # streams
         stream_numbers = stream_numbers if scale > .75 else stream_numbers[0:11] + "..."
         stream_numbers = stream_numbers if scale > .50 else stream_numbers[0:7] + "..."
-        stream_numbers = stream_numbers if resource_type != ResourceType.stream and scale > .75 else ""
+        stream_numbers = stream_numbers if resource_type == ResourceType.stream and scale > .75 else ""
+        stream_numbers = "" if resource_type == ResourceType.stream and block.duration <= 1 else stream_numbers
 
         # teachers
         teachers_name = ""
         for t in block.teachers():
-            if len(str(t)) > 15:
+            if len(str(t)) > 12:
                 teachers_name = teachers_name + f"{t.firstname[0:1]} {t.lastname}\n"
             else:
                 teachers_name = teachers_name + f"{str(t)}\n"
         teachers_name = teachers_name.rstrip()
         teachers_name = teachers_name if scale > .75 else teachers_name[0:11] + "..."
         teachers_name = teachers_name if scale > .50 else teachers_name[0:7] + "..."
-        teachers_name = teachers_name if resource_type != ResourceType.stream and scale > .75 else ""
+        teachers_name = teachers_name if resource_type == ResourceType.teacher and scale > .75 else ""
+        teachers_name = "" if resource_type == ResourceType.teacher and block.duration <= 1 else teachers_name
 
         # define what to display
         block_text = f"{course_number}\n{section_number}\n"
