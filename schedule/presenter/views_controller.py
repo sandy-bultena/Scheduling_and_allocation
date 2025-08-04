@@ -200,8 +200,6 @@ class ViewsController:
                 block.add_lab(to_resource)
         self.schedule.calculate_conflicts()
 
-        self.dirty_flag_method(True)
-
         if from_resource.number in self._views.keys():
             self._views[from_resource.number].draw()
         else:
@@ -211,6 +209,11 @@ class ViewsController:
             self._views[to_resource.number].draw()
         else:
             self.call_view(to_resource)
+
+        self.refresh()
+
+        self.dirty_flag_method(True)
+
 
     # ----------------------------------------------------------------------------------------------------------------
     # open companion view (double_click_handler)
