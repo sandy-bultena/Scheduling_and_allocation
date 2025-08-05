@@ -10,6 +10,8 @@ sys.path.append(os.path.join(bin_dir, "../../"))
 
 from schedule.Tk.Pane import Pane
 
+# TODO: lost the horizontal scrollbar
+# TODO: the vertical frames are not the same size (header vs data vs summary)
 """
 ┌─────────────────────────────────────────────────────────────────────┐
 │       ┌──────────────────────────────────────────────────┐          │
@@ -56,8 +58,8 @@ class AllocationLayout:
         self.footer_frame = self.scrollable_frame(outer_frame,2,1)
 
         # Define the scrollbars
-        h_scrollbar = ttk.Scrollbar(outer_frame, orient='horizontal')
-        v_scrollbar = ttk.Scrollbar(outer_frame, orient='vertical')
+        h_scrollbar = tk.Scrollbar(outer_frame, orient='horizontal')
+        v_scrollbar = tk.Scrollbar(outer_frame, orient='vertical')
         h_scrollbar.grid(row=3,column=1, sticky='ew')
         v_scrollbar.grid(row=1,column=3, sticky='ns')
 
@@ -85,11 +87,6 @@ class AllocationLayout:
 
     def scrollable_frame(self, outer_frame, row,col, width=None, height=None) -> Pane:
         sf = Pane(outer_frame)
-        if width is not None:
-            sf.configure(width=width)
-        if height is not None:
-            sf.configure(height=height)
-            sf.grid_rowconfigure(row, minsize=height)
         sf.grid(row=row, column=col, sticky='nsew')
         return sf
 
@@ -116,7 +113,7 @@ class AllocationLayout:
 
         # footer
         for c in range(len(columns)):
-            tk.Label(self.footer_frame.frame, text=f"{c}").grid(column=0,row=r,sticky='nsew', padx=1, pady=1)
+            tk.Label(self.footer_frame.frame, text=f"{c}").grid(column=c,row=2,sticky='nsew', padx=1, pady=1)
             self.footer_frame.frame.columnconfigure(c,minsize=column_widths, weight=0)
 
         # summary

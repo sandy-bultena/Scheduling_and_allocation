@@ -15,7 +15,7 @@ def register_number_funcs(frame:tk.Frame):
     tk_is_float = frame.winfo_toplevel().register(partial(_is_float, frame))
     return tk_is_int, tk_is_float
 
-def entry_float(frame: tk.Frame, textvariable: tk.StringVar ) -> tk.Entry:
+def entry_float(frame: tk.Frame, textvariable: tk.StringVar, **kwargs ) -> tk.Entry:
     """
     An entry widget that only accepts floats (note... '' and '.' would be valid, so you still need to check later)
     :param frame:
@@ -23,11 +23,15 @@ def entry_float(frame: tk.Frame, textvariable: tk.StringVar ) -> tk.Entry:
     :return: the entry widget with validation
     """
     _,tk_is_float = register_number_funcs(frame)
+
+    if "justify" not in kwargs:
+        kwargs["justify"] = "right"
+
     return tk.Entry(frame,
                            textvariable=textvariable,
                            validate='key',
                            validatecommand=(tk_is_float, '%P', '%s'),
-                           justify='right')
+                            **kwargs)
 
 def entry_int(frame: tk.Frame, textvariable: tk.StringVar ) -> tk.Entry:
     """

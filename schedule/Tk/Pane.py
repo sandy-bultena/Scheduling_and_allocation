@@ -1,14 +1,12 @@
-"""Create a scrollable frame, although don't attach any scrollbars"""
+"""Create a scrollable frame, although it doesn't attach any scrollbars"""
 
 from __future__ import annotations
 import tkinter as tk
-from tkinter import ttk
-#from functools import partial
-import schedule.Tk as new_tk
 
 import sys
 import traceback
-from typing import Any, Literal
+from tkinter import ttk
+from typing import Literal, Optional
 
 
 def eprint(*args, **kwargs):
@@ -42,22 +40,36 @@ class Pane(tk.Frame):
     # constructor
     # ==============================================================================================
     def __init__(self, parent, **kwargs):
-        tk.Frame.__init__(self, parent)
-        canvas = tk.Canvas(self)
+        background_colour = None
+        if "bg" in kwargs:
+            background_colour = kwargs['bg']
+        if "background" in kwargs:
+            background_colour = kwargs['background']
+
+        tk.Frame.__init__(self, parent, bg="yellow")
+
+        self.horizontal_scrollbar: Optional[ttk.Scrollbar] = None
+        self.vertical_scrollbar: Optional[ttk.Scrollbar] = None
+
+        canvas = tk.Canvas(self, bg="red")
         canvas.pack(side="left", fill="both", expand=tk.TRUE)
         self._scrollable_object = canvas
+        super().configure(background=background_colour)
+        super().configure(highlightbackground=background_colour)
+        canvas.configure(background=background_colour)
+        canvas.configure(highlightbackground=background_colour)
 
         # Create a frame inside the canvas which will be scrolled with it.
-        self._widget = tk.Frame(canvas)
+        self._widget = tk.Frame(canvas, **kwargs)
         self._scrolled_id = canvas.create_window(0, 0, window=self._widget,
                                            anchor="nw")
 
-        def _configure_interior(event):
-            # Update the scrollbars to match the size of the inner frame.
-            size = (self._widget.winfo_reqwidth(), self._widget.winfo_reqheight())
-            canvas.config(scrollregion=(0,0, size[0], size[1]))
+        self._widget.bind('<Configure>', self.configure_interior)
 
-        self._widget.bind('<Configure>', _configure_interior)
+    def configure_interior(self, *_):
+        # Update canvas to match the size of the inner frame.
+        width, height = (self._widget.winfo_reqwidth(), self._widget.winfo_reqheight())
+        self.canvas.config(scrollregion=(0, 0, width, height), width=width, height=height)
 
     # ===============================================================================================================
     # pass on all 'configure' to the scrollable object
@@ -83,7 +95,7 @@ class Pane(tk.Frame):
         NOT IMPLEMENTED YET
 
         -anchor => anchor
-        Specifies how to make the widget visible. If not given then as much of the widget as possible is made visable.
+        Specifies how to make the widget visible. If not given then as much of the widget as possible is made visible.
 
         Possible values are n, s, w, e, nw, ne, sw and se.
         This will cause an edge on the widget to be aligned with the corresponding edge on the pane.
@@ -98,23 +110,23 @@ class Pane(tk.Frame):
 
     def yview_moveto(self, fraction):
         """
-            Adjusts the view in the window so that fraction of the total width of the Scrolloable object is off-screen
+            Adjusts the view in the window so that fraction of the total width of the Scrollable object is off-screen
             to the top.
 
             fraction must be a fraction between 0 and 1.
         """
-        if self._vertical_scrollbar is not None:
-            self._scrollable_object.yview_moveto(fraction)
+        if self.vertical_scrollbar is not None:
+            self.canvas.yview_moveto(fraction)
 
     def xview_moveto(self, fraction):
         """
-            Adjusts the view in the window so that fraction of the total width of the Scrolloable object is off-screen
+            Adjusts the view in the window so that fraction of the total width of the Scrollable object is off-screen
             to the left.
 
             fraction must be a fraction between 0 and 1.
         """
-        if self._horizontal_scrollbar is not None:
-            self._scrollable_object.xview_moveto(fraction)
+        if self.horizontal_scrollbar is not None:
+            self.canvas.xview_moveto(fraction)
 
     def xview_widget(self, widget=None):
         """
@@ -160,11 +172,9 @@ class Pane(tk.Frame):
         if self.vertical_scrollbar is None:
             return 0, 1  # no scrollbar
 
-        #print("yview:", *args, **kwargs)
-        #return self._scrollable_object.xview(*args, **kwargs)
         if widget is not None:
             scrollable_object_height = self._widget.winfo_height()
-            scrollable_object_top = self.widget.winfo_rooty()
+            scrollable_object_top = self.frame.winfo_rooty()
 
             to_be_seen_top = widget.winfo_rooty()
             to_be_seen_height = widget.winfo_height()
