@@ -14,7 +14,7 @@ from schedule.Tk import InitGuiFontsAndColours as fac
 
 # colours
 header_colour1           = "#abcdef"
-header_colour2           = colour.lighten(header_colour1, 15)
+header_colour2           = colour.lighten(header_colour1, 10)
 very_light_grey          = "#dddddd"
 row_col_indicator_colour = colour.lighten("#cdefab", 5)
 totals_header_colour     = colour.string("lemonchiffon")
@@ -232,7 +232,7 @@ class AllocationGridTk:
     def make_header_columns(self, col_merge: list):
         prop = self.entry_props.copy()
         prop['disabledbackground'] = header_colour1
-        prop['highlightbackground'] = border_colour
+        prop['highlightbackground'] = header_colour1
         prop['state'] = 'disabled'
 
         # merged header
@@ -498,7 +498,6 @@ class AllocationGridTk:
         # get the panes to match their internal structure
         for pane in self.panes:
             pane.after(10, lambda *_: pane.configure_interior(*_))
-        #self.header_frame.after(10, lambda *_: self.header_frame.winfo_toplevel().geometry("800x800"))
 
     def get_summary_widget(self, row, col):
         return self.summary_widgets.get(row, dict()).get(col, None)
