@@ -69,6 +69,7 @@ def _is_float(frame: tk.Frame, number: str, _: str) -> bool:
     :param number: the number that would result if this validation returns True
     :return: is this a valid float, or the start of a valid float
     """
+    number = number.strip()
     if number == "" or number == ".":
         return True
     try:

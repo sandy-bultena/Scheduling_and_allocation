@@ -24,6 +24,21 @@ def eprint(*args, **kwargs):
 ###############
 
 class Pane(tk.Frame):
+    """
+        ┌──────────────────────────────────────────────────────┐
+        │ ┌──────────────────────────────────────────────────┐ │
+        │ │ ┌──────────────────────────────────────────────┐ │ │
+        │ │ │                                              │ │ │
+        │ │ │                                              │ │ │
+        │ │ │                                              │< ------- inner frame
+        │ │ │             Inner frame                      │ │ │
+        │ │ │          this is where you add stuff         │ │<------ scrollable canvas
+        │ │ │                                              │ │ │
+        │ │ └──────────────────────────────────────────────┘ │ │<---- self (Pane)
+        │ └──────────────────────────────────────────────────┘ │
+        └──────────────────────────────────────────────────────┘
+
+    """
 
     # ==============================================================================================
     # properties
@@ -46,7 +61,7 @@ class Pane(tk.Frame):
         if "background" in kwargs:
             background_colour = kwargs['background']
 
-        tk.Frame.__init__(self, parent, bg="yellow")
+        tk.Frame.__init__(self, parent)
 
         self.horizontal_scrollbar: Optional[ttk.Scrollbar] = None
         self.vertical_scrollbar: Optional[ttk.Scrollbar] = None
@@ -86,7 +101,7 @@ class Pane(tk.Frame):
     # ===============================================================================================================
     # scrolling methods
     # ===============================================================================================================
-    def see(self, widget, **_kwargs):
+    def see(self, widget, **_kwargs)->tuple[Optional[float], Optional[float]]:
         """Adjusts the view so that widget is visible.
 
         Additional parameters in options-value pairs can be passed,
@@ -104,31 +119,33 @@ class Pane(tk.Frame):
         the widget as possible made visible in the x direction.
 
         """
+        delta_x = self.xview_widget(widget)
+        delta_y = self.yview_widget(widget)
+        return delta_x, delta_y
 
-        self.xview_widget(widget)
-        self.yview_widget(widget)
-
-    def yview_moveto(self, fraction):
+    def yview_moveto(self, fraction: Optional[float]):
         """
             Adjusts the view in the window so that fraction of the total width of the Scrollable object is off-screen
             to the top.
 
             fraction must be a fraction between 0 and 1.
         """
-        if self.vertical_scrollbar is not None:
-            self.canvas.yview_moveto(fraction)
+        if fraction is not None:
+            if self.vertical_scrollbar is not None:
+                self.canvas.yview_moveto(fraction)
 
-    def xview_moveto(self, fraction):
+    def xview_moveto(self, fraction: Optional[float]):
         """
             Adjusts the view in the window so that fraction of the total width of the Scrollable object is off-screen
             to the left.
 
             fraction must be a fraction between 0 and 1.
         """
-        if self.horizontal_scrollbar is not None:
-            self.canvas.xview_moveto(fraction)
+        if fraction is not None:
+            if self.horizontal_scrollbar is not None:
+                self.canvas.xview_moveto(fraction)
 
-    def xview_widget(self, widget=None):
+    def xview_widget(self, widget=None) -> Optional[float]:
         """
         No parameters:
             Returns a list containing two elements, both of which are real fractions between 0 and 1.
@@ -144,15 +161,36 @@ class Pane(tk.Frame):
 
         # make sure idle tasks are finished (includes redrawing of changes in geometry)
         self.update_idletasks()
+        pos: Optional[float] = None
 
         if self.horizontal_scrollbar is None:
-            return 0, 1
+            return pos
 
         if widget is not None:
-            # NOT IMPLEMENTED YET
-            pass
+            scrollable_object_width = self._widget.winfo_width()
+            scrollable_object_left = self.frame.winfo_rootx()
 
-    def yview_widget(self, widget=None):
+            to_be_seen_left = widget.winfo_rootx()
+            to_be_seen_width = widget.winfo_width()
+            to_be_seen_right = to_be_seen_left + to_be_seen_width
+
+            scroll_region_width = self._scrollable_object.winfo_width()
+            scroll_region_left = self._scrollable_object.winfo_rootx()
+            scroll_region_right = scroll_region_left + scroll_region_width
+
+            if to_be_seen_left < scroll_region_left:
+                dx = to_be_seen_left - scroll_region_left
+                pos = (scroll_region_left - scrollable_object_left + dx) / scrollable_object_width
+                self._scrollable_object.xview_moveto(pos)
+
+            if to_be_seen_right > scroll_region_right:
+                dx = to_be_seen_right - scroll_region_right + to_be_seen_width
+                pos = (scroll_region_left - scrollable_object_left + dx) / scrollable_object_width
+                self._scrollable_object.xview_moveto(pos)
+
+        return pos
+
+    def yview_widget(self, widget=None) -> Optional[float]:
         """
         No parameters:
             Returns a list containing two elements, both of which are real fractions between 0 and 1.
@@ -168,9 +206,10 @@ class Pane(tk.Frame):
 
         # make sure idle tasks are finished (includes redrawing of changes in geometry)
         self.update_idletasks()
+        pos = None
 
         if self.vertical_scrollbar is None:
-            return 0, 1  # no scrollbar
+            return pos
 
         if widget is not None:
             scrollable_object_height = self._widget.winfo_height()
@@ -194,7 +233,7 @@ class Pane(tk.Frame):
                 pos = (scroll_region_top - scrollable_object_top + dy) / scrollable_object_height
                 self._scrollable_object.yview_moveto(pos)
 
-        return self.vertical_scrollbar.get()
+        return pos
 
     def xview_scroll(self, number: int, what: Literal["units", "pages"]) -> None:
         """ Shift the x-view according to NUMBER which is measured in "units" or "pages" (WHAT).
