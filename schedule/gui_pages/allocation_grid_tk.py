@@ -1,3 +1,6 @@
+"""Creates a horizontally scrollable grid with surrounding data frames that are not scrollable"""
+from typing import Optional
+
 import schedule.Utilities.Colour as colour
 import tkinter as tk
 import tkinter.ttk as ttk
@@ -7,25 +10,50 @@ from idlelib.tooltip import Hovertip
 
 from schedule.gui_generics.number_validations import entry_float
 from schedule.Tk import InitGuiFontsAndColours as fac
+from schedule.Tk.idlelib_tooltip import Hovertip
 
 # =====================================================================================================================
 # globals
 # =====================================================================================================================
 
 # colours
-header_colour1           = "#abcdef"
-header_colour2           = colour.lighten(header_colour1, 10)
-very_light_grey          = "#dddddd"
-row_col_indicator_colour = colour.lighten("#cdefab", 5)
-totals_header_colour     = colour.string("lemonchiffon")
-totals_colour            = colour.lighten(totals_header_colour, 5)
-fg_colour                = "black"
-bg_colour                = "white"
-needs_update_colour      = colour.string("mistyrose")
-not_ok_colour            = needs_update_colour
-border_colour            = "#eeeeee"
+HEADER_COLOUR1           = "#abcdef"
+HEADER_COLOUR2           = colour.lighten(HEADER_COLOUR1, 10)
+VERY_LIGHT_GREY          = "#dddddd"
+ROW_COL_INDICATOR_COLOUR = colour.lighten("#cdefab", 5)
+SUMMARY_HEADER_COLOUR    = colour.string("lemonchiffon")
+SUMMARY_COLOUR           = colour.lighten(SUMMARY_HEADER_COLOUR, 5)
+FG_COLOUR                = "black"
+BG_COLOUR                = "white"
+NEEDS_UPDATE_COLOUR      = colour.string("mistyrose")
+NOT_OK_COLOUR            = NEEDS_UPDATE_COLOUR
+FRAME_BACKGROUND         = "black"  # provides the borders around the entry widgets
 
-width = 5
+# layout properties
+WIDTH = 5
+ENTRY_PADDING = 1
+TITLE_WIDTH = 12
+SUMMARY_WIDTH = WIDTH + 5
+PAD_COL_0 = 0
+PAD_COL_1 = 0
+PAD_COL_2 = 0
+PAD_ROW_0 = 0
+PAD_ROW_1 = 0
+PAD_ROW_2 = 0
+
+# entry widget properties
+ENTRY_PROPS = {
+    'width': WIDTH,
+    'relief': 'ridge',
+    'border': 0,
+    'justify': 'center',
+    'fg': FG_COLOUR,
+    'disabledforeground': FG_COLOUR,
+    'highlightbackground': BG_COLOUR,
+    'bg': BG_COLOUR,
+    'disabledbackground': BG_COLOUR
+}
+
 
 # =====================================================================================================================
 # Allocation Grid Tk
@@ -48,8 +76,6 @@ class AllocationGridTk:
     def num_cols(self):
         return len(self.sub_header_widgets)
 
-    fonts: fac.TkFonts = fac.fonts
-    colours: fac.TkColours = fac.colours
 
     # -----------------------------------------------------------------------------------------------------------------
     # constructor
@@ -66,41 +92,37 @@ class AllocationGridTk:
         :param rows: number of rows in the grid
         :param col_merge: list, each item represents a group of columns (affects colouring)
         :param summary_merge: list, each item represents a group of columns in the totals sections
-        :param cb_data_entry:
+        :param cb_data_entry: a callback function called everytime there data widget is modified.  row/col are sent as parameters
         :param cb_process_data_change:
         :param cb_bottom_row_ok:
+
+
+        Column Merge Example: if you want this for your 2 heading rows
+    
+        +-------------+----------+--------------------+
+        | heading1    | heading2 | heading3           |
+        +------+------+----------+------+------+------+
+        | sub1 | sub2 | sub1     | sub1 | sub2 | sub3 |
+        +------+------+----------+------+------+------+
+
+        use col_merge = [2,1,3]
+
         """
-        # setup fonts if they have not already been set up
-        if self.fonts is None:
-            self.fonts = fac.TkFonts(frame.winfo_toplevel())
-
-        self.data_entry_handler = cb_data_entry
-        self.process_data_change_handler = cb_process_data_change
-        self.bottom_row_ok_handler = cb_bottom_row_ok
-        self.entry_padding = 1
-        self.background="black"
-        self.title_width = 12
-        self.summary_width = width+5
-        self.panes = []
-
-
-        # entry widget properties
-        self.entry_props = {
-            'width': width,
-            'relief': 'ridge',
-            'border': 0,
-            'justify': 'center',
-            'font': self.fonts.small,
-            'fg': fg_colour,
-            'disabledforeground': fg_colour,
-            'highlightbackground': bg_colour,
-            'bg': bg_colour,
-            'disabledbackground': bg_colour
-        }
 
         # get rid of anything that is currently on this frame
         for w in frame.winfo_children():
             w.destroy()
+
+        # keep this for later
+        self.frame = frame
+        self.data_entry_handler = cb_data_entry
+        self.process_data_change_handler = cb_process_data_change
+        self.bottom_row_ok_handler = cb_bottom_row_ok
+        self.panes = []
+
+        # setup the font for the entry widgets
+        self.fonts = fac.TkFonts(frame.winfo_toplevel())
+        ENTRY_PROPS['font'] = self.fonts.small
 
         # make the frames
         self._layout(frame)
@@ -113,10 +135,10 @@ class AllocationGridTk:
         self.title_widgets: list[tk.Entry] = []
         self.widgets_row_col: dict[tk.Entry, tuple[int,int]] = dict()
         self.entry_widgets: dict[tuple[int,int], tk.Entry] = dict()
-        self.summary_widgets: dict[int, dict[int, tk.Entry]] = dict()
+        self.summary_widgets: dict[tuple[int,int], tk.Entry] = dict()
         self.summary_header_widgets: list[tk.Entry] = []
 
-        self.bottom_title_widgets: list[tk.Entry] = []
+        self.bottom_title_widget: Optional[tk.Entry] = None
 
         self.bottom_widgets: list[tk.Entry] = []
         self.column_colours: dict[int, str] = dict()
@@ -157,49 +179,42 @@ class AllocationGridTk:
         1 = summary header
         2 = bottom title
         """
-        x_pad_col_0 = 0
-        x_pad_col_1 = 0
-        x_pad_col_2 = 0
-        y_pad_row_0 = 0
-        y_pad_row_1 = 0
-        y_pad_row_2 = 0
-        # outer_pane = Pane(frame, background="blue")
-        # self.outer_frame = outer_pane.frame
-        # outer_pane.pack(expand=1, fill='both')
+        
+        # NOTE: weird shit happens if outer_frame is a 'Pane' (it's a pain... get it?)
         self.outer_frame = tk.Frame(frame, background="white")
         self.outer_frame.pack(expand=1, fill='both')
 
         # make the frames
-        header_pane = Pane(self.outer_frame, background=self.background)
+        header_pane = Pane(self.outer_frame, background=FRAME_BACKGROUND)
         self.header_frame = header_pane.frame
         self.panes.append(header_pane)
 
-        summary_header_pane = Pane(self.outer_frame, background=self.background)
+        summary_header_pane = Pane(self.outer_frame, background=FRAME_BACKGROUND)
         self.summary_header_frame = summary_header_pane.frame
         self.panes.append(summary_header_pane)
 
-        titles_pane = Pane(self.outer_frame, background=self.background)
+        titles_pane = Pane(self.outer_frame, background=FRAME_BACKGROUND)
         self.titles_frame = titles_pane.frame
         self.panes.append(titles_pane)
 
-        data_pane = Pane(self.outer_frame, background=self.background)
+        data_pane = Pane(self.outer_frame, background=FRAME_BACKGROUND)
         self.data_frame = data_pane.frame
         self.panes.append(data_pane)
 
-        summary_pane = Pane(self.outer_frame, background=self.background)
+        summary_pane = Pane(self.outer_frame, background=FRAME_BACKGROUND)
         self.summary_frame = summary_pane.frame
         self.panes.append(summary_pane)
 
-        bottom_title_pane = Pane(self.outer_frame, background=self.background)
+        bottom_title_pane = Pane(self.outer_frame, background=FRAME_BACKGROUND)
         self.bottom_title_frame = bottom_title_pane.frame
         self.panes.append(bottom_title_pane)
 
-        bottom_pane = Pane(self.outer_frame, background=self.background)
+        bottom_pane = Pane(self.outer_frame, background=FRAME_BACKGROUND)
         self.bottom_frame = bottom_pane.frame
         self.panes.append(bottom_pane)
 
 
-        # make the scrollbars (and anything else that needs to be set????)
+        # make the scrollbars
         scrollbar = ttk.Scrollbar(self.outer_frame, orient="horizontal")
         horizontal_scrollable = (header_pane, titles_pane, data_pane, bottom_pane)
 
@@ -217,22 +232,29 @@ class AllocationGridTk:
         self.outer_frame.columnconfigure(1,weight=100)
         self.outer_frame.columnconfigure(2,weight=0)
 
-        header_pane.grid(row=0, column=1, sticky='nsew', pady=y_pad_row_0, padx=x_pad_col_1)
-        summary_header_pane.grid(row=0, column=2, sticky='nsew', pady=y_pad_row_0, padx=x_pad_col_2)
-        titles_pane.grid(row=1, column=0, sticky='nsew', pady=y_pad_row_1, padx=x_pad_col_0)
-        data_pane.grid(row=1, column=1, sticky='nsew', pady=y_pad_row_1, padx=x_pad_col_1)
-        summary_pane.grid(row=1, column=2, sticky='nsew', pady=y_pad_row_1, padx=x_pad_col_2)
-        bottom_title_pane.grid(row=2, column=0, sticky='nsew', pady=y_pad_row_2, padx=x_pad_col_0)
-        bottom_pane.grid(row=2, column=1, sticky='nsew', pady=y_pad_row_2,padx=x_pad_col_1)
-        scrollbar.grid(row=3, column=1, sticky='nsew', padx=x_pad_col_1)
+        header_pane.grid(row=0, column=1, sticky='nsew', pady=PAD_ROW_0, padx=PAD_COL_1)
+        summary_header_pane.grid(row=0, column=2, sticky='nsew', pady=PAD_ROW_0, padx=PAD_COL_2)
+        titles_pane.grid(row=1, column=0, sticky='nsew', pady=PAD_ROW_1, padx=PAD_COL_0)
+        data_pane.grid(row=1, column=1, sticky='nsew', pady=PAD_ROW_1, padx=PAD_COL_1)
+        summary_pane.grid(row=1, column=2, sticky='nsew', pady=PAD_ROW_1, padx=PAD_COL_2)
+        bottom_title_pane.grid(row=2, column=0, sticky='nsew', pady=PAD_ROW_2, padx=PAD_COL_0)
+        bottom_pane.grid(row=2, column=1, sticky='nsew', pady=PAD_ROW_2,padx=PAD_COL_1)
+        scrollbar.grid(row=3, column=1, sticky='nsew', padx=PAD_COL_1)
 
     # -----------------------------------------------------------------------------------------------------------------
     # make the header columns
     # -----------------------------------------------------------------------------------------------------------------
     def make_header_columns(self, col_merge: list):
-        prop = self.entry_props.copy()
-        prop['disabledbackground'] = header_colour1
-        prop['highlightbackground'] = header_colour1
+        """
+        Create disabled entry widgets for the columns (scrollable horizontally).
+
+        Stores widgets in self.header_widgets and self.sub_header_widgets (lists)
+
+        :param col_merge: a list of number of subheadings per heading
+        """
+        prop = ENTRY_PROPS.copy()
+        prop['disabledbackground'] = HEADER_COLOUR1
+        prop['highlightbackground'] = HEADER_COLOUR1
         prop['state'] = 'disabled'
 
         # merged header
@@ -245,12 +267,12 @@ class AllocationGridTk:
 
             # widget
             me = tk.Entry(mini_frame, **prop)
-            me.pack(side='top', expand=0, fill='both', padx=self.entry_padding,pady=self.entry_padding)
+            me.pack(side='top', expand=0, fill='both', padx=ENTRY_PADDING,pady=ENTRY_PADDING)
 
             # change Colour every second merged header
             if i % 2:
-                me.configure(disabledbackground=header_colour2)
-                me.configure(highlightbackground=header_colour2)
+                me.configure(disabledbackground=HEADER_COLOUR2)
+                me.configure(highlightbackground=HEADER_COLOUR2)
 
             # keep these widgets so that they can be configured later
             self.header_widgets.append(me)
@@ -262,12 +284,12 @@ class AllocationGridTk:
                 hf2.configure(background=self.header_frame.cget("background"))
 
                 # widget
-                (se := tk.Entry(hf2, **prop)).pack(side='left', padx=self.entry_padding,pady=self.entry_padding)
+                (se := tk.Entry(hf2, **prop)).pack(side='left', padx=ENTRY_PADDING,pady=ENTRY_PADDING)
 
                 # change Colour every second merged header
                 if i % 2:
-                    se.configure(disabledbackground=header_colour2)
-                    se.configure(highlightbackground=header_colour2)
+                    se.configure(disabledbackground=HEADER_COLOUR2)
+                    se.configure(highlightbackground=HEADER_COLOUR2)
 
                 # keep these widgets so that they can be configured later
                 self.sub_header_widgets.append(se)
@@ -275,20 +297,27 @@ class AllocationGridTk:
     # -----------------------------------------------------------------------------------------------------------------
     # summary header
     # -----------------------------------------------------------------------------------------------------------------
-    def make_summary_header(self, totals_merge):
-        prop = self.entry_props.copy()
-        prop['width'] = self.summary_width
-        prop['disabledbackground'] = totals_header_colour
+    def make_summary_header(self, summary_merge):
+        """
+        Create disabled entry widgets for summary header
+
+        Stores widgets in self.summary_header_widgets and self.summary_sub_header_widgets (lists)
+
+        :param summary_merge: a list of number of subheadings per heading
+        """
+        prop = ENTRY_PROPS.copy()
+        prop['width'] = SUMMARY_WIDTH
+        prop['disabledbackground'] = SUMMARY_HEADER_COLOUR
         prop['state'] = 'disabled'
 
-        for header in totals_merge:
+        for header in summary_merge:
 
             # frame to hold the totals header, and the subheadings
             (mini_frame := tk.Frame(self.summary_header_frame)).pack(side='left')
             mini_frame.configure(background=self.header_frame.cget("background"))
 
             # widget
-            (me := tk.Entry(mini_frame, **prop)).pack(side='top', expand=0, fill='both', padx=self.entry_padding,pady=self.entry_padding)
+            (me := tk.Entry(mini_frame, **prop)).pack(side='top', expand=0, fill='both', padx=ENTRY_PADDING,pady=ENTRY_PADDING)
 
             # keep these widgets so that they can be configured later
             self.summary_header_widgets.append(me)
@@ -299,7 +328,7 @@ class AllocationGridTk:
                 hf2.configure(background=self.header_frame.cget("background"))
 
                 # widget
-                (se := tk.Entry(hf2, **prop)).pack(side='left', padx=self.entry_padding,pady=self.entry_padding)
+                (se := tk.Entry(hf2, **prop)).pack(side='left', padx=ENTRY_PADDING,pady=ENTRY_PADDING)
 
                 # keep these widgets so that they can be configured later
                 self.summary_sub_header_widgets.append(se)
@@ -308,11 +337,18 @@ class AllocationGridTk:
     # row titles
     # -----------------------------------------------------------------------------------------------------------------
     def make_row_titles(self, rows):
-        prop = self.entry_props.copy()
-        prop['width'] = self.title_width
+        """
+        For each row, create a disabled entry widget to describe each row
+
+        Stores widgets in self.title_widgets (list)
+
+         :param rows: number of rows
+        """
+        prop = ENTRY_PROPS.copy()
+        prop['width'] = TITLE_WIDTH
         for _ in range(rows):
             re = tk.Entry(self.titles_frame, **prop, state='disabled')
-            re.pack(side='top', padx=self.entry_padding,pady=self.entry_padding)
+            re.pack(side='top', padx=ENTRY_PADDING,pady=ENTRY_PADDING)
 
             self.title_widgets.append(re)
 
@@ -320,6 +356,14 @@ class AllocationGridTk:
     # data grid
     # -----------------------------------------------------------------------------------------------------------------
     def make_data_grid(self, rows, col_merge: list):
+        """
+        For each row and column, create an entry widget to hold data
+
+        Stores widgets in self.widget_row_col (dict[tuple[row,col], tk.Entry]
+
+        :param rows: number of rows
+        :param col_merge: a list of number of subheadings per heading
+        """
 
         for row in range(rows):
             (df1 := tk.Frame(self.data_frame)).pack(side='top', expand=1, fill='x')
@@ -334,8 +378,8 @@ class AllocationGridTk:
 
                     # data entry box
                     var = tk.StringVar(value=f"{row}.{col}")
-                    de = entry_float(df1, textvariable=var, **self.entry_props)
-                    de.pack(side='left', padx=self.entry_padding,pady=self.entry_padding)
+                    de = entry_float(df1, textvariable=var, **ENTRY_PROPS)
+                    de.pack(side='left', padx=ENTRY_PADDING,pady=ENTRY_PADDING)
 
                     # save row/column with data entry, and vice versa
                     self.entry_widgets[row,col] = de
@@ -344,7 +388,7 @@ class AllocationGridTk:
                     # set_default_fonts_and_colours Colour in column to make it easier to read
                     de_colour = de.cget('background')
                     if column_index % 2 == 0:
-                        de_colour = very_light_grey
+                        de_colour = VERY_LIGHT_GREY
                     self.column_colours[col] = de_colour
                     de.configure(background=de_colour)
                     de.configure(highlightbackground=de_colour)
@@ -359,7 +403,7 @@ class AllocationGridTk:
                     # de.bind("<Key-Down>", partial(self._move, 'nextRow'))
                     # de.bind("<Key-downarrow>", partial(self._move, 'nextRow'))
                     #
-                    # de.bind("<FocusIn>", partial(self.focus_changed, 'focusIn', colour=row_col_indicator_colour))
+                    # de.bind("<FocusIn>", partial(self.focus_changed, 'focusIn', colour=ROW_COL_INDICATOR_COLOUR))
                     # de.bind("<FocusOut>", partial(self.focus_changed, 'focusOut'))
                     # de.bindtags([*de.bindtags(), 1, 0, 2, 3])
 
@@ -369,9 +413,17 @@ class AllocationGridTk:
     # summary
     # -----------------------------------------------------------------------------------------------------------------
     def make_summary_grid(self, rows, totals_merge):
-        prop = self.entry_props.copy()
-        prop['width'] = self.summary_width
-        prop['disabledbackground'] = totals_header_colour
+        """
+        create a list of disabled entry widgets to hold summary data per row
+
+        Stores widgets in self.summary_widget (dict[tuple[row,col], tk.Entry]
+
+        :param rows: number of rows
+        :param totals_merge: a list of number of subheadings per heading
+        """
+        prop = ENTRY_PROPS.copy()
+        prop['width'] = SUMMARY_WIDTH
+        prop['disabledbackground'] = SUMMARY_HEADER_COLOUR
         prop['state'] = 'disabled'
 
         for row in range(rows):
@@ -381,60 +433,69 @@ class AllocationGridTk:
             # foreach header
             col = 0
             for header in range(len(totals_merge)):
+
                 # subsections
                 for _ in range(1, totals_merge[header]):
 
                     # data entry box
-                    (de := tk.Entry(df1, **prop)).pack(side='left', padx=self.entry_padding,pady=self.entry_padding)
+                    (de := tk.Entry(df1, **prop)).pack(side='left', padx=ENTRY_PADDING,pady=ENTRY_PADDING)
 
                     # save row/column with totals entry
-                    if row not in self.summary_widgets:
-                        self.summary_widgets[row] = {}
-                    self.summary_widgets[row][col] = de
+                    self.summary_widgets[row,col] = de
                     col += 1
 
     # -----------------------------------------------------------------------------------------------------------------
     # bottom row header
     # -----------------------------------------------------------------------------------------------------------------
     def make_bottom_header(self):
-        prop = self.entry_props.copy()
-        prop['width'] = self.title_width
+        """
+        Create ONE widget to store the title for the bottom row
+        """
+        prop = ENTRY_PROPS.copy()
+        prop['width'] = TITLE_WIDTH
 
         # widget
         se = tk.Entry(self.bottom_title_frame, **prop, state='disabled')
-        se.pack(side='left', expand=1,fill='both', padx=self.entry_padding,pady=self.entry_padding)
+        se.pack(side='left', expand=1,fill='both', padx=ENTRY_PADDING,pady=ENTRY_PADDING)
 
         # keep these widgets so that they can be configured later
-        self.bottom_title_widgets.append(se)
+        self.bottom_title_widget = se
 
 
-    # ============================================================================
+    # -----------------------------------------------------------------------------------------------------------------
     # bottom
-    # ============================================================================
+    # -----------------------------------------------------------------------------------------------------------------
     def make_bottom(self, col_merge):
+        """
+        create a list of disabled widgets to hold the summary of the columns
+
+        Stores widgets in self.bottom_widgets (list)
+
+        :param col_merge: a list of number of subheadings per heading
+        """
         def validate(n, w):
             if self.bottom_row_ok_handler(n):
-                self.bottom_frame.nametowidget(w).configure(disabledbackground=totals_colour)
+                self.bottom_frame.nametowidget(w).configure(disabledbackground=SUMMARY_COLOUR)
             else:
-                self.bottom_frame.nametowidget(w).configure(disabledbackground=not_ok_colour)
+                self.bottom_frame.nametowidget(w).configure(disabledbackground=NOT_OK_COLOUR)
             return True
 
         # merged header
         for header in col_merge:
             for sub_section in range(header):
                 # widget
-                prop = self.entry_props.copy()
-                prop['disabledbackground'] = header_colour1
+                prop = ENTRY_PROPS.copy()
+                prop['disabledbackground'] = HEADER_COLOUR1
                 se = tk.Entry(self.bottom_frame, **prop, state='disabled', validate='key')
                 se.configure(validatecommand=(se.register(validate), '%P', '%W'))
-                se.pack(side='left', padx=self.entry_padding,pady=self.entry_padding)
+                se.pack(side='left', padx=ENTRY_PADDING,pady=ENTRY_PADDING)
 
                 # keep these widgets so that they can be configured later
                 self.bottom_widgets.append(se)
 
-    # ============================================================================
+    # -----------------------------------------------------------------------------------------------------------------
     # populate: assign text variables to each of the entry widgets
-    # ============================================================================
+    # -----------------------------------------------------------------------------------------------------------------
     def populate(self, header_text: list[str], balloon_text: list[str],
                  sub_header_text: list[str], row_header_text: list[str],
                  data_vars: dict[tuple[int,int],str], summary_header_texts: list[str],
@@ -442,8 +503,12 @@ class AllocationGridTk:
                  bottom_header_text: str, bottom_row_vars: list[str]):
         balloon_text = list(balloon_text)
 
+        # add the tool tips to the header
+        for w,text in zip(self.header_widgets, balloon_text):
+            Hovertip(w,text=text)
+
         # bottom row
-        self.bottom_title_widgets[0].configure(textvariable=tk.StringVar(value=bottom_header_text))
+        self.bottom_title_widget.configure(textvariable=tk.StringVar(value=bottom_header_text))
 
         for c, bw in enumerate(self.bottom_widgets):
             bw.configure(textvariable=tk.StringVar(value=bottom_row_vars[c]))
@@ -500,7 +565,7 @@ class AllocationGridTk:
             pane.after(10, lambda *_: pane.configure_interior(*_))
 
     def get_summary_widget(self, row, col):
-        return self.summary_widgets.get(row, dict()).get(col, None)
+        return self.summary_widgets.get((row,col),None)
 
     def get_widget(self, row, col):
         return self.entry_widgets[row,col]
@@ -549,12 +614,12 @@ class AllocationGridTk:
     #         w.selection_clear()
     #
     #     # set_default_fonts_and_colours data Colour and totals Colour
-    #     dcolour = colour or bg_colour
+    #     dcolour = colour or BG_COLOUR
     #     tcolour = colour
     #
     #     # are we processing a 'data change'?
     #     original_colour = w.cget('bg')
-    #     data_changed = original_colour == needs_update_colour and inout == 'focusOut'
+    #     data_changed = original_colour == NEEDS_UPDATE_COLOUR and inout == 'focusOut'
     #
     #     # get the widget
     #     r, c = self.get_row_col(w)
@@ -577,9 +642,9 @@ class AllocationGridTk:
     #
     #     # set_default_fonts_and_colours colors for totals row
     #     if tcolour:
-    #         tcolour = colour.add(tcolour, totals_colour)
+    #         tcolour = colour.add(tcolour, SUMMARY_COLOUR)
     #     else:
-    #         tcolour = totals_colour
+    #         tcolour = SUMMARY_COLOUR
     #
     #     for col in range(self.num_totals_sub_col):
     #         widget = self.summary_widgets[r][col]
@@ -682,20 +747,20 @@ our $Fonts;
 my $header_colour1           = "#abcdef";
 my $header_colour2           = Colour->lighten( 5, $header_colour1 );
 my $very_light_grey          = "#eeeeee";
-my $row_col_indicator_colour = Colour->lighten( 5, "#cdefab" );
-my $totals_header_colour     = Colour->new("lemonchiffon")->string;
-my $totals_colour            = Colour->lighten( 5, $totals_header_colour );
-my $fg_colour                = "black";
-my $bg_colour                = "white";
-my $needs_update_colour      = Colour->new("mistyrose")->string;
-my $not_ok_colour            = $needs_update_colour;
+my $ROW_COL_INDICATOR_COLOUR = Colour->lighten( 5, "#cdefab" );
+my $SUMMARY_HEADER_COLOUR     = Colour->new("lemonchiffon")->string;
+my $SUMMARY_COLOUR            = Colour->lighten( 5, $SUMMARY_HEADER_COLOUR );
+my $FG_COLOUR                = "black";
+my $BG_COLOUR                = "white";
+my $NEEDS_UPDATE_COLOUR      = Colour->new("mistyrose")->string;
+my $NOT_OK_COLOUR            = $NEEDS_UPDATE_COLOUR;
 
 # width of the data entry (fixed for now... maybe make it configurable
 # at a later date)
 my $width = 5;
 
 # generic properties for entry widgets
-my %entry_props;
+my %ENTRY_PROPS;
 
 # ============================================================================
 # new
@@ -759,16 +824,16 @@ sub new {
     # ------------------------------------------------------------------------
     # entry widget properties
     # ------------------------------------------------------------------------
-    %entry_props = (
+    %ENTRY_PROPS = (
         -width              => $width,
         -relief             => 'flat',
         -borderwidth        => 1,
         -justify            => 'center',
         -font               => $Fonts->{small},
-        -fg                 => $fg_colour,
-        -disabledforeground => $fg_colour,
-        -bg                 => $bg_colour,
-        -disabledbackground => $bg_colour,
+        -fg                 => $FG_COLOUR,
+        -disabledforeground => $FG_COLOUR,
+        -bg                 => $BG_COLOUR,
+        -disabledbackground => $BG_COLOUR,
     );
 
     # ------------------------------------------------------------------------
@@ -907,7 +972,7 @@ sub make_header_columns {
 
         # widget
         my $me = $mini_frame->Entry(
-            %entry_props,
+            %ENTRY_PROPS,
             -disabledbackground => $header_colour1,
             -state              => 'disabled',
         )->pack( -side => 'top', -expand => 0, -fill => 'both' );
@@ -934,7 +999,7 @@ sub make_header_columns {
 
             # widget
             my $se = $hf2->Entry(
-                %entry_props,
+                %ENTRY_PROPS,
                 -disabledbackground => $header_colour1,
                 -state              => 'disabled',
             )->pack( -side => 'left' );
@@ -967,17 +1032,17 @@ sub make_bottom {
             # widget
             my $se;
             $se = $self->bottom_frame->Entry(
-                %entry_props,
-                -disabledbackground => $totals_colour,
+                %ENTRY_PROPS,
+                -disabledbackground => $SUMMARY_COLOUR,
                 -state              => 'disabled',
                 -validate           => 'key',
                 -validatecommand    => sub {
                     my $n = shift;
                     if ( $self->cb_bottom_row_ok->($n) ) {
-                        $se->configure( -disabledbackground => $totals_colour );
+                        $se->configure( -disabledbackground => $SUMMARY_COLOUR );
                     }
                     else {
-                        $se->configure( -disabledbackground => $not_ok_colour );
+                        $se->configure( -disabledbackground => $NOT_OK_COLOUR );
                     }
                     return 1;
                 },
@@ -999,7 +1064,7 @@ sub make_bottom_header {
 
     # widget
     my $se = $self->bottom_header_frame->Entry(
-        %entry_props,
+        %ENTRY_PROPS,
         -state => 'disabled',
         -width => 12,
     )->pack( -side => 'top' );
@@ -1018,7 +1083,7 @@ sub make_row_titles {
 
     foreach my $row ( 0 .. $rows - 1 ) {
         my $re = $self->row_title_frame->Entry(
-            %entry_props,
+            %ENTRY_PROPS,
             -width => 12,
             -state => 'disabled',
         )->pack( -side => 'top' );
@@ -1047,10 +1112,10 @@ sub make_total_grid {
 
             # widget
             my $me = $mini_frame->Entry(
-                %entry_props,
+                %ENTRY_PROPS,
                 -width              => $width + 1,
                 -state              => 'disabled',
-                -disabledbackground => $totals_header_colour,
+                -disabledbackground => $SUMMARY_HEADER_COLOUR,
             )->pack( -side => 'top', -expand => 0, -fill => 'both' );
 
             # keep these widgets so that they can be configured later
@@ -1064,9 +1129,9 @@ sub make_total_grid {
 
                 # widget
                 my $se = $hf2->Entry(
-                    %entry_props,
+                    %ENTRY_PROPS,
                     -width              => $width + 1,
-                    -disabledbackground => $totals_header_colour,
+                    -disabledbackground => $SUMMARY_HEADER_COLOUR,
                     -state              => 'disabled',
 
                 )->pack( -side => 'left' );
@@ -1094,10 +1159,10 @@ sub make_total_grid {
 
                 # data entry box
                 my $de = $df1->Entry(
-                    %entry_props,
+                    %ENTRY_PROPS,
                     -width              => $width + 1,
                     -state              => 'disabled',
-                    -disabledbackground => $totals_colour,
+                    -disabledbackground => $SUMMARY_COLOUR,
                 )->pack( -side => 'left' );
 
                 # save row/column with totals entry
@@ -1135,11 +1200,11 @@ sub make_data_grid {
                 # data entry box
                 my $de;
                 $de = $df1->Entry(
-                    %entry_props,
+                    %ENTRY_PROPS,
                     -validate        => 'key',
                     -validatecommand => [
                         sub {
-                            $de->configure( -bg => $needs_update_colour );
+                            $de->configure( -bg => $NEEDS_UPDATE_COLOUR );
                             return $self->cb_data_entry->(@_);
                         },
                         $row,
@@ -1175,7 +1240,7 @@ sub make_data_grid {
                     "<FocusIn>",
                     [
                         \&focus_changed, $self,
-                        'focusIn',       $row_col_indicator_colour
+                        'focusIn',       $ROW_COL_INDICATOR_COLOUR
                     ]
                 );
                 $de->bind( "<FocusOut>",
@@ -1343,13 +1408,13 @@ sub focus_changed {
     }
 
     # set data colour and totals colour
-    my $dcolour = $colour || $bg_colour;
+    my $dcolour = $colour || $BG_COLOUR;
     my $tcolour = $colour;
 
     # are we processing a 'data change?'
     my $original_colour = $w->cget( -bg );
     my $data_changed =
-      $original_colour eq $needs_update_colour && $inout eq 'focusOut';
+      $original_colour eq $NEEDS_UPDATE_COLOUR && $inout eq 'focusOut';
 
     # get the widget
     my ( $row, $col ) = $self->get_row_col($w);
@@ -1375,10 +1440,10 @@ sub focus_changed {
     # set colours for totals row
     no warnings;
     if ($tcolour) {
-        $tcolour = Colour->add( $tcolour, $totals_colour );
+        $tcolour = Colour->add( $tcolour, $SUMMARY_COLOUR );
     }
     else {
-        $tcolour = $totals_colour;
+        $tcolour = $SUMMARY_COLOUR;
     }
     foreach my $col ( 0 .. $self->num_totals_sub_col - 1 ) {
         $widget = $self->summary_widgets->{$row}{$col};
