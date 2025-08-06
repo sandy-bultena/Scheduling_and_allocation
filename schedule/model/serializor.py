@@ -23,6 +23,8 @@ if TYPE_CHECKING:
 # TODO: not saving or reading synced blocks
 
 class CSVSerializor:
+    last_line_number_read:int  = -1
+    last_line_read:str = ""
 
     # ============================================================================
     # write csv file
@@ -99,13 +101,16 @@ class CSVSerializor:
     # read from CSV file
     # ============================================================================
     @staticmethod
-    def parse(schedule: Schedule, file: str):
+    def read_file(schedule: Schedule, file: str):
         """Parse the details of a schedule from a file, throws an exception if the file cannot be read from"""
+
+        CSVSerializor.last_line_number_read = -1
+        CSVSerializor.last_line_read = ""
 
         with open(file, 'r', newline='') as f:
             reader = csv.reader(f, delimiter=',',
                                 quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            CSVSerializor.parse_iterable(schedule, reader)
+            CSVSerializor._parse_schedule_info(schedule, reader)
 
         schedule.calculate_conflicts()
 
@@ -113,14 +118,16 @@ class CSVSerializor:
     # parse the csv file from an iterable of lists
     # ============================================================================
     @classmethod
-    def parse_iterable(cls, schedule: Schedule, reader: Iterable):
+    def _parse_schedule_info(cls, schedule: Schedule, reader: Iterable):
         current_obj: Any = None
         course_obj: Optional[Course] = None
         section_obj: Optional[Section] = None
         block_obj: Optional[Block] = None
 
-        for row in reader:
-            print(f"{row}")
+        for line_number, row in enumerate(reader, start=1):
+            CSVSerializor.last_line_number_read = line_number
+            CSVSerializor.last_line_read = row
+
             if not row or row[0] == "":
                 continue
 

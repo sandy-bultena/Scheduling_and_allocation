@@ -4,7 +4,6 @@
 * Windows, binding to ctrl-s isn't working properly
 * Show teacher stat in scheduler
 * Bind Scroll methods to mousewheel, etc for CourseTree
-* If reading a schedule file fails, give better feedback
 
 ============ Done ================
 * Switching between view tabs and back disconnects view from view controller (and the buttons I thing in the view choices)
@@ -23,3 +22,4 @@
 * Auto save
 * For schedule "validate", incorrect number of hours doesn't specify which section
 * Put str(time_slot) to show start/duration rather than start/stop time
+* If reading a schedule file fails, give better feedback

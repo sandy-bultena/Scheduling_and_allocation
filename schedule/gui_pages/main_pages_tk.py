@@ -261,6 +261,22 @@ class MainPageBaseTk:
     def ask_yes_no(self, title: str, msg: str, detail: str = ""):
         return askyesno(title=title, message=msg, detail=detail, icon='info')
 
+    def show_custom_message(self, title="", msg=""):
+        dialog = tk.Tk()
+        dialog.title(title)
+        #dialog.geometry("400x150")  # Set custom width and height
+        #dialog.resizable(False, False) # Prevent resizing by user
+
+        label = tk.Label(dialog, text=msg, justify='left')
+        label.pack(pady=20,padx=20)
+
+        ok_button = tk.Button(dialog, text="OK", command=dialog.destroy)
+        ok_button.pack(padx=20,pady=20, expand=1)
+
+        dialog.transient(self.mw)  # Make it a child of the main window
+        dialog.grab_set()      # Make it modal
+        self.mw.wait_window(dialog) # Wait for the dialog to close
+
     # ===================================================================================
     # create top level
     # ===================================================================================

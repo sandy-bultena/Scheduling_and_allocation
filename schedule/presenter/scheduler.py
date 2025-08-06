@@ -249,7 +249,7 @@ class Scheduler:
                 self.refresh_for_newly_opened_file()
 
             except CouldNotReadFileError as e:
-                self.gui.show_error("Read File", str(e))
+                self.gui.show_custom_message("Read File Error", str(e))
 
     def save_menu_event(self):
         """save file"""

@@ -16,6 +16,7 @@ from .conflicts import (set_block_conflicts,  set_lunch_break_conflicts,
                         set_number_of_days_conflict, set_availability_hours_conflict)
 from .enums import ResourceType, SemesterType
 from .serializor import CSVSerializor as Serializor
+
 DEFAULT_COURSE_HOURS = 3
 
 """ SYNOPSIS/EXAMPLE:
@@ -51,9 +52,12 @@ class Schedule:
     def read_file(self, file):
         """read a csv file containing the schedule info"""
         try:
-            Serializor.parse(self, file)
+            Serializor.read_file(self, file)
         except Exception as e:
-            raise errors.CouldNotReadFileError(f"Could not read {file}, {e}")
+            msg = (f"Could not read\n {file}\n\n"
+                   f"Line {Serializor.last_line_number_read}: {Serializor.last_line_read}\n\n"
+                   f"Error Message: {e}")
+            raise errors.CouldNotReadFileError(msg)
         self.filename = path.basename(file)
 
     def write_file(self, file):
