@@ -1,6 +1,6 @@
 """Creates a horizontally scrollable grid with surrounding data frames that are not scrollable"""
 from functools import partial
-from typing import Optional
+from typing import Optional, Literal
 
 import schedule.Utilities.Colour as colour
 import tkinter as tk
@@ -337,7 +337,7 @@ class AllocationGridTk:
             # keep these widgets so that they can be configured later
             self.summary_header_widgets.append(me)
 
-            for sub_section in range(1, header):
+            for sub_section in range(header):
                 # frame within the mini-frame so we can stack left
                 (hf2 := tk.Frame(mini_frame)).pack(side='left')
                 hf2.configure(background=self.header_frame.cget("background"))
@@ -418,7 +418,7 @@ class AllocationGridTk:
                     de.bind("<Key-downarrow>", partial(self._move, 'nextRow'))
 
                     de.bind("<FocusIn>", partial(self.focus_changed, 'focusIn', colour=ROW_COL_INDICATOR_COLOUR))
-                    de.bind("<Leave>", partial(self.focus_changed, 'focusOut', colour=ROW_COL_INDICATOR_COLOUR))
+                    de.bind("<Leave>", self.process_data_change)
                     de.bind("<FocusOut>", partial(self.focus_changed, 'focusOut'))
                     de.bindtags([*de.bindtags(), 1, 0, 2, 3])
 
@@ -427,14 +427,14 @@ class AllocationGridTk:
     # -----------------------------------------------------------------------------------------------------------------
     # summary
     # -----------------------------------------------------------------------------------------------------------------
-    def make_summary_grid(self, rows, totals_merge):
+    def make_summary_grid(self, rows, summary_merge):
         """
         create a list of disabled entry widgets to hold summary data per row
 
         Stores widgets in self.summary_widget (dict[tuple[row,col], tk.Entry]
 
         :param rows: number of rows
-        :param totals_merge: a list of number of subheadings per heading
+        :param summary_merge: a list of number of subheadings per heading
         """
         prop = ENTRY_PROPS.copy()
         prop['width'] = SUMMARY_WIDTH
@@ -447,10 +447,10 @@ class AllocationGridTk:
 
             # foreach header
             col = 0
-            for header in range(len(totals_merge)):
+            for header in range(len(summary_merge)):
 
                 # subsections
-                for _ in range(1, totals_merge[header]):
+                for _ in range( summary_merge[header]):
 
                     # data entry box
                     (de := tk.Entry(df1, **prop)).pack(side='left', padx=ENTRY_PADDING,pady=ENTRY_PADDING)
@@ -534,7 +534,7 @@ class AllocationGridTk:
 
         # add the tool tips to the header
         for w,text in zip(self.header_widgets, balloon_text):
-            if text is not "":
+            if text != "":
                 Hovertip(w,text=text)
 
         # bottom row
@@ -585,7 +585,7 @@ class AllocationGridTk:
             else:
                 break
 
-        # the row header
+        # the row titles
         i = 0
         for rht in title_text:
             self.title_widgets[i].configure(textvariable=tk.StringVar(value=rht))
@@ -679,14 +679,15 @@ class AllocationGridTk:
             widget.configure(disabledbackground=tcolour)
             widget.configure(highlightbackground=dcolour)
 
-        # callback (only if data has changed)
-        if len(DATA_CHANGED):
-            self.process_data_change()
+        self.process_data_change()
 
     # -----------------------------------------------------------------------------------------------------------------
     # process a data change
     # -----------------------------------------------------------------------------------------------------------------
-    def process_data_change(self):
+    def process_data_change(self, *args):
+        if len(DATA_CHANGED) == 0:
+            return
+
         for loc, v in DATA_CHANGED.items():
             r,c = loc
             w = self.entry_widgets.get((r, c), None)
@@ -717,3 +718,9 @@ class AllocationGridTk:
                 return
 
         DATA_CHANGED.clear()
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # process a data update (can only update widgets in the data/summary/bottom panes
+    # -----------------------------------------------------------------------------------------------------------------
+    def update_data(self, which: Literal['data','summary','bottom'], row, col, value):
+        pass

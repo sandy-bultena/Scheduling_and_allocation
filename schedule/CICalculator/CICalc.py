@@ -4,9 +4,9 @@ from .CIConstants import *
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from Schedule.Schedule import Schedule
-    from Schedule.Course import Course
-    from Schedule.Teacher import Teacher
+    from schedule.model.schedule import Schedule
+    from schedule.model.course import Course
+    from schedule.model.teacher import Teacher
 
 # for debugging
 print_flag = False
@@ -17,11 +17,16 @@ def debug(*args):
         return
     print(args)
 
+def calculate_ci(teacher:Teacher, schedule: Schedule):
+    c = CICalc(teacher, schedule)
+    return c.calculate()
+
 class CICalc():
-    def __init__(self, teacher: Teacher):
+    def __init__(self, teacher:Teacher, schedule: Schedule):
         self._reset()
-        self.teacher = teacher
         self.prep_hours = 0
+        self.schedule = schedule
+        self.teacher = teacher
 
     def _reset(self):
         self.pes = 0
@@ -32,10 +37,12 @@ class CICalc():
         self.release = 0
         self.dirty_flag = False
 
-    def calculate(self, schedule: Schedule) -> str:
+    def calculate(self, ) -> str:
         CI = []
+        schedule = self.schedule
         teacher = self.teacher
-        courses : tuple[Course] = schedule.allocated_courses_for_teacher(teacher)
+
+        courses : list[Course] = [c for c in schedule.courses() if c.has_teacher(teacher)]
 
         self._reset()
         self.release = teacher.release or 0
@@ -50,6 +57,7 @@ class CICalc():
         for course in courses:
             max_prep_hours = 0
             debug(f"*********** {course.name}")
+            hours = 0
 
             # per section
             for section in course.get_sections_for_teacher(teacher):
@@ -72,7 +80,7 @@ class CICalc():
         # return
         total = self._total()
         debug(f"CI {teacher}: {total}")
-        return "%7.1f" % total
+        return total
 
     def _total(self) -> float:
 
