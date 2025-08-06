@@ -28,14 +28,16 @@ MAIN_MENU_EVENT_HANDLER_NAMES = Literal[
     "validate",
     "auto_save",
     "auto_save_set",
+    "auto_save_unset"
 ]
 
 
-def check_button_changed(*args, **kwargs):
-    print("check button changed args:",*args, **kwargs)
-    if len(args) == 1:
-        print(f"value={args[0].get()}")
-    MAIN_MENU_EVENT_HANDLERS["auto_save_set"]()
+def check_button_changed(var, *args, **kwargs):
+    if var.get():
+        MAIN_MENU_EVENT_HANDLERS["auto_save_set"]()
+    else:
+        MAIN_MENU_EVENT_HANDLERS["auto_save_unset"]()
+
 
 
 MAIN_MENU_EVENT_HANDLERS: dict[MAIN_MENU_EVENT_HANDLER_NAMES, Callable[[], None]] = {}
@@ -47,7 +49,10 @@ def set_menu_event_handler(name: MAIN_MENU_EVENT_HANDLER_NAMES, handler: Callabl
     MAIN_MENU_EVENT_HANDLERS[name] = handler
 
 
-auto_save_boolean = False
+AUTO_SAVE_BOOLEAN = True
+def set_auto_save_default_value(value: bool):
+    global AUTO_SAVE_BOOLEAN
+    AUTO_SAVE_BOOLEAN = value
 
 
 def main_menu() -> tuple[list[str], dict[str, ToolbarItem], list[MenuItem]]:
@@ -156,7 +161,7 @@ def main_menu() -> tuple[list[str], dict[str, ToolbarItem], list[MenuItem]]:
     auto_save_menu.add_child(MenuItem(menu_type=MenuType.Checkbutton,
                                       label='Auto Save On',
                                       command=check_button_changed,
-                                      bool_variable = auto_save_boolean,
+                                      bool_variable = AUTO_SAVE_BOOLEAN,
                                       )
                              )
 

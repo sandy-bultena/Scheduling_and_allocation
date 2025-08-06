@@ -10,6 +10,7 @@
 #       validate()
 #       exit_event()
 #       print_views(resource_type, canvas)
+#       auto_save_set(bool)
 #
 # Events triggered from the welcome page
 #       exit_event()
@@ -43,7 +44,7 @@ from typing import Optional, TYPE_CHECKING, Any, Callable
 from schedule.presenter.edit_resources import EditResources
 from schedule.presenter.edit_courses import EditCourses
 
-from .menus_main_menu_scheduler import set_menu_event_handler, main_menu
+from schedule.presenter.menus_main_menu_scheduler import set_menu_event_handler, main_menu, set_auto_save_default_value
 from schedule.Utilities import Preferences
 from schedule.gui_pages.scheduler_tk import SchedulerTk, set_main_page_event_handler
 from schedule.model import Schedule, ResourceType
@@ -119,6 +120,7 @@ class Scheduler:
         # --------------------------------------------------------------------
         # create the Menu and Toolbars
         # --------------------------------------------------------------------
+        set_auto_save_default_value(self.preferences.auto_save())
         set_menu_event_handler("file_new", self.new_menu_event)
         set_menu_event_handler("file_open", self.open_menu_event)
         set_menu_event_handler("file_save", self.save_menu_event)
@@ -136,6 +138,8 @@ class Scheduler:
         set_menu_event_handler("print_latex_teacher", partial(self.print_views, ResourceType.teacher, CanvasType.latex))
         set_menu_event_handler("print_latex_lab", partial(self.print_views, ResourceType.lab, CanvasType.latex))
         set_menu_event_handler("print_latex_streams", partial(self.print_views, ResourceType.stream, CanvasType.latex))
+        set_menu_event_handler("auto_save_set", partial(self.auto_save_set, True))
+        set_menu_event_handler("auto_save_unset", partial(self.auto_save_set, False))
 
         # TODO
         set_menu_event_handler("print_text", self.menu_ignore)
@@ -149,7 +153,7 @@ class Scheduler:
         self.gui.create_welcome_page(self.preferences.semester())
         self.gui.create_status_bar()
         self.gui.notebook_tab_changed_handler = self.notebook_tab_has_changed
-
+        self.set_dirty_indicator()
 
         self.gui.start_event_loop()
 
@@ -180,6 +184,13 @@ class Scheduler:
         self.gui.previous_file = value
         self.preferences.save()
 
+    @property
+    def auto_save_text(self):
+        if self.preferences.auto_save():
+            return "AUTO SAVE ON"
+        else:
+            return ""
+
     # ============================================================================================
     # Properties - is data changed (dirty)
     # ============================================================================================
@@ -190,12 +201,22 @@ class Scheduler:
 
     @dirty_flag.setter
     def dirty_flag(self, value):
-        if self.gui:
-            if value:
-                self.gui.dirty_text = "UNSAVED"
-            else:
-                self.gui.dirty_text = ""
         self._dirty_flag = value
+        self.set_dirty_indicator()
+
+    # ============================================================================================
+    # Event handler, auto save setting changed
+    # ============================================================================================
+    def set_dirty_indicator(self):
+        if self.gui and self.dirty_flag:
+            self.gui.dirty_text = "UNSAVED"
+        else:
+            self.gui.dirty_text = self.auto_save_text
+
+    def auto_save_set(self, value):
+        self.preferences.auto_save(value)
+        self.set_dirty_indicator()
+        self.preferences.save()
 
     # ============================================================================================
     # Event handlers - file open/close/save/new
@@ -479,6 +500,11 @@ class Scheduler:
         # if value is true, update all the open views
         if value and self.current_tab != self.NB_schedule and self.view_controller is not None:
             self.view_controller.redraw_all()
+
+        # if value is true, and autosave is on, save the file
+        if value and self.preferences.auto_save():
+            self.schedule.write_file(self.schedule_filename)
+            value = False
 
         if value is not None:
             self.dirty_flag = value

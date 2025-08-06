@@ -39,7 +39,7 @@ class Preferences:
             self._config['MOST_RECENT']['semester'] = semester
         return self._config['MOST_RECENT'].get('semester', "fall")
 
-    def previous_file(self, file: str | None = None) -> str | None:
+    def previous_file(self, file: Optional[str] = None) -> Optional[str]    :
         directory = None
         filename = None
 
@@ -79,7 +79,7 @@ class Preferences:
                 return os.path.realpath(directory + "/" + filename)
         return None
 
-    def current_dir(self, new_dir: str | None = None) -> str | None:
+    def current_dir(self, new_dir: Optional[str] = None) -> Optional[str]:
         directory = None
 
         if new_dir is not None and os.path.isdir(new_dir):
@@ -103,6 +103,20 @@ class Preferences:
             if os.path.isdir(directory):
                 return os.path.realpath(directory)
         return None
+
+    def auto_save(self, value: Optional[bool] = None) -> bool:
+        if 'AUTO_SAVE' not in self._config:
+            self._config['AUTO_SAVE'] = {'set':'1'}
+        if value is not None:
+            if value:
+                self._config['AUTO_SAVE']['set'] = '1'
+            else:
+                self._config['AUTO_SAVE']['set'] = '0'
+
+        if self._config['AUTO_SAVE']['set'] == '1':
+            return True
+        else:
+            return False
 
     def save(self):
         _write_ini(self._config)
@@ -130,6 +144,8 @@ def _read_ini() -> cp.ConfigParser:
     config['MOST_RECENT']['semester'] = 'fall'
     config['COLOURS'] = {}
     config['COLOURS']['dark_mode'] = "yes"
+    config['AUTO_SAVE'] = {}
+    config['AUTO_SAVE']['set'] = '1'
     return config
 
 

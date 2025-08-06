@@ -1,6 +1,5 @@
 
 ============ Bugs ================
-* Auto save
 * Maybe Mac menu stuff (a nice to have)
 * Windows, binding to ctrl-s isn't working properly
 * Show teacher stat in scheduler
@@ -22,3 +21,4 @@
 * in edit block... if a teacher was already assigned to the block, was in neither list
 * Edit class time pop-up doesn't work
 * adding/removing teacher in tree_view should call schedule.conflicts so that "scheduler" page button colours work properly ... just needed to do a self.refresh()
+* Auto save

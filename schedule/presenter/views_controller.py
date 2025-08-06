@@ -275,6 +275,7 @@ class ViewsController:
 
         action = self._undo.pop()
         self._process_action(action, self._redo)
+        self.dirty_flag_method(True)
 
     def redo(self):
         """
@@ -285,6 +286,7 @@ class ViewsController:
 
         action = self._redo.pop()
         self._process_action(action, self._undo)
+        self.dirty_flag_method(True)
 
     # ----------------------------------------------------------------------------------------------------------------
     # process the undo/redo action
@@ -306,6 +308,7 @@ class ViewsController:
                 action.block.snap_to_day(action.from_day)
                 self.schedule.calculate_conflicts()
                 self.notify_block_move(None, action.block, action.from_day, action.from_time)
+
             case 'change_resource':
                 other_list.append(Action(action='change_resource', block=action.block,
                                          from_resource=action.to_resource,
