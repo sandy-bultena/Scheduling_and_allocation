@@ -22,3 +22,4 @@
 * adding/removing teacher in tree_view should call schedule.conflicts so that "scheduler" page button colours work properly ... just needed to do a self.refresh()
 * Auto save
 * For schedule "validate", incorrect number of hours doesn't specify which section
+* Put str(time_slot) to show start/duration rather than start/stop time

@@ -135,7 +135,7 @@ class TimeSlot:
 
     def __str__(self):
         return (f"{self.day.name}: {get_clock_string_from_hours(self.start)} "
-                f"to {get_clock_string_from_hours(self.end)}")
+                f"({self.duration} hrs)")
 
     def __repr__(self):
         return str(self)
