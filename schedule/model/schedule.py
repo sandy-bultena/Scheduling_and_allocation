@@ -460,37 +460,38 @@ class Schedule:
 
         # each course that has allocation has at least one teacher assigned
         for course in self.courses():
-            new_line = ""
+            course_flag = False
+            block_flag = False
+            section_flag = False
             if course.needs_allocation:
                 if len(course.teachers()) == 0:
-                    new_line = "\n"
-                    msg.append(f"\nWARNING: Course {course.number} has no teachers")
+                    msg.append(f"\nERROR: Course {course.number} has no teachers")
+                    course_flag = True
 
             # each block should have at least one teacher
             for block in course.blocks():
-                if new_line=="":
-                    new_line="\n"
-                    msg.append("")
                 if len(block.teachers()) == 0:
-                    msg.append(f"WARNING: {block.section.course.number}, {block.section.number} {block} has no assigned teachers")
+                    if not course_flag and not block_flag:
+                        msg.append("")
+                    block_flag = True
+                    msg.append(f"ERROR: {block.section.course.number}, {block.section.number} {block} has no assigned teachers")
 
             # each block should have at least one lab
             for block in course.blocks():
-                if new_line=="":
-                    new_line="\n"
-                    msg.append("")
                 if len(block.labs()) == 0:
+                    if not course_flag and not block_flag:
+                        msg.append("")
+                    block_flag = True
                     msg.append(f"WARNING: {block.section.course.number}, {block.section.number} {block} has no assigned labs")
 
             # each course that has blocks/sections, block time should equal class time
             for section in course.sections():
-                if new_line=="":
-                    new_line="\n"
-                    msg.append("")
                 duration = sum((b.duration for b in section.blocks()))
                 if duration != course.hours_per_week:
+                    if not course_flag and not block_flag and not section_flag:
+                        msg.append("")
                     msg.append(
-                        f"WARNING: {course.number} hours ({course.hours_per_week}) "
+                        f"ERROR: {course.number}: {section} - course hours ({course.hours_per_week}) "
                         f"does not match assigned class time ({duration})")
 
         return msg

@@ -4,7 +4,6 @@
 * Windows, binding to ctrl-s isn't working properly
 * Show teacher stat in scheduler
 * Bind Scroll methods to mousewheel, etc for CourseTree
-* For schedule "validate", incorrect number of hours doesn't specify which section
 * If reading a schedule file fails, give better feedback
 
 ============ Done ================
@@ -22,3 +21,4 @@
 * Edit class time pop-up doesn't work
 * adding/removing teacher in tree_view should call schedule.conflicts so that "scheduler" page button colours work properly ... just needed to do a self.refresh()
 * Auto save
+* For schedule "validate", incorrect number of hours doesn't specify which section
