@@ -41,10 +41,8 @@ import re
 from schedule.Tk import Scrolled
 from schedule.Tk import InitGuiFontsAndColours as fac
 from schedule.Tk import AdvancedTreeview
-from schedule.Tk import MenuType
 from schedule.Tk import DragNDropManager
-from schedule.Tk import generate_menu
-from schedule.Tk.menu_and_toolbars import MenuItem
+from schedule.gui_generics.menu_and_toolbars import MenuItem, MenuType, generate_menu
 from schedule.model import ResourceType
 
 if TYPE_CHECKING:

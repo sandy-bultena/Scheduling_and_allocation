@@ -25,7 +25,7 @@ from __future__ import annotations
 from functools import partial
 from typing import TYPE_CHECKING
 
-from schedule.Tk import MenuItem, MenuType
+from schedule.gui_generics.menu_and_toolbars import MenuItem, MenuType
 from schedule.model import Course, Teacher, ResourceType, Section, Block, Lab, Stream, Schedule
 
 if TYPE_CHECKING:

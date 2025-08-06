@@ -31,7 +31,7 @@
 from functools import partial
 from typing import Optional, Callable, Any, TYPE_CHECKING, Literal
 
-from schedule.Tk.menu_and_toolbars import MenuItem
+from schedule.gui_generics.menu_and_toolbars import MenuItem
 from schedule.gui_dialogs.add_edit_block_dialog_tk import AddEditBlockDialogTk
 from schedule.gui_dialogs.add_section_dialog_tk import AddSectionDialogTk
 from schedule.gui_dialogs.edit_course_dialog_tk import EditCourseDialogTk

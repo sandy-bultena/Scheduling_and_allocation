@@ -1,14 +1,16 @@
 from __future__ import annotations
-from tkinter import *
+
+import tkinter as tk
 from dataclasses import dataclass, field
+from functools import partial
 from typing import Callable, Optional, ClassVar, Any
 from enum import Enum
 
 import re
 from os import path
-from . import FindImages
-from .ToolBar import ToolBar
-from .InitGuiFontsAndColours import TkColours
+from schedule.Tk import FindImages
+from schedule.Tk.ToolBar import ToolBar
+from schedule.Tk.InitGuiFontsAndColours import TkColours
 
 
 class MenuType(Enum):
@@ -35,6 +37,7 @@ class MenuItem:
     command: Callable = lambda *_: None
     children: list[MenuItem] = field(default_factory=list)
     underline: bool = False
+    bool_variable: bool = True
 
     def __post_init__(self):
         MenuItem.all_menu_items[self.name] = self
@@ -68,7 +71,7 @@ class ToolbarItem:
     image: Optional[str] = None
 
 
-def generate_menu(mw, menu_details: Optional[list[MenuItem]], parent: Menu):
+def generate_menu(mw, menu_details: Optional[list[MenuItem]], parent: tk.Menu):
     """Create a gui menu bar based off of the menu_details"""
 
     if menu_details is None:
@@ -78,7 +81,7 @@ def generate_menu(mw, menu_details: Optional[list[MenuItem]], parent: Menu):
 
         # Cascading menu
         if menu_item.menu_type == MenuType.Cascade:
-            new_menu = Menu(parent, tearoff=menu_item.tear_off)
+            new_menu = tk.Menu(parent, tearoff=menu_item.tear_off)
             generate_menu(mw, menu_item.children, new_menu)
             parent.add_cascade(label=menu_item.label, menu=new_menu)
 
@@ -87,6 +90,12 @@ def generate_menu(mw, menu_details: Optional[list[MenuItem]], parent: Menu):
             parent.add_separator()
 
         # button or command or radiobutton or...
+        elif menu_item.menu_type == MenuType.Checkbutton:
+            options: dict = menu_item.options_dict()
+            options["variable"] = tk.BooleanVar(value= menu_item.bool_variable)
+            options["command"] = partial(options["command"], options["variable"])
+            parent.add_checkbutton(**options)
+
         else:
             options: dict = menu_item.options_dict()
             parent.add(menu_item.menu_type.value, **options)

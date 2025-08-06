@@ -8,8 +8,9 @@
 """
 from __future__ import annotations
 
+import tkinter as tk
 from typing import Callable, Literal, get_args, Any
-from schedule.Tk.menu_and_toolbars import MenuItem, MenuType, ToolbarItem
+from schedule.gui_generics.menu_and_toolbars import MenuItem, MenuType, ToolbarItem
 
 MAIN_MENU_EVENT_HANDLER_NAMES = Literal[
     "file_new",
@@ -24,8 +25,18 @@ MAIN_MENU_EVENT_HANDLER_NAMES = Literal[
     "print_latex_teacher",
     "print_latex_lab",
     "print_latex_streams",
-    "validate"
+    "validate",
+    "auto_save",
+    "auto_save_set",
 ]
+
+
+def check_button_changed(*args, **kwargs):
+    print("check button changed args:",*args, **kwargs)
+    if len(args) == 1:
+        print(f"value={args[0].get()}")
+    MAIN_MENU_EVENT_HANDLERS["auto_save_set"]()
+
 
 MAIN_MENU_EVENT_HANDLERS: dict[MAIN_MENU_EVENT_HANDLER_NAMES, Callable[[], None]] = {}
 for event_name in get_args(MAIN_MENU_EVENT_HANDLER_NAMES):
@@ -34,6 +45,9 @@ for event_name in get_args(MAIN_MENU_EVENT_HANDLER_NAMES):
 
 def set_menu_event_handler(name: MAIN_MENU_EVENT_HANDLER_NAMES, handler: Callable[[], None]):
     MAIN_MENU_EVENT_HANDLERS[name] = handler
+
+
+auto_save_boolean = False
 
 
 def main_menu() -> tuple[list[str], dict[str, ToolbarItem], list[MenuItem]]:
@@ -133,6 +147,18 @@ def main_menu() -> tuple[list[str], dict[str, ToolbarItem], list[MenuItem]]:
                                   command=lambda *_: MAIN_MENU_EVENT_HANDLERS["print_latex_streams"]()
                                   )
                          )
+    # -----------------------------------------------------------------------------------------
+    # Auto Save
+    # -----------------------------------------------------------------------------------------
+    auto_save_menu = MenuItem(name='auto_save', menu_type=MenuType.Cascade, label='Auto Save')
+
+    # auto-save sub menu
+    auto_save_menu.add_child(MenuItem(menu_type=MenuType.Checkbutton,
+                                      label='Auto Save On',
+                                      command=check_button_changed,
+                                      bool_variable = auto_save_boolean,
+                                      )
+                             )
 
     # -----------------------------------------------------------------------------------------
     # _toolbar
@@ -151,5 +177,6 @@ def main_menu() -> tuple[list[str], dict[str, ToolbarItem], list[MenuItem]]:
     # return list of top level menu items
     menu.append(file_menu)
     menu.append(print_menu)
+    menu.append(auto_save_menu)
 
     return toolbar_order, toolbar_info, menu

@@ -22,7 +22,7 @@ from functools import partial
 import tkinter as tk
 from typing import Callable
 
-from schedule.Tk import generate_menu, MenuItem, MenuType
+from schedule.gui_generics.menu_and_toolbars import generate_menu, MenuItem, MenuType
 from schedule.Utilities import Colour
 from schedule.Utilities.id_generator import IdGenerator
 from schedule.gui_generics.block_colours import get_conflict_colour_info, IMMOVABLE_COLOUR, RESOURCE_COLOURS

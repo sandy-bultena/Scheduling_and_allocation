@@ -22,9 +22,8 @@ from tkinter.messagebox import showerror, showinfo, askyesno
 
 from schedule.Tk import FindImages
 from schedule.Tk import set_default_fonts_and_colours, TkColours, TkFonts
-from schedule.Tk import generate_menu, make_toolbar
 from schedule.gui_pages.note_book_frame_tk import NoteBookFrameTk, TabInfoProtocol
-from schedule.Tk import MenuItem, ToolbarItem
+from schedule.gui_generics.menu_and_toolbars import MenuItem, ToolbarItem, generate_menu, make_toolbar
 from schedule.Utilities.Preferences import Preferences
 
 if TYPE_CHECKING:
