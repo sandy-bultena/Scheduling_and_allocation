@@ -93,18 +93,15 @@ class AllocationGridTk:
     def __init__(self, frame: tk.Frame, rows,
                  col_merge: list[int],
                  summary_merge: list[int],
-                 cb_data_entry = lambda *_, **__: True,
                  cb_process_data_change = lambda *_, **__: True,
-                 cb_bottom_row_ok = lambda *_, **__: True):
+                 ):
         """
 
         :param frame: where to put this grid
         :param rows: number of rows in the grid
         :param col_merge: list, each item represents a group of columns (affects colouring)
         :param summary_merge: list, each item represents a group of columns in the totals sections
-        :param cb_data_entry: a callback function called everytime there data widget is modified.  row/col are sent as parameters
         :param cb_process_data_change:
-        :param cb_bottom_row_ok:
 
 
         Column Merge Example: if you want this for your 2 heading rows
@@ -125,9 +122,7 @@ class AllocationGridTk:
 
         # keep this for later
         self.frame = frame
-        self.data_entry_handler = cb_data_entry
         self.process_data_change_handler = cb_process_data_change
-        self.bottom_row_ok_handler = cb_bottom_row_ok
         self.panes = []
 
         # set up the font for the entry widgets
@@ -268,12 +263,13 @@ class AllocationGridTk:
         :param col_merge: a list of number of subheadings per heading
         """
         prop = ENTRY_PROPS.copy()
-        prop['disabledbackground'] = HEADER_COLOUR1
-        prop['highlightbackground'] = HEADER_COLOUR1
         prop['state'] = 'disabled'
 
         # merged header
         for i, header in enumerate(col_merge):
+
+            prop['disabledbackground'] = HEADER_COLOUR2 if i % 2 else HEADER_COLOUR1
+            prop['highlightbackground'] = HEADER_COLOUR2 if i % 2 else HEADER_COLOUR1
 
             # frame to hold the merged header, and the subheadings
             mini_frame = tk.Frame(self.header_frame)
@@ -283,11 +279,6 @@ class AllocationGridTk:
             # widget
             me = tk.Entry(mini_frame, **prop)
             me.pack(side='top', expand=0, fill='both', padx=ENTRY_PADDING,pady=ENTRY_PADDING)
-
-            # change Colour every second merged header
-            if i % 2:
-                me.configure(disabledbackground=HEADER_COLOUR2)
-                me.configure(highlightbackground=HEADER_COLOUR2)
 
             # keep these widgets so that they can be configured later
             self.header_widgets.append(me)
@@ -300,11 +291,6 @@ class AllocationGridTk:
 
                 # widget
                 (se := tk.Entry(hf2, **prop)).pack(side='left', padx=ENTRY_PADDING,pady=ENTRY_PADDING)
-
-                # change Colour every second merged header
-                if i % 2:
-                    se.configure(disabledbackground=HEADER_COLOUR2)
-                    se.configure(highlightbackground=HEADER_COLOUR2)
 
                 # keep these widgets so that they can be configured later
                 self.sub_header_widgets.append(se)
@@ -323,6 +309,7 @@ class AllocationGridTk:
         prop = ENTRY_PROPS.copy()
         prop['width'] = SUMMARY_WIDTH
         prop['disabledbackground'] = SUMMARY_HEADER_COLOUR
+        prop['highlightbackground'] = SUMMARY_HEADER_COLOUR
         prop['state'] = 'disabled'
 
         for header in summary_merge:
@@ -380,6 +367,7 @@ class AllocationGridTk:
         :param rows: number of rows
         :param col_merge: a list of number of subheadings per heading
         """
+        prop = ENTRY_PROPS.copy()
 
         for row in range(rows):
             (df1 := tk.Frame(self.data_frame)).pack(side='top', expand=1, fill='x')
@@ -388,25 +376,20 @@ class AllocationGridTk:
             # foreach header
             col: int = 0
             for column_index, header in enumerate(col_merge):
+                prop['background'] = VERY_LIGHT_GREY if column_index%2 == 0 else BG_COLOUR
+                prop['highlightbackground'] = VERY_LIGHT_GREY if column_index%2 == 0 else BG_COLOUR
 
                 # subsections
                 for subsection in range(header):
+                    self.column_colours[col] = prop['highlightbackground']
 
                     # data entry box
-                    de = entry_float(df1, textvariable=tk.StringVar(value=""), **ENTRY_PROPS)
+                    de = entry_float(df1, textvariable=tk.StringVar(value=""), **prop)
                     de.pack(side='left', padx=ENTRY_PADDING,pady=ENTRY_PADDING)
 
                     # save row/column with data entry, and vice versa
                     self.entry_widgets[row,col] = de
                     self.widgets_row_col[de] = row, col
-
-                    # set_default_fonts_and_colours Colour in column to make it easier to read
-                    de_colour = de.cget('background')
-                    if column_index % 2 == 0:
-                        de_colour = VERY_LIGHT_GREY
-                    self.column_colours[col] = de_colour
-                    de.configure(background=de_colour)
-                    de.configure(highlightbackground=de_colour)
 
                     # binding
                     de.bind("<Tab>", partial(self._move, 'nextCell'))
@@ -437,8 +420,9 @@ class AllocationGridTk:
         :param summary_merge: a list of number of subheadings per heading
         """
         prop = ENTRY_PROPS.copy()
-        prop['width'] = SUMMARY_WIDTH
         prop['disabledbackground'] = SUMMARY_HEADER_COLOUR
+        prop['highlightbackground'] = SUMMARY_HEADER_COLOUR
+        prop['width'] = SUMMARY_WIDTH
         prop['state'] = 'disabled'
 
         for row in range(rows):
@@ -488,25 +472,24 @@ class AllocationGridTk:
 
         :param col_merge: a list of number of subheadings per heading
         """
-        def validate(n, w):
-            if self.bottom_row_ok_handler(n):
-                self.bottom_frame.nametowidget(w).configure(disabledbackground=SUMMARY_COLOUR)
-            else:
-                self.bottom_frame.nametowidget(w).configure(disabledbackground=NOT_OK_COLOUR)
-            return True
 
         # merged header
-        for header in col_merge:
+        prop = ENTRY_PROPS.copy()
+        col = 0
+        for column_index, header in enumerate(col_merge):
             for sub_section in range(header):
+
                 # widget
-                prop = ENTRY_PROPS.copy()
-                prop['disabledbackground'] = HEADER_COLOUR1
+                prop['disabledbackground'] = HEADER_COLOUR2 if column_index % 2 == 0 else HEADER_COLOUR1
+                prop['highlightbackground'] = HEADER_COLOUR2 if column_index % 2 == 0 else HEADER_COLOUR1
+                # change Colour every second merged header
+
                 se = tk.Entry(self.bottom_frame, **prop, state='disabled', validate='key')
-                se.configure(validatecommand=(se.register(validate), '%P', '%W'))
                 se.pack(side='left', padx=ENTRY_PADDING,pady=ENTRY_PADDING)
 
                 # keep these widgets so that they can be configured later
                 self.bottom_widgets.append(se)
+            col+=1
 
     # -----------------------------------------------------------------------------------------------------------------
     # populate: assign text variables to each of the entry widgets
