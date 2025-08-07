@@ -1,8 +1,7 @@
 """Creates a horizontally scrollable grid with surrounding data frames that are not scrollable"""
 from functools import partial
-from typing import Optional, Literal
+from typing import Optional, Literal, Callable, Any
 
-import schedule.Utilities.Colour as colour
 import tkinter as tk
 import tkinter.ttk as ttk
 
@@ -13,7 +12,7 @@ from schedule.Utilities import Colour
 from schedule.gui_generics.number_validations import entry_float
 from schedule.Tk import InitGuiFontsAndColours as fac
 from schedule.Tk.idlelib_tooltip import Hovertip
-from tkinter.messagebox import showerror, showinfo, askyesno
+from tkinter.messagebox import showerror
 
 
 # =====================================================================================================================
@@ -22,14 +21,14 @@ from tkinter.messagebox import showerror, showinfo, askyesno
 
 # colours
 HEADER_COLOUR1           = "#abcdef"
-HEADER_COLOUR2           = colour.lighten(HEADER_COLOUR1, 10)
+HEADER_COLOUR2           = Colour.lighten(HEADER_COLOUR1, 10)
 VERY_LIGHT_GREY          = "#dddddd"
-ROW_COL_INDICATOR_COLOUR = colour.lighten("#cdefab", 5)
-SUMMARY_HEADER_COLOUR    = colour.string("lemonchiffon")
-SUMMARY_COLOUR           = colour.lighten(SUMMARY_HEADER_COLOUR, 5)
+ROW_COL_INDICATOR_COLOUR = Colour.lighten("#cdefab", 5)
+SUMMARY_HEADER_COLOUR    = Colour.string("lemonchiffon")
+SUMMARY_COLOUR           = Colour.lighten(SUMMARY_HEADER_COLOUR, 5)
 FG_COLOUR                = "black"
 BG_COLOUR                = "white"
-NEEDS_UPDATE_COLOUR      = colour.string("mistyrose")
+NEEDS_UPDATE_COLOUR      = Colour.string("mistyrose")
 NOT_OK_COLOUR            = NEEDS_UPDATE_COLOUR
 FRAME_BACKGROUND         = "black"  # provides the borders around the entry widgets
 
@@ -61,7 +60,7 @@ ENTRY_PROPS = {
 
 # trigger for data change
 DATA_CHANGED: dict[tuple[int,int], tk.StringVar] = dict()
-def on_var_change(v, row, col, vname: str, index: str, mode):
+def on_var_change(v, row, col, *_):
     DATA_CHANGED[row,col] = v
 
 
@@ -94,6 +93,7 @@ class AllocationGridTk:
                  col_merge: list[int],
                  summary_merge: list[int],
                  cb_process_data_change = lambda *_, **__: True,
+                 bottom_cell_valid: Callable[[Any], bool] = lambda *_: True
                  ):
         """
 
@@ -124,6 +124,7 @@ class AllocationGridTk:
         self.frame = frame
         self.process_data_change_handler = cb_process_data_change
         self.panes = []
+        self.bottom_cell_valid = bottom_cell_valid
 
         # set up the font for the entry widgets
         self.fonts = fac.TkFonts(frame.winfo_toplevel())
@@ -420,8 +421,8 @@ class AllocationGridTk:
         :param summary_merge: a list of number of subheadings per heading
         """
         prop = ENTRY_PROPS.copy()
-        prop['disabledbackground'] = SUMMARY_HEADER_COLOUR
-        prop['highlightbackground'] = SUMMARY_HEADER_COLOUR
+        prop['disabledbackground'] = SUMMARY_COLOUR
+        prop['highlightbackground'] = SUMMARY_COLOUR
         prop['width'] = SUMMARY_WIDTH
         prop['state'] = 'disabled'
 
@@ -496,8 +497,8 @@ class AllocationGridTk:
     # -----------------------------------------------------------------------------------------------------------------
     def populate(self, header_text: list[str], balloon_text: list[str],
                  sub_header_text: list[str], title_text: list[str],
-                 data_vars: dict[tuple[int,int],str], summary_header_texts: list[str],
-                 summary_sub_texts: list[str], summary_vars: list[list[str]],
+                 data_vars: dict[tuple[int,int],float], summary_header_texts: list[str],
+                 summary_sub_texts: list[str], summary_vars: list[list[float]],
                  bottom_header_text: str, bottom_row_vars: list[str]):
         """
         Enter data into the entry widgets
@@ -523,8 +524,8 @@ class AllocationGridTk:
         # bottom row
         self.bottom_title_widget.configure(textvariable=tk.StringVar(value=bottom_header_text))
 
-        for c, bw in enumerate(self.bottom_widgets):
-            bw.configure(textvariable=tk.StringVar(value=bottom_row_vars[c]))
+        for c in range(len(self.bottom_widgets)):
+            self.update_data('bottom',row=0, col=c, value=bottom_row_vars[c])
 
         # the summary header
         for col in range(self.num_summary_col):
@@ -536,21 +537,13 @@ class AllocationGridTk:
 
             # the summary data
             for row in range(self.num_rows):
-                widget = self.summary_widgets.get((row,col),None)
-                if widget:
-                    widget.configure(textvariable=tk.StringVar(value=summary_vars[row][col]))
+                self.update_data('summary', row, col, summary_vars[row][col])
 
         # the data grid
         for col in range(self.num_cols):
             for row in range(self.num_rows):
-                widget = self.entry_widgets.get((row,col), None)
-                if widget is not None:
-                    bg = widget.cget('bg')
-                    value = data_vars[row,col] if float(data_vars[row,col]) != 0.0 else ""
-                    var = tk.StringVar(value=value)
-                    widget.configure(textvariable=var)
-                    widget.configure(bg=bg)
-                    var.trace_add('write', partial(on_var_change,var, row, col))
+                self.update_data('data', row, col, data_vars[row,col])
+
 
         # the header data
         i = 0
@@ -651,7 +644,7 @@ class AllocationGridTk:
         widget.configure(disabledbackground=dcolour)
         widget.configure(highlightbackground=dcolour)
 
-        # set_default_fonts_and_colours colors for totals row
+        # set_default_fonts_and_colours colors for summary row
         if tcolour:
             tcolour = Colour.add(tcolour, SUMMARY_COLOUR)
         else:
@@ -667,7 +660,7 @@ class AllocationGridTk:
     # -----------------------------------------------------------------------------------------------------------------
     # process a data change
     # -----------------------------------------------------------------------------------------------------------------
-    def process_data_change(self, *args):
+    def process_data_change(self, *_):
         if len(DATA_CHANGED) == 0:
             return
 
@@ -706,4 +699,31 @@ class AllocationGridTk:
     # process a data update (can only update widgets in the data/summary/bottom panes
     # -----------------------------------------------------------------------------------------------------------------
     def update_data(self, which: Literal['data','summary','bottom'], row, col, value):
-        pass
+        if which == 'bottom':
+            bw = self.bottom_widgets[col]
+            bw.configure(textvariable=tk.StringVar(value=value))
+            if self.bottom_cell_valid(value):
+                bw.configure(highlightbackground=HEADER_COLOUR2)
+                bw.configure(disabledbackground = HEADER_COLOUR2)
+                if self.column_colours[col] == VERY_LIGHT_GREY:
+                    bw.configure(highlightbackground=HEADER_COLOUR1)
+                    bw.configure(disabledbackground=HEADER_COLOUR1)
+            else:
+                bw.configure(highlightbackground="light salmon")
+                bw.configure(disabledbackground="light salmon")
+                if self.column_colours[col] == VERY_LIGHT_GREY:
+                    bw.configure(highlightbackground=Colour.add("light salmon", VERY_LIGHT_GREY))
+                    bw.configure(disabledbackground=Colour.add("light salmon", VERY_LIGHT_GREY))
+
+        elif which == 'data':
+                widget = self.entry_widgets.get((row, col), None)
+                if widget is not None:
+                    value = value if float(value) != 0.0 else ""
+                    var = tk.StringVar(value=value)
+                    widget.configure(textvariable=var)
+                    var.trace_add('write', partial(on_var_change, var, row, col))
+
+        elif which == 'summary':
+            widget = self.summary_widgets.get((row, col), None)
+            if widget:
+                widget.configure(textvariable=tk.Variable(value=value))
