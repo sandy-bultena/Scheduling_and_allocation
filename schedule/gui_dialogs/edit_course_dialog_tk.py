@@ -98,7 +98,7 @@ class EditCourseDialogTk(simpledialog.Dialog):
         self.block_frames = tk.Frame(frame)
         for index, block_info in enumerate(self.current_blocks):
             opt_day = tk.StringVar(value=block_info[0])
-            opt_hour = tk.StringVar(value=get_clock_string_from_hours(block_info[1]))
+            opt_hour = tk.StringVar(value=str(block_info[1]))
             opt_duration = tk.StringVar(value=str(block_info[2]))
             self.row_data.append((opt_day, opt_hour, opt_duration))
 
@@ -126,7 +126,7 @@ class EditCourseDialogTk(simpledialog.Dialog):
         return description
 
     def add_new_block(self):
-        self.row_data.append((tk.StringVar(value="Monday"), tk.StringVar(value="8:00"), tk.StringVar(value="1.5")))
+        self.row_data.append((tk.StringVar(value="Monday"), tk.StringVar(value="8.0"), tk.StringVar(value="1.5")))
         self.refresh()
 
     def refresh(self):

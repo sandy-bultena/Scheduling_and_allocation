@@ -4,7 +4,6 @@
 * Windows, binding to ctrl-s isn't working properly
 * Show teacher stat in scheduler
 * Bind Scroll methods to mousewheel, etc for CourseTree
-* Don't like drop down for editing blocks... too much of a pain... switch to entering hours as decimals and immediately snap to grid
 
 ============ Done ================
 * Switching between view tabs and back disconnects view from view controller (and the buttons I thing in the view choices)
@@ -24,3 +23,4 @@
 * For schedule "validate", incorrect number of hours doesn't specify which section
 * Put str(time_slot) to show start/duration rather than start/stop time
 * If reading a schedule file fails, give better feedback
+* Don't like drop down for editing blocks... too much of a pain... switch to entering hours as decimals and immediately snap to grid

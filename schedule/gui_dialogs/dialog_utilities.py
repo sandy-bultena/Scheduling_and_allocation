@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 import tkinter.messagebox as message_box
 
+from schedule.gui_generics.number_validations import entry_float
 from schedule.model import WeekDay
 
 
@@ -87,16 +88,11 @@ def get_block_info_from_row_data(block_row_data: list[tk.StringVar]) -> list[tup
 
 def refresh_gui_blocks(self,):
     """
-    Create all the drop-down boxes etc for blocks
+    Create the drop-down and entry boxes etc for blocks
     :param self: the object that contains all the block info, frame, etc
     :return:
     """
     days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
-    start_times = []
-    for h in range(7, 24):
-        for m in (0, 15, 30, 45):
-            start_times.append(f"{h:2d}:{m:02d}")
-    durations = [f"{x / 2:4.1f} hrs" for x in range(1, 13)]
 
     # remove any pre-existing stuff
     for w in self.block_frames.winfo_children():
@@ -111,28 +107,76 @@ def refresh_gui_blocks(self,):
         row_frame = tk.Frame(self.block_frames)
         if row_frame.winfo_toplevel().tk.call('tk', 'windowingsystem') == 'aqua':
             padx=2
-            pady = 5
+            pady = 0
         else:
             padx = 2
-            pady = 2
+            pady = 5
         row_frames.append(row_frame)
         row_frame.pack(expand=1, fill='both', padx=10, pady=2)
 
         opt_day, opt_hour, opt_duration = block_info
 
         btn_delete = tk.Button(row_frame, text="remove",  command=remove_block, padx=2*padx)
-        om_day = ttk.Combobox(row_frame, textvariable=opt_day,  values=days, state="readonly", )
-        om_time = ttk.Combobox(row_frame, textvariable=opt_hour, state="readonly", values=start_times,)
-        om_duration = ttk.Combobox(row_frame, textvariable=opt_duration, state="readonly", values=durations,)
+        om_day = ttk.Combobox(row_frame, textvariable=opt_day,  values=days, state="readonly" )
+        om_time = entry_float(row_frame, textvariable=opt_hour)
+        om_duration = entry_float(row_frame, textvariable=opt_duration)
 
         om_day.config(width=8)
         om_time.config(width=5)
-        om_duration.config(width=8)
+        om_duration.config(width=5)
 
         om_day.pack(side='left', pady=pady, padx=padx)
-        om_time.pack(side='left', pady=pady, padx=padx)
-        om_duration.pack(side='left', pady=pady, padx=padx)
-        btn_delete.pack(side='left', pady=pady, padx=padx, ipadx=padx)
+        tk.Label(row_frame, text="start:", anchor='e',width=5,).pack(side='left', expand=1, fill='x')
+        om_time.pack(side='left', pady=pady, padx=padx, expand=1, fill='x')
+        tk.Label(row_frame, text="duration:", anchor='e',width=8,).pack(side='left', expand=1, fill='x')
+        om_duration.pack(side='left', pady=pady, padx=padx, expand=1, fill='x')
+        btn_delete.pack(side='left', pady=pady, padx=padx, ipadx=padx, expand=1, fill='x')
+
+        om_time.bind("<Leave>", _validate_start_time)
+        om_time.bind("<FocusOut>", _validate_start_time)
+        om_duration.bind("<Leave>", _validate_duration)
+        om_duration.bind("<FocusOut>", _validate_duration)
+
+def _validate_start_time(e: tk.Event):
+    w = e.widget
+    str_value = w.get()
+    try:
+        value = float(str_value)
+    except ValueError:
+        tk.messagebox.showerror(message="Class Start Time", title="Invalid Float",
+                                detail=f"'{str_value}' is not a valid number")
+        w.config(textvariable=tk.StringVar(value="8.0"))
+        return
+
+    if value < 8 or value > 18:
+        tk.messagebox.showerror(title="Invalid Class Start Time", detail="Resetting to 8:00 am",
+                                message=f"'{str_value}' is outside of operational hours")
+        w.config(textvariable=tk.StringVar(value="8.0"))
+        return
+
+    w.config(textvariable=tk.StringVar(value=f"{round(4*value)/4}"))
+
+
+def _validate_duration(e: tk.Event):
+    w = e.widget
+    value_str:str = w.get()
+    try:
+        value = float(value_str)
+    except ValueError:
+        tk.messagebox.showerror(message="Class Duration", title="Invalid Float",
+                                detail=f"'{value_str}' is not a valid number")
+        w.config(textvariable=tk.StringVar(value="1.5"))
+        return
+
+    if value < 0.5 or value > 8:
+        tk.messagebox.showerror(title="Invalid Class Duration", detail="Resetting to 1.5 hrs",
+                                message=f"'{value_str}' is not a valid class duration")
+        w.config(textvariable=tk.StringVar(value="1.5"))
+        return
+
+    w.config(textvariable=tk.StringVar(value=f"{round(4*value)/4}"))
+
+
 
 
 
