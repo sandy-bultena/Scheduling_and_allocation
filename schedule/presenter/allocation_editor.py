@@ -41,7 +41,6 @@ class AllocationEditor:
         self.remaining_text = "Avail Hrs"
         self.summary_headings = ["RT", "hrs", "CI", "YEAR"]
         self.inner_data: dict[tuple[int,int],InnerData] = {}
-        self.bottom_data: dict[tuple[int], dict] = {}
         self.data_numbers_only: dict[tuple[int,int], float] = {}
 
         self.gui = AllocationGridTk(frame,
@@ -67,7 +66,6 @@ class AllocationEditor:
         courses_balloon = list(map(lambda a: f" {a.name} ({a.hours_per_week})" , courses))
 
         teacher_summaries:list[list[str]] = []
-        inner_data: dict[tuple[int,int],InnerData] = {}
         data_numbers_only: dict[tuple[int,int], float] = {}
 
         # loop over the courses/sections, and save info into appropriate data structures
@@ -79,11 +77,11 @@ class AllocationEditor:
 
                 # save info for each teacher ( for each course/sections)
                 for row, teacher in enumerate(teachers):
-                    inner_data[(row,col)]=InnerData(teacher=teacher,
+                    self.inner_data[(row,col)]=InnerData(teacher=teacher,
                                                     course=course,
                                                     section=section,
                                                     hours=section.get_teacher_allocation(teacher))
-                    data_numbers_only[(row,col)] = inner_data[row,col].hours
+                    data_numbers_only[(row,col)] = self.inner_data[row,col].hours
                     teacher_stats = self._calculate_summary(row)
                     teacher_summaries.append([teacher_stats.release,
                                              teacher_stats.total_hrs,
@@ -93,7 +91,7 @@ class AllocationEditor:
                 col += 1
 
         # get unallocated hours for each course/section
-        remaining_hours = AllocationEditor._calculate_unallocated_hours(inner_data)
+        remaining_hours = AllocationEditor._calculate_unallocated_hours(self.inner_data)
 
         # add all the data to the gui Allocation Grid
         self.gui.populate(
@@ -137,10 +135,10 @@ class AllocationEditor:
 
         # convert all the numbers into their appropriate string variations
         return (SummaryRow(release="" if teacher.release == 0 else f"{teacher.release:6.3f}",
-                                            semester_ci="" if semester_ci == 0 else f"{semester_ci:6.2f}",
+                                            semester_ci="" if semester_ci == 0 else f"{semester_ci:6.1f}",
                                             teacher=teacher,
-                                            total_hrs="" if hrs == 0 else f"{hrs:6.2f}",
-                                            year_ci="" if yearly_ci == 0 else f"{hrs:6.2f}"))
+                                            total_hrs="" if hrs == 0 else f"{hrs:6.1f}",
+                                            year_ci="" if yearly_ci == 0 else f"{hrs:6.1f}"))
 
 
     # -----------------------------------------------------------------------------------------------------------------

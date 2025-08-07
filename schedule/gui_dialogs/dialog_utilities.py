@@ -110,7 +110,7 @@ def refresh_gui_blocks(self,):
             pady = 0
         else:
             padx = 2
-            pady = 5
+            pady = 0
         row_frames.append(row_frame)
         row_frame.pack(expand=1, fill='both', padx=10, pady=2)
 

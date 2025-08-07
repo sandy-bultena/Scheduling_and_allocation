@@ -128,7 +128,7 @@ class AllocationGridTk:
 
         # set up the font for the entry widgets
         self.fonts = fac.TkFonts(frame.winfo_toplevel())
-        ENTRY_PROPS['font'] = self.fonts.small
+        ENTRY_PROPS['font'] = self.fonts.normal
 
         # make the frames
         self._layout(frame)
