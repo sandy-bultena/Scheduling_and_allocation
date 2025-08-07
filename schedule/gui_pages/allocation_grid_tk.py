@@ -28,15 +28,15 @@ SUMMARY_HEADER_COLOUR    = Colour.string("lemonchiffon")
 SUMMARY_COLOUR           = Colour.lighten(SUMMARY_HEADER_COLOUR, 5)
 FG_COLOUR                = "black"
 BG_COLOUR                = "white"
-NEEDS_UPDATE_COLOUR      = Colour.string("mistyrose")
-NOT_OK_COLOUR            = NEEDS_UPDATE_COLOUR
+NOT_OK_COLOUR            = Colour.string("light salmon")
+NOT_OK_DARK_COLOUR       = Colour.add(NOT_OK_COLOUR, VERY_LIGHT_GREY)
 FRAME_BACKGROUND         = "black"  # provides the borders around the entry widgets
 
 # layout properties
 WIDTH = 5
 ENTRY_PADDING = 1
 TITLE_WIDTH = 12
-SUMMARY_WIDTH = WIDTH + 5
+SUMMARY_WIDTH = WIDTH + 2
 PAD_COL_0 = 0
 PAD_COL_1 = 0
 PAD_COL_2 = 0
@@ -498,8 +498,8 @@ class AllocationGridTk:
     def populate(self, header_text: list[str], balloon_text: list[str],
                  sub_header_text: list[str], title_text: list[str],
                  data_vars: dict[tuple[int,int],float], summary_header_texts: list[str],
-                 summary_sub_texts: list[str], summary_vars: list[list[float]],
-                 bottom_header_text: str, bottom_row_vars: list[str]):
+                 summary_sub_texts: list[str], summary_vars: list[list[str]],
+                 bottom_header_text: str, bottom_row_vars: list[float]):
         """
         Enter data into the entry widgets
         :param header_text: A list of major headings in the header frame
@@ -709,11 +709,11 @@ class AllocationGridTk:
                     bw.configure(highlightbackground=HEADER_COLOUR1)
                     bw.configure(disabledbackground=HEADER_COLOUR1)
             else:
-                bw.configure(highlightbackground="light salmon")
-                bw.configure(disabledbackground="light salmon")
+                bw.configure(highlightbackground=NOT_OK_COLOUR)
+                bw.configure(disabledbackground=NOT_OK_COLOUR)
                 if self.column_colours[col] == VERY_LIGHT_GREY:
-                    bw.configure(highlightbackground=Colour.add("light salmon", VERY_LIGHT_GREY))
-                    bw.configure(disabledbackground=Colour.add("light salmon", VERY_LIGHT_GREY))
+                    bw.configure(highlightbackground=NOT_OK_DARK_COLOUR)
+                    bw.configure(disabledbackground=NOT_OK_DARK_COLOUR)
 
         elif which == 'data':
                 widget = self.entry_widgets.get((row, col), None)
