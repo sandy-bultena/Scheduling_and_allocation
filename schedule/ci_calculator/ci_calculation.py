@@ -1,6 +1,6 @@
 """Calculate the CI for a given teacher"""
 from __future__ import annotations
-from .CIConstants import *
+from .ci_constants import *
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:

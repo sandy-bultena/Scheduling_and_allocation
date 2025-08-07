@@ -14,7 +14,7 @@ sys.path.append(os.path.join(bin_dir, "../../"))
 from schedule.Tk.Pane import Pane
 from schedule.gui_pages.allocation_grid_tk import AllocationGridTk
 from schedule.model import Schedule, Course, Section, Teacher
-from schedule.CICalculator.CICalc import calculate_ci
+from schedule.ci_calculator.ci_calculation import calculate_ci
 
 @dataclass
 class InnerData:
@@ -54,23 +54,25 @@ def calculate_remaining_hours(data:dict[tuple[int,int],InnerData]):
 
 def calculate_summaries():
     teacher_summaries: list[SummaryRow] = []
-    for teacher in teachers:
-        hrs = 0
-        for course in schedule.get_courses_for_teacher(teacher):
-            for section in course.sections():
-                hrs += section.get_teacher_allocation(teacher)
-        semester_ci = calculate_ci(teacher=teacher, schedule=schedule)
-        yearly_ci = 0
-        teacher_summaries.append(SummaryRow(release="" if teacher.release == 0 else f"{teacher.release:6.3f}",
-                                       semester_ci="" if semester_ci == 0 else f"{semester_ci:6.2f}",
-                                       teacher=teacher,
-                                            total_hrs="" if hrs==0 else f"{hrs:6.2f}",
-                                            year_ci="" if yearly_ci==0 else f"{hrs:6.2f}"))
-
+    for row in range(len(teachers)):
+        teacher_summaries.append(calculate_summary(row))
     return teacher_summaries
 
-def data_change_handler(row,col,value):
-    print(row,col,value)
+def calculate_summary(row):
+    teacher = teachers[row]
+    hrs = 0
+    for course in schedule.get_courses_for_teacher(teacher):
+        for section in course.sections():
+            hrs += section.get_teacher_allocation(teacher)
+    semester_ci = calculate_ci(teacher=teacher, schedule=schedule)
+    yearly_ci = 0
+    return (SummaryRow(release="" if teacher.release == 0 else f"{teacher.release:6.3f}",
+                                        semester_ci="" if semester_ci == 0 else f"{semester_ci:6.2f}",
+                                        teacher=teacher,
+                                        total_hrs="" if hrs == 0 else f"{hrs:6.2f}",
+                                        year_ci="" if yearly_ci == 0 else f"{hrs:6.2f}"))
+
+
 
 mw = tk.Tk()
 mw.geometry("400x400")
@@ -114,10 +116,32 @@ grid = AllocationGridTk(frame,
                         rows=len(schedule.teachers()),
                         col_merge=[c.number_of_sections() for c in schedule.courses()] ,
                         summary_merge = [len(summary_headings)],
-                        cb_process_data_change=data_change_handler
+                        cb_process_data_change=lambda *args: data_change_handler(*args),
+                        bottom_cell_valid = lambda c: float(c) == 0.0,
                         )
 
 summary_strs = [(a.release, a.total_hrs, a.semester_ci, a.year_ci) for a in calculate_summaries()]
+
+
+def data_change_handler(row, col, value):
+    print(row, col, value)
+
+    # update schedule
+    info = inner_data[row,col]
+    inner_data[row,col].hours = float(value)
+    info.section.set_teacher_allocation(teachers[row], float(value))
+
+    summary = calculate_summary(row)
+    grid.update_data('summary',row,0, summary.release)
+    grid.update_data('summary',row,1, summary.total_hrs)
+    grid.update_data('summary',row,2, summary.semester_ci)
+    grid.update_data('summary',row,3, summary.year_ci)
+
+    remaining_hours = calculate_remaining_hours(inner_data)
+    grid.update_data('bottom', 0, col, remaining_hours[col])
+
+
+
 grid.populate(
     courses_text, courses_balloon, sections_text,
     teachers_text, data_numbers_only, [""], summary_headings,
