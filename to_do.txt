@@ -5,8 +5,9 @@
 * Show teacher stat in scheduler
 * Bind Scroll methods to mousewheel, etc for CourseTree
 * sort sections by number as an integer, even though it is stored as a string
-* In allocation editor, since the frame is black, expanding to full size shows a block square... maybe see how much is
-  required for the frame, and limit the size of the grid??
+* In allocation editor, since the frame is black, expanding to full size shows a block square... maybe see how much is required for the frame, and limit the size of the grid??
+* make printing of schedules optional so you don't have to install reportlab
+* make changing font size as an option... but will have to add scrollbars to the dialog boxes so that they can be moved if required
 
 ============ Done ================
 * Switching between view tabs and back disconnects view from view controller (and the buttons I thing in the view choices)
