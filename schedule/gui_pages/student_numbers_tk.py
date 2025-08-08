@@ -60,7 +60,7 @@ class StudentNumbersTk:
                      text=course_name,
                      anchor='w',
                      width=40
-                     ).grid(column=0, row=row, columnspan=2, sticky='nsew')
+                     ).grid(column=0, row=row, columnspan=2, sticky='nsew', pady=(10,0))
             row += 1
 
             for section_data in self.data[course_name]:

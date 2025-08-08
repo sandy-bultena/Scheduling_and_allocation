@@ -28,11 +28,11 @@ class StudentNumbers:
     def refresh(self):
 
         for course in (c for c in self.schedule.courses() if c.needs_allocation):
-            self.data.add_course(course.number)
+            self.data.add_course(course.title)
 
             for section in course.sections():
                 section_data = SectionData(section.name, section.num_students, partial(event_handler, section))
-                self.data.add_section(course.number, section_data)
+                self.data.add_section(course.title, section_data)
 
         return self.data
 

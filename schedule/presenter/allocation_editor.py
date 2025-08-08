@@ -31,11 +31,13 @@ class AllocationEditor:
     # -----------------------------------------------------------------------------------------------------------------
     # constructor
     # -----------------------------------------------------------------------------------------------------------------
-    def __init__(self, frame, schedule: Schedule):
+    def __init__(self, frame, schedule: Schedule, other_schedules: list[Schedule] = None):
         self.frame = frame
         self.schedule = schedule
+        self.other_schedules = [] if other_schedules is None else other_schedules
 
         self.teachers = schedule.teachers()
+        self.courses = schedule.courses_with_allocation()
 
 
         self.remaining_text = "Avail Hrs"
@@ -44,8 +46,8 @@ class AllocationEditor:
         self.data_numbers_only: dict[tuple[int,int], float] = {}
 
         self.gui = AllocationGridTk(frame,
-                        rows=len(schedule.teachers()),
-                        col_merge=[c.number_of_sections() for c in schedule.courses()] ,
+                        rows=len(self.teachers),
+                        col_merge=[c.number_of_sections() for c in self.courses] ,
                         summary_merge = [len(self.summary_headings)],
                         cb_process_data_change=lambda *args: self.data_change_handler(*args),
                         bottom_cell_valid = lambda c: float(c) == 0.0,
@@ -58,8 +60,8 @@ class AllocationEditor:
     # -----------------------------------------------------------------------------------------------------------------
     def populate(self):
 
-        teachers = self.schedule.teachers()
-        courses = self.schedule.courses()
+        teachers = self.teachers
+        courses = self.courses
 
         teachers_text = list(map(lambda a: a.firstname, teachers))
         courses_text = list(map(lambda a: str(re.sub(r'\s*\d\d\d-', '', a.number)), courses))
@@ -131,14 +133,17 @@ class AllocationEditor:
             for section in course.sections():
                 hrs += section.get_teacher_allocation(teacher)
         semester_ci = calculate_ci(teacher=teacher, schedule=self.schedule)
-        yearly_ci = 0
+
+        yearly_ci = semester_ci
+        for other in self.other_schedules:
+            yearly_ci += calculate_ci(teacher, schedule=other)
 
         # convert all the numbers into their appropriate string variations
         return (SummaryRow(release="" if teacher.release == 0 else f"{teacher.release:6.3f}",
                                             semester_ci="" if semester_ci == 0 else f"{semester_ci:6.1f}",
                                             teacher=teacher,
                                             total_hrs="" if hrs == 0 else f"{hrs:6.1f}",
-                                            year_ci="" if yearly_ci == 0 else f"{hrs:6.1f}"))
+                                            year_ci="" if yearly_ci == 0 else f"{yearly_ci:6.1f}"))
 
 
     # -----------------------------------------------------------------------------------------------------------------

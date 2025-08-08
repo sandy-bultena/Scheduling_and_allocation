@@ -163,6 +163,10 @@ class Schedule:
         """sorted list of teachers (read only)"""
         return tuple(sorted(self._teachers.values()))
 
+    def courses_with_allocation(self)-> tuple[Course, ...]:
+        return tuple(sorted((c for c in self.courses() if c.needs_allocation)))
+
+
     # ------------------------------------------------------------------------
     # finding object to collection by number, id, etc
     # ------------------------------------------------------------------------
