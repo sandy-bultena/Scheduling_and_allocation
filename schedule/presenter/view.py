@@ -366,17 +366,19 @@ class View:
             stream_numbers = ",".join((stream.number for stream in block.section.streams()))
 
         # labs
-        lab_numbers = "\n".join(l.number for l in block.labs())
-        lab_numbers = lab_numbers if scale > .75 else lab_numbers[0:11] + "..."
+        lab_numbers = ", ".join(l.number for l in block.labs())
+        lab_numbers = lab_numbers if scale > .75 else lab_numbers[0:16] + "..."
         lab_numbers = lab_numbers if scale > .50 else lab_numbers[0:7] + "..."
-        lab_numbers = lab_numbers if resource_type == ResourceType.lab and scale > .75 else ""
+        if resource_type == ResourceType.lab and (scale <= .75 or block.duration <= 1):
+                lab_numbers = ""
         lab_numbers = "" if resource_type == ResourceType.lab and block.duration <= 1 else lab_numbers
 
         # streams
+        stream_numbers = ",".join(s.number for s in block.streams())
         stream_numbers = stream_numbers if scale > .75 else stream_numbers[0:11] + "..."
         stream_numbers = stream_numbers if scale > .50 else stream_numbers[0:7] + "..."
-        stream_numbers = stream_numbers if resource_type == ResourceType.stream and scale > .75 else ""
-        stream_numbers = "" if resource_type == ResourceType.stream and block.duration <= 1 else stream_numbers
+        if resource_type == ResourceType.stream and (scale <= .75 or block.duration <= 1):
+                stream_numbers = ""
 
         # teachers
         teachers_name = ""
@@ -389,7 +391,8 @@ class View:
         teachers_name = teachers_name if scale > .75 else teachers_name[0:11] + "..."
         teachers_name = teachers_name if scale > .50 else teachers_name[0:7] + "..."
         teachers_name = teachers_name if resource_type == ResourceType.teacher and scale > .75 else ""
-        teachers_name = "" if resource_type == ResourceType.teacher and block.duration <= 1 else teachers_name
+        if resource_type == ResourceType.teacher and (scale <= .75 or block.duration <= 1):
+                teachers_name = ""
 
         # define what to display
         block_text = f"{course_number}\n{section_number}\n"

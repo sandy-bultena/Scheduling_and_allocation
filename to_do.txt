@@ -33,3 +33,4 @@
 * Don't like drop down for editing blocks... too much of a pain... switch to entering hours as decimals and immediately snap to grid
 * Dirty flag not set when changes to allocation
 * Dirty flag colour not prominent enought (especially on windows)
+* Text on block label in Scheduler still not correct
