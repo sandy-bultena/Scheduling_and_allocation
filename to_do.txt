@@ -11,6 +11,7 @@
 * In allocation, If teacher is in one semester, but not the other, it appears that the yearly CI takes into account the release for both semesters
 * Need to show filenames in status bar for allocation
 * Need to add autosave for allocation
+* Data for shared classes (see biology) is not being parsed correctly for Allocation hours
 
 ============ Done ================
 * Switching between view tabs and back disconnects view from view controller (and the buttons I thing in the view choices)
