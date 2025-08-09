@@ -8,6 +8,12 @@
 * In allocation editor, since the frame is black, expanding to full size shows a block square... maybe see how much is required for the frame, and limit the size of the grid??
 * make printing of schedules optional so you don't have to install reportlab
 * make changing font size as an option... but will have to add scrollbars to the dialog boxes so that they can be moved if required
+* In allocation, If teacher is in one semester, but not the other, it appears that the yearly CI takes into account the release for both semesters
+* Need to show filenames in status bar for allocation
+* Need to add autosave for allocation
+* Dirty flag not set when changes to allocation
+
+
 
 ============ Done ================
 * Switching between view tabs and back disconnects view from view controller (and the buttons I thing in the view choices)
