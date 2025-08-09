@@ -65,11 +65,11 @@ class NoteBookFrameTk:
         self.tab_frames: dict[tuple[ttk.Notebook, int], tuple[str, tk.Frame]] = {}
         self.tab_changed_handler = tab_changed_handler
         self.main_notebook_frame = None
-        self.notebook = []
+        self.notebooks: list[ttk.Notebook] = []
 
         self.recursive_notebook_creation(self.frame, tabs_info)
-        self.notebook[0].select(self._default_notebook_page)
-        self.mw.after(20, lambda: self._tab_changed(self.notebook[0]))
+        self.notebooks[0].select(self._default_notebook_page)
+        self.mw.after(20, lambda: self.tab_changed(self.notebooks[0]))
         self.mw.after(10, lambda *_: self.mw.geometry("975x600"))
 
 
@@ -86,11 +86,11 @@ class NoteBookFrameTk:
         if tabs_info is None:
             return
 
-        if self.notebook is None:
-            self.notebook = []
+        if self.notebooks is None:
+            self.notebooks: list[ttk.Notebook] = []
         # Create notebook if required
         notebook = ttk.Notebook(notebook_frame)
-        self.notebook.append(notebook)
+        self.notebooks.append(notebook)
         notebook.pack(expand=1, fill='both')
 
         if self.main_notebook_frame is None:
@@ -118,9 +118,9 @@ class NoteBookFrameTk:
                 info.creation_handler(info.name, frame)
 
         # add the binding for changing of events, and include a list of events for each tab change
-        notebook.bind("<<NotebookTabChanged>>", partial(self._tab_changed, notebook))
+        notebook.bind("<<NotebookTabChanged>>", partial(self.tab_changed, notebook))
 
-    def _tab_changed(self, notebook: ttk.Notebook, *_):
+    def tab_changed(self, notebook: ttk.Notebook, *_):
         """
         calls the tab changed callback when the tab has changed
         :param notebook:

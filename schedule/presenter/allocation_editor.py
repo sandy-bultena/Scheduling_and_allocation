@@ -84,13 +84,16 @@ class AllocationEditor:
                                                     section=section,
                                                     hours=section.get_teacher_allocation(teacher))
                     data_numbers_only[(row,col)] = self.inner_data[row,col].hours
-                    teacher_stats = self._calculate_summary(row)
-                    teacher_summaries.append([teacher_stats.release,
-                                             teacher_stats.total_hrs,
-                                              teacher_stats.semester_ci,
-                                              teacher_stats.year_ci])
 
                 col += 1
+
+        # get the summary info for each teacher
+        for row, teacher in enumerate(teachers):
+            teacher_stats = self._calculate_summary(row)
+            teacher_summaries.append([teacher_stats.release,
+                                      teacher_stats.total_hrs,
+                                      teacher_stats.semester_ci,
+                                      teacher_stats.year_ci])
 
         # get unallocated hours for each course/section
         remaining_hours = AllocationEditor._calculate_unallocated_hours(self.inner_data)

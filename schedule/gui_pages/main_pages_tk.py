@@ -224,6 +224,13 @@ class MainPageBaseTk:
             self.recursive_expose(w)
             widget.update()
 
+    def select_tab(self, name):
+        for notebook in self._notebook_frame.notebooks:
+            tab_names = {notebook.tab(i, option="text"):i for i in notebook.tabs()}
+            if name in tab_names.keys():
+                notebook.select(tab_names[name])
+                self._notebook_frame.tab_changed(notebook,tab_names[name] )
+
     # ========================================================================
     # choose file
     # ========================================================================

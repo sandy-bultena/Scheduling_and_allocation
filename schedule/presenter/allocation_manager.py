@@ -7,6 +7,7 @@ from typing import Any, Callable, Optional
 from schedule.Utilities import Preferences
 from schedule.exceptions import CouldNotReadFileError
 from schedule.gui_pages.allocation_manager_tk import AllocationManagerTk, set_main_page_event_handler
+from schedule.presenter.allocation_editor import AllocationEditor
 from schedule.presenter.edit_courses import EditCourses
 from schedule.presenter.edit_resources import EditResources
 from schedule.presenter.menus_main_menu_allocation import set_menu_event_handler_allocation, main_menu_allocation
@@ -39,6 +40,7 @@ class AllocationManager:
     NB_course = "Courses"
     NB_teacher = "Teachers"
     NB_students = "Students"
+    NB_allocation = "Allocation"
 
 
     def __init__(self, bin_dir: DIRECTORY, gui: Optional[AllocationManagerTk] = None):
@@ -63,7 +65,10 @@ class AllocationManager:
         course_tab = {}
         teacher_tab = {}
         student_tab = {}
+        allocation_tab = {}
         for semester in VALID_SEMESTERS:
+            allocation_tab[semester] = NBTabInfo(label=f"{semester.name} {self.NB_allocation}",
+                                             name=f"{semester.name} {self.NB_allocation}")
             course_tab[semester] = NBTabInfo(label=f"{semester.name} {self.NB_course}",
                                              name=f"{semester.name} {self.NB_course}")
             teacher_tab[semester] = NBTabInfo(label=f"{semester.name} {self.NB_teacher}",
@@ -71,11 +76,14 @@ class AllocationManager:
             student_tab[semester] = NBTabInfo(label=f"{semester.name} {self.NB_students}",
                                              name=f"{semester.name} {self.NB_students}")
 
-        self._notebook_tabs: list[NBTabInfo] = [
-            NBTabInfo(label=s.name, name=s.name,
-                      subpages=[course_tab[s], teacher_tab[s], student_tab[s]])
-            for s in VALID_SEMESTERS
-        ]
+        self._notebook_tabs = []
+        for semester in VALID_SEMESTERS:
+            self._notebook_tabs.append(
+                NBTabInfo(label=semester.name, name=semester.name,
+                      subpages=[allocation_tab[semester], course_tab[semester],
+                                teacher_tab[semester], student_tab[semester]]
+                          )
+            )
 
         # --------------------------------------------------------------------
         # create the Menu and Toolbars
@@ -262,13 +270,33 @@ class AllocationManager:
         :param frame: container where the gui is stored
         """
         self.current_tab = name
+        if name == "fall":
+            self.gui.select_tab(f"fall {self.NB_allocation}")
+        if name == "winter":
+            self.gui.select_tab(f"winter {self.NB_allocation}")
         for semester in VALID_SEMESTERS:
+            if name == f"{semester.name} {self.NB_allocation}":
+                self.update_allocation(frame, semester)
             if name == f"{semester.name} {self.NB_course}":
                 self.update_edit_courses(frame, semester)
             elif name == f"{semester.name} {self.NB_teacher}":
                 self.update_edit_teachers(frame, semester)
             elif name == f"{semester.name} {self.NB_students}":
                 self.update_edit_students(frame, semester)
+
+    # ==================================================================
+    # update the allocation frame
+    # ==================================================================
+    def update_allocation(self, frame, semester):
+
+        ae: dict[SemesterType, AllocationEditor] = {}
+        other_schedules = [self.schedules[s] for s in VALID_SEMESTERS if s != semester]
+        ae[semester] = AllocationEditor(
+            frame,
+            schedule=self.schedules[semester],
+            other_schedules = other_schedules
+        )
+
 
     # ==================================================================
     # draw_edit_courses
