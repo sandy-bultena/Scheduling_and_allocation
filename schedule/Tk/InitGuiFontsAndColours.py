@@ -108,6 +108,10 @@ class TkColours:
             self.ButtonHoverHighlight = Colour.lighten(self.WorkspaceColour, 25)
             self.ButtonForeground = "#FFFFFF"
 
+        if Colour.is_light(self.WorkspaceColour):
+            self.DirtyColour = Colour.add("red","black")
+        else:
+            self.DirtyColour = Colour.add("red","white")
         # ============================================================================
         # if invert mode, just invert all the colours
         # ============================================================================

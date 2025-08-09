@@ -289,14 +289,13 @@ class AllocationManager:
     # ==================================================================
     def update_allocation(self, frame, semester):
 
-        ae: dict[SemesterType, AllocationEditor] = {}
         other_schedules = [self.schedules[s] for s in VALID_SEMESTERS if s != semester]
-        ae[semester] = AllocationEditor(
+        AllocationEditor(
+            self.set_dirty_method,
             frame,
             schedule=self.schedules[semester],
             other_schedules = other_schedules
         )
-
 
     # ==================================================================
     # draw_edit_courses
@@ -321,7 +320,7 @@ class AllocationManager:
     # update_edit_students
     # ==================================================================
     def update_edit_students(self, frame, semester):
-        data_entry = StudentNumbers(frame, self.schedules[semester])
+        data_entry = StudentNumbers(frame, self.set_dirty_method, self.schedules[semester])
         data_entry.refresh()
 
     # ==================================================================

@@ -7,14 +7,18 @@ from schedule.model import SemesterType, Section
 from schedule.model.schedule import Schedule
 
 
+# =======================================================================================================
+# Student Numbers
+# =======================================================================================================
 class StudentNumbers:
     """StudentNumbers - provides methods / objects for entering number_of_students of students per course per section"""
 
-    # =======================================================================================================
+    # ----------------------------------------------------------------------------------------------------------------
     # Constructor
-    # =======================================================================================================
+    # ----------------------------------------------------------------------------------------------------------------
 
-    def __init__(self, frame, schedule: Schedule):
+    def __init__(self, dirty_method, frame, schedule: Schedule):
+        self.dirty_method = dirty_method
         self.frame = frame
         self.data: StudentData = StudentData()
         self.schedule = schedule
@@ -22,24 +26,30 @@ class StudentNumbers:
         self.refresh()
         self.gui: StudentNumbersTk = StudentNumbersTk(self.frame, self.data.courses)
 
-    # =======================================================================================================
+    # ----------------------------------------------------------------------------------------------------------------
     # gather data
-    # =======================================================================================================
+    # ----------------------------------------------------------------------------------------------------------------
     def refresh(self):
 
         for course in (c for c in self.schedule.courses() if c.needs_allocation):
             self.data.add_course(course.title)
 
             for section in course.sections():
-                section_data = SectionData(section.name, section.num_students, partial(event_handler, section))
+                section_data = SectionData(section.name, section.num_students, partial(self.data_changed_handler, section))
                 self.data.add_section(course.title, section_data)
 
         return self.data
 
+    # ----------------------------------------------------------------------------------------------------------------
+    # data change handler
+    # ----------------------------------------------------------------------------------------------------------------
+    def data_changed_handler(self, section: Section, number:int):
+        section.num_students = number
+        self.dirty_method(True)
 
-def event_handler(section: Section, number:int):
-    section.num_students = number
-
+# =======================================================================================================
+# Student Data - create simple data structure to store info
+# =======================================================================================================
 class StudentData:
     def __init__(self):
         self.courses: dict[str, list[SectionData]] = {}
@@ -57,6 +67,9 @@ class StudentData:
         return self.courses
 
 
+# =======================================================================================================
+# data class for holding info about sections
+# =======================================================================================================
 class SectionData:
     def __init__(self, section_name, number_of_students, handler):
         self.name = section_name

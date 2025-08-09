@@ -11,9 +11,6 @@
 * In allocation, If teacher is in one semester, but not the other, it appears that the yearly CI takes into account the release for both semesters
 * Need to show filenames in status bar for allocation
 * Need to add autosave for allocation
-* Dirty flag not set when changes to allocation
-
-
 
 ============ Done ================
 * Switching between view tabs and back disconnects view from view controller (and the buttons I thing in the view choices)
@@ -34,3 +31,5 @@
 * Put str(time_slot) to show start/duration rather than start/stop time
 * If reading a schedule file fails, give better feedback
 * Don't like drop down for editing blocks... too much of a pain... switch to entering hours as decimals and immediately snap to grid
+* Dirty flag not set when changes to allocation
+* Dirty flag colour not prominent enought (especially on windows)

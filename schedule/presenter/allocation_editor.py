@@ -31,7 +31,8 @@ class AllocationEditor:
     # -----------------------------------------------------------------------------------------------------------------
     # constructor
     # -----------------------------------------------------------------------------------------------------------------
-    def __init__(self, frame, schedule: Schedule, other_schedules: list[Schedule] = None):
+    def __init__(self, set_dirty_flag, frame, schedule: Schedule, other_schedules: list[Schedule] = None):
+        self.set_dirty_flag = set_dirty_flag
         self.frame = frame
         self.schedule = schedule
         self.other_schedules = [] if other_schedules is None else other_schedules
@@ -125,6 +126,7 @@ class AllocationEditor:
 
         remaining_hours = AllocationEditor._calculate_unallocated_hours(self.inner_data)
         self.gui.update_data('bottom', 0, col, remaining_hours[col])
+        self.set_dirty_flag(True)
 
     # -----------------------------------------------------------------------------------------------------------------
     # calculate the summary for a particular row (ci/ total hrs/ etc)
