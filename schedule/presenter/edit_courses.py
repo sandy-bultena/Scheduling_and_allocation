@@ -36,7 +36,7 @@ from schedule.gui_dialogs.add_edit_block_dialog_tk import AddEditBlockDialogTk
 from schedule.gui_dialogs.add_section_dialog_tk import AddSectionDialogTk
 from schedule.gui_dialogs.edit_course_dialog_tk import EditCourseDialogTk
 from schedule.gui_dialogs.edit_section_dialog_tk import EditSectionDialogTk
-from schedule.model import Schedule, ResourceType, Section, Block, Teacher, Lab, Stream, Course
+from schedule.model import Schedule, ResourceType, Section, Block, Teacher, Lab, Stream, Course, WeekDay
 from schedule.gui_pages import EditCoursesTk
 from schedule.presenter.edit_courses_popup_menus import CreateTreePopupMenuActions, CreateResourcePopupMenuActions
 
@@ -497,7 +497,23 @@ class EditCourses:
     # respond to a double click on a teacher resource
     # -------------------------------------------------------------------------------------------------------------
     def resource_event_show_teacher_stat(self, teacher: Teacher):
-        pass
+        text = []
+        days = set()
+        hours = 0
+        for course in self.schedule.get_courses_for_teacher(teacher):
+            for block in course.blocks():
+                if block.has_teacher(teacher):
+                    days.add(block.day)
+                    hours = hours + block.duration
+
+        text.append(f"Release: {teacher.release}")
+        text.append( f"Total Class Time: {hours}")
+        day_str = []
+        for day in WeekDay:
+            if day in days:
+                day_str.append(day.name[0:3])
+        text.append( f"Days: "+", ".join(day_str))
+        self.gui.show_message(title = "Teacher Stats", msg=str(teacher), detail="\n".join(text))
 
     # -------------------------------------------------------------------------------------------------------------
     # can the resource object be added to the selected tree object?

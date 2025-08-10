@@ -286,8 +286,6 @@ class MainPageBaseTk:
     def show_custom_message(self, title="", msg=""):
         dialog = tk.Tk()
         dialog.title(title)
-        #dialog.geometry("400x150")  # Set custom width and height
-        #dialog.resizable(False, False) # Prevent resizing by user
 
         label = tk.Label(dialog, text=msg, justify='left')
         label.pack(pady=20,padx=20)

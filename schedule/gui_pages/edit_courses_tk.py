@@ -35,6 +35,7 @@ import time
 import tkinter as tk
 from tkinter import ttk
 from functools import partial
+from tkinter.messagebox import showinfo
 from typing import Callable, Any, TYPE_CHECKING
 import re
 
@@ -496,3 +497,9 @@ class EditCoursesTk:
         btn_edit_selection = tk.Button(button_row, text="Edit Selection", width=11,
                                     command=lambda: self._cmd_edit_selection())
         btn_edit_selection.pack(side='left', ipadx=10)
+
+    # ================================================================================================================
+    # show a message
+    # ================================================================================================================
+    def show_message(self, title: str, msg: str, detail: str = ""):
+        showinfo(title=title, message=msg, detail=detail, icon='info')

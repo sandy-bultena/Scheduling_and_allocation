@@ -2,7 +2,6 @@
 ============ Bugs ================
 * Maybe Mac menu stuff (a nice to have)
 * Windows, binding to ctrl-s isn't working properly
-* Show teacher stat in scheduler
 * In allocation editor, since the frame is black, expanding to full size shows a block square... maybe see how much is required for the frame, and limit the size of the grid??
 * make printing of schedules optional so you don't have to install reportlab
 * make changing font size as an option... but will have to add scrollbars to the dialog boxes so that they can be moved if required
@@ -36,3 +35,4 @@
 * sort sections by number as an integer, even though it is stored as a string
 * Bind Scroll methods to mousewheel, etc for CourseTree - works for CourseTree already
 * was an error in scrolling edit courses because of changes to tk.Scroll
+* Show teacher stat in scheduler
