@@ -367,13 +367,13 @@ class EditCoursesTk:
             if info_data.get('start_time', None) is not None and time.time() - info_data['start_time'] < 0.05:
                 return False
             info_data['start_time'] = time.time()
-            n1,n2 = self.tree_scrolled.yview()
+            n1,n2 = self.tree_scrolled.yview_widget()
             self.tree_scrolled.yview_moveto(max(7/8*n1 - 1/8*n2,0))
         elif tv_y_pos > 0:
             if info_data.get('start_time', None) is not None and time.time() - info_data['start_time'] < 0.05:
                 return False
             info_data['start_time'] = time.time()
-            n1,n2 = self.tree_scrolled.yview()
+            n1,n2 = self.tree_scrolled.yview_widget()
             self.tree_scrolled.yview_moveto(min(7/8*n1 + 1/8*n2,1))
 
         return False
