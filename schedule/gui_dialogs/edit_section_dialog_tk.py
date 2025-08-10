@@ -79,7 +79,7 @@ class EditSectionDialogTk(Dialog):
         # ------------------------------------------------------------------------------------------------------------
         course_info_frame = tk.Frame(frame)
         section_info_frame = tk.Frame(frame)
-        lbl = tk.Label(course_info_frame, text=self.course_description, anchor='center', width=20)
+        lbl = tk.Label(course_info_frame, text=self.course_description, anchor='center')
         lbl.pack(expand=1, fill='both', padx=15, pady=5)
         default_font = tkFont.nametofont(lbl.cget("font"))
         family = default_font["family"]
