@@ -228,8 +228,9 @@ class Section:
         if len(self.blocks()) == 0:
             answer = teacher in self._allocation_teachers
         else:
+            answer = False
             for b in self.blocks():
-                answer = b.has_teacher(teacher)
+                answer = answer or b.has_teacher(teacher)
         return answer
 
     # --------------------------------------------------------
@@ -257,9 +258,14 @@ class Section:
         if teacher in self._allocation:
             return self._allocation[teacher]
 
-        # hours not defined, assume total hours
+        # hours not defined, assume total hours that have been assigned in blocks
+        # if there are any
         else:
-            return self.hours
+            if len(self.blocks()) != 0:
+                allocation = sum((b.duration for b in self.blocks() if teacher in b.teachers()))
+            else:
+                allocation = self.hours
+            return allocation
 
     def allocated_hours(self) -> float:
         """ Gets the total number of hours that have been allocated """

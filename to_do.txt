@@ -10,7 +10,6 @@
 * make changing font size as an option... but will have to add scrollbars to the dialog boxes so that they can be moved if required
 * In allocation, If teacher is in one semester, but not the other, it appears that the yearly CI takes into account the release for both semesters
 * Need to add autosave for allocation
-* Data for shared classes (see biology) is not being parsed correctly for Allocation hours
 
 ============ Done ================
 * Switching between view tabs and back disconnects view from view controller (and the buttons I thing in the view choices)
@@ -35,3 +34,4 @@
 * Dirty flag colour not prominent enought (especially on windows)
 * Text on block label in Scheduler still not correct
 * Need to show filenames in status bar for allocation
+* Data for shared classes (see biology) is not being parsed correctly for Allocation hours
