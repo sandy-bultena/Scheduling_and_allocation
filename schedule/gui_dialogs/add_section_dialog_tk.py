@@ -97,7 +97,7 @@ class AddSectionDialogTk(Dialog):
     # refresh blocks
     # ================================================================================================================
     def add_new_block(self):
-        self.row_data.append((tk.StringVar(value="Monday"),tk.StringVar(value="8:00"), tk.StringVar(value="1.5")))
+        self.row_data.append((tk.StringVar(value="Monday"),tk.StringVar(value="8.0"), tk.StringVar(value="1.5")))
         self.refresh()
 
     def refresh(self):
