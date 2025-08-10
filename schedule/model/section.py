@@ -317,7 +317,11 @@ class Section:
         return str(self)
 
     def __lt__(self, other):
-        return self.number < other.number
+        try:
+            a = int(self.number) < int(other.number)
+            return a
+        except TypeError:
+            return self.number < other.number
 
     def __hash__(self):
         return hash(self._section_id)
