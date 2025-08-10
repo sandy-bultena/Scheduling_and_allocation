@@ -320,7 +320,7 @@ class AllocationManager:
     # update_edit_students
     # ==================================================================
     def update_edit_students(self, frame, semester):
-        data_entry = StudentNumbers(frame, self.set_dirty_method, self.schedules[semester])
+        data_entry = StudentNumbers(self.set_dirty_method, frame, self.schedules[semester])
         data_entry.refresh()
 
     # ==================================================================

@@ -141,7 +141,9 @@ class AllocationEditor:
 
         yearly_ci = semester_ci
         for other in self.other_schedules:
-            yearly_ci += calculate_ci(teacher, schedule=other)
+            other_teacher = other.get_teacher_by_name(teacher.firstname, teacher.lastname)
+            if other_teacher is not None:
+                yearly_ci += calculate_ci(other_teacher, schedule=other)
 
         # convert all the numbers into their appropriate string variations
         return (SummaryRow(release="" if teacher.release == 0 else f"{teacher.release:6.3f}",
