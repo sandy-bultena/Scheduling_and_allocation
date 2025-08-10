@@ -12,7 +12,7 @@ from tkinter import ttk
 from schedule.model.enums import SemesterType
 
 BUTTON_WIDTH = 25
-MAX_LEN_OF_DISPLAYED_FILENAME = 25
+MAX_LEN_OF_DISPLAYED_FILENAME = 45
 
 # ============================================================================
 # event handlers
@@ -106,6 +106,12 @@ class AllocationManagerTk(MainPageBaseTk):
             self._schedule_filenames[semester].set(value)
         else:
             self._schedule_filenames[semester].set(value="Create New")
+
+        if semester == SemesterType.winter:
+            self.status_bar_winter_file_info = value
+        else:
+            self.status_bar_fall_file_info = value
+
         return self._schedule_filenames[semester].get()
 
     # ----------------------------------------------------------------------------------------------------------------

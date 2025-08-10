@@ -107,7 +107,10 @@ class SchedulerTk(MainPageBaseTk):
             value = os.path.abspath(value)
             if len(value) > MAX_LEN_OF_DISPLAYED_FILENAME:
                 value = "... " + value[len(value) - MAX_LEN_OF_DISPLAYED_FILENAME:]
-        self.status_bar_file_info = value
+        if self.preferences.semester() == "winter":
+            self.status_bar_winter_file_info = value
+        else:
+            self.status_bar_fall_file_info = value
 
     # ========================================================================
     # override exit event

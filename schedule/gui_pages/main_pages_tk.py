@@ -78,7 +78,10 @@ class MainPageBaseTk:
         self.colours, self.fonts = set_default_fonts_and_colours(self.mw, invert=self.dark_mode)
 
         # set the filename so that it can be bound later
-        self._status_bar_file_info: tk.StringVar = tk.StringVar(value="None")
+        self._status_bar_fall_file_info: tk.StringVar = tk.StringVar(value="None")
+
+        # set the filename so that it can be bound later
+        self._status_bar_winter_file_info: tk.StringVar = tk.StringVar(value="None")
 
         # set the dirty text so it can be bound later
         self._status_bar_dirty: tk.StringVar = tk.StringVar(value="")
@@ -87,12 +90,20 @@ class MainPageBaseTk:
     # properties
     # ===================================================================================
     @property
-    def status_bar_file_info(self):
-        return self._status_bar_file_info.get()
+    def status_bar_fall_file_info(self):
+        return self._status_bar_fall_file_info.get()
 
-    @status_bar_file_info.setter
-    def status_bar_file_info(self, value: str):
-        self._status_bar_file_info.set(value)
+    @status_bar_fall_file_info.setter
+    def status_bar_fall_file_info(self, value: str):
+        self._status_bar_fall_file_info.set(value)
+
+    @property
+    def status_bar_winter_file_info(self):
+        return self._status_bar_winter_file_info.get()
+
+    @status_bar_winter_file_info.setter
+    def status_bar_winter_file_info(self, value: str):
+        self._status_bar_winter_file_info.set(value)
 
     @property
     def dirty_text(self):
@@ -135,7 +146,11 @@ class MainPageBaseTk:
         status_frame = tk.Frame(mw, borderwidth=0, relief='flat')
         status_frame.pack(side='bottom', expand=0, fill='x')
 
-        tk.Label(status_frame, textvariable=self._status_bar_file_info, borderwidth=1, relief='ridge',
+        tk.Label(status_frame, textvariable=self._status_bar_fall_file_info, borderwidth=1, relief='ridge',
+              anchor='w',
+              ).pack(side='left', expand=1, fill='x')
+
+        tk.Label(status_frame, textvariable=self._status_bar_winter_file_info, borderwidth=1, relief='ridge',
               anchor='w',
               ).pack(side='left', expand=1, fill='x')
 
