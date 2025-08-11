@@ -73,12 +73,12 @@ class AddRemoveTk:
         if which == "add":
             widget = self.add_listbox
             index = widget.nearest(e.y)
-            if index < len(self.adds):
+            if 0 <= index < len(self.adds):
                 self.to_add_function(self.adds[index])
         else:
             widget = self.remove_listbox
             index = widget.nearest(e.y)
-            if index < len(self.removes):
+            if 0 <= index < len(self.removes):
                 self.to_remove_function(self.removes[index])
         self.refresh()
 

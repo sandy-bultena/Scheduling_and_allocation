@@ -124,6 +124,7 @@ def _validate_start_time(tkvar: tk.StringVar,  _: tk.Event):
     if value < 8 or value > 18:
         tk.messagebox.showerror(title="Invalid Class Start Time", detail="Resetting to 8:00 am",
                                 message=f"'{tkvar.get()}' is outside of operational hours")
+        tkvar.set("8.0")
         return
 
     tkvar.set(str(round(4*value)/4))
