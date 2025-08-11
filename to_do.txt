@@ -5,6 +5,7 @@
 * In allocation editor, since the frame is black, expanding to full size shows a block square... maybe see how much is required for the frame, and limit the size of the grid??
 * make printing of schedules optional so you don't have to install reportlab
 * make changing font size as an option... but will have to add scrollbars to the dialog boxes so that they can be moved if required
+* bug in edit block dialog? number of new blocks isn't correct
 
 ============ Done ================
 * Switching between view tabs and back disconnects view from view controller (and the buttons I thing in the view choices)
@@ -26,7 +27,7 @@
 * If reading a schedule file fails, give better feedback
 * Don't like drop down for editing blocks... too much of a pain... switch to entering hours as decimals and immediately snap to grid
 * Dirty flag not set when changes to allocation
-* Dirty flag colour not prominent enought (especially on windows)
+* Dirty flag colour not prominent enough (especially on windows)
 * Text on block label in Scheduler still not correct
 * Need to show filenames in status bar for allocation
 * Data for shared classes (see biology) is not being parsed correctly for Allocation hours

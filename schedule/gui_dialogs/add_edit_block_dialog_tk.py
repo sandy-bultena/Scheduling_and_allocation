@@ -9,7 +9,9 @@ from schedule.gui_generics.number_validations import  entry_float, entry_int, va
 
 from schedule.gui_generics.add_remove_tk import AddRemoveTk
 
-
+# =====================================================================================================================
+# Edit an Existing Block
+# =====================================================================================================================
 class AddEditBlockDialogTk(Dialog):
     def __init__(self, frame:tk.Frame,
                  add_edit_type: Literal['add', 'edit'],
@@ -19,6 +21,16 @@ class AddEditBlockDialogTk(Dialog):
                  assigned_labs: list,
                  non_assigned_labs: list,
                  apply_changes: Callable[[int,float,list,list], None]):
+        """
+        :param frame: the frame which will be the parent of the dialog box
+        :param add_edit_type: are we adding a new block or editing an existing bloc
+        :param duration: how long is the block (class duration)
+        :param assigned_teachers: who has been assigned to this block
+        :param non_assigned_teachers: who has not been assigned to this block
+        :param assigned_labs: labs that have been reserved for this block
+        :param non_assigned_labs: labs that have not been assigned to this block
+        :param apply_changes: who ya gonna call (ghost busters) once the user clicks ok
+        """
 
         self.add_edit_type = add_edit_type
         self.old_duration = duration
@@ -41,6 +53,9 @@ class AddEditBlockDialogTk(Dialog):
     # The content of the main body of the dialog box
     # ================================================================================================================
     def body(self, frame:tk.Frame):
+        """
+        :param frame: the frame where you are gonna put stuff
+        """
 
         # ------------------------------------------------------------------------------------------------------------
         # for adding blocks only
@@ -86,6 +101,10 @@ class AddEditBlockDialogTk(Dialog):
     # validate before applying
     # ================================================================================================================
     def validate(self):
+        """
+        Is the data, as entered by the user, valid?
+        :return: True if data is good (changes are applied), false otherwise (nothing happens)
+        """
         if not validate_float(self.tk_duration.get(), "Class Duration", "Duration of class must be a valid float!"):
             return False
         if not validate_int(self.tk_new_blocks.get(),"Number of Classes", "Number of classes must be a valid int!"):
@@ -96,6 +115,7 @@ class AddEditBlockDialogTk(Dialog):
     # apply changes
     # ================================================================================================================
     def apply(self):
+        """apply the changes and close the dialog"""
         duration = float(self.tk_duration.get())
         number_new_blocks = int(float(self.tk_new_blocks.get()))
         self._apply_changes(number_new_blocks, duration, self._assigned_teachers, self._assigned_labs )

@@ -4,19 +4,20 @@ from __future__ import annotations
 import tkinter as tk
 import tkinter.messagebox as tk_message_box
 import tkinter.simpledialog as simpledialog
-# from tkinter.simpledialog import Dialog
 from typing import Callable, Literal, TYPE_CHECKING
 
 from schedule.gui_generics.number_validations import validate_int, entry_float, entry_int, validate_float
-from schedule.gui_dialogs.dialog_utilities import set_style, validate_class_times_equals_course_time, \
-    get_block_info_from_row_data, refresh_gui_blocks, get_clock_string_from_hours
+from schedule.gui_dialogs.dialog_utilities import validate_class_times_equals_course_time, \
+    get_block_info_from_tk_widgets, refresh_gui_blocks
 
 from schedule.gui_generics.add_remove_tk import AddRemoveTk
 if TYPE_CHECKING:
     from schedule.model import Lab, Teacher
 
-
-
+# =====================================================================================================================
+# Edit Course
+# - add sections with blocks, teachers, labs
+# =====================================================================================================================
 class EditCourseDialogTk(simpledialog.Dialog):
     def __init__(self, frame:tk.Frame,
                  edit_or_add: Literal['edit','add'],
@@ -33,8 +34,23 @@ class EditCourseDialogTk(simpledialog.Dialog):
                  non_assigned_labs: list[Lab],
                  current_blocks: list[tuple[str,float,float]] = None,
                  apply_changes: Callable[[str, str, float, bool, int, list, list, list], None]):
-
-        set_style(frame)
+        """
+        Edit Course  - add sections with blocks, teachers, labs
+        :param frame: the parent of the dialog box
+        :param edit_or_add: editing or adding a course?
+        :param existing_course_numbers: all of the existing course numbers (to prevent duplication)
+        :param course_number: course number
+        :param course_name: course name
+        :param course_hours: hours per week
+        :param course_allocation: does the course require a teacher?
+        :param num_sections: number of sections of this course
+        :param assigned_teachers: which teachers have been assigned to this course
+        :param non_assigned_teachers: which teachers have NOT been assigne to this course
+        :param assigned_labs: which labs have been assigned to this course
+        :param non_assigned_labs: which labs have not been assigned to this course
+        :param current_blocks: What blocks (class times) have been assigned
+        :param apply_changes: what to call when the user is finished updating their request
+        """
 
         self.top_frame = frame
         self.edit_or_add = edit_or_add
@@ -52,7 +68,7 @@ class EditCourseDialogTk(simpledialog.Dialog):
         self._apply_changes = apply_changes
 
 
-        self.row_data = []
+        self.block_tk_variables = []
         self.block_frames = None
         self.course_name = course_name
 
@@ -100,7 +116,7 @@ class EditCourseDialogTk(simpledialog.Dialog):
             opt_day = tk.StringVar(value=block_info[0])
             opt_hour = tk.StringVar(value=str(block_info[1]))
             opt_duration = tk.StringVar(value=str(block_info[2]))
-            self.row_data.append((opt_day, opt_hour, opt_duration))
+            self.block_tk_variables.append((opt_day, opt_hour, opt_duration))
 
         # ------------------------------------------------------------------------------------------------------------
         # Teacher/Lab/Stream Add/Remove
@@ -125,10 +141,16 @@ class EditCourseDialogTk(simpledialog.Dialog):
 
         return description
 
+    # ================================================================================================================
+    # add a new block
+    # ================================================================================================================
     def add_new_block(self):
-        self.row_data.append((tk.StringVar(value="Monday"), tk.StringVar(value="8.0"), tk.StringVar(value="1.5")))
+        self.block_tk_variables.append((tk.StringVar(value="Monday"), tk.StringVar(value="8.0"), tk.StringVar(value="1.5")))
         self.refresh()
 
+    # ================================================================================================================
+    # Update gui to reflect current info
+    # ================================================================================================================
     def refresh(self):
         refresh_gui_blocks(self)
         tk.Button(self.block_frames, text="Add New Class Time", command=self.add_new_block, padx=5).pack(expand=1, fill='y')
@@ -136,8 +158,11 @@ class EditCourseDialogTk(simpledialog.Dialog):
     # ================================================================================================================
     # validate before applying
     # ================================================================================================================
-
     def validate(self):
+        """
+        Is the data, as entered by the user, valid?
+        :return: True if data is good (changes are applied), false otherwise (nothing happens)
+        """
         if self.edit_or_add == 'add':
             if self.course_number_tk.get() in self.existing_course_numbers:
                 tk_message_box.showerror("Course Number",f"Course number '{self.course_number_tk.get()}' already exists")
@@ -148,7 +173,7 @@ class EditCourseDialogTk(simpledialog.Dialog):
         if not validate_int(self.num_sections_tk.get(),"Number of Sections", "The number of sections must be an integer!"):
             return False
 
-        if not validate_class_times_equals_course_time(self.row_data, float(self.course_hours_tk.get())):
+        if not validate_class_times_equals_course_time(self.block_tk_variables, float(self.course_hours_tk.get())):
             return False
 
         return True
@@ -157,7 +182,8 @@ class EditCourseDialogTk(simpledialog.Dialog):
     # apply changes
     # ================================================================================================================
     def apply(self):
-        new_blocks=get_block_info_from_row_data(self.row_data)
+        """apply the changes and close the dialog"""
+        new_blocks=get_block_info_from_tk_widgets(self.block_tk_variables)
         self._apply_changes(self.course_number_tk.get(), self.course_name_tk.get(),
                             float(self.course_hours_tk.get()),self.course_allocation_tk.get(),
                             int(self.num_sections_tk.get()), self._assigned_teachers,

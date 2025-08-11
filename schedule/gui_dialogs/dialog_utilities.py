@@ -8,36 +8,17 @@ from schedule.model import WeekDay
 
 
 # ================================================================================================================
-# clock conversion
+# class times?
 # ================================================================================================================
-def get_hour_minutes_from_hours(hours: float) -> (int, int):
-    """converts number_of_students of hours (as a float) to integer hour and integer minutes"""
-    hour = int(hours)
-    minute = (hours % 1) * 60
-    return hour, int(minute)
-
-def get_clock_string_from_hours(hours: float)->str:
-    hour,minute = get_hour_minutes_from_hours(hours)
-    return f"{hour}:{minute:02d}"
-
-def get_hours_from_str(hours:str)->float:
-    hour = hours
-    minute = 0
-    if ":" in hours:
-        hour,minute = hours.split(":")
-    if "." in hours:
-        return float(hours)
-    return int(float(hour)) + int(float(minute))/60
-
-def validate_class_times_equals_course_time(block_row_data, course_hours: float)-> bool:
+def validate_class_times_equals_course_time(block_tk_variables, course_hours: float)-> bool:
     """
     Compares the total duration of all the blocks and compares to the hours assigned to the course
-    :param block_row_data: list of tuples with string reprs of day, start_time, and duration
+    :param block_tk_variables: list of tuples with string reprs of day, start_time, and duration
     :param course_hours: the hours assigned to this course
     :return: true if no blocks defined, or if duration is equal to assigned hours, or user oks the discrepancy
     """
     total = 0.0
-    for block_info in block_row_data:
+    for block_info in block_tk_variables:
         duration = float(block_info[2].get().strip().split(" ")[0])
         if duration < 0:
             duration += 24
@@ -53,47 +34,31 @@ def validate_class_times_equals_course_time(block_row_data, course_hours: float)
 
 
 # ================================================================================================================
-# style for combo boxes
+# get updated block information
 # ================================================================================================================
-def set_style(frame):
-    """
-    set style for combo boxes
-    :param frame: any Tk object
-    :return:
-    """
-    style = ttk.Style(frame.winfo_toplevel())
-    style.configure("MyCustom.TCombobox",
-                         fieldbackground='black',  # Background of the input field
-                         background='black',  # Overall widget background
-                         foreground='white',  # Text color in the input field
-                         arrowcolor='white',  # Dropdown arrow color
-                         )
-
-# ================================================================================================================
-# blocks
-# ================================================================================================================
-def get_block_info_from_row_data(block_row_data: list[tk.StringVar]) -> list[tuple[float,float,float]]:
+def get_block_info_from_tk_widgets(block_tk_variables: list[tk.StringVar]) -> list[tuple[float,float,float]]:
     """
     Convert string (day, start_time, duration) to int(day), float(start_time), float(duration)
-    :param block_row_data:
+    :param block_tk_variables:
     :return: updated list
     """
-    new_blocks = []
-    for i, b in enumerate(block_row_data):
+    updated_blocks = []
+    for i, b in enumerate(block_tk_variables):
         d = [x.get() for x in b]
         day = WeekDay[d[0]].value
-        start_str = (d[1].strip().split(" ")[0])
-        start = get_hours_from_str(start_str)
-        duration = float(d[2].strip().split(" ")[0])
-        new_blocks.append((day,start,duration))
+        start = float(d[1].strip())
+        duration = float(d[2].strip())
+        updated_blocks.append((day,start,duration))
 
-    return new_blocks
+    return updated_blocks
 
+# ================================================================================================================
+# update the gui with block data
+# ================================================================================================================
 def refresh_gui_blocks(self,):
     """
     Create the drop-down and entry boxes etc for blocks
     :param self: the object that contains all the block info, frame, etc
-    :return:
     """
     days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
@@ -102,14 +67,14 @@ def refresh_gui_blocks(self,):
         w.destroy()
 
     row_frames = []
-    for index, block_info in enumerate(self.row_data):
+    for index, block_info in enumerate(self.block_tk_variables):
         def remove_block(instance=self, i=index):
             instance.row_data.pop(i)
             instance.refresh()
 
         row_frame = tk.Frame(self.block_frames)
         if row_frame.winfo_toplevel().tk.call('tk', 'windowingsystem') == 'aqua':
-            padx=2
+            padx=0
             pady = 0
         else:
             padx = 2
@@ -140,7 +105,14 @@ def refresh_gui_blocks(self,):
         om_duration.bind("<Leave>", partial(_validate_duration, opt_duration))
         om_duration.bind("<FocusOut>",  partial(_validate_duration, opt_duration))
 
+# ================================================================================================================
+# validate that the start time is a float, and that it is within operating hours
+# ================================================================================================================
 def _validate_start_time(tkvar: tk.StringVar,  _: tk.Event):
+    """
+    Validates the start time is good, and rounds to the nearest 15 minutes
+    :param tkvar: The tk variable to analyze
+    """
     try:
         value = float(tkvar.get())
     except ValueError:
@@ -156,7 +128,14 @@ def _validate_start_time(tkvar: tk.StringVar,  _: tk.Event):
 
     tkvar.set(str(round(4*value)/4))
 
+# ================================================================================================================
+# validate that the duration is a float, and that it is within operating constraints
+# ================================================================================================================
 def _validate_duration(tkvar: tk.StringVar, _: tk.Event):
+    """
+    Validates the duration length is good, and rounds to the nearest 15 minutes
+    :param tkvar: The tk variable to analyze
+    """
 
     try:
         value = float(tkvar.get())
