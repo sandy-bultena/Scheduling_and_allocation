@@ -63,8 +63,8 @@ class AddEditBlockDialogTk(Dialog):
         number_of_blocks_frame = tk.Frame(frame)
         if self.add_edit_type == 'add':
             tk.Label(number_of_blocks_frame, text="Number of Classes:", anchor='e', width=20).pack(side='left', padx=10, pady=5)
-            duration_entry = entry_float(number_of_blocks_frame,textvariable=self.tk_new_blocks)
-            duration_entry.pack(side='left', padx=10, pady=5)
+            num_entry = entry_float(number_of_blocks_frame,textvariable=self.tk_new_blocks)
+            num_entry.pack(side='left', padx=10, pady=5)
 
         # ------------------------------------------------------------------------------------------------------------
         # duration
@@ -73,7 +73,6 @@ class AddEditBlockDialogTk(Dialog):
         tk.Label(entry_frame, text="Duration:", anchor='e', width=20).pack(side='left',padx=10,pady=5)
         duration_entry = entry_int(entry_frame, textvariable=self.tk_duration)
         duration_entry.pack(side='left',padx=10, pady=5)
-
 
         # ------------------------------------------------------------------------------------------------------------
         # Teacher/Lab Add/Remove
