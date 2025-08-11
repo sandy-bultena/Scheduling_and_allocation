@@ -92,6 +92,8 @@ class AllocationManager:
         set_menu_event_handler_allocation("file_open", self.open_menu_event)
         set_menu_event_handler_allocation("file_save", self.save_schedule)
         set_menu_event_handler_allocation("file_exit", self.menu_exit_event)
+        set_menu_event_handler_allocation("auto_save_set", partial(self.auto_save_set, True))
+        set_menu_event_handler_allocation("auto_save_unset", partial(self.auto_save_set, False))
         set_main_page_event_handler("go", self.go)
         set_main_page_event_handler("exit", self.exit_event)
         set_main_page_event_handler("file_open_from_main_page", self.open_menu_event_from_main_page)
@@ -112,6 +114,7 @@ class AllocationManager:
             self.preferences.semester(semester.name)
             self.previous_filename(semester, self.preferences.previous_file())
 
+        self.set_dirty_indicator()
         self.gui.start_event_loop()
 
 
@@ -147,12 +150,8 @@ class AllocationManager:
 
     @dirty_flag.setter
     def dirty_flag(self, value):
-        if self.gui:
-            if value:
-                self.gui.dirty_text = "UNSAVED"
-            else:
-                self.gui.dirty_text = ""
         self._dirty_flag = value
+        self.set_dirty_indicator()
 
     # ============================================================================================
     # Events ... open
@@ -321,13 +320,32 @@ class AllocationManager:
 
         # if value is true, and autosave is on, save the file
         if value and self.preferences.auto_save():
-            for schedule in self.schedules.values():
-                schedule.write_file(self.schedule_filename)
-                value = False
+            self.save_schedule()
+            value = False
 
         if value is not None:
             self.dirty_flag = value
         return self.dirty_flag
 
+    # ============================================================================================
+    # Event handler, auto save setting changed
+    # ============================================================================================
+    def set_dirty_indicator(self):
+        if self.gui and self.dirty_flag:
+            self.gui.dirty_text = "UNSAVED"
+        else:
+            self.gui.dirty_text = self.auto_save_text
+
+    def auto_save_set(self, value, *_):
+        self.preferences.auto_save(value)
+        self.set_dirty_indicator()
+        self.preferences.save()
+
+    @property
+    def auto_save_text(self):
+        if self.preferences.auto_save():
+            return "AUTO SAVE ON"
+        else:
+            return ""
 
 

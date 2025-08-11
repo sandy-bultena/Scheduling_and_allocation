@@ -5,7 +5,6 @@
 * In allocation editor, since the frame is black, expanding to full size shows a block square... maybe see how much is required for the frame, and limit the size of the grid??
 * make printing of schedules optional so you don't have to install reportlab
 * make changing font size as an option... but will have to add scrollbars to the dialog boxes so that they can be moved if required
-* Need to add autosave for allocation
 
 ============ Done ================
 * Switching between view tabs and back disconnects view from view controller (and the buttons I thing in the view choices)
@@ -38,3 +37,4 @@
 * Show teacher stat in scheduler
 * BIG BUG: updating block data in edit course and edit section has gone really wonky
 * In allocation 'save' goes for both files, not just one
+* Need to add autosave for allocation
