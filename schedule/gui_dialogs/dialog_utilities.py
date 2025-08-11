@@ -1,4 +1,5 @@
 import tkinter as tk
+from functools import partial
 from tkinter import ttk
 import tkinter.messagebox as message_box
 
@@ -24,6 +25,8 @@ def get_hours_from_str(hours:str)->float:
     minute = 0
     if ":" in hours:
         hour,minute = hours.split(":")
+    if "." in hours:
+        return float(hours)
     return int(float(hour)) + int(float(minute))/60
 
 def validate_class_times_equals_course_time(block_row_data, course_hours: float)-> bool:
@@ -132,49 +135,42 @@ def refresh_gui_blocks(self,):
         om_duration.pack(side='left', pady=pady, padx=padx, expand=1, fill='x')
         btn_delete.pack(side='left', pady=pady, padx=padx, ipadx=padx, expand=1, fill='x')
 
-        om_time.bind("<Leave>", _validate_start_time)
-        om_time.bind("<FocusOut>", _validate_start_time)
-        om_duration.bind("<Leave>", _validate_duration)
-        om_duration.bind("<FocusOut>", _validate_duration)
+        om_time.bind("<Leave>", partial(_validate_start_time, opt_hour))
+        om_time.bind("<FocusOut>", partial(_validate_start_time, opt_hour))
+        om_duration.bind("<Leave>", partial(_validate_duration, opt_duration))
+        om_duration.bind("<FocusOut>",  partial(_validate_duration, opt_duration))
 
-def _validate_start_time(e: tk.Event):
-    w = e.widget
-    str_value = w.get()
+def _validate_start_time(tkvar: tk.StringVar,  _: tk.Event):
     try:
-        value = float(str_value)
+        value = float(tkvar.get())
     except ValueError:
         tk.messagebox.showerror(message="Class Start Time", title="Invalid Float",
-                                detail=f"'{str_value}' is not a valid number")
-        w.config(textvariable=tk.StringVar(value="8.0"))
+                                detail=f"'{tkvar.get()}' is not a valid number")
+        tkvar.set("8.0")
         return
 
     if value < 8 or value > 18:
         tk.messagebox.showerror(title="Invalid Class Start Time", detail="Resetting to 8:00 am",
-                                message=f"'{str_value}' is outside of operational hours")
-        w.config(textvariable=tk.StringVar(value="8.0"))
+                                message=f"'{tkvar.get()}' is outside of operational hours")
         return
 
-    w.config(textvariable=tk.StringVar(value=f"{round(4*value)/4}"))
+    tkvar.set(str(round(4*value)/4))
 
+def _validate_duration(tkvar: tk.StringVar, _: tk.Event):
 
-def _validate_duration(e: tk.Event):
-    w = e.widget
-    value_str:str = w.get()
     try:
-        value = float(value_str)
+        value = float(tkvar.get())
     except ValueError:
         tk.messagebox.showerror(message="Class Duration", title="Invalid Float",
-                                detail=f"'{value_str}' is not a valid number")
-        w.config(textvariable=tk.StringVar(value="1.5"))
+                                detail=f"'{tkvar.get()}' is not a valid number")
         return
 
     if value < 0.5 or value > 8:
         tk.messagebox.showerror(title="Invalid Class Duration", detail="Resetting to 1.5 hrs",
-                                message=f"'{value_str}' is not a valid class duration")
-        w.config(textvariable=tk.StringVar(value="1.5"))
+                                message=f"'{tkvar.get()}' is not a valid class duration")
         return
 
-    w.config(textvariable=tk.StringVar(value=f"{round(4*value)/4}"))
+    tkvar.set(str(round(4*value)/4))
 
 
 
