@@ -37,4 +37,4 @@
 * was an error in scrolling edit courses because of changes to tk.Scroll
 * Show teacher stat in scheduler
 * BIG BUG: updating block data in edit course and edit section has gone really wonky
-
+* In allocation 'save' goes for both files, not just one

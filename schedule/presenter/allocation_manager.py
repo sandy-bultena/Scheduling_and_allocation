@@ -90,8 +90,7 @@ class AllocationManager:
         # --------------------------------------------------------------------
         set_menu_event_handler_allocation("file_new", self.new_menu_event)
         set_menu_event_handler_allocation("file_open", self.open_menu_event)
-        set_menu_event_handler_allocation("file_save", self.save_menu_event)
-        set_menu_event_handler_allocation("file_save_as", self.save_as_menu_event)
+        set_menu_event_handler_allocation("file_save", self.save_schedule)
         set_menu_event_handler_allocation("file_exit", self.menu_exit_event)
         set_main_page_event_handler("go", self.go)
         set_main_page_event_handler("exit", self.exit_event)
@@ -143,7 +142,7 @@ class AllocationManager:
     # ============================================================================================
     @property
     def dirty_flag(self) -> bool:
-        """is the data different than what was saved on disk?"""
+        """is the data different from what was saved on disk?"""
         return self._dirty_flag
 
     @dirty_flag.setter
@@ -209,28 +208,21 @@ class AllocationManager:
     # ============================================================================================
     # Event handlers - save
     # ============================================================================================
-    def save_menu_event(self, semester:SemesterType):
-        """save file"""
-        self._save_schedule(self._schedule_filenames[semester], semester)
-
-    def save_as_menu_event(self, semester:SemesterType):
-        """save as file"""
-        self._save_schedule(None, semester)
-
-    def _save_schedule(self, filename: Optional[str], semester: SemesterType):
+    def save_schedule(self, *_):
         """generic save file method"""
 
-        if self.schedules[semester] is None:
-            self.gui.show_error(f"Save Schedule {semester.name.upper()}", "There is no schedule to save!")
-            return
+        for semester in self.schedules.keys():
+            if self.schedules[semester] is None:
+                continue
+            filename = self._schedule_filenames.get(semester, None)
 
-        if filename is None or filename == "":
-            filename = self.gui.select_file_to_save(f"Save Schedule As ({semester.name.upper()})")
+            if filename is None or filename == "":
+                filename = self.gui.select_file_to_save(f"Save Schedule As ({semester.name.upper()})")
 
-        if filename is not None and filename != "":
-            self.schedules[semester].write_file(filename)
-            self.dirty_flag = False
-            self.schedule_filename(semester,filename)
+            if filename is not None and filename != "":
+                self.schedules[semester].write_file(filename)
+                self.dirty_flag = False
+                self.schedule_filename(semester,filename)
 
     # ============================================================================================
     # Event handlers - exit
@@ -240,8 +232,7 @@ class AllocationManager:
         if self.dirty_flag:
             ans = self.gui.ask_yes_no("File", "Save File?")
             if ans:
-                for semester in VALID_SEMESTERS:
-                    self.save_menu_event(semester)
+                self.save_schedule()
 
     def menu_exit_event(self, _:SemesterType):
         self.gui.exit_schedule()
@@ -327,6 +318,12 @@ class AllocationManager:
     # schedule has been modified, update gui as required
     # ==================================================================
     def set_dirty_method(self, value: Optional[bool] = None) -> bool:
+
+        # if value is true, and autosave is on, save the file
+        if value and self.preferences.auto_save():
+            for schedule in self.schedules.values():
+                schedule.write_file(self.schedule_filename)
+                value = False
 
         if value is not None:
             self.dirty_flag = value

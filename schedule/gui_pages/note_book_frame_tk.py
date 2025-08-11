@@ -70,7 +70,8 @@ class NoteBookFrameTk:
         self.recursive_notebook_creation(self.frame, tabs_info)
         self.notebooks[0].select(self._default_notebook_page)
         self.mw.after(20, lambda: self.tab_changed(self.notebooks[0]))
-        self.mw.after(10, lambda *_: self.mw.geometry("975x700"))
+        self.mw.after(10, lambda *_: self.mw.geometry(
+            f"{max(975, self.mw.winfo_width())}x{max(700, self.mw.winfo_height())}"))
 
 
     # ===================================================================================

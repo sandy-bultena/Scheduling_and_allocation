@@ -49,24 +49,20 @@ def main_menu_allocation(semesters:list[SemesterType]) -> tuple[list[str], dict[
                                      command=partial( MAIN_MENU_EVENT_HANDLERS_ALLOCATION["file_open"],semester)
                                      )
                             )
-        file_menu.add_child(MenuItem(name=f'save_{semester.name}', menu_type=MenuType.Command,
-                                     label=f'Save {semester.name} Schedule',
-                                     command=partial( MAIN_MENU_EVENT_HANDLERS_ALLOCATION["file_save"],semester)
-                                     )
-                            )
-        file_menu.add_child(MenuItem(name=f'save_as_{semester.name}', menu_type=MenuType.Command,
-                                     label=f'Save As ({semester.name})',
-                                     command=partial( MAIN_MENU_EVENT_HANDLERS_ALLOCATION["file_save_as"],semester)
-                                     )
-                            )
-
 
         file_menu.add_child(MenuItem(menu_type=MenuType.Separator))
+
+    file_menu.add_child(MenuItem(name=f'save', menu_type=MenuType.Command,
+                                 label=f'Save Schedule',
+                                 command=partial( MAIN_MENU_EVENT_HANDLERS_ALLOCATION["file_save"],None)
+                                 )
+                        )
+    file_menu.add_child(MenuItem(menu_type=MenuType.Separator))
 
     file_menu.add_child(MenuItem(menu_type=MenuType.Command,
                                  label='Exit',
                                  accelerator='Ctrl-e',
-                                 command=partial( MAIN_MENU_EVENT_HANDLERS_ALLOCATION["file_exit"],SemesterType.summer)
+                                 command=partial( MAIN_MENU_EVENT_HANDLERS_ALLOCATION["file_exit"],None)
                                  )
                         )
 
