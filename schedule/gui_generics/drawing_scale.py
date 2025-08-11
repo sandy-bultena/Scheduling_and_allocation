@@ -7,7 +7,9 @@ DEFAULT_X_WIDTH_SCALE: float = 100
 DEFAULT_Y_HEIGHT_SCALE: float = 60
 CURRENT_SCALE: float = 1.0
 
-
+# =============================================================================================================
+# Get a drawing scale (for schedule views) based off a factor
+# =============================================================================================================
 class DrawingScale:
     def __init__(self, factor=CURRENT_SCALE):
         self.x_offset: float = DEFAULT_X_OFFSET

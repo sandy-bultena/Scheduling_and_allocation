@@ -9,6 +9,9 @@ import tkinter as tk
 from schedule.Tk import Scrolled
 from functools import partial
 
+# ====================================================================================================================
+# Move objects between two lists
+# ====================================================================================================================
 class AddRemoveTk:
     def __init__(self, frame: tk.Frame,
                  add_list: list,
@@ -53,6 +56,9 @@ class AddRemoveTk:
 
         self.refresh()
 
+    # ----------------------------------------------------------------------------------------------------------------
+    # move object from 'remove' list to 'add' list
+    # ----------------------------------------------------------------------------------------------------------------
     def to_add_function(self, obj):
         self.removes.append(obj)
         try:
@@ -61,6 +67,9 @@ class AddRemoveTk:
             pass
         self.adds.remove(obj)
 
+    # ----------------------------------------------------------------------------------------------------------------
+    # move object from 'add' list to 'remove' list
+    # ----------------------------------------------------------------------------------------------------------------
     def to_remove_function(self, obj):
         self.adds.append(obj)
         try:
@@ -69,7 +78,16 @@ class AddRemoveTk:
             pass
         self.removes.remove(obj)
 
+    # ----------------------------------------------------------------------------------------------------------------
+    # what to do when a list box is clicked (... move object)
+    # ----------------------------------------------------------------------------------------------------------------
     def _cmd_click(self, which: str, e: tk.Event):
+        """
+        move object from one list to another
+        :param which: which is the 'starting' list
+        :param e: the tk event (which can give us the nearest widget to the mouse click)
+        :return:
+        """
         if which == "add":
             widget = self.add_listbox
             index = widget.nearest(e.y)
@@ -82,6 +100,9 @@ class AddRemoveTk:
                 self.to_remove_function(self.removes[index])
         self.refresh()
 
+    # ----------------------------------------------------------------------------------------------------------------
+    # refrest the two list boxes
+    # ----------------------------------------------------------------------------------------------------------------
     def refresh(self):
         """updates the two list boxes"""
         self.add_listbox.delete(0, "end")
