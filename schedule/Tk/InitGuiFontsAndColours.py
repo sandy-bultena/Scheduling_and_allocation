@@ -109,7 +109,7 @@ class TkColours:
             self.ButtonForeground = "#FFFFFF"
 
         if Colour.is_light(self.WorkspaceColour):
-            self.DirtyColour = Colour.add("red","black")
+            self.DirtyColour = Colour.add("red","#444444")
         else:
             self.DirtyColour = Colour.add("red","white")
         # ============================================================================
