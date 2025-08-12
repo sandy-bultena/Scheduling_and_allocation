@@ -7,7 +7,7 @@
 * make changing font size as an option... but will have to add scrollbars to the dialog boxes so that they can be moved if required
 * Autosave suddenly not working for allocation
 * Allocation Welcome page is ugly as sin
-* Allocation grid refreshes multiple times
+
 
 ============ Done ================
 * Switching between view tabs and back disconnects view from view controller (and the buttons I thing in the view choices)

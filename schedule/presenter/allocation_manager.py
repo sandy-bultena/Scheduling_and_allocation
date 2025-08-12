@@ -59,6 +59,8 @@ class AllocationManager:
 
         self._schedule_filenames: dict[SemesterType, PATH] = {s:"" for s in VALID_SEMESTERS}
 
+        self._allocation_manager_already_open = False
+
         # --------------------------------------------------------------------
         # required notebook pages
         # --------------------------------------------------------------------
@@ -183,6 +185,7 @@ class AllocationManager:
         if filename:
             try:
                 schedule = Schedule(filename)
+                self._allocation_manager_already_open = False
                 self.schedules[semester] = schedule
                 self.schedule_filename(semester, filename)
                 self.dirty_flag = False
@@ -262,30 +265,37 @@ class AllocationManager:
         self.current_tab = name
         if name == "fall":
             self.gui.select_tab(f"fall {self.NB_allocation}")
+            self._allocation_manager_already_open = False
         if name == "winter":
             self.gui.select_tab(f"winter {self.NB_allocation}")
+            self._allocation_manager_already_open = False
         for semester in VALID_SEMESTERS:
             if name == f"{semester.name} {self.NB_allocation}":
                 self.update_allocation(frame, semester)
             if name == f"{semester.name} {self.NB_course}":
                 self.update_edit_courses(frame, semester)
+                self._allocation_manager_already_open = False
             elif name == f"{semester.name} {self.NB_teacher}":
                 self.update_edit_teachers(frame, semester)
+                self._allocation_manager_already_open = False
             elif name == f"{semester.name} {self.NB_students}":
                 self.update_edit_students(frame, semester)
+                self._allocation_manager_already_open = False
 
     # ==================================================================
     # update the allocation frame
     # ==================================================================
     def update_allocation(self, frame, semester):
-
-        other_schedules = [self.schedules[s] for s in VALID_SEMESTERS if s != semester]
-        AllocationEditor(
-            self.set_dirty_method,
-            frame,
-            schedule=self.schedules[semester],
-            other_schedules = other_schedules
-        )
+        if not self._allocation_manager_already_open:
+            print("opening Allocation Editor")
+            other_schedules = [self.schedules[s] for s in VALID_SEMESTERS if s != semester]
+            AllocationEditor(
+                self.set_dirty_method,
+                frame,
+                schedule=self.schedules[semester],
+                other_schedules = other_schedules
+            )
+        self._allocation_manager_already_open = True
 
     # ==================================================================
     # draw_edit_courses
