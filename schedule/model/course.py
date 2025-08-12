@@ -142,6 +142,16 @@ class Course:
 
         return tuple(sorted(set(sections)))
 
+    def get_sections_for_allocated_teacher(self, teacher: Teacher) -> tuple[Section, ...]:
+        """Returns a list of the Sections assigned to this course, with this Teacher."""
+        sections = []
+
+        for section in self.sections():
+            if section.has_allocated_teacher(teacher):
+                sections.append(section)
+
+        return tuple(sorted(set(sections)))
+
     def max_section_number(self) -> int:
         """Returns the maximum Section number from the Sections assigned to this Course."""
         sections = sorted(self.sections(), key=lambda s: s.number)
@@ -176,6 +186,15 @@ class Course:
     def has_teacher(self, teacher: Teacher) -> bool:
         """Returns true if the passed Teacher is assigned to this Course."""
         return teacher in self.teachers()
+
+    def has_allocated_teacher(self, teacher: Teacher) -> bool:
+        """Returns true if the passed Teacher is assigned to this Course."""
+        if teacher in self.teachers():
+            return True
+        for section in self.sections():
+            if section.has_allocated_teacher(teacher):
+                return True
+        return False
 
     def add_teacher(self, teacher: Teacher) -> Teacher:
         """Assigns a Teacher to all Sections of this Course."""

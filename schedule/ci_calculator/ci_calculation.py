@@ -42,16 +42,18 @@ class CICalc():
         schedule = self.schedule
         teacher = self.teacher
 
-        courses : list[Course] = [c for c in schedule.courses() if c.has_teacher(teacher)]
+        courses: list[Course] = [c for c in schedule.courses() if c.has_allocated_teacher(teacher)]
 
         self._reset()
         self.release = teacher.release or 0
 
-        debug(f"\n\n--------- {teacher.firstname}---------")
-        debug("\ntime_start list")
+        debug("")
+        debug("")
+        debug(f"--------- {teacher.firstname}---------")
+        debug("courses list")
         for course in courses:
             debug(f"{course.number} {course.name}")
-        debug("end list\n")
+        debug("end list")
 
         # per course
         for course in courses:
@@ -60,7 +62,8 @@ class CICalc():
             hours = 0
 
             # per section
-            for section in course.get_sections_for_teacher(teacher):
+            for section in course.get_sections_for_allocated_teacher(teacher):
+                debug(f"   Section: {section}")
                 hours = section.get_teacher_allocation(teacher)
                 students = section.num_students
 

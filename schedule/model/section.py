@@ -133,7 +133,7 @@ class Section:
             self.remove_block(block)
 
     def add_block(self, day: WeekDay | float = DEFAULT_DAY, start: float = DEFAULT_START,
-                  duration: float=DEFAULT_DURATION, movable=True, block_id=None)->Block:
+                  duration: float = DEFAULT_DURATION, movable=True, block_id=None) -> Block:
         """ Creates and Assign a block to this section"""
         block = Block(self, day, start, duration, movable=movable, block_id=block_id)
         self._blocks.add(block)
@@ -228,7 +228,7 @@ class Section:
         if teacher in self._allocation.keys():
             _ = self._allocation.pop(teacher)
 
-    def set_teacher_allocation(self, teacher: Teacher, hours: float) :
+    def set_teacher_allocation(self, teacher: Teacher, hours: float):
         """Assign number of hours to teacher for this section. Set hours to 0 to remove
         teacher from this section
 
@@ -284,6 +284,8 @@ class Section:
             new_path = path + "F"
             self._find_block_fit_for_allocation(hours, blocks, new_path, possible_paths)
 
+    def has_allocated_teacher(self, teacher):
+        return self.has_teacher(teacher) or teacher in self._allocation.keys()
 
     def get_teacher_allocation(self, teacher: Teacher) -> float:
         """ Get the number of hours assigned to this teacher for this section """
@@ -293,17 +295,11 @@ class Section:
             return 0
 
         # allocation defined
-        if teacher in self._allocation:
-            return self._allocation[teacher]
+        allocation = self._allocation.get(teacher, 0)
 
-        # hours not defined, assume total hours that have been assigned in blocks
-        # if there are any
-        else:
-            if len(self.blocks()) != 0:
-                allocation = sum((b.duration for b in self.blocks() if teacher in b.teachers()))
-            else:
-                allocation = self.hours
-            return allocation
+        if len(self.blocks()) != 0:
+            allocation += sum((b.duration for b in self.blocks() if teacher in b.teachers()))
+        return allocation
 
     # --------------------------------------------------------
     # streams

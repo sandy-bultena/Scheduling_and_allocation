@@ -262,7 +262,7 @@ class Schedule:
 
     def get_courses_for_teacher(self, teacher: Teacher) -> tuple[Course, ...]:
         """Get all the courses that has this teacher assigned to it"""
-        courses: set[Course] = set([c for c in self.courses() if c.has_teacher(teacher)])
+        courses: set[Course] = set([c for c in self.courses() if c.has_allocated_teacher(teacher)])
         return tuple(sorted(courses))
 
     # ========================================================================
