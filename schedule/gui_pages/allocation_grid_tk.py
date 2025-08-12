@@ -499,7 +499,7 @@ class AllocationGridTk:
                  sub_header_text: list[str], title_text: list[str],
                  data_vars: dict[tuple[int,int],float], summary_header_texts: list[str],
                  summary_sub_texts: list[str], summary_vars: list[list[str]],
-                 bottom_header_text: str, bottom_row_vars: list[float]):
+                 bottom_header_text: str, bottom_row_vars: list[str]):
         """
         Enter data into the entry widgets
         :param header_text: A list of major headings in the header frame

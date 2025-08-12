@@ -41,3 +41,4 @@
 * bug in edit block dialog? number of new blocks isn't correct - wasn't a bug... just bad naming
 * BIG DESIGN FLAW.  In allocation, when adding teacher to a section, it adds teacher to all blocks, but blocks are being used now to determine the number of hours, so upon saving, it is no longer valid.  Data isn't stored in the file either. (sigh) - Separated out the allocation versus assigning to blocks.  If we can assign to blocks, do so, otherwise set it to "assigned".  In scheduler, completely ignore "assigned"
 * Sort teachers by first name
+* In allocation, remaining hours should be formatted to 1 decimal place

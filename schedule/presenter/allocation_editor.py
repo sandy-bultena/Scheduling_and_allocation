@@ -112,7 +112,7 @@ class AllocationEditor:
             courses_text, courses_balloon, sections_text,
             teachers_text, data_numbers_only, [""], self.summary_headings,
             teacher_summaries, self.remaining_text,
-            remaining_hours
+            [f"{v:.1f}" for v in remaining_hours]
         )
 
 
