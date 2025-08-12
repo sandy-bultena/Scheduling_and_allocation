@@ -64,7 +64,7 @@ class Teacher:
         return str(self)
 
     def __lt__(self, other: Teacher) -> bool:
-        return (self.lastname, self.firstname) < (other.lastname, other.firstname)
+        return (self.firstname, self.lastname) < (other.firstname, other.lastname)
 
     def __eq__(self, other):
         return self.number == other.number
