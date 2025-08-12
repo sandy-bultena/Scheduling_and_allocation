@@ -43,3 +43,4 @@
 * Sort teachers by first name
 * In allocation, remaining hours should be formatted to 1 decimal place
 * When saving a new file, it was crashing
+* Bug in removing allocation errors

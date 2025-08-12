@@ -226,7 +226,7 @@ class Section:
     def remove_allocation(self, teacher):
         self.remove_teacher(teacher)
         if teacher in self._allocation.keys():
-            _ = self._allocation.pop[teacher]
+            _ = self._allocation.pop(teacher)
 
     def set_teacher_allocation(self, teacher: Teacher, hours: float) :
         """Assign number of hours to teacher for this section. Set hours to 0 to remove
