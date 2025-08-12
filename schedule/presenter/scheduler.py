@@ -201,8 +201,7 @@ class Scheduler:
 
     @dirty_flag.setter
     def dirty_flag(self, value):
-        self._dirty_flag = value
-        self.set_dirty_indicator()
+        self.set_dirty_method(value)
 
     # ============================================================================================
     # Event handler, auto save setting changed
@@ -265,7 +264,6 @@ class Scheduler:
         if self.schedule is None:
             self.gui.show_error("Save Schedule", "There is no schedule to save!")
             return
-
         if filename is None or filename == "":
             filename = self.gui.select_file_to_save()
 
@@ -503,11 +501,11 @@ class Scheduler:
 
         # if value is true, and autosave is on, save the file
         if value and self.preferences.auto_save():
-            self.schedule.write_file(self.schedule_filename)
+            self._save_schedule(self.schedule_filename)
             value = False
 
         if value is not None:
-            self.dirty_flag = value
+            self._dirty_flag = value
         return self.dirty_flag
 
 
