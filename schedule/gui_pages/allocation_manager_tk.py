@@ -71,6 +71,8 @@ class AllocationManagerTk(MainPageBaseTk):
         :return: the current value of the Tk StringVar
         """
         if value is not None:
+
+            # adjust size of previous file string
             if value is not None and value != "":
                 basename = os.path.basename(str(value))
                 if len(basename) > MAX_LEN_OF_DISPLAYED_FILENAME:
@@ -79,6 +81,7 @@ class AllocationManagerTk(MainPageBaseTk):
             else:
                 self._previous_files[semester].set(value="None")
 
+            # adjust the button "pushability" if filename is defined
             try:
                 if self._previous_files[semester] != "None":
                     self.previous_file_buttons[semester].configure(state='normal')
@@ -86,6 +89,8 @@ class AllocationManagerTk(MainPageBaseTk):
                     self.previous_file_buttons[semester].configure(state='disabled')
             except tk.TclError:
                 pass
+
+        # return the previous file string name
         return self._previous_files[semester].get()
 
 
@@ -99,6 +104,8 @@ class AllocationManagerTk(MainPageBaseTk):
         :param value:
         :return: the current value of the Tk StringVar
         """
+
+        # trim file name if necessary
         if value is not None and value != "":
             value = os.path.abspath(value)
             if len(value) > MAX_LEN_OF_DISPLAYED_FILENAME:
@@ -107,11 +114,13 @@ class AllocationManagerTk(MainPageBaseTk):
         else:
             self._schedule_filenames[semester].set(value="Create New")
 
+        # save the filename
         if semester == SemesterType.winter:
             self.status_bar_winter_file_info = value
         else:
             self.status_bar_fall_file_info = value
 
+        # return the value
         return self._schedule_filenames[semester].get()
 
     # ----------------------------------------------------------------------------------------------------------------

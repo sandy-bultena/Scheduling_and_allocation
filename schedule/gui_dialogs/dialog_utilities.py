@@ -69,7 +69,7 @@ def refresh_gui_blocks(self,):
     row_frames = []
     for index, block_info in enumerate(self.block_tk_variables):
         def remove_block(instance=self, i=index):
-            instance.row_data.pop(i)
+            instance.block_tk_variables.pop(i)
             instance.refresh()
 
         row_frame = tk.Frame(self.block_frames)

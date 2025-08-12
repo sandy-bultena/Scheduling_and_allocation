@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from functools import partial
 
-from schedule.gui_pages.student_numbers_tk import StudentNumbersTk
-from schedule.model import SemesterType, Section
+from schedule.gui_pages.student_numbers_tk import StudentNumbersTk, SectionData
+from schedule.model import Section
 from schedule.model.schedule import Schedule
 
 
@@ -66,13 +66,4 @@ class StudentData:
     def __iter__(self):
         return self.courses
 
-
-# =======================================================================================================
-# data class for holding info about sections
-# =======================================================================================================
-class SectionData:
-    def __init__(self, section_name, number_of_students, handler):
-        self.name = section_name
-        self.number_of_students = number_of_students
-        self.handler = handler
 

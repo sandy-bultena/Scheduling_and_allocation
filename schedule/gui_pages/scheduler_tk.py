@@ -217,6 +217,9 @@ class SchedulerTk(MainPageBaseTk):
         # --------------------------------------------------------------
         MAIN_PAGE_EVENT_HANDLERS["semester_change"]()
 
+    # ========================================================================
+    # show a text box
+    # ========================================================================
     def show_text(self, title, text:list[str]):
         tl = tk.Toplevel(self.mw)
         tl.protocol('WM_DELETE_WINDOW', tl.destroy)

@@ -1,21 +1,31 @@
 from __future__ import annotations
 import tkinter as tk
 from functools import partial
-from typing import TYPE_CHECKING
 
 from schedule.Tk.Scrolled import Scrolled
 from schedule.gui_generics.number_validations import validate_int, entry_int
 
-if TYPE_CHECKING:
-    from schedule.presenter.student_numbers import SectionData
+# =======================================================================================================
+# data class for holding info about sections
+# =======================================================================================================
+class SectionData:
+    def __init__(self, section_name, number_of_students, handler):
+        self.name = section_name
+        self.number_of_students = number_of_students
+        self.handler = handler
 
 
+
+# =======================================================================================================
+# Student Numbers
+# =======================================================================================================
 class StudentNumbersTk:
-    # ============================================================================================
-    # constructor
-    # ============================================================================================
     def __init__(self, frame: tk.Frame, data:dict[str, list[SectionData]] = None):
-        """creates the Panes for each semester"""
+        """
+        creates the Panes for each semester
+        :param frame:
+        :param data: information about the sections. dict[Course Name] = Section Data
+        """
 
         self.frame = frame
         for w in frame.winfo_children():
@@ -34,14 +44,17 @@ class StudentNumbersTk:
 
         self.pane = f
 
-        # ----------------------------------------------------------------------------------------
         # put data into widget
-        # ----------------------------------------------------------------------------------------
         self.refresh()
         self.pane.bind('<Leave>', func=self.save)
 
-
+    # -----------------------------------------------------------------------------------------------------------------
+    # recreate the gui based on the information in self.data
+    # -----------------------------------------------------------------------------------------------------------------
     def refresh(self):
+        """
+        Refresh the gui
+        """
         self._update_handlers.clear()
 
         if self.pane is None:
@@ -72,15 +85,33 @@ class StudentNumbersTk:
                 tk_var = tk.StringVar(value=section_data.number_of_students)
                 entry = entry_int(frame, tk_var)
                 entry.grid(column=1, row=row, sticky='nw')
-                self._update_handlers.append(partial(_update_number, tk_var, section_data.handler))
                 entry.bind("<Return>", lambda e: e.widget.tk_focusNext().focus())
                 entry.bind("<FocusIn>", lambda e: self.pane.see(e.widget))
+
+                # create a separate handler for every entry widget, called when
+                # this entire widget loses focus (as opposed to every time the data is
+                # modified)
+                self._update_handlers.append(partial(_update_number, tk_var, section_data.handler))
                 row += 1
 
+    # -----------------------------------------------------------------------------------------------------------------
+    # called when the user focus for the entry widget is lost
+    # -----------------------------------------------------------------------------------------------------------------
     def save(self, *_):
+        """Call each save or update handlers.
+        Inputs to the handler are
+        """
         for handler in self._update_handlers:
             handler()
 
+# =======================================================================================================
+# update number
+# =======================================================================================================
 def _update_number(tk_var: tk.StringVar, handler, *_):
+    """
+    :param tk_var: the variable holding the data in the entry widget
+    :param handler: the presenter defined function to update the section number
+    :param _: tk event
+    """
     if validate_int(tk_var.get(),"Invalid Int","number of students must be a valid number"):
         handler(int(tk_var.get()))

@@ -40,12 +40,22 @@ class DEColumnDescription:
 # ============================================================================
 class EditResourcesTk:
     Currently_saving = 0
+
+    # ------------------------------------------------------------------------
+    # constructor
+    # ------------------------------------------------------------------------
     def __init__(self,
                  parent: tk.Frame,
                  event_delete_handler: Callable[[list[str], ...], None] = lambda x, *_: None,
                  event_save_handler: Callable[[list[list[str]]], None] = lambda *_: None,
                  colours: Optional[TkColours] = None,
                  ):
+        """
+        :param parent: the frame where to put the data
+        :param event_delete_handler: function to call when something is deleted
+        :param event_save_handler: function to call for saving data
+        :param colours: colours
+        """
         # remove anything that was already in the frame
         for widget in parent.winfo_children():
             widget.destroy()
@@ -58,7 +68,16 @@ class EditResourcesTk:
         self.delete_handler = event_delete_handler
         self.save_handler = event_save_handler
 
+    # ------------------------------------------------------------------------
+    # initialize columns
+    # ------------------------------------------------------------------------
     def initialize_columns(self, column_descriptions: list[DEColumnDescription], disabled_columns=None):
+        """
+        define the columns
+        :param column_descriptions:
+        :param disabled_columns:
+        :return:
+        """
 
         titles: list[str] = list()
         column_widths: list[int] = list()
@@ -83,6 +102,9 @@ class EditResourcesTk:
 
         self.data_entry.bind('<Leave>', func=self.save)
 
+    # ------------------------------------------------------------------------
+    # refresh
+    # ------------------------------------------------------------------------
     def refresh(self, data: list[list[Any]]):
         """
         refresh the data
@@ -99,6 +121,9 @@ class EditResourcesTk:
         # stupid Tk won't update image unless I do this.  Oh well, at least it worked
         self.frame.focus_set()
 
+    # ------------------------------------------------------------------------
+    # get the data from the gui and return it
+    # ------------------------------------------------------------------------
     def get_all_data(self) -> list[list[str]]:
         """
         reads the data stored in the TableEntry widget
@@ -109,6 +134,9 @@ class EditResourcesTk:
             data.append(self.data_entry.read_row(row))
         return data
 
+    # ------------------------------------------------------------------------
+    # save
+    # ------------------------------------------------------------------------
     def save(self, *_):
         """save the data in the table"""
         # Just in case saving is already in progress, wait before continuing.
