@@ -77,7 +77,6 @@ class Section:
         # LEAVE IN:
         # Allows for teacher allocations to be tracked & calculated correctly in AllocationManager,
         # since Blocks are ignored there
-        self._allocation_teachers: set[Teacher] = set()
         self._streams: set[Stream] = set()
         self._allocation: dict[Teacher:float] = dict()
         self._blocks: set[Block] = set()
@@ -183,40 +182,25 @@ class Section:
                 b.remove_lab(lab)
 
     # --------------------------------------------------------
-    # teachers
+    # teachers (used for scheduler program)
     # --------------------------------------------------------
     def teachers(self) -> tuple[Teacher, ...]:
         """ Gets all teachers assigned to all blocks in this section and
         any teachers that were explicitly assigned to this section"""
         teachers = set()
-        if len(self.blocks()) == 0:
-            teachers.update(self._allocation_teachers)
-        else:
-            for b in self.blocks():
-                teachers.update(b.teachers())
+        for b in self.blocks():
+            teachers.update(b.teachers())
         return tuple(sorted(teachers))
-
-    def section_defined_teachers(self) -> tuple[Teacher, ...]:
-        """gets only teachers that were explicitly assigned to this section in allocation manager"""
-        teachers = set()
-        teachers.update(self._allocation_teachers)
-        return tuple(sorted(teachers))
-
 
     def add_teacher(self, teacher: Teacher):
         """ Assign a teacher to the section """
         for b in self.blocks():
             b.add_teacher(teacher)
-        self._allocation_teachers.add(teacher)
-        self._allocation[teacher] = self.hours
 
     def remove_teacher(self, teacher: Teacher):
         """ Removes teacher from all blocks in this section """
         for b in self.blocks():
             b.remove_teacher(teacher)
-        self._allocation_teachers.discard(teacher)
-        if teacher in self._allocation:
-            del self._allocation[teacher]
 
     def remove_all_teachers(self):
         """ Removes all teachers from all blocks in this section """
@@ -225,33 +209,87 @@ class Section:
 
     def has_teacher(self, teacher: Teacher) -> bool:
         """ Checks if section has teacher """
-        if len(self.blocks()) == 0:
-            answer = teacher in self._allocation_teachers
-        else:
-            answer = False
-            for b in self.blocks():
-                answer = answer or b.has_teacher(teacher)
+        answer = False
+        for b in self.blocks():
+            answer = answer or b.has_teacher(teacher)
         return answer
 
     # --------------------------------------------------------
-    # teacher_allocation
+    # teacher allocation (used for allocation program)
     # --------------------------------------------------------
+    def section_defined_teachers(self) -> tuple[Teacher, ...]:
+        """gets only teachers that were explicitly assigned to this section in allocation manager"""
+        teachers = set()
+        teachers.update(self._allocation.keys())
+        return tuple(sorted(teachers))
+
+    def remove_allocation(self, teacher):
+        self.remove_teacher(teacher)
+        if teacher in self._allocation.keys():
+            _ = self._allocation.pop[teacher]
+
     def set_teacher_allocation(self, teacher: Teacher, hours: float) :
         """Assign number of hours to teacher for this section. Set hours to 0 to remove
-        teacher from this section """
+        teacher from this section
+
+        As best as can be done, add teacher to blocks to match the allocation,
+        ... if it cannot be done, then set the allocation hours to the given hours
+        """
+        # remove if set to zero
         if hours == 0:
-            self.remove_teacher(teacher)
+            self.remove_allocation(teacher)
+            return
+
+        # add to all blocks
+        if hours == self.hours:
+            self.add_teacher(teacher)
+            return
+
+        # if number of hours is not equal to the total hours of the section,
+        # try to find blocks to assign the teacher to
+        self.remove_allocation(teacher)
+        possible_paths = []
+        blocks = self.blocks()
+        self._find_block_fit_for_allocation(hours, blocks, "", possible_paths)
+
+        if len(possible_paths) != 0:
+            flag = False
+            for pp in possible_paths:
+                if all(len(b.teachers()) == 0 for tf, b in zip(pp, blocks) if tf == "T"):
+                    for block in (b for tf, b in zip(pp, blocks) if tf == "T"):
+                        block.add_teacher(teacher)
+                    flag = True
+                    break
+            if not flag:
+                for block in (b for tf, b in zip(possible_paths[0], blocks) if tf == "T"):
+                    block.add_teacher(teacher)
         else:
-            hours = _validate_hours(hours)
-            if not self.has_teacher(teacher):
-                self.add_teacher(teacher)
-            self._allocation[teacher] = float(hours)
+            print(f"Setting allocation hours to {hours} for {teacher}")
+            self._allocation[teacher] = hours
+
+    def _find_block_fit_for_allocation(self, hours, blocks, path="", possible_paths=None):
+        possible_paths = [] if possible_paths is None else possible_paths
+        if hours == 0:
+            possible_paths.append(path)
+            return
+        if len(blocks) == 0:
+            return
+
+        block, *blocks = blocks
+        if hours >= block.duration:
+            new_path = path + "T"
+            self._find_block_fit_for_allocation(hours - block.duration, blocks, new_path, possible_paths)
+
+        if hours <= sum((b.duration for b in blocks)):
+            new_path = path + "F"
+            self._find_block_fit_for_allocation(hours, blocks, new_path, possible_paths)
+
 
     def get_teacher_allocation(self, teacher: Teacher) -> float:
         """ Get the number of hours assigned to this teacher for this section """
 
         # teacher not teaching this section
-        if not self.has_teacher(teacher):
+        if not self.has_teacher(teacher) and teacher not in self._allocation.keys():
             return 0
 
         # allocation defined
@@ -266,10 +304,6 @@ class Section:
             else:
                 allocation = self.hours
             return allocation
-
-    def allocated_hours(self) -> float:
-        """ Gets the total number of hours that have been allocated """
-        return sum(self.get_teacher_allocation(t) for t in self.teachers())
 
     # --------------------------------------------------------
     # streams

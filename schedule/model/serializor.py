@@ -88,9 +88,9 @@ class CSVSerializor:
                         for lab in sorted(block.labs(), key=lambda ll: ll.number):
                             w.writerow(["add_lab", lab.number])
 
-                    if len(section.blocks())==0 and len(section.section_defined_teachers()) != 0:
+                    if len(section.section_defined_teachers()) != 0:
                         w.writerow([])
-                        w.writerow([None, None, None, 'adds teacher to all defined blocks'])
+                        w.writerow([None, None, None, 'assigne allocation, but not assigned to any blocks'])
                         w.writerow([None, 'id', 'allocation'])
                         for teacher in sorted(section.section_defined_teachers(), key=lambda t: t.number):
                             w.writerow(["add_section_teacher", teacher.number, section.get_teacher_allocation(teacher)])
