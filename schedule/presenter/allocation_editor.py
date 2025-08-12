@@ -32,6 +32,14 @@ class AllocationEditor:
     # constructor
     # -----------------------------------------------------------------------------------------------------------------
     def __init__(self, set_dirty_flag, frame, schedule: Schedule, other_schedules: list[Schedule] = None):
+        """
+        Add teachers to course/sections, specifying hours.
+        NOTE: Teachers will be added to all blocks if there are blocks,
+        :param set_dirty_flag: method to set dirty flag
+        :param frame: container where to draw gui stuff
+        :param schedule: schedule
+        :param other_schedules: schedules that are not part of this semester (used to calculate total CI)
+        """
         self.set_dirty_flag = set_dirty_flag
         self.frame = frame
         self.schedule = schedule
