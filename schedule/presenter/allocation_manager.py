@@ -98,8 +98,6 @@ class AllocationManager:
         set_menu_event_handler_allocation("auto_save_unset", partial(self.auto_save_set, False))
         set_main_page_event_handler("go", self.go)
         set_main_page_event_handler("exit", self.exit_event)
-        set_main_page_event_handler("file_open_from_main_page", self.open_menu_event_from_main_page)
-        set_main_page_event_handler("file_open_previous_from_main_page", self.open_previous_file_event_from_main_page)
 
         (self._toolbar_buttons, self._button_properties, self._menu) = main_menu_allocation(VALID_SEMESTERS)
 
@@ -137,7 +135,6 @@ class AllocationManager:
             self.preferences.semester(semester.name)
             self.preferences.previous_file(value)
             self._previous_filenames[semester] = value
-            self.gui.previous_file(semester,value)
             self.preferences.save()
 
         return self._previous_filenames[semester]
@@ -242,16 +239,17 @@ class AllocationManager:
     # ============================================================================================
     # Event handlers - go
     # ============================================================================================
-    def go(self, _):
+    def go(self):
 
         for semester in VALID_SEMESTERS:
-            if self._schedule_filenames[semester] == "":
-                print("creating new schedule for ", semester)
+            if (self.gui.selected_files[semester].get() == "" or
+                self.gui.selected_files[semester].get() == str(None)):
                 self.new_menu_event(semester)
-
+                self.set_dirty_method(False)
+            else:
+                self._open_file(self.gui.selected_files[semester].get(), semester)
         self.standard_page = self.gui.create_standard_page(self._notebook_tabs)
-
-        pass
+        self.set_dirty_indicator()
 
     # ==================================================================
     # notebook tab has changed

@@ -6,7 +6,6 @@
 * make printing of schedules optional so you don't have to install reportlab
 * make changing font size as an option... but will have to add scrollbars to the dialog boxes so that they can be moved if required
 * Autosave suddenly not working for allocation - wasn't but now is... must check on windows
-* Allocation Welcome page is ugly as sin
 
 
 ============ Done ================
@@ -47,3 +46,4 @@
 * In allocation, remaining hours should be formatted to 1 decimal place
 * When saving a new file, it was crashing
 * Bug in removing allocation errors
+* Allocation Welcome page is ugly as sin
