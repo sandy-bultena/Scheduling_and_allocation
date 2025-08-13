@@ -2,10 +2,10 @@
 ============ Bugs ================
 * Maybe Mac menu stuff (a nice to have)
 * Windows, binding to ctrl-s isn't working properly
-* In allocation editor, since the frame is black, expanding to full size shows a block square... maybe see how much is required for the frame, and limit the size of the grid??
 * make printing of schedules optional so you don't have to install reportlab
 * make changing font size as an option... but will have to add scrollbars to the dialog boxes so that they can be moved if required
 * Autosave suddenly not working for allocation - wasn't but now is... must check on windows
+* Attach an icon to the program
 
 
 ============ Done ================
@@ -47,3 +47,4 @@
 * When saving a new file, it was crashing
 * Bug in removing allocation errors
 * Allocation Welcome page is ugly as sin
+* In allocation editor, since the frame is black, expanding to full size shows a block square... maybe see how much is required for the frame, and limit the size of the grid??

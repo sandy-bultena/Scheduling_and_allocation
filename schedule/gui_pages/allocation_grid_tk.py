@@ -194,6 +194,7 @@ class AllocationGridTk:
         self.header_pane = Pane(self.outer_frame, background=FRAME_BACKGROUND)
         self.header_frame = self.header_pane.frame
         self.panes.append(self.header_pane)
+        self.header_pane.canvas.config(background="white")
 
         summary_header_pane = Pane(self.outer_frame, background=FRAME_BACKGROUND)
         self.summary_header_frame = summary_header_pane.frame
@@ -206,6 +207,7 @@ class AllocationGridTk:
         data_pane = Pane(self.outer_frame, background=FRAME_BACKGROUND)
         self.data_pane = data_pane
         self.data_frame = data_pane.frame
+        self.data_pane.canvas.config(background="white")
         self.panes.append(data_pane)
 
         summary_pane = Pane(self.outer_frame, background=FRAME_BACKGROUND)
@@ -219,6 +221,7 @@ class AllocationGridTk:
         self.bottom_pane = Pane(self.outer_frame, background=FRAME_BACKGROUND)
         self.bottom_frame = self.bottom_pane.frame
         self.panes.append(self.bottom_pane)
+        self.bottom_pane.canvas.config(background="white")
 
 
         # make the scrollbars
