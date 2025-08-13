@@ -34,7 +34,7 @@ teacher,Voldemort_Voldemort,Voldemort,Voldemort,CompSci,1.0
 ,,DESCRIPTION,OF,FIELDS
 ,number,name,semester,needs allocation,hours_per_week,COURSE
 ,id,number,name,students,SECTION
-,id,day,time_start,duration,movable,BLOCK
+,id,day,start,duration,movable,BLOCK
 
 course,350-823,Human Relations,1,0,3.0
 
@@ -51,17 +51,10 @@ course,420-1B4,Computerized Systems,1,1,4.0
 section,,1,Section 1,17
 add_block,,Tuesday,15.0,2.0,0
 add_block_teacher,Bultena_Sandy
-add_block_teacher,Buschinelli_Mauricio
 add_lab,P325
 add_block,,Thursday,15.0,2.0,0
-add_block_teacher,Bultena_Sandy
 add_block_teacher,Buschinelli_Mauricio
 add_lab,P325
-
-,,,adds teacher to all defined blocks
-,id,allocation
-add_section_teacher,Bultena_Sandy,2.0
-add_section_teacher,Buschinelli_Mauricio,2.0
 
 course,420-1N6,Tech Support,1,1,6.0
 
@@ -103,10 +96,6 @@ add_block,,Thursday,8.5,3.0,1
 add_block_teacher,Fagen_Larry
 add_lab,P325
 
-,,,adds teacher to all defined blocks
-,id,allocation
-add_section_teacher,Fagen_Larry,6.0
-
 section,,2,Section 2,30
 add_stream,1B
 add_block,,Monday,11.5,1.5,1
@@ -119,10 +108,6 @@ add_lab,P327
 add_block,,Friday,8.5,3.0,1
 add_block_teacher,Fagen_Larry
 add_lab,P325
-
-,,,adds teacher to all defined blocks
-,id,allocation
-add_section_teacher,Fagen_Larry,6.0
 
 course,420-1T5,Productivity Tools,1,1,6.0
 
@@ -141,10 +126,6 @@ add_block,,Thursday,13.0,1.5,1
 add_block_teacher,Buschinelli_Mauricio
 add_lab,P322
 
-,,,adds teacher to all defined blocks
-,id,allocation
-add_section_teacher,Buschinelli_Mauricio,6.0
-
 section,,2,Section 2,30
 add_stream,1B
 add_block,,Monday,10.0,1.5,1
@@ -156,10 +137,6 @@ add_lab,P325
 add_block,,Wednesday,10.0,1.5,1
 add_block_teacher,Buschinelli_Mauricio
 add_lab,P325
-
-,,,adds teacher to all defined blocks
-,id,allocation
-add_section_teacher,Buschinelli_Mauricio,6.0
 
 course,420-3D6,Database,1,1,6.0
 
@@ -211,10 +188,6 @@ add_block,,Thursday,20.5,2.0,1
 add_block_teacher,Mourtada_Aref
 add_lab,P326
 
-,,,adds teacher to all defined blocks
-,id,allocation
-add_section_teacher,Mourtada_Aref,5.0
-
 section,,2,Section 2,26
 add_stream,2B
 add_block,,Monday,10.0,1.5,1
@@ -226,10 +199,6 @@ add_lab,P326
 add_block,,Thursday,14.5,2.0,1
 add_block_teacher,Mourtada_Aref
 add_lab,P326
-
-,,,adds teacher to all defined blocks
-,id,allocation
-add_section_teacher,Mourtada_Aref,5.0
 
 course,420-3W5,Web Programming I,1,1,5.0
 
@@ -245,10 +214,6 @@ add_block,,Friday,11.5,1.5,1
 add_block_teacher,Katalifos_Helen
 add_lab,P326
 
-,,,adds teacher to all defined blocks
-,id,allocation
-add_section_teacher,Katalifos_Helen,5.0
-
 section,,2,Section 2,28
 add_stream,2B
 add_block,,Tuesday,12.5,2.0,1
@@ -261,10 +226,6 @@ add_block,,Friday,13.0,1.5,1
 add_block_teacher,Katalifos_Helen
 add_lab,P326
 
-,,,adds teacher to all defined blocks
-,id,allocation
-add_section_teacher,Katalifos_Helen,5.0
-
 course,420-506,Web Programming,1,1,6.0
 
 section,,1,Section 1,21
@@ -276,10 +237,6 @@ add_block,,Thursday,8.5,3.0,1
 add_block_teacher,Singh_Vik
 add_lab,P327
 
-,,,adds teacher to all defined blocks
-,id,allocation
-add_section_teacher,Singh_Vik,6.0
-
 section,,2,Section2,17
 add_stream,3B
 add_block,,Tuesday,10.0,3.0,1
@@ -288,10 +245,6 @@ add_lab,P322
 add_block,,Friday,10.0,3.0,1
 add_block_teacher,Singh_Vik
 add_lab,P322
-
-,,,adds teacher to all defined blocks
-,id,allocation
-add_section_teacher,Singh_Vik,6.0
 
 course,420-516,Integration Project,1,1,6.0
 
@@ -304,10 +257,6 @@ add_block,,Thursday,13.0,3.0,1
 add_block_teacher,Scotnotis_Claudiu
 add_lab,P327
 
-,,,adds teacher to all defined blocks
-,id,allocation
-add_section_teacher,Scotnotis_Claudiu,6.0
-
 section,,2,Section 2,19
 add_stream,3B
 add_block,,Tuesday,10.0,3.0,1
@@ -316,10 +265,6 @@ add_lab,P327
 add_block,,Thursday,13.0,3.0,1
 add_block_teacher,Scotnotis_Claudiu
 add_lab,P327
-
-,,,adds teacher to all defined blocks
-,id,allocation
-add_section_teacher,Scotnotis_Claudiu,6.0
 
 course,420-523,Telecommunications,1,1,3.0
 
@@ -392,10 +337,6 @@ add_lab,P325
 add_block,,Friday,13.0,1.5,1
 add_block_teacher,Rinfret_Denis
 add_lab,P325
-
-,,,adds teacher to all defined blocks
-,id,allocation
-add_section_teacher,Rinfret_Denis,3.0
 
 course,420-DBF,Intro to Programming,4,1,3.0
 
