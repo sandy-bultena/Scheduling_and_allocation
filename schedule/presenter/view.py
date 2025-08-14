@@ -382,11 +382,12 @@ class View:
 
         # teachers
         teachers_name = ""
-        for t in block.teachers():
-            if len(str(t)) > 12:
-                teachers_name = teachers_name + f"{t.firstname[0:1]} {t.lastname}\n"
-            else:
-                teachers_name = teachers_name + f"{str(t)}\n"
+        if len(block.teachers()) <= 2:
+            for t in block.teachers():
+                if len(str(t)) > 12:
+                    teachers_name = teachers_name + f"{t.firstname[0:1]} {t.lastname}\n"
+                else:
+                    teachers_name = teachers_name + f"{str(t)}\n"
         teachers_name = teachers_name.rstrip()
         teachers_name = teachers_name if scale > .75 else teachers_name[0:11] + "..."
         teachers_name = teachers_name if scale > .50 else teachers_name[0:7] + "..."

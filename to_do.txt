@@ -8,6 +8,8 @@
 * Update README and installation instructions
 * Clean up tests
 * Either remove or update "Synopsis" in code comments
+* A teacher overlap (with a common meeting time) colours everything red, which makes it hard to find who it conflicts with
+* Lunch problem, again, conflict shows on everyone if it results from a common meeting time
 
 ============ Done ================
 * Switching between view tabs and back disconnects view from view controller (and the buttons I thing in the view choices)
@@ -52,3 +54,4 @@
 * Attach an icon to the program Scheduler
 * bug in allocation, didn't clear previous allocation before re-allocating
 * Attach an icon to the program Allocation
+* If number of teachers is greater than 2, don't include teachers (because it might be for a common meeting time)
