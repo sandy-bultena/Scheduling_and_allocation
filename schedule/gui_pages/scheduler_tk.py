@@ -76,7 +76,7 @@ class SchedulerTk(MainPageBaseTk):
         self._previous_file: tk.StringVar = tk.StringVar(value="None")  # bound to previous_file_button
 
         # create icon for program
-        ico = Image.open(f"{bin_dir}/small_clock.png")
+        ico = Image.open(f"{bin_dir}/schedule_ico.png")
         photo = ImageTk.PhotoImage(ico)
         self.mw.wm_iconphoto(True, photo)
 
