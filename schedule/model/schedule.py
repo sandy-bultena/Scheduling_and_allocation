@@ -12,8 +12,9 @@ from .lab import Lab
 from .stream import Stream
 from .section import Section
 from .enums import ConflictType
-from .conflicts import (set_block_conflicts,  set_lunch_break_conflicts,
-                        set_number_of_days_conflict, set_availability_hours_conflict)
+from .conflicts import (set_block_conflicts, set_lunch_break_conflicts,
+                        set_number_of_days_conflict, set_availability_hours_conflict, block_conflicts_time,
+                        has_lunch_break_conflict, has_number_of_days_conflict, has_availability_hours_conflict)
 from .enums import ResourceType, SemesterType
 from .serializor import CSVSerializor as Serializor
 
@@ -323,63 +324,6 @@ class Schedule:
         return tuple()
 
     # --------------------------------------------------------
-    # teacher_stat
-    # --------------------------------------------------------
-    def teacher_stat(self, teacher: Teacher) -> str:
-        """
-        Returns text that gives teacher statistics
-        Parameter teacher -> The teacher whose statistics will be returned
-        """
-        courses = self.get_courses_for_teacher(teacher)
-        blocks = self.get_blocks_for_teacher(teacher)
-        sections = self.get_sections_for_teacher(teacher)
-
-        week = dict(
-            mon=False,
-            tue=False,
-            wed=False,
-            thu=False,
-            fri=False,
-            sat=False,
-            sun=False,
-        )
-
-        week_str = dict(
-            mon="Monday",
-            tue="Tuesday",
-            wed="Wednesday",
-            thu="Thursday",
-            fri="Friday",
-            sat="Saturday",
-            sun="Sunday"
-        )
-
-        hours_of_work = 0
-
-        for b in blocks:
-            hours_of_work += b.time_slot.duration
-
-            week[b.time_slot.day] = True
-
-        message = f"""{teacher.firstname} {teacher.lastname}'s Stats.
-        
-        Days of the week working:
-        {" ".join((week_str[k] if v else "") for k, v in week.items())}
-        
-        Hours of Work: {hours_of_work}
-        Courses being taught:
-        """
-
-        for c in courses:
-            num_sections = 0
-            for s in sections:
-                if s.course is c:
-                    num_sections += 1
-            message += f"-> {c.title} ({num_sections} Section(s))\n"
-
-        return message
-
-    # --------------------------------------------------------
     # teacher_details
     # --------------------------------------------------------
 
@@ -454,10 +398,42 @@ class Schedule:
     # get conflict for a specific resource
     # --------------------------------------------------------
     def resource_conflict(self, resource: Teacher|Stream|Lab) -> ConflictType:
-        conflict = ConflictType.NONE
+        """Calculate the overall conflict for a given resource"""
+        block_conflict: ConflictType = ConflictType.NONE
+
         for block in self.get_blocks_for_obj(resource):
-            conflict = block.conflict | conflict
-        return conflict
+            block_conflict = block.conflict | block_conflict
+
+        resource_conflict: ConflictType = ConflictType.NONE
+        if (block_conflict.is_time_teacher() | block_conflict.is_time_lab()
+                or block_conflict.is_time_stream()) | block_conflict.is_time():
+            resource_conflict = ConflictType.TIME
+
+        match resource.resource_type:
+            case ResourceType.teacher:
+                if block_conflicts_time(self.get_blocks_for_teacher(resource)):
+                    resource_conflict = resource_conflict | ConflictType.TIME_TEACHER
+
+                if has_lunch_break_conflict(self.get_blocks_for_teacher(resource)):
+                    resource_conflict = resource_conflict | ConflictType.LUNCH
+
+                if has_availability_hours_conflict(self.get_blocks_for_teacher(resource)):
+                    resource_conflict = resource_conflict | ConflictType.AVAILABILITY
+
+                if resource.release == 0:
+                    if has_number_of_days_conflict(self.get_blocks_for_teacher(resource)):
+                        resource_conflict = resource_conflict | ConflictType.MINIMUM_DAYS
+
+
+            case ResourceType.lab:
+                if block_conflicts_time(self.get_blocks_in_lab(resource)):
+                    resource_conflict = resource_conflict | ConflictType.TIME_LAB
+
+            case ResourceType.stream:
+                if block_conflicts_time(self.get_blocks_for_stream(resource)):
+                    resource_conflict = resource_conflict | ConflictType.TIME_STREAM
+
+        return resource_conflict
 
     # --------------------------------------------------------
     # validate that the schedule is good
