@@ -390,8 +390,8 @@ class View:
         teachers_name = teachers_name.rstrip()
         teachers_name = teachers_name if scale > .75 else teachers_name[0:11] + "..."
         teachers_name = teachers_name if scale > .50 else teachers_name[0:7] + "..."
-        teachers_name = teachers_name if resource_type == ResourceType.teacher and scale > .75 else ""
-        if resource_type == ResourceType.teacher and (scale <= .75 or block.duration <= 1):
+        if resource_type == ResourceType.teacher:
+            if scale < .75 or block.duration <= 1:
                 teachers_name = ""
 
         # define what to display
