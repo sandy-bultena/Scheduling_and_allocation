@@ -5,9 +5,9 @@
 * make printing of schedules optional so you don't have to install reportlab
 * make changing font size as an option... but will have to add scrollbars to the dialog boxes so that they can be moved if required
 * Autosave suddenly not working for allocation - wasn't but now is... must check on windows
-* Attach an icon to the program Allocation
 * Update README and installation instructions
-
+* Clean up tests
+* Either remove or update "Synopsis" in code comments
 
 ============ Done ================
 * Switching between view tabs and back disconnects view from view controller (and the buttons I thing in the view choices)
@@ -51,3 +51,4 @@
 * In allocation editor, since the frame is black, expanding to full size shows a block square... maybe see how much is required for the frame, and limit the size of the grid??
 * Attach an icon to the program Scheduler
 * bug in allocation, didn't clear previous allocation before re-allocating
+* Attach an icon to the program Allocation

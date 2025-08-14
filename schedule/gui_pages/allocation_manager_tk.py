@@ -1,6 +1,7 @@
 
 import os.path
 from functools import partial
+from PIL import Image, ImageTk
 
 from typing import Callable, Optional, Literal, get_args
 
@@ -8,7 +9,6 @@ from ..Utilities.Preferences import Preferences
 
 from .main_pages_tk import MainPageBaseTk
 import tkinter as tk
-from tkinter import ttk
 from schedule.model.enums import SemesterType
 
 BUTTON_WIDTH = 25
@@ -58,6 +58,11 @@ class AllocationManagerTk(MainPageBaseTk):
         for semester in SemesterType:
             self.preferences.semester(semester.name)
             self.selected_files[semester] =  tk.StringVar(value=str(self.preferences.previous_file()))
+
+        # create icon for program
+        ico = Image.open(f"{bin_dir}/allocation_ico.png")
+        photo = ImageTk.PhotoImage(ico)
+        self.mw.wm_iconphoto(True, photo)
 
     # ----------------------------------------------------------------------------------------------------------------
     # setting the schedule filename
