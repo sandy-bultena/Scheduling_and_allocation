@@ -101,6 +101,8 @@ class PDFCanvas:
         self.cn.setLineWidth(0.5)
         self.cn.translate(30,100)
 
+    def config(self,*args, **kwargs):
+        pass
 
     def create_line(self, x1:float, y1:float, x2:float, y2:float, fill:str="grey", dash="", tags: str|tuple=""):
         """draws a line"""
@@ -125,7 +127,7 @@ class PDFCanvas:
         :param fill:
         :param tags: not used
         """
-        r,g,b = colour.rgb(fill)
+        r,g,b = colour.rgb("black")
         self.cn.setFillColorRGB(r,g,b)
         lines = text.split("\n")
         baseline = 10

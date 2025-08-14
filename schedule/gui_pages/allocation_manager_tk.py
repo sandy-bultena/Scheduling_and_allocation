@@ -106,7 +106,8 @@ class AllocationManagerTk(MainPageBaseTk):
         Creates the very first page that is shown to the user
         :param valid_semesters:
         """
-        option_frame = super().create_welcome_page_base()
+        option_frame = super().create_welcome_page_base(
+            os.path.join(self.bin_dir, 'allocation_logo.png'))
 
         # divide frame into semesters
         option_frames: dict[SemesterType, tk.LabelFrame] = {}

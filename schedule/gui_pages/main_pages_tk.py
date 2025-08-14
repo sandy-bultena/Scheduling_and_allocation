@@ -31,9 +31,9 @@ if TYPE_CHECKING:
 
 Operating_system = platform.system().lower()
 
-MAIN_FRAME_HEIGHT = 400
+MAIN_FRAME_HEIGHT = 600
 MAIN_FRAME_WIDTH = 800
-WELCOME_WIDTH = 600
+WELCOME_WIDTH = 800
 WELCOME_HEIGHT = 600
 
 
@@ -160,7 +160,7 @@ class MainPageBaseTk:
     # ===================================================================================
     # welcome page
     # ===================================================================================
-    def create_welcome_page_base(self, logo: tk.PhotoImage | None = None) -> tk.Frame:
+    def create_welcome_page_base(self, logo: str) -> tk.Frame:
         """
         Creates the very first page that is shown to the user
         :param logo: image to use as part of the front page header
@@ -169,8 +169,6 @@ class MainPageBaseTk:
         mw = self.mw
         self._front_page_frame = tk.Frame(mw, borderwidth=10, relief='flat', background=self.colours.DataBackground)
         self._front_page_frame.pack(side='top', expand=1, fill='both')
-        if logo is None:
-            logo = FindImages.get_logo(MainPageBaseTk.bin_dir)
 
         # create an image object of the _logo
         # ... for some weird reason, if logo is not part of 'self', then it doesn't work
@@ -307,7 +305,8 @@ class MainPageBaseTk:
         # create main window and frames
         mw = tk.Tk()
         mw.title(title)
-        mw.geometry(f"{WELCOME_HEIGHT}x{WELCOME_WIDTH}")
+        mw.geometry(f"{WELCOME_WIDTH}x{WELCOME_HEIGHT}")
+        #mw.geometry("100x100")
 
         # when clicking the 'x' in the corner of the window, call _exit_schedule
         mw.protocol("WM_DELETE_WINDOW", self._exit_schedule)

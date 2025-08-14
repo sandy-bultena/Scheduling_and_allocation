@@ -13,6 +13,7 @@
 # ============================================================================
 """
 import os.path
+from PIL import Image, ImageTk
 
 from typing import Callable, Optional, Literal, get_args
 
@@ -74,6 +75,11 @@ class SchedulerTk(MainPageBaseTk):
         self._current_semester: tk.StringVar = tk.StringVar()  # bound to semester_frame radio buttons
         self._previous_file: tk.StringVar = tk.StringVar(value="None")  # bound to previous_file_button
 
+        # create icon for program
+        ico = Image.open(f"{bin_dir}/small_clock.png")
+        photo = ImageTk.PhotoImage(ico)
+        self.mw.wm_iconphoto(True, photo)
+
     @property
     def current_semester(self):
         return self._current_semester.get()
@@ -127,7 +133,7 @@ class SchedulerTk(MainPageBaseTk):
     # ========================================================================
     def create_welcome_page(self, semester):
         """Creates the very first page that is shown to the user."""
-        option_frame = super().create_welcome_page_base()
+        option_frame = super().create_welcome_page_base(os.path.join(self.bin_dir, 'schedule_logo.png'))
 
         # --------------------------------------------------------------
         # which semester?

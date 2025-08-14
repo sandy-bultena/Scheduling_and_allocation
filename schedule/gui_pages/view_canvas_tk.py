@@ -16,6 +16,7 @@ import schedule.Utilities.Colour as Colour
 from schedule.gui_generics.block_colours import RESOURCE_COLOURS
 from schedule.model import ResourceType
 from schedule.gui_generics.drawing_scale import DrawingScale
+import schedule.Tk.InitGuiFontsAndColours as fac
 
 DAYS = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
 Times: dict[int, str] = {
@@ -65,17 +66,22 @@ class ViewCanvasTk:
     # =================================================================
     # __init__
     # =================================================================
-    def __init__(self, canvas: tk.Canvas | GenericCanvas, scale_factor: float = 1, fill_colour="black"):
+    def __init__(self, canvas: tk.Canvas | GenericCanvas, scale_factor: float = 1,
+                 fg_colour=None, bg_colour=None):
         """Draws the Schedule timetable on the specified canvas.
             :param canvas: what to draw on
             :param scale_factor: scaling factors
-            :param fill_colour: the colour used to draw the objects
+            :param bg_colour: the colour used to draw the objects
         """
+        self.colours, self.fonts = fac.get_fonts_and_colours()
+
         self.canvas = canvas
         self.scale = DrawingScale(scale_factor)
         self.scale_factor = DrawingScale(scale_factor)
         scale = self.scale
-        self.fill_colour = fill_colour
+        self.bg_colour = self.colours.DataBackground if bg_colour is None else bg_colour
+        self.fg_colour = self.colours.WindowForeground if fg_colour is None else fg_colour
+        self.canvas.config(background=self.bg_colour)
 
         # --------------------------------------------------------------------
         # draw hourly lines
@@ -98,7 +104,7 @@ class ViewCanvasTk:
             canvas.create_text(
                 (x_min + scale.x_origin) / 2,
                 y_hour, text=Times[time],
-                fill=self.fill_colour,
+                fill=self.fg_colour,
                 tags="baseline",
             )
 
@@ -116,7 +122,7 @@ class ViewCanvasTk:
                     canvas.create_text(
                         (x_min + scale.x_origin) / 2,
                         y_half, text=":30",
-                        fill=self.fill_colour,
+                        fill=self.fg_colour,
                         tags="baseline",
                     )
 
@@ -127,7 +133,7 @@ class ViewCanvasTk:
 
         for i in range(len(DAYS) + 1):
             (x_day, x_day_end) = self._days_x_coords(i + 1)
-            canvas.create_line(x_day, scale.y_height_scale, x_day, y_max, fill=self.fill_colour,tags="baseline",)
+            canvas.create_line(x_day, scale.y_height_scale, x_day, y_max, fill=self.fg_colour,tags="baseline",)
 
             # day text
             if i < len(DAYS):
@@ -136,7 +142,7 @@ class ViewCanvasTk:
                         (x_day + x_day_end) / 2,
                         (y_min + scale.y_origin) / 2,
                         text=DAYS[i][0:1],
-                        fill=self.fill_colour,
+                        fill=self.fg_colour,
                         tags=("baseline",),
                     )
                 else:
@@ -144,7 +150,7 @@ class ViewCanvasTk:
                         (x_day + x_day_end) / 2,
                         (y_min + scale.y_origin) / 2,
                         text=DAYS[i],
-                        fill=self.fill_colour,
+                        fill=self.fg_colour,
                         tags=("baseline",),
                     )
 

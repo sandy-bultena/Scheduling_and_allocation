@@ -6,6 +6,7 @@
 * make changing font size as an option... but will have to add scrollbars to the dialog boxes so that they can be moved if required
 * Autosave suddenly not working for allocation - wasn't but now is... must check on windows
 * Attach an icon to the program
+* Update README and installation instructions
 
 
 ============ Done ================

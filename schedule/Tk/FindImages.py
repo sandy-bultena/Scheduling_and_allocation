@@ -11,8 +11,8 @@ def get_image_dir():
 
 
 def get_logo(bin_dir):
-    return os.path.join(bin_dir, 'ScheduleLogo.gif')
+    return os.path.join(bin_dir, 'schedule_logo.png')
 
 
-def get_allocation_logo():
-    return os.path.join(dirty_flags.bin_dir, 'AllocationLogo.gif')
+def get_allocation_logo(bin_dir):
+    return os.path.join(bin_dir, 'AllocationLogo.gif')
