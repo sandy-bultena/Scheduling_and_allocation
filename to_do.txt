@@ -50,3 +50,4 @@
 * Allocation Welcome page is ugly as sin
 * In allocation editor, since the frame is black, expanding to full size shows a block square... maybe see how much is required for the frame, and limit the size of the grid??
 * Attach an icon to the program Scheduler
+* bug in allocation, didn't clear previous allocation before re-allocating

@@ -235,9 +235,11 @@ class Section:
         As best as can be done, add teacher to blocks to match the allocation,
         ... if it cannot be done, then set the allocation hours to the given hours
         """
-        # remove if set to zero
+        # clear before resetting
+        self.remove_allocation(teacher)
+
+        # don't do anything more if set to zero
         if hours == 0:
-            self.remove_allocation(teacher)
             return
 
         # add to all blocks
@@ -264,7 +266,6 @@ class Section:
                 for block in (b for tf, b in zip(possible_paths[0], blocks) if tf == "T"):
                     block.add_teacher(teacher)
         else:
-            print(f"Setting allocation hours to {hours} for {teacher}")
             self._allocation[teacher] = hours
 
     def _find_block_fit_for_allocation(self, hours, blocks, path="", possible_paths=None):

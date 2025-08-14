@@ -285,7 +285,6 @@ class AllocationManager:
     # ==================================================================
     def update_allocation(self, frame, semester):
         if not self._allocation_manager_already_open:
-            print("opening Allocation Editor")
             other_schedules = [self.schedules[s] for s in VALID_SEMESTERS if s != semester]
             AllocationEditor(
                 self.set_dirty_method,
