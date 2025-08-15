@@ -6,7 +6,6 @@
 * make changing font size as an option... but will have to add scrollbars to the dialog boxes so that they can be moved if required
 * Autosave suddenly not working for allocation - wasn't but now is... must check on windows
 * Update README and installation instructions
-* Clean up tests
 * Either remove or update "Synopsis" in code comments
 * Add 'enter' binding for moving resource from/to
 * remove underscore in descriptions of conflicts
@@ -58,3 +57,4 @@
 * If number of teachers is greater than 2, don't include teachers (because it might be for a common meeting time)
 * A teacher overlap (with a common meeting time) colours everything red, which makes it hard to find who it conflicts with
 * Lunch problem, again, conflict shows on everyone if it results from a common meeting time
+* Clean up tests
