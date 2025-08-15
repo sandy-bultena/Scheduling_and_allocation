@@ -181,9 +181,12 @@ def test_number_of_sections():
 def test_sections_for_teacher():
     """Verifies that get_sections_for_teacher() returns a list of all sections featuring this
     teacher in this course. """
+    # Note, sections have to have blocks, or this won't work
     course = Course("abc")
     section_1 = course.add_section("420")
     section_2 = course.add_section("421")
+    section_1.add_block()
+    section_2.add_block()
     teach = Teacher()
     section_1.add_teacher(teach)
     teach_sections = course.get_sections_for_teacher(teach)
@@ -205,8 +208,10 @@ def test_sections_for_teacher_empty():
 def test_has_teacher():
     """Verifies that has_teacher() returns True if the specified Teacher has been assigned to
     this course. """
+    # NOTE: section has to have blocks for this to work
     course = Course("abc", "Course 1")
     section = course.add_section("420", "Section 1")
+    section.add_block()
     teacher = Teacher()
     section.add_teacher(teacher)
     assert course.has_teacher(teacher)
@@ -304,9 +309,12 @@ def test_has_stream_false_doesnt_fail_with_no_sections():
 def test_assign_teacher_good():
     """Verifies that assign_teacher assigns the passed Teacher to all Sections of the
     Course. """
+    # Note: sections requires blocks for this to work
     course = Course("abc", "Course 1")
     section1 = course.add_section("420",  "Section 1")
     section2 = course.add_section("421",  "Section 1")
+    section1.add_block()
+    section2.add_block()
     teacher = Teacher()
     course.add_teacher(teacher)
     teachers = section1.teachers
@@ -349,7 +357,8 @@ def test_remove_teacher_good():
     teacher_1 = Teacher()
     teacher_2 = Teacher()
     # TODO: This is a bad design because I have to create a section before the teacher is assigned to it.
-    course.add_section()
+    section = course.add_section()
+    section.add_block()
     course.add_teacher(teacher_1)
     course.add_teacher(teacher_2)
     course.remove_teacher(teacher_1)
@@ -361,6 +370,8 @@ def test_remove_all_teachers():
     course = Course("abc", "Course 1")
     section1 = course.add_section("420",  "Section 1")
     section2 = course.add_section("421",  "Section 1")
+    section1.add_block()
+    section2.add_block()
     teacher_1 = Teacher()
     teacher_2 = Teacher()
     teacher_3 = Teacher()

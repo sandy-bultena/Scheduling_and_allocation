@@ -221,6 +221,7 @@ def test_remove_lab_not_there():
 def test_assign_teacher_valid():
     """Checks that a valid teacher can be added"""
     s = Section(course)
+    s.add_block()
     t = Teacher()
     s.add_teacher(t)
     assert t in s.teachers()
@@ -239,6 +240,7 @@ def test_get_teacher_allocation_valid():
 def test_assign_teacher_valid_allocation_hours_default_to_section_hours():
     """Checks that a valid teacher can be added, and that the teacher allocation hours is set_default_fonts_and_colours to section hours"""
     s = Section(course)
+    s.add_block()
     course.hours = 15
     t = Teacher()
     s.add_teacher(t)
@@ -246,106 +248,22 @@ def test_assign_teacher_valid_allocation_hours_default_to_section_hours():
     t2 = Teacher()
     s.add_teacher(t2)
     assert s.get_teacher_allocation(t2) == s.hours
-
-
-def test_section_allocation_hours_total_of_teacher_hours():
-    """Checks that a valid teacher can be added, and that the teacher allocation hours is set_default_fonts_and_colours to section hours"""
-    s = Section(course)
-    course.hours = 15
-    t = Teacher()
-    s.add_teacher(t)
-    assert s.get_teacher_allocation(t) == s.hours
-    t2 = Teacher()
-    s.add_teacher(t2)
-    assert s.get_teacher_allocation(t2) == s.hours
-    assert s.allocated_hours() == s.get_teacher_allocation(t) + s.get_teacher_allocation(t2)
-
-
-def test_set_teacher_allocation_valid():
-    """Checks that valid hours can be set_default_fonts_and_colours to valid teacher"""
-    s = Section(course)
-    t = Teacher()
-    course.hours = 15
-    hours = 12
-    s.add_teacher(t)
-    s.set_teacher_allocation(t, hours)
-    assert s.get_teacher_allocation(t) == hours
-
-
-def test_section_allocation_hours_total_of_teacher_hours_after_setting_teacher_allocation():
-    """Checks that a valid teacher can be added, and that the teacher allocation hours is set_default_fonts_and_colours to section hours"""
-    s = Section(course)
-    course.hours = 15
-    t = Teacher()
-    s.add_teacher(t)
-    t2 = Teacher()
-    s.add_teacher(t2)
-    s.set_teacher_allocation(t, 4)
-    s.set_teacher_allocation(t2, 5)
-    assert s.allocated_hours() == s.get_teacher_allocation(t) + s.get_teacher_allocation(t2)
-
-
-def test_set_teacher_allocation_new_teacher():
-    """Checks that valid hours can be set_default_fonts_and_colours to new teacher"""
-    s = Section(course)
-    t = Teacher()
-    hours = 12
-    s.set_teacher_allocation(t, hours)
-    assert s.has_teacher(t)
-    assert s.get_teacher_allocation(t) == hours
-
-
-def test_set_teacher_allocation_zero_hours():
-    """Checks that assigning 0 hours to teacher will remove that teacher"""
-    s = Section(course)
-    hours = 5
-    t = Teacher()
-    t2 = Teacher()
-    s.add_teacher(t)
-    s.add_teacher(t2)
-    s.set_teacher_allocation(t, 0)
-    s.set_teacher_allocation(t2, hours)
-    assert not s.has_teacher(t)
-    assert s.has_teacher(t2)
-    assert s.allocated_hours() == s.get_teacher_allocation(t2)
-
-
-def test_get_teacher_allocation_not_teaching():
-    """Checks that get_teacher_allocation returns the correct allocation hours"""
-    s = Section(course)
-    t = Teacher()
-    assert s.get_teacher_allocation(t) == 0
-
 
 def test_has_teacher_valid():
-    """Checks has_teacher_with_id returns True if teacher is included"""
+    """Checks has_teacher returns True if teacher is included"""
     s = Section(course)
+    s.add_block()
     t = Teacher()
     s.add_teacher(t)
     assert s.has_teacher(t)
 
 
 def test_has_teacher_not_found():
-    """Checks has_teacher_with_id returns False if teacher is not included"""
+    """Checks has_teacher returns False if teacher is not included"""
     s = Section(course)
+    s.add_block()
     t = Teacher()
     assert not s.has_teacher(t)
-
-
-def test_remove_teacher_valid():
-    """Checks that when passed a valid teacher, it will be removed & allocation will be deleted"""
-    s = Section(course)
-    hours = 5
-    t = Teacher()
-    t2 = Teacher()
-    s.add_teacher(t)
-    s.add_teacher(t2)
-    s.remove_teacher(t)
-    s.set_teacher_allocation(t2, hours)
-    assert not s.has_teacher(t)
-    assert s.has_teacher(t2)
-    assert s.allocated_hours() == s.get_teacher_allocation(t2)
-
 
 def test_remove_all_deletes_all_teachers():
     """Checks that remove_all_teachers will correctly delete them all"""
@@ -355,7 +273,6 @@ def test_remove_all_deletes_all_teachers():
     s.add_teacher(Teacher())
     s.remove_all_teachers()
     assert len( s.teachers()) == 0
-    assert s.allocated_hours() == 0
 
 
 def test_teachers_in_blocks_in_teachers_property():
@@ -380,10 +297,217 @@ def test_teachers_in_blocks_in_teachers_property():
     assert len(b1.teachers()) == 3
     assert len(b2.teachers()) == 3
 
+def test_remove_teacher_valid():
+    """Checks that when passed a valid teacher, it will be removed"""
+    s = Section(course)
+    s.add_block()
+    t = Teacher()
+    t2 = Teacher()
+    s.add_teacher(t)
+    s.add_teacher(t2)
+    s.remove_teacher(t)
+    assert not s.has_teacher(t)
+    assert s.has_teacher(t2)
 
-# endregion
 
-# region Stream
+def test_remove_all_deletes_all_teachers():
+    """Checks that remove_all_teachers will correctly delete them all"""
+    s = Section(course)
+    s.add_block()
+    s.add_teacher(Teacher())
+    s.add_teacher(Teacher())
+    s.add_teacher(Teacher())
+    s.remove_all_teachers()
+    assert len( s.teachers()) == 0
+
+
+
+# -------------------------------------------------------------------------------------------------
+# teacher allocation
+# -------------------------------------------------------------------------------------------------
+def test_section_allocation_no_blocks():
+    """Checks that a valid teacher can be added, and that the teacher allocation hours is saved as set"""
+    s = Section(course)
+    t = Teacher()
+    s.set_teacher_allocation(t, 3)
+    assert s.get_teacher_allocation(t) == 3
+
+def test_section_allocation_hrs_equals_block_time():
+    """If allocation is equal to total block time, then assign teacher to all blocks"""
+    s = Section(course)
+    b1 = s.add_block(duration=5)
+    b2 = s.add_block(duration=2)
+    t = Teacher()
+    s.set_teacher_allocation(t, 7)
+    assert s.get_teacher_allocation(t) == 7
+    assert b1.has_teacher(t)
+    assert b2.has_teacher(t)
+
+def test_section_allocation_hrs_fits_one_block_time():
+    """If allocation is equal to total block time, then assign teacher to all blocks"""
+    s = Section(course)
+    b1 = s.add_block(duration=5)
+    b2 = s.add_block(duration=2)
+    t = Teacher()
+    s.set_teacher_allocation(t, 5)
+    assert s.get_teacher_allocation(t) == 5
+    assert b1.has_teacher(t)
+    assert not b2.has_teacher(t)
+
+def test_section_allocation_hrs_does_not_any_block_time():
+    """If allocation cannot fit properly into combination of blocks, no blocks are set"""
+    s = Section(course)
+    b1 = s.add_block(duration=5)
+    b2 = s.add_block(duration=2)
+    t = Teacher()
+    s.set_teacher_allocation(t, 1.5)
+    assert s.get_teacher_allocation(t) == 1.5
+    assert not b1.has_teacher(t)
+    assert not b2.has_teacher(t)
+
+def test_section_allocation_hrs_fits_one_block_time_with_leftover():
+    """If allocation cannot fit properly into combination of blocks, no blocks are set"""
+    s = Section(course)
+    b1 = s.add_block(duration=5)
+    b2 = s.add_block(duration=2)
+    t = Teacher()
+    s.set_teacher_allocation(t, 3)
+    assert s.get_teacher_allocation(t) == 3
+    assert not b1.has_teacher(t)
+    assert not b2.has_teacher(t)
+
+def test_section_allocation_hrs_larger_than_sum_block_times():
+    """If allocation cannot fit properly into combination of blocks, no blocks are set"""
+    s = Section(course)
+    b1 = s.add_block(duration=5)
+    b2 = s.add_block(duration=2)
+    t = Teacher()
+    s.set_teacher_allocation(t, 8)
+    assert s.get_teacher_allocation(t) == 8
+    assert not b1.has_teacher(t)
+    assert not b2.has_teacher(t)
+
+def test_section_allocation_preference_given_to_block_with_no_teacher():
+    """When assigning blocks, first assign to blocks that have no teacher"""
+    s = Section(course)
+    b1 = s.add_block(duration=2)
+    b2 = s.add_block(duration=2)
+    t1 = Teacher()
+    t2 = Teacher()
+    b1.add_teacher(t2)
+    s.set_teacher_allocation(t1, 2)
+    assert s.get_teacher_allocation(t1) == 2
+    assert not b1.has_teacher(t1)
+    assert b2.has_teacher(t1)
+
+def test_section_allocation_preference_given_to_block_with_no_teacher2():
+    """When assigning blocks, first assign to blocks that have no teacher"""
+    s = Section(course)
+    b1 = s.add_block(duration=2)
+    b2 = s.add_block(duration=2)
+    t1 = Teacher()
+    t2 = Teacher()
+    b2.add_teacher(t2)
+    s.set_teacher_allocation(t1, 2)
+    assert s.get_teacher_allocation(t1) == 2
+    assert not b2.has_teacher(t1)
+    assert b1.has_teacher(t1)
+
+def test_section_allocation_assign_to_block_with_teacher():
+    """When assigning blocks, if not possible otherwise, assign to block with teacher"""
+    s = Section(course)
+    b1 = s.add_block(duration=2)
+    b2 = s.add_block(duration=2)
+    t1 = Teacher()
+    t2 = Teacher()
+    s.add_teacher(t2)
+    s.set_teacher_allocation(t1, 2)
+    assert s.get_teacher_allocation(t1) == 2
+    assert ((not b2.has_teacher(t1) and b1.has_teacher(t1)) or
+            (b2.has_teacher(t1) and not b1.has_teacher(t1)))
+
+def test_section_allocation_hours_returned_even_if_teacher_assigned_to_section_without_allocation():
+    """When assigning blocks, first assign to blocks that have no teacher"""
+    s = Section(course)
+    b1 = s.add_block(duration=2)
+    b2 = s.add_block(duration=2)
+    t2 = Teacher()
+    s.add_teacher(t2)
+    assert s.get_teacher_allocation(t2) == 4
+
+def test_has_allocated_teacher_valid_false_unless_specifically_allocated():
+    s = Section(course)
+    s.add_block()
+    t = Teacher()
+    s.add_teacher(t)
+    assert s.has_teacher(t)
+    assert t not in s.section_defined_teachers()
+
+def test_has_allocated_teacher_valid_true_if_specifically_allocated():
+    s = Section(course)
+    s.add_block()
+    t = Teacher()
+    s.set_teacher_allocation(t, 5)
+    assert not s.has_teacher(t)
+    assert t in s.section_defined_teachers()
+    assert s.has_allocated_teacher(t)
+
+
+def test_remove_allocation_teacher_valid1():
+    """Remove teacher removes allocated teacher (whose hrs fit into blocks properly)"""
+    s = Section(course)
+    hours = 5
+    s.add_block(3)
+    s.add_block(2)
+    t_added_teacher = Teacher()
+    t_allocated_teacher = Teacher()
+    s.add_teacher(t_added_teacher)
+    s.set_teacher_allocation(t_allocated_teacher, hours)
+    s.remove_allocation(t_allocated_teacher)
+    assert s.get_teacher_allocation(t_allocated_teacher) == 0
+    assert not s.has_teacher(t_allocated_teacher)
+    assert not s.has_allocated_teacher(t_allocated_teacher)
+    assert s.has_teacher(t_added_teacher)
+
+def test_remove_teacher_valid2():
+    """Remove teacher removes allocated teacher (whose hrs don't fit into blocks properly)"""
+    s = Section(course)
+    hours = 7
+    s.add_block(3)
+    s.add_block(2)
+    t_added_teacher = Teacher()
+    t_allocated_teacher = Teacher()
+    s.add_teacher(t_added_teacher)
+    s.set_teacher_allocation(t_allocated_teacher, hours)
+    s.remove_allocation(t_allocated_teacher)
+    assert s.get_teacher_allocation(t_allocated_teacher) == 0
+    assert not s.has_teacher(t_allocated_teacher)
+    assert not s.has_allocated_teacher(t_allocated_teacher)
+    assert s.has_teacher(t_added_teacher)
+
+
+def test_remove_teacher_not_remove_allocated_teacher():
+    """Checks that when passed a valid allocated teacher, is not removed by simple remove """
+    """Remove teacher removes allocated teacher (whose hrs don't fit into blocks properly)"""
+    s = Section(course)
+    hours = 7
+    s.add_block(3)
+    s.add_block(2)
+    t_added_teacher = Teacher()
+    t_allocated_teacher = Teacher()
+    s.add_teacher(t_added_teacher)
+    s.set_teacher_allocation(t_allocated_teacher, hours)
+    s.remove_teacher(t_allocated_teacher)
+    assert s.get_teacher_allocation(t_allocated_teacher) == 7
+    assert not s.has_teacher(t_allocated_teacher)
+    assert s.has_allocated_teacher(t_allocated_teacher)
+    assert s.has_teacher(t_added_teacher)
+
+
+
+# -------------------------------------------------------------------------------------------------
+# stream
+# -------------------------------------------------------------------------------------------------
 
 def test_assign_stream_valid():
     """Checks that a valid stream can be added"""

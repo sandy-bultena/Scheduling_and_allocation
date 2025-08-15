@@ -8,6 +8,8 @@
 * Update README and installation instructions
 * Clean up tests
 * Either remove or update "Synopsis" in code comments
+* Add 'enter' binding for moving resource from/to
+* remove underscore in descriptions of conflicts
 
 ============ Done ================
 * Switching between view tabs and back disconnects view from view controller (and the buttons I thing in the view choices)

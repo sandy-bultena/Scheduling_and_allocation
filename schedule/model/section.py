@@ -249,7 +249,6 @@ class Section:
 
         # if number of hours is not equal to the total hours of the section,
         # try to find blocks to assign the teacher to
-        self.remove_allocation(teacher)
         possible_paths = []
         blocks = self.blocks()
         self._find_block_fit_for_allocation(hours, blocks, "", possible_paths)
@@ -351,7 +350,7 @@ class Section:
         try:
             a = int(self.number) < int(other.number)
             return a
-        except TypeError:
+        except ValueError:
             return self.number < other.number
 
     def __hash__(self):

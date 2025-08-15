@@ -255,8 +255,11 @@ def test_remove_teacher_from_courses():
     c1 = s.add_update_course("C1")
     c2 = s.add_update_course("C2")
     # NOTE: adding teachers is meaningless unless there are sections in the course
+    # NOTE: adding teachers is meaningless unless there are blocks in the section
     st1 = c1.add_section("ABC")
     st2 = c2.add_section("DEF")
+    st1.add_block()
+    st2.add_block()
     c1.add_teacher(o1)
     c1.add_teacher(o2)
     c2.add_teacher(o1)
@@ -362,6 +365,8 @@ def test_get_teachers_assigned_to_any_course():
     # NOTE: adding teachers is meaningless unless there are sections in the course
     st1 = c1.add_section("ABC")
     st2 = c2.add_section("DEF")
+    st1.add_block()
+    st2.add_block()
     c1.add_teacher(o1)
     c1.add_teacher(o2)
     c2.add_teacher(o1)
