@@ -251,10 +251,9 @@ def test_adding_new_teacher(gui, dirty, schedule_obj):
     gui.data_entry.append(["", "New", "Teacher", ".21"])
 
     # execute
-    obj.save()
+    obj.save(gui.data_entry)
 
     # validate
-    assert gui.called_get_all_data
     assert len(schedule_obj.teachers()) == 4
     new_teacher = schedule_obj.get_teacher_by_name("New", "Teacher")
     assert new_teacher is not None
@@ -275,10 +274,9 @@ def test_adding_new_teacher_no_release_specified(gui, dirty, schedule_obj):
     gui.data_entry.append([ "", "New", "Teacher"])
 
     # execute
-    obj.save()
+    obj.save(gui.data_entry)
 
     # validate
-    assert gui.called_get_all_data
     assert len(schedule_obj.teachers()) == 4
     new_teacher = schedule_obj.get_teacher_by_name("New", "Teacher")
     assert new_teacher is not None
@@ -292,19 +290,18 @@ def test_modifying_teacher_not_new_obj(gui, dirty, schedule_obj):
     # prepare
     dirty_set_to = False
     dirty(dirty_set_to)
-    teacher_obj_id = id(schedule_obj.get_teacher_by_number("Doe_John"))
+    teacher_obj_id = id(schedule_obj.get_teacher_by_number("Doe_Jane"))
     obj = EditResources(dirty, None, ResourceType.teacher, schedule_obj, gui)
     obj.refresh()
     gui.data_entry[1][3] = "3"
 
     # execute
-    obj.save()
+    obj.save(gui.data_entry)
 
     # validate
-    assert gui.called_get_all_data
-    teacher = schedule_obj.get_teacher_by_number("Doe_John")
+    teacher = schedule_obj.get_teacher_by_number("Doe_Jane")
     assert teacher is not None
-    assert teacher.firstname == "John"
+    assert teacher.firstname == "Jane"
     assert teacher.release == 3.0
     assert id(teacher) == teacher_obj_id
     assert dirty_flag
@@ -325,14 +322,13 @@ def test_modifying_teacher(gui, dirty, schedule_obj):
     teacher_id = gui.data_entry[1][0]
 
     # execute
-    obj.save()
+    obj.save(gui.data_entry)
 
     # validate
-    assert gui.called_get_all_data
     assert len(schedule_obj.teachers()) == 3
     teacher = schedule_obj.get_teacher_by_number(teacher_id)
     assert teacher is not None
-    assert teacher.firstname == "John"
+    assert teacher.firstname == "Jane"
     assert teacher.lastname == "new name"
     assert dirty_flag
 
@@ -350,10 +346,9 @@ def test_adding_new_lab(gui, dirty, schedule_obj):
     gui.data_entry.append(["P000", "New"])
 
     # execute
-    obj.save()
+    obj.save(gui.data_entry)
 
     # validate
-    assert gui.called_get_all_data
     assert len(schedule_obj.labs()) == 4
     new_lab = schedule_obj.get_lab_by_number("P000")
     assert new_lab is not None
@@ -373,10 +368,9 @@ def test_adding_new_lab2(gui, dirty, schedule_obj):
     gui.data_entry.append(["P000"])
 
     # execute
-    obj.save()
+    obj.save(gui.data_entry)
 
     # validate
-    assert gui.called_get_all_data
     assert len(schedule_obj.labs()) == 4
     new_lab = schedule_obj.get_lab_by_number("P000")
     assert new_lab is not None
@@ -397,10 +391,9 @@ def test_modifying_lab(gui, dirty, schedule_obj):
     lab_id = gui.data_entry[1][0]
 
     # execute
-    obj.save()
+    obj.save(gui.data_entry)
 
     # validate
-    assert gui.called_get_all_data
     assert len(schedule_obj.labs()) == 3
     lab = schedule_obj.get_lab_by_number(lab_id)
     assert lab is not None
@@ -421,10 +414,9 @@ def test_modifying_lab_not_new_obj(gui, dirty, schedule_obj):
     gui.data_entry[0][1] = "something else"
 
     # execute
-    obj.save()
+    obj.save(gui.data_entry)
 
     # validate
-    assert gui.called_get_all_data
     lab = schedule_obj.get_lab_by_number("P107")
     assert lab is not None
     assert lab.description == "something else"
@@ -445,10 +437,9 @@ def test_adding_new_stream(gui, dirty, schedule_obj):
     gui.data_entry.append(["1C", "New"])
 
     # execute
-    obj.save()
+    obj.save(gui.data_entry)
 
     # validate
-    assert gui.called_get_all_data
     assert len(schedule_obj.streams()) == 5
     new_stream = schedule_obj.get_stream_by_number("1C")
     assert new_stream is not None
@@ -468,10 +459,9 @@ def test_adding_new_stream2(gui, dirty, schedule_obj):
     gui.data_entry.append(["1C"])
 
     # execute
-    obj.save()
+    obj.save(gui.data_entry)
 
     # validate
-    assert gui.called_get_all_data
     assert len(schedule_obj.streams()) == 5
     new_stream = schedule_obj.get_stream_by_number("1C")
     assert new_stream is not None
@@ -492,10 +482,9 @@ def test_modifying_stream(gui, dirty, schedule_obj):
     stream_id = gui.data_entry[1][0]
 
     # execute
-    obj.save()
+    obj.save(gui.data_entry)
 
     # validate
-    assert gui.called_get_all_data
     assert len(schedule_obj.streams()) == 4
     stream = schedule_obj.get_stream_by_number(stream_id)
     assert stream is not None
@@ -513,7 +502,7 @@ def test_save_with_no_changes1(gui, dirty, schedule_obj):
     obj = EditResources(dirty, None, ResourceType.teacher, schedule_obj, gui)
 
     # execute
-    obj.save()
+    obj.save(gui.data_entry)
 
     # validate
     assert dirty_flag == dirty_set_to
@@ -529,7 +518,7 @@ def test_save_with_no_changes2(gui, dirty, schedule_obj):
     obj = EditResources(dirty, None, ResourceType.teacher, schedule_obj, gui)
 
     # execute
-    obj.save()
+    obj.save(gui.data_entry)
 
     # validate
     assert dirty_flag == dirty_set_to
@@ -549,10 +538,9 @@ def test_save_with_handle_empty_rows1(gui, dirty, schedule_obj):
     gui.data_entry.append(["", "", "", ""])
 
     # execute
-    obj.save()
+    obj.save(gui.data_entry)
 
     # validate
-    assert gui.called_get_all_data
     assert len(schedule_obj.streams()) == 4
     assert dirty_flag == dirty_set_to
 
@@ -571,10 +559,9 @@ def test_save_with_handle_empty_rows2(gui, dirty, schedule_obj):
     gui.data_entry.append(["", "", "", ""])
 
     # execute
-    obj.save()
+    obj.save(gui.data_entry)
 
     # validate
-    assert gui.called_get_all_data
     assert len(schedule_obj.streams()) == 4
     assert dirty_flag == dirty_set_to
 
@@ -595,7 +582,7 @@ def test_delete_teacher(gui, dirty, schedule_obj):
 
     # execute
     obj.delete_obj(gui.data_entry[1])
-    obj.save()
+    obj.save(gui.data_entry)
 
     # validate
     assert obj.schedule.get_teacher_by_number(teacher_id) is None
@@ -618,7 +605,7 @@ def test_delete_lab(gui, dirty, schedule_obj):
 
     # execute
     obj.delete_obj(gui.data_entry[1])
-    obj.save()
+    obj.save(gui.data_entry)
 
     # validate
     assert obj.schedule.get_lab_by_number(lab_id) is None
@@ -641,7 +628,7 @@ def test_delete_stream(gui, dirty, schedule_obj):
 
     # execute
     obj.delete_obj(gui.data_entry[1])
-    obj.save()
+    obj.save(gui.data_entry)
 
     # validate
     assert obj.schedule.get_stream_by_number(stream_id) is None
@@ -663,7 +650,7 @@ def test_delete_happens_before_resource_update(gui, dirty, schedule_obj):
     # execute
     obj.delete_obj(gui.data_entry[1])
     gui.data_entry.append([lab_id, "new object"])
-    obj.save()
+    obj.save(gui.data_entry)
 
     # validate
     assert obj.schedule.get_lab_by_number(lab_id) is not None

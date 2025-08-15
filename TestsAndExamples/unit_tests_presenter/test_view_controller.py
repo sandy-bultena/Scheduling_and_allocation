@@ -204,7 +204,7 @@ def test_refresh(schedule_obj, gui):
 def test_block_moved(schedule_obj, gui, monkeypatch):
     global REFRESH_COLOURS_CALLED
     """block has moved
-    1. dirty flag has been reset
+    1. dirty flag has not been reset (it is reset when the block is dropped)
     2. refresh was called (which recalculates conflicts)
     3. all currently open views colours are updated 
     4. views are told to update their gui_block positions (not tested)
@@ -229,7 +229,7 @@ def test_block_moved(schedule_obj, gui, monkeypatch):
     vc.notify_block_move("", block1, block1.day.value, block1.start)
 
     # verify
-    assert dirty_flag_method()
+    assert not dirty_flag_method()
     assert block1.conflict
     assert block2.conflict
     assert REFRESH_COLOURS_CALLED == 2
@@ -261,7 +261,7 @@ def test_block_moved_view_updated(schedule_obj, gui, monkeypatch):
 
 def test_block_movable_changed(schedule_obj, gui, monkeypatch):
     """block movable has been changed
-    1. dirty flag is updated
+    1. NOTE: dirty flag is updated in the view where the event happened
     2. update colours on all the views
     3. update colors on view choices
     4. conflicts are recalculated
@@ -278,7 +278,6 @@ def test_block_movable_changed(schedule_obj, gui, monkeypatch):
     block1, block2 = blocks
     vc.call_view(teacher)
     vc.call_view(stream)
-    dirty_flag_method(False)
     assert not block1.conflict
 
     # execute
@@ -286,7 +285,6 @@ def test_block_movable_changed(schedule_obj, gui, monkeypatch):
     vc.notify_block_movable_toggled(block1)
 
     # validate
-    assert dirty_flag_method()
     assert block1.conflict
 
     # ... validate update colours on all the open views

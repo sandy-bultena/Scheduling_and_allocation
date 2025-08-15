@@ -136,8 +136,11 @@ class EditResources:
     # ------------------------------------------------------------------------
     # Save updated data
     # ------------------------------------------------------------------------
-    def save(self, all_data):
-        """Save any changes that the user entered in the GUI_Pages form."""
+    def save(self, all_data: list[list[str]]):
+        """
+        Save any changes that the user entered in the GUI_Pages form.
+        :param all_data: a 2-d array of string values in columns and rows
+        """
 
         needs_updating = self._check_for_changed_resources(all_data)
 
@@ -145,6 +148,8 @@ class EditResources:
         changes = False
         changes = len(needs_updating) or changes
         changes = len(self.delete_queue) or changes
+        if not changes:
+            return
 
         # Update or add changes.
         for obj in self.delete_queue:
@@ -152,7 +157,7 @@ class EditResources:
         for init_arguments in needs_updating:
             self._update_resource(**init_arguments)
 
-        # all done saving, decrement number of files currently being saved
+        # all done saving
         self.dirty_flag_method(changes)
         self.refresh()
 

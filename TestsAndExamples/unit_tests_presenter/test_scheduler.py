@@ -5,8 +5,8 @@ from os import path
 
 import pytest
 
+from schedule.gui_pages.scheduler_tk import SchedulerTk, MAIN_PAGE_EVENT_HANDLERS
 from schedule.presenter.scheduler import Scheduler
-from schedule.gui_pages import SchedulerTk, MAIN_PAGE_EVENT_HANDLERS
 from schedule.Utilities import Preferences
 from schedule.presenter.menus_main_menu_scheduler import MAIN_MENU_EVENT_HANDLERS
 
@@ -31,6 +31,9 @@ class SchedulerTkTest(SchedulerTk):
     def clear(self):
         self.called.clear()
 
+    def show_custom_message(self, title="", msg=""):
+        self.called["show_error"] = True
+
     def start_event_loop(self):
         self.called["start_event_loop"] = True
 
@@ -40,7 +43,7 @@ class SchedulerTkTest(SchedulerTk):
     def show_message(self, title: str, msg: str, detail: str = ""):
         self.called["show_message"] = True
 
-    def select_file_to_open(self) -> str:
+    def select_file_to_open(self, title:str) -> str:
         self.called["select_file_to_open"] = True
         return CURRENT_TEST_FILENAME
 
@@ -58,6 +61,8 @@ class SchedulerTkTest(SchedulerTk):
     def create_standard_page(*args, **kwargs): ...
 
     def create_status_bar(*args, **kwargs): ...
+
+    def create_welcome_page(self, semester): ...
 
 
 # ============================================================================

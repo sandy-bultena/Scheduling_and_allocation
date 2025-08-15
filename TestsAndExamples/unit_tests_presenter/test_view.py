@@ -3,7 +3,7 @@ from typing import Callable, Optional
 import pytest
 from _pytest.fixtures import fixture
 
-from schedule.Tk import MenuItem, MenuType
+from schedule.gui_generics.menu_and_toolbars import MenuItem, MenuType
 from schedule.model import ResourceType, ConflictType, SemesterType, WeekDay, Schedule, Block
 from schedule.presenter.view import View
 
@@ -64,6 +64,9 @@ class ViewDynamicTkTest:
         self.colour_blocks_info[gui_block_id] = (resource_type, is_movable, conflict)
 
     def move_gui_block(self, gui_block_id: str, day_number, start_number):
+        pass
+
+    def modify_movable(self, gui_id, flag):
         pass
 
 
@@ -191,8 +194,12 @@ def schedule_obj():
 
     return schedule
 
-def dirty_flag_method():
-    pass
+DIRTY = False
+def dirty_flag_method(flag = None):
+    global DIRTY
+    if flag is not None:
+        DIRTY = flag
+    return DIRTY
 
 @fixture
 def gui():
@@ -211,7 +218,12 @@ def test_init(schedule_obj, view_control, gui):
     """Create a view    """
 
     # execute
-    view = View(view_control,"", schedule_obj, resource=schedule_obj.get_teacher_by_name("Jane", "Doe"), gui=gui )
+    #     def __init__(self, views_controller: ViewsController, frame, schedule: Schedule,
+    #                  resource: RESOURCE, dirty_flag_method:Callable, gui:ViewDynamicTk=None,
+    #                  ):
+    view = View(view_control,"", schedule_obj, resource=schedule_obj.get_teacher_by_name("Jane", "Doe"),
+                dirty_flag_method = dirty_flag_method, gui=gui )
+
 
 def test_draw_blocks_called_during_init(schedule_obj, view_control, gui):
     """Create a view
@@ -226,7 +238,8 @@ def test_draw_blocks_called_during_init(schedule_obj, view_control, gui):
 
 
     # execute: (view is drawn after block has been modified)
-    view = View(view_control,"", schedule_obj, resource=teacher, gui=gui )
+    view = View(view_control,"", schedule_obj, resource=teacher,
+                dirty_flag_method = dirty_flag_method, gui=gui )
 
     # verify
     for block in blocks:
@@ -235,7 +248,7 @@ def test_draw_blocks_called_during_init(schedule_obj, view_control, gui):
     for gui_id in view.gui_blocks:
         block: Block = view.gui_blocks[gui_id]
         assert gui_id in gui.draw_blocks_info
-        assert gui.draw_blocks_info[gui_id] == (block.day, block.start,
+        assert gui.draw_blocks_info[gui_id] == (block.day.value, block.start,
                                                 block.duration, block.movable)
         assert gui.colour_blocks_info[gui_id] == (ResourceType.teacher, block.movable, block.conflict )
 
@@ -249,7 +262,8 @@ def test_draw_blocks(schedule_obj, view_control, gui):
 
     # prepare
     teacher = schedule_obj.get_teacher_by_name("Jane","Doe")
-    view = View(view_control,"", schedule_obj, resource=teacher, gui=gui )
+    view = View(view_control,"", schedule_obj, resource=teacher,
+                dirty_flag_method = dirty_flag_method, gui=gui )
     blocks = schedule_obj.get_blocks_for_teacher(teacher)
     blocks[0].add_conflict(ConflictType.LUNCH)
 
@@ -263,7 +277,7 @@ def test_draw_blocks(schedule_obj, view_control, gui):
     for gui_id in view.gui_blocks:
         block: Block = view.gui_blocks[gui_id]
         assert gui_id in gui.draw_blocks_info
-        assert gui.draw_blocks_info[gui_id] == (block.day, block.start,
+        assert gui.draw_blocks_info[gui_id] == (block.day.value, block.start,
                                                 block.duration, block.movable)
         assert gui.colour_blocks_info[gui_id] == (ResourceType.teacher, block.movable, block.conflict )
 
@@ -276,23 +290,26 @@ def test_view_keeps_track_of_blocks_and_gui_ids(schedule_obj, view_control, gui)
     block = schedule_obj.get_blocks_for_teacher(teacher)[0]
 
     # execute
-    view = View(view_control,"", schedule_obj, resource=teacher, gui=gui )
+    view = View(view_control,"", schedule_obj, resource=teacher,
+                dirty_flag_method = dirty_flag_method, gui=gui )
 
     # validate
     assert view.is_block_in_view(block)
+
 # ===================================================================================================================
 # Testing View Popup and Popup Handlers
 # ===================================================================================================================
 def test_popup_menu(schedule_obj, view_control, gui):
     """Invoke pop-up menu
     1. returns a MenuItem list
-    2. has a 'Toggle' option on list
+    2. has a set/unset 'movable' option on list
     3. has move resource to... on list
     """
 
     # prepare
     teacher = schedule_obj.get_teacher_by_name("Jane","Doe")
-    view = View(view_control,"", schedule_obj, resource=teacher, gui=gui )
+    view = View(view_control,"", schedule_obj, resource=teacher,
+                dirty_flag_method = dirty_flag_method, gui=gui )
     gui_id = list(view.gui_blocks.keys())[0]
 
     # execute
@@ -302,10 +319,17 @@ def test_popup_menu(schedule_obj, view_control, gui):
     assert len(menu) != 0
     mi = None
     for m in menu:
-        if "Toggle" in m.label:
+        if "movable" in m.label:
             mi = m.command
     assert mi is not None
-    assert "Move to Bugs Bunny" in (m.label for m in menu)
+
+    mi: Optional[MenuItem] = None
+    for m in menu:
+        if "Move class to" in m.label:
+            mi = m
+    assert mi is not None
+
+    assert "Bugs Bunny" in (m.label for m in mi.children)
 
 def test_toggle_movable(schedule_obj, view_control, gui):
     """from pop-up menu, toggle block movability
@@ -313,11 +337,14 @@ def test_toggle_movable(schedule_obj, view_control, gui):
     2. notify view controller that block has changed
     3. remove all 'redoes' because user had done something
     4. add action to the 'undo' list
+    5. dirty flag is set
     """
 
     # prepare
+    dirty_flag_method(False)
     teacher = schedule_obj.get_teacher_by_name("Jane","Doe")
-    view = View(view_control,"", schedule_obj, resource=teacher, gui=gui )
+    view = View(view_control,"", schedule_obj, resource=teacher,
+                dirty_flag_method = dirty_flag_method, gui=gui )
     gui_id = list(view.gui_blocks.keys())[0]
     block = view.gui_blocks[gui_id]
     block.movable = True
@@ -325,14 +352,15 @@ def test_toggle_movable(schedule_obj, view_control, gui):
 
     # execute
     for m in menu:
-        if "Toggle" in m.label:
+        if "movable" in m.label:
             m.command()
 
     # verify
     assert not block.movable
+    assert dirty_flag_method()
 
     # execute
-    view.toggle_is_movable(block)
+    view.toggle_is_movable(block, gui_id)
 
     # verify
     assert block.movable
@@ -350,14 +378,21 @@ def test_move_block_to_different_resource(schedule_obj, view_control, gui):
 
     # prepare
     teacher = schedule_obj.get_teacher_by_name("Jane","Doe")
-    view = View(view_control,"", schedule_obj, resource=teacher, gui=gui )
+    view = View(view_control,"", schedule_obj, resource=teacher,
+                dirty_flag_method = dirty_flag_method, gui=gui )
     gui_id = list(view.gui_blocks.keys())[0]
     block = view.gui_blocks[gui_id]
     block.movable = True
     menu = gui.get_popup_menu_handler(gui_id)
 
     # execute
+    mi: Optional[MenuItem] = None
     for m in menu:
+        if "Move class to" in m.label:
+            mi = m
+    assert mi is not None
+
+    for m in mi.children:
         if "John Doe" in m.label:
             m.command()
 
@@ -385,7 +420,8 @@ def test_on_closing_informs_view_controller(schedule_obj, view_control, gui):
 
     # prepare
     teacher = schedule_obj.get_teacher_by_name("Jane","Doe")
-    view = View(view_control,"", schedule_obj, resource=teacher, gui=gui )
+    view = View(view_control,"", schedule_obj, resource=teacher,
+                dirty_flag_method = dirty_flag_method, gui=gui )
 
     # execute
     view.on_closing()
@@ -400,7 +436,8 @@ def test_handle_double_click(schedule_obj, view_control, gui):
 
     # prepare
     teacher = schedule_obj.get_teacher_by_name("Jane","Doe")
-    view = View(view_control,"", schedule_obj, resource=teacher, gui=gui )
+    view = View(view_control,"", schedule_obj, resource=teacher,
+                dirty_flag_method = dirty_flag_method, gui=gui )
     gui_id = list(view.gui_blocks.keys())[0]
     block = view.gui_blocks[gui_id]
 
@@ -419,7 +456,8 @@ def test_gui_block_is_moving(schedule_obj, view_control, gui):
 
     # prepare
     teacher = schedule_obj.get_teacher_by_name("Jane","Doe")
-    view = View(view_control,"", schedule_obj, resource=teacher, gui=gui )
+    view = View(view_control,"", schedule_obj, resource=teacher,
+                dirty_flag_method = dirty_flag_method, gui=gui )
     gui_id = list(view.gui_blocks.keys())[0]
     block = view.gui_blocks[gui_id]
     o_day = block.day.value
@@ -450,7 +488,8 @@ def test_gui_block_has_dropped(schedule_obj, view_control, gui):
 
     # prepare
     teacher = schedule_obj.get_teacher_by_name("Jane","Doe")
-    view = View(view_control,"", schedule_obj, resource=teacher, gui=gui )
+    view = View(view_control,"", schedule_obj, resource=teacher,
+                dirty_flag_method = dirty_flag_method, gui=gui )
     gui_id = list(view.gui_blocks.keys())[0]
     block = view.gui_blocks[gui_id]
     o_day = block.day
@@ -468,7 +507,7 @@ def test_gui_block_has_dropped(schedule_obj, view_control, gui):
 
     assert view_control.remove_redoes
     assert view_control.action_moved['block'] == block
-    assert view_control.action_moved['from'] == o_day
+    assert view_control.action_moved['from'] == o_day.value
     assert view_control.action_moved['to'] == 3
     assert view_control.action_moved['from_time'] == o_start
     assert view_control.action_moved['to_time'] == 9.5
@@ -480,7 +519,8 @@ def test_gui_block_has_dropped_but_not_moved(schedule_obj, view_control, gui):
 
     # prepare
     teacher = schedule_obj.get_teacher_by_name("Jane","Doe")
-    view = View(view_control,"", schedule_obj, resource=teacher, gui=gui )
+    view = View(view_control,"", schedule_obj, resource=teacher,
+                dirty_flag_method = dirty_flag_method, gui=gui )
     gui_id = list(view.gui_blocks.keys())[0]
     block = view.gui_blocks[gui_id]
 
@@ -498,7 +538,8 @@ def test_gui_undo_passed_to_controller(schedule_obj, view_control, gui):
 
     # prepare
     teacher = schedule_obj.get_teacher_by_name("Jane","Doe")
-    view = View(view_control,"", schedule_obj, resource=teacher, gui=gui )
+    view = View(view_control,"", schedule_obj, resource=teacher,
+                dirty_flag_method = dirty_flag_method, gui=gui )
 
     # execute
     gui.undo_handler()
@@ -513,7 +554,8 @@ def test_gui_redo_passed_to_controller(schedule_obj, view_control, gui):
 
     # prepare
     teacher = schedule_obj.get_teacher_by_name("Jane","Doe")
-    view = View(view_control,"", schedule_obj, resource=teacher, gui=gui )
+    view = View(view_control,"", schedule_obj, resource=teacher,
+                dirty_flag_method = dirty_flag_method, gui=gui )
 
     # execute
     gui.redo_handler()
