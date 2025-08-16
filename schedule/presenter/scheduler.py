@@ -447,12 +447,16 @@ class Scheduler:
                 resources = self.schedule.streams()
 
         # loop over each resource and create file
+        save_dir = self.preferences.current_dir() or self.preferences.home_directory()
+
         for resource in resources:
             if canvas_type == CanvasType.pdf:
-                cn = PDFCanvas(title=str(resource), schedule_name=self.schedule.filename)
+                cn = PDFCanvas(title=str(resource), schedule_name=self.schedule.filename,
+                               directory=save_dir)
                 vc = ViewCanvasTk(cn, 0.8)
             else:
-                cn = LatexCanvas(title=str(resource), schedule_name=self.schedule.filename)
+                cn = LatexCanvas(title=str(resource), schedule_name=self.schedule.filename,
+                               directory=save_dir)
                 vc = cn
 
             blocks = ()

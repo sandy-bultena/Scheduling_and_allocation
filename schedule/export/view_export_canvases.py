@@ -19,17 +19,19 @@ CWD = pathlib.Path().resolve()
 class LatexCanvas:
     """Doesn't 'draw' a canvas so much as uses a template and inserts latex stuff"""
 
-    def __init__(self, title="Title", schedule_name="sub_title", filename=None):
+    def __init__(self, title="Title", schedule_name="sub_title", filename=None, directory=None):
         """
         creates the latex file to work with
         :param title: title to be displayed
         :param schedule_name: the filename of the schedule
         :param filename: the file to save the tex file to (defaults to title, in current working directory)
         """
+        if directory is None:
+            directory = CWD
         if filename is None:
             filename = title.lower()
             filename = filename.replace(" ","_")
-            filename = f"{CWD}/{filename}.tex"
+            filename = f"{directory}/{filename}.tex"
 
         self.filename = filename
         template_file = open(f"{CODE_PATH}/view_template.tex","r")
@@ -76,7 +78,7 @@ class LatexCanvas:
 class PDFCanvas:
     """Provides a canvas for drawing a pdf"""
 
-    def __init__(self, title="Title", schedule_name="sub_title", filename=None):
+    def __init__(self, title="Title", schedule_name="sub_title", filename=None, directory=None):
         """
         creates a pdf canvas to draw on
         :param title: title to be displayed
@@ -84,10 +86,13 @@ class PDFCanvas:
         :param filename: the file to save the pdf file to (defaults to title, in current working directory)
         """
 
+        if directory is None:
+            directory = CWD
+            
         if filename is None:
             filename = title.lower()
             filename = filename.replace(" ","_")
-            filename = f"{CWD}/{filename}.pdf"
+            filename = f"{directory}/{filename}.pdf"
 
         self.cn = Canvas(filename, bottomup=0, pagesize=LETTER)
         self.cn.setFont("Helvetica", 14)
