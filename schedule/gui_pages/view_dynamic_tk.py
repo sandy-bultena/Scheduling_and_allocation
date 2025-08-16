@@ -98,7 +98,10 @@ class ViewDynamicTk:
         f.pack(expand=1, fill="x")
 
         for c in get_conflict_colour_info(resource_type):
-            tk.Label(f, text=c['text'], width=10, background=c['bg'], foreground=c['fg']) \
+            label_text = c["text"]
+            label_text = label_text.replace("_"," ")
+            label_text = label_text.capitalize()
+            tk.Label(f, text=label_text, width=10, background=c['bg'], foreground=c['fg']) \
                 .pack(side='left', expand=1, fill="x")
 
         # ------------------------------------------------------------------------------------------------------------

@@ -8,7 +8,6 @@
 * Update README and installation instructions
 * Either remove or update "Synopsis" in code comments
 * Add 'enter' binding for moving resource from/to
-* remove underscore in descriptions of conflicts
 
 ============ Done ================
 * Switching between view tabs and back disconnects view from view controller (and the buttons I thing in the view choices)
@@ -58,3 +57,4 @@
 * Lunch problem, again, conflict shows on everyone if it results from a common meeting time
 * Clean up tests
 * When creating pdfs or tex schedules, put them in the same directory where the schedule file was located
+* remove underscore in descriptions of conflicts
