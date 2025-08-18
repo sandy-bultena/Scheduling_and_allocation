@@ -209,7 +209,7 @@ class View:
         block.snap_to_time()
         self.schedule.calculate_conflicts()
         self.refresh_block_colours()
-        self.gui.colour_block(gui_id, self.resource_type, is_movable=block.movable, conflict = block.conflict)
+        #self.gui.colour_block(gui_id, self.resource_type, is_movable=block.movable, conflict = block.conflict)
 
         # very important, let the gui controller _know_ that the gui block has been moved
         self.views_controller.notify_block_move(self.resource.number, block, gui_block_day, gui_block_start_time)

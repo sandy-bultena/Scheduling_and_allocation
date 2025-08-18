@@ -31,7 +31,7 @@ class StudentNumbersTk:
         for w in frame.winfo_children():
             w.destroy()
 
-        self.data = data
+        self.data = data if data is not None else {}
         self._update_handlers = []
 
         f = Scrolled(

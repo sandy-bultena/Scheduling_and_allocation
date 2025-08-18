@@ -1,9 +1,13 @@
 from tkinter import *
 from tkinter import messagebox
 from typing import Any
+import os
+import sys
 
+bin_dir: str = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.join(bin_dir, "../../"))
 
-from schedule.Tk.menu_and_toolbars import MenuItem, MenuType
+from schedule.gui_generics.menu_and_toolbars import MenuItem, MenuType
 from schedule.gui_pages import EditCoursesTk
 from schedule.model import ResourceType
 
@@ -51,8 +55,11 @@ def resource_menu(resource_type: ResourceType, obj) -> list[MenuItem]:
     return [menu_title, menu]
 
 
-def edit_dialog(obj: Any):
-    messagebox.showinfo(title="Testing", message=f"Edit {str(obj)}")
+def edit_dialog(obj: Any, parent_obj: Any, tree_id: str, parent_id: str):
+    messagebox.showinfo(title="Testing", message=f"selected obj: {obj}\n"
+                                                 f"parent obj: {parent_obj}\n"
+                                                 f"tree id: {tree_id}\n"
+                                                 f"parent id: {parent_id}")
 
 
 def new_course_dialog():
@@ -63,18 +70,17 @@ def teacher_stat_dialog(obj: Any):
     messagebox.showinfo(title="Testing", message=f"Teacher stat for {str(obj)}")
 
 
-def valid_drop_site(resource_type: ResourceType, source: Any, target: Any) -> bool:
-    if resource_type == ResourceType.teacher:
-        if str(target).startswith("Section") or str(target).startswith("Block"):
-            return True
-    if str(target).startswith("Block"):
-        return True
-    return False
+def valid_drop_site(resource_type: ResourceType, target: Any) -> bool:
+    if str(target) == "Sandy":
+        return False
+    if str(target).startswith("P"):
+        return False
+    return True
 
 
-def item_dropped(resource_type: ResourceType, source: Any, target: Any):
+def item_dropped(source: Any, target: Any, id):
     messagebox.showinfo(title="Testing",
-                        message=f"{str(source)} [{str(resource_type)}] dropped on {str(target)}")
+                        message=f"'{str(source)}' dropped on '{str(target)}' tree id '{str(id)}'")
 
 
 # ----------------------------------------------------------------------------
@@ -108,19 +114,19 @@ s4 = Nothing("2B")
 s5 = Nothing("3A")
 s6 = Nothing("3B")
 
-# test_page.update_resource_type_objects(ResourceType.teacher, [t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12])
-# test_page.update_resource_type_objects(ResourceType.stream, [s1, s2, s3, s4, s5, s6])
-# test_page.update_resource_type_objects(ResourceType.lab, [l1, l2, l3, l4])
+test_page.update_resource_type_objects(ResourceType.teacher, [t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12])
+test_page.update_resource_type_objects(ResourceType.stream, [s1, s2, s3, s4, s5, s6])
+test_page.update_resource_type_objects(ResourceType.lab, [l1, l2, l3, l4])
 
 
-# c1 = Nothing("Operating Systems")
-# c1_id = test_page.add_tree_item("", str(c1), c1)
-# s1_id = test_page.add_tree_item(c1_id, f"Section 1 ({s1})", Nothing("Section 1"))
-# s2_id = test_page.add_tree_item(c1_id, f"Section 2 ({s2})", Nothing("Section 2"))
-# b1_id = test_page.add_tree_item(s1_id, "Block 1", Nothing("Block 1"))
-# b2_id = test_page.add_tree_item(s1_id, "Block 2", Nothing("Block 2"))
-# test_page.add_tree_item(b1_id, "Teacher: " + str(t1), t1)
-# test_page.add_tree_item(b1_id, "Lab: " + str(l1), l1)
+c1 = Nothing("Operating Systems")
+c1_id = test_page.add_tree_item("", str(c1), c1)
+s1_id = test_page.add_tree_item(c1_id, f"Section 1 ({s1})", Nothing("Section 1"))
+s2_id = test_page.add_tree_item(c1_id, f"Section 2 ({s2})", Nothing("Section 2"))
+b1_id = test_page.add_tree_item(s1_id, "Block 1", Nothing("Block 1"))
+b2_id = test_page.add_tree_item(s1_id, "Block 2", Nothing("Block 2"))
+test_page.add_tree_item(b1_id, "Teacher: " + str(t1), t1)
+test_page.add_tree_item(b1_id, "Lab: " + str(l1), l1)
 
 # ----------------------------------------------------------------------------
 # add all the callback routines

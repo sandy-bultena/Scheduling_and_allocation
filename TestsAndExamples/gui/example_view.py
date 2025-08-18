@@ -1,63 +1,84 @@
 from dataclasses import dataclass
 from tkinter import *
+import os
+import sys
 
-from TestsAndExamples.gui.dragging_in_canvas import gui_block_is_moving, gui_block_has_stopped_moving
-from schedule.Tk import MenuItem, MenuType
-from schedule.Utilities import Colour
+bin_dir: str = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.join(bin_dir, "../../"))
+
+from typing import Optional
+from schedule.gui_generics.menu_and_toolbars import MenuItem, MenuType
+from schedule.Utilities.id_generator import IdGenerator
+from schedule.model import Block, Teacher, Stream, Lab, Schedule
 from schedule.gui_pages.view_dynamic_tk import ViewDynamicTk
-from schedule.model import ResourceType, ConflictType
+from schedule.model import ResourceType
 
 mw = Tk()
-cn = Canvas(mw, height=700, width=700, background="white")
-cn.pack()
+frame = Frame(mw)
+frame.pack(expand=1,fill='both')
 
 
-@dataclass
-class ExampleBlock:
-    start_time: float = 8.0
-    day: int = 1
-    duration: float = 1.5
-    resource_type: ResourceType = ResourceType.teacher
-bl1 = ExampleBlock()
-bl2 = ExampleBlock(start_time=9.5, day=1)
+RESOURCE = Lab | Stream | Teacher
 
-conflict_info = []
-for c in (ConflictType.TIME_TEACHER, ConflictType.TIME, ConflictType.LUNCH,
-          ConflictType.MINIMUM_DAYS, ConflictType.AVAILABILITY):
-    bg = ConflictType.colours()[c]
-    fg = "white"
-    if Colour.is_light(bg):
-        fg = "black"
-    text = c.name
-    conflict_info.append({
-        "bg": Colour.string(bg),
-        "fg": Colour.string(fg),
-        "text": text
-    })
+_gui_block_ids = IdGenerator()
 
-def refresh_block_handler(view):
-    view.draw_block(ResourceType.teacher, 2, 9.5, 3, "Block 1", "bl1")
-    print("called refresh block")
+frame = Frame(mw)
+frame.pack(expand=1, fill = 'both')
+resource_type = ResourceType.teacher
+schedule = Schedule("../unit_tests_presenter/silly_winter.csv")
+gui_blocks: dict[str, Block] = {}
+blocks: list[Block] = []
 
-def default_menu(*_) -> list[MenuItem]:
-    menu1 = MenuItem(name="nothing", label="nothing", menu_type=MenuType.Command, command=lambda: None)
-    menu2 = MenuItem(name="more nothing", label="nothing", menu_type=MenuType.Command, command=lambda: None)
-    return [menu1, menu2]
+def draw_blocks():
+    global blocks
+    blocks = schedule.blocks()
+    gui_blocks.clear()
 
-view = ViewDynamicTk(mw, "View",conflict_info,
-                     refresh_blocks_handler = refresh_block_handler,
-                     get_popup_menu_handler=default_menu,
-                     on_closing_handler=lambda *_: print ("on closing"),
-                     undo_handler=lambda *_: print("undo"),
-                     redo_handler=lambda *_: print("redo"),
-                     double_click_block_handler=lambda x,*_: print("double clicked",x),
-                     gui_block_is_moving_handler= lambda x, *_: print("moving",x),
-                     gui_block_has_dropped_handler = lambda x, *_: print("dropped", x),
+    for block in blocks:
+        gui_block_id: int = _gui_block_ids.get_new_id()
+        gui_tag = f"gui_tag_{gui_block_id}"
+        gui_blocks[gui_tag] = block
 
-                     )
+        view.draw_block(resource_type=resource_type,
+                            day=block.day.value, start_time=block.start, duration=block.duration,
+                            text=gui_tag,
+                            gui_block_id=gui_tag,
+                            movable=block.movable)
+        view.colour_block(gui_tag, resource_type, block.movable, conflict=block.conflict)
 
-view.draw_block(ResourceType.teacher, 2, 9.5, 3, "Block 1", "bl1")
-c = view.view_canvas.gui_block_to_day_time_duration("bl1")
-print(c)
+def gui_block_is_moving(gui_id: str,  gui_block_day: float, gui_block_start_time: float):
+
+    block: Block = gui_blocks.get(gui_id,None)
+    block.start = gui_block_start_time
+    block.snap_to_day(gui_block_day)
+    block.snap_to_time()
+    schedule.calculate_conflicts()
+    for gui_tag, block in gui_blocks.items():
+        view.colour_block(gui_tag, resource_type, is_movable=block.movable, conflict=block.conflict)
+
+def gui_block_has_dropped(gui_id: str):
+    print("block dropped")
+    block: Block = gui_blocks.get(gui_id,None)
+    view.move_gui_block(gui_id, block.day.value,block.start)
+
+
+def tree_popup_menu( gui_id) -> Optional[list[MenuItem]]:
+    menu_list: list[MenuItem] = [MenuItem(menu_type=MenuType.Command, label="Click me",
+                                          command=lambda : print(f"menu for {gui_id}"))]
+    return menu_list
+
+# create the gui representation of the view
+view = ViewDynamicTk( frame, "Testing View", ResourceType.teacher)
+
+# Need to set handlers here, instead on constructor, so that it is easier for testing
+view.get_popup_menu_handler = tree_popup_menu
+view.refresh_blocks_handler = draw_blocks
+view.on_closing_handler = lambda *_: print ("on closing")
+view.double_click_block_handler = lambda x: print("double clicked",x)
+view.gui_block_is_moving_handler = gui_block_is_moving
+view.gui_block_has_dropped_handler = gui_block_has_dropped
+view.undo_handler = lambda: print("undo")
+view.redo_handler = lambda: print("redo")
+view.draw()
 
 mw.mainloop()

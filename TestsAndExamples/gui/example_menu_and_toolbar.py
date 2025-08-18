@@ -1,7 +1,12 @@
 from tkinter import *
-from schedule.Tk import make_toolbar, generate_menu
+import os
+import sys
+
+bin_dir: str = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.join(bin_dir, "../../"))
+
 from schedule.Tk import set_default_fonts_and_colours
-from schedule.gui_generics.menu_item import MenuItem, MenuType, ToolbarItem
+from schedule.gui_generics.menu_and_toolbars import generate_menu, make_toolbar, ToolbarItem, MenuItem, MenuType
 
 # =================================================================================================
 # Test the GUI_Pages menu and _toolbar creation work as required
@@ -20,11 +25,10 @@ def main():
     mw.configure(menu=menu_bar)
 
     # action
-    toolbar = make_toolbar(mw, buttons, toolbar_info, bg="red")
+    toolbar = make_toolbar(mw, buttons, toolbar_info)
     toolbar.pack(side='top', expand=0, fill='x')
-    # colours = TkColours(mw, invert=False)
 
-    toolbar2 = make_toolbar(mw, buttons, toolbar_info, colours)
+    toolbar2 = make_toolbar(mw, buttons, toolbar_info, colours, bg="blue")
     toolbar2.pack(side='top', expand=0, fill='x')
 
     # test (manually)

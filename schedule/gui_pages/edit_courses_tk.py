@@ -7,7 +7,7 @@
 # EVENT HANDLERS
 #
 #   double-click: edit the selected tree object
-#       handler_tree_edit(selected_obj, parent_obj, tree_id)
+#       handler_tree_edit(selected_obj, parent_obj, tree_id, parent_id)
 #
 #   button: create a new course (button)
 #       handler_new_course()

@@ -1,6 +1,11 @@
 from tkinter import *
+import os
+import sys
 
-from schedule.model import SemesterType, TimeSlot, WeekDay, ScheduleTime
+bin_dir: str = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.join(bin_dir, "../../"))
+
+from schedule.model import SemesterType, TimeSlot, WeekDay
 from schedule.model.schedule import Schedule
 from schedule.gui_dialogs.add_edit_block_dialog_tk import AddEditBlockDialogTk
 
@@ -30,7 +35,7 @@ def go_edit():
 def go_add():
     db = AddEditBlockDialogTk(frame, "add", 1.5, [t1, t2, t3], [t4], [l2], [l1, l3, l4], apply_changes)
 
-Button(frame, text="Edit Block", command=go_edit).pack()
-Button(frame, text="Add Blocks", command=go_add).pack()
+Button(frame, text="Edit Class Time", command=go_edit).pack()
+Button(frame, text="Add Class Times", command=go_add).pack()
 
 mw.mainloop()

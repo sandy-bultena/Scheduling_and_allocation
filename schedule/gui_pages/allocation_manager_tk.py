@@ -56,8 +56,11 @@ class AllocationManagerTk(MainPageBaseTk):
         # select previous files by default
         self.selected_files: dict[SemesterType, tk.StringVar] = {}
         for semester in SemesterType:
-            self.preferences.semester(semester.name)
-            self.selected_files[semester] =  tk.StringVar(value=str(self.preferences.previous_file()))
+            if preferences is not None:
+                self.preferences.semester(semester.name)
+                self.selected_files[semester] =  tk.StringVar(value=str(self.preferences.previous_file()))
+            else:
+                self.selected_files[semester] =  tk.StringVar(value=None)
 
         # create icon for program
         ico = Image.open(f"{bin_dir}/allocation_ico.png")
@@ -165,7 +168,7 @@ class AllocationManagerTk(MainPageBaseTk):
 
         # go
         tk.Button(option_frame, text="Go", font=self.fonts.big, padx=20,pady=5,
-                  command=self.go).grid(row=2, sticky='ew')
+                  command=self.go).grid(row=len(valid_semesters), sticky='ew')
 
     def select_file(self, semester):
         file = self.select_file_to_open(f"Open Schedule for {semester}")

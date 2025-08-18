@@ -1,10 +1,15 @@
+from functools import partial
 from tkinter import *
+import os
+import sys
+
+bin_dir: str = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.join(bin_dir, "../../"))
 
 from schedule.gui_dialogs.edit_section_dialog_tk import EditSectionDialogTk
 from schedule.gui_dialogs.add_section_dialog_tk import AddSectionDialogTk
-from schedule.model import SemesterType, TimeSlot, WeekDay, ScheduleTime, ClockTime
+from schedule.model import SemesterType, TimeSlot, WeekDay
 from schedule.model.schedule import Schedule, Course, Section
-from schedule.gui_dialogs.add_edit_block_dialog_tk import AddEditBlockDialogTk
 
 mw=Tk()
 frame = Frame(mw)
@@ -33,8 +38,8 @@ st2 = schedule.add_update_stream("1B")
 c_001:Course = schedule.add_update_course("001", "Basket Weaving", SemesterType.fall)
 s_001_1:Section = c_001.add_section("1", section_id=1)
 s_001_1.add_stream(st1)
-b_001_1_1 = s_001_1.add_block(TimeSlot(WeekDay.Monday, ScheduleTime(8)))
-b_001_1_2 = s_001_1.add_block(TimeSlot(WeekDay.Monday, ScheduleTime(10)))
+b_001_1_1 = s_001_1.add_block(WeekDay.Monday, 8)
+b_001_1_2 = s_001_1.add_block(WeekDay.Monday, 10)
 b_001_1_1.add_teacher(t1)
 b_001_1_2.add_teacher(t1)
 b_001_1_1.add_lab(l1)
@@ -42,38 +47,20 @@ b_001_1_2.add_lab(l1)
 
 s_001_2 = c_001.add_section("2", section_id=2)
 s_001_2.add_stream(st2)
-b_001_2_1 = s_001_2.add_block(TimeSlot(WeekDay.Tuesday, ScheduleTime(8)))
-b_001_2_2 = s_001_2.add_block(TimeSlot(WeekDay.Tuesday, ScheduleTime(10)))
+b_001_2_1 = s_001_2.add_block(WeekDay.Tuesday, 8)
+b_001_2_2 = s_001_2.add_block(WeekDay.Tuesday, 10)
 b_001_2_1.add_teacher(t2)
 b_001_2_2.add_teacher(t3)
 b_001_2_1.add_lab(l2)
 b_001_2_2.add_lab(l3)
 
 
-def apply_changes(descr, teachers, labs, streams, blocks):
-    print( descr, teachers, labs, streams, blocks)
-    for b in blocks:
-        day = WeekDay[b[0]]
-        start = ClockTime(b[1])
-        hrs = b[2]
-
-        print(day, start, hrs)
-
-def apply_changes2(number, blocks):
-    print( number,  blocks)
-    for b in blocks:
-        day = WeekDay[b[0]]
-        start = ClockTime(b[1])
-        hrs = b[2]
-
-        print(day, start, hrs)
-
 def go_edit():
     title = f"{s_001_1.course.name} ({s_001_1.hours} hrs)"
     text = s_001_1.title
     block_data = []
     for b in s_001_1.blocks():
-        block_data.append( (b.time_slot.day.name, str(b.time_slot.time_start), str(b.time_slot.duration)))
+        block_data.append( (b.day.name, str(b.start), str(b.duration)))
     db = EditSectionDialogTk(frame,
                              course_description = title,
                              section_description = text,
@@ -84,7 +71,7 @@ def go_edit():
                              assigned_streams = [],
                              non_assigned_streams = [st1,st2],
                              current_blocks= block_data,
-                             apply_changes=apply_changes,
+                             apply_changes=partial(schedule.update_section, s_001_1),
                              course_hours = s_001_1.course.hours_per_week)
 
 def go_add():
@@ -92,7 +79,7 @@ def go_add():
     title = f"{s_001_1.course.name} ({s_001_1.hours} hrs)"
     db = AddSectionDialogTk(frame,
                              course_description = title,
-                             apply_changes=apply_changes2,
+                             apply_changes=partial(schedule.add_sections,s_001_1.course),
                              course_hours = s_001_1.course.hours_per_week),
 
 Button(frame, text="Edit Section", command=go_edit).pack()

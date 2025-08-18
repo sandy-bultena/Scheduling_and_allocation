@@ -18,8 +18,9 @@ s = Schedule(file)
 
 f = tk.Frame(mw, background="pink")
 f.pack(expand=1, fill="both")
+def set_dirty_flag(flag=False): ...
 
-ae = AllocationEditor(frame =f, schedule = s)
+ae = AllocationEditor(set_dirty_flag, frame =f, schedule = s)
 
 tk.mainloop()
 

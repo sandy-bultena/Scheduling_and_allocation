@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter.ttk import Notebook
 
+# ISSUE: when changing notebook tabs, the notebook page doesn't redraw
 mw = Tk()
 mw.title("Notebook Test")
 mw.geometry(f"{800}x{800}")

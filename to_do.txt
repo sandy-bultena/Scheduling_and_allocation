@@ -8,6 +8,7 @@
 * Update README and installation instructions
 * Either remove or update "Synopsis" in code comments
 * Add 'enter' binding for moving resource from/to
+* Add 'install Pillow' to README
 
 ============ Done ================
 * Switching between view tabs and back disconnects view from view controller (and the buttons I thing in the view choices)

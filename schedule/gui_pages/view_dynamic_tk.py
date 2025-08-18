@@ -48,7 +48,7 @@ class ViewDynamicTk:
     # =================================================================================================================
     def __init__(self, frame: tk.Frame, title: str, resource_type: ResourceType,):
         """
-        creates a dynamic view to see all of the blocks, where they are, movable, changeable, etc.
+        creates a dynamic view to see all the blocks, where they are, movable, changeable, etc.
         :param frame: where to put the view
         :param title: title of the toplevel window (displayed in the top bar)
         :param resource_type: What type of view is this

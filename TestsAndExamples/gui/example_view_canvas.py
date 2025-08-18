@@ -1,5 +1,11 @@
 from dataclasses import dataclass
 from tkinter import *
+import os
+import sys
+
+bin_dir: str = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.join(bin_dir, "../../"))
+
 from schedule.gui_pages.view_canvas_tk import ViewCanvasTk
 from schedule.model import ResourceType
 
@@ -17,8 +23,8 @@ class ExampleBlock:
     resource_type: ResourceType = ResourceType.teacher
 bl1 = ExampleBlock()
 bl2 = ExampleBlock(start_time=9.5, day=1)
-vc.draw_block(ResourceType.teacher, bl1.day, bl1.start_time, bl1.duration,"Block1","g01")
-vc.draw_block(ResourceType.teacher, bl2.day, bl2.start_time, bl2.duration,"Block2","g02")
+vc.draw_block(ResourceType.teacher, bl1.day, bl1.start_time, bl1.duration,"Block1","g01",movable=True)
+vc.draw_block(ResourceType.teacher, bl2.day, bl2.start_time, bl2.duration,"Block2","g02", movable=True)
 
 
 mw.mainloop()

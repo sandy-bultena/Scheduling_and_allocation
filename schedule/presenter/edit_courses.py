@@ -520,7 +520,7 @@ class EditCourses:
     # -------------------------------------------------------------------------------------------------------------
     def resource_drag_event_is_valid_drop(self, resource_type: ResourceType, destination: TREE_OBJECT) -> bool:
         """
-        is the destination object a legimate object to accept as a parent for this resource type?
+        is the destination object a legitimate object to accept as a parent for this resource type?
         :param resource_type:
         :param destination:
         """
