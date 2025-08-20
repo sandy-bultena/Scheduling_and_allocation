@@ -1,21 +1,3 @@
-"""SYNOPSIS
-
-    from Schedule.Course import Course
-    from Schedule.Block import Block
-    from Schedule.Section import Section
-    from DaysOfWeek import WeekDays
-
-    blocks = Block(day = WeekDay.Wednesday, time_start = "9:30", duration = 1.5)
-    section = Section(number = 1, hours = 6)
-    course = Course(name = "Basket Weaving", number="420-ABC-DEF")
-
-    course.add_section(section)
-    section.add_block(blocks)
-
-    print("Course consists of the following sections: ")
-    for s in course.sections():
-        # print info about section
-"""
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 
@@ -334,30 +316,3 @@ class Course:
     def __repr__(self) -> str:
         return f"{self.title}  ({self.hours_per_week} hrs/wk)"
 
-
-
-# =================================================================
-# footer
-# =================================================================
-__copyright__ = '''
-1;
-
-=head1 AUTHOR
-
-Sandy Bultena, Ian Clement, Jack Burns
-
-Translated to Python by Evan Laverdiere
-
-=head1 COPYRIGHT
-
-Copyright (c) 2016, Jack Burns, Sandy Bultena, Ian Clement. 
-
-All Rights Reserved.
-
-This module is free software. It may be used, redistributed
-and/or modified under the terms of the Perl Artistic License
-
-     (see http://www.perl.com/perl/misc/Artistic.html)
-
-=cut
-'''

@@ -512,11 +512,3 @@ class Scheduler:
             self._dirty_flag = value
         return self.dirty_flag
 
-
-
-    """
-    (c) Sandy Bultena 2025
-    Copyrighted by the standard GPL License Agreement
-
-    All Rights Reserved.
-    """

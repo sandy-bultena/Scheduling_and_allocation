@@ -1,25 +1,6 @@
 from __future__ import annotations
 from .enums import ResourceType
 
-"""
-SYNOPSIS
-
-    from Teacher import Teacher
-    mouse    = Teacher(firstname = "Micky", 
-                      lastname  = "Mouse",
-                      dept      = "Disney"
-                      )
-    duck    = Teacher(firstname = "Donald", 
-                      lastname  = "Duck",
-                      dept      = "Mouse"
-                      )
-    for teacher in Teachers.List():
-        print (teacher)
-    
-    Teacher.remove(duck);
-
-"""
-
 
 class Teacher:
     """Describes a teacher."""
@@ -42,9 +23,9 @@ class Teacher:
         self._id = f"{self.lastname}_{self.firstname}"
         self._id = self._id.replace(" ", "_")
 
-    # =================================================================
+    # -------------------------------------------------------------------------
     # unique identifier
-    # =================================================================
+    # -------------------------------------------------------------------------
     @property
     def teacher_id(self) -> str:
         return self._id
@@ -54,9 +35,9 @@ class Teacher:
         """Returns the unique ID for this Teacher."""
         return self.teacher_id
 
-    # =================================================================
+    # -------------------------------------------------------------------------
     # other
-    # =================================================================
+    # -------------------------------------------------------------------------
     def __str__(self) -> str:
         return f"{self.firstname} {self.lastname}"
 
@@ -71,28 +52,3 @@ class Teacher:
 
     def __hash__(self):
         return hash(self.number)
-
-
-# =================================================================
-# footer
-# =================================================================
-__copyright__ = '''
-
-=head1 AUTHOR
-
-Sandy Bultena, Ian Clement, Jack Burns
-
-=head1 COPYRIGHT
-
-Copyright (c) 2016, Jack Burns, Sandy Bultena, Ian Clement. 
-Copyright (c) 2025, Sandy Bultena
-
-All Rights Reserved.
-
-This module is free software. It may be used, redistributed
-and/or modified under the terms of the Perl Artistic License
-
-     (see http://www.perl.com/perl/misc/Artistic.html)
-
-=cut
-'''

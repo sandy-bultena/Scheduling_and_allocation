@@ -1,32 +1,3 @@
-"""
-SYNOPSIS
-
-    from Schedule.Section import Section
-    from Schedule.Block import Block
-    from Schedule.Lab import Lab
-    from Schedule.Teacher import Teacher
-
-    block = Block(day = "Wed", time_start = "9:30", duration = 1.5)
-    section = Section(number = 1, hours = 6)
-    course = Course(name = "Basket Weaving")
-    teacher = Teacher("Jane", "Doe")
-    lab = Lab("P327")
-
-    course.add_section(section)
-    section.add_block(block)
-
-    print("Section consists of the following blocks: ")
-    for b in section.blocks:
-        # print info about block
-
-    section.add_teacher(teacher)
-    section.remove_teacher(teacher)
-    section.teachers
-
-    section.add_lab(lab)
-    section.remove_lab(lab)
-    section.labs()
-"""
 
 from __future__ import annotations
 import re
@@ -54,18 +25,18 @@ def _validate_hours(hours: float) -> float:
     return hours
 
 
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-# CLASS: Section
-# ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+# ============================================================================
+# Section
+# ============================================================================
 class Section:
     """
     Describes a section (part of a course)
     """
     section_ids = IdGenerator()
 
-    # ========================================================
+    # -------------------------------------------------------------------------
     # CONSTRUCTOR
-    # ========================================================
+    # -------------------------------------------------------------------------
     def __init__(self, course: Course, number: str = "", name: str = "",
                  section_id: Optional[int] = None):
         """
@@ -74,9 +45,6 @@ class Section:
         :param name:
         """
 
-        # LEAVE IN:
-        # Allows for teacher allocations to be tracked & calculated correctly in AllocationManager,
-        # since Blocks are ignored there
         self._streams: set[Stream] = set()
         self._allocation: dict[Teacher:float] = dict()
         self._blocks: set[Block] = set()
@@ -88,9 +56,9 @@ class Section:
 
         self._section_id = Section.section_ids.get_new_id(section_id)
 
-    # ========================================================
+    # -------------------------------------------------------------------------
     # PROPERTIES
-    # ========================================================
+    # -------------------------------------------------------------------------
     @property
     def hours(self) -> float:
         """
@@ -110,16 +78,16 @@ class Section:
         """ Gets name if defined, otherwise 'Section num' """
         return self.name if self.name else f"Section {self.number}"
 
-    # --------------------------------------------------------
+    # -------------------------------------------------------------------------
     # conflicts
-    # --------------------------------------------------------
+    # -------------------------------------------------------------------------
     def is_conflicted(self) -> bool:
         """ Checks if there is a conflict with this section """
         return any(map(lambda block: block.conflict.is_conflicted(), self.blocks()))
 
-    # --------------------------------------------------------
+    # -------------------------------------------------------------------------
     # blocks
-    # --------------------------------------------------------
+    # -------------------------------------------------------------------------
     def blocks(self) -> tuple[Block, ...]:
         """ Gets list of section's blocks """
         return tuple(sorted(self._blocks))
@@ -150,9 +118,9 @@ class Section:
         """Does this section have this block? """
         return block in self._blocks
 
-    # --------------------------------------------------------
+    # -------------------------------------------------------------------------
     # labs
-    # --------------------------------------------------------
+    # -------------------------------------------------------------------------
     def labs(self) -> tuple[Lab, ...]:
         """ Gets all labs assigned to all blocks in this section """
         labs: set[Lab] = set()
@@ -181,9 +149,9 @@ class Section:
             for b in self.blocks():
                 b.remove_lab(lab)
 
-    # --------------------------------------------------------
-    # teachers (used for scheduler program)
-    # --------------------------------------------------------
+    # -------------------------------------------------------------------------
+    # teachers (exclusively for scheduler program)
+    # -------------------------------------------------------------------------
     def teachers(self) -> tuple[Teacher, ...]:
         """ Gets all teachers assigned to all blocks in this section and
         any teachers that were explicitly assigned to this section"""
@@ -214,9 +182,9 @@ class Section:
             answer = answer or b.has_teacher(teacher)
         return answer
 
-    # --------------------------------------------------------
+    # -------------------------------------------------------------------------
     # teacher allocation (used for allocation program)
-    # --------------------------------------------------------
+    # -------------------------------------------------------------------------
     def section_defined_teachers(self) -> tuple[Teacher, ...]:
         """gets only teachers that were explicitly assigned to this section in allocation manager"""
         teachers = set()
@@ -301,9 +269,9 @@ class Section:
             allocation += sum((b.duration for b in self.blocks() if teacher in b.teachers()))
         return allocation
 
-    # --------------------------------------------------------
+    # -------------------------------------------------------------------------
     # streams
-    # --------------------------------------------------------
+    # -------------------------------------------------------------------------
     def streams(self) -> tuple[Stream, ...]:
         """ Gets all streams in this section """
         return tuple(sorted(self._streams))
@@ -324,18 +292,18 @@ class Section:
         """ Removes all streams from this section """
         self._streams.clear()
 
-    # --------------------------------------------------------
+    # -------------------------------------------------------------------------
     # clear everything from the stream
-    # --------------------------------------------------------
+    # -------------------------------------------------------------------------
     def clear(self):
         self.remove_all_teachers()
         self.remove_all_streams()
         self.remove_all_labs()
         self.remove_all_blocks()
 
-    # --------------------------------------------------------
+    # -------------------------------------------------------------------------
     # string representation
-    # --------------------------------------------------------
+    # -------------------------------------------------------------------------
     def __str__(self) -> str:
         """ Returns a text string that describes the section """
         if self.name and not re.match(r"Section\s*\d*$", self.name):

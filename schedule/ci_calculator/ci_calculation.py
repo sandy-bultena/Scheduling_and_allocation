@@ -21,12 +21,17 @@ def calculate_ci(teacher:Teacher, schedule: Schedule):
     c = CICalc(teacher, schedule)
     return c.calculate()
 
-class CICalc():
+class CICalc:
     def __init__(self, teacher:Teacher, schedule: Schedule):
+        """
+        :param teacher:
+        :parm schedule:
+        """
         self._reset()
         self.prep_hours = 0
         self.schedule = schedule
         self.teacher = teacher
+        self.release = 0
 
     def _reset(self):
         self.pes = 0
@@ -37,8 +42,10 @@ class CICalc():
         self.release = 0
         self.dirty_flag = False
 
-    def calculate(self, ) -> str:
-        CI = []
+    def calculate(self, ) -> float:
+        """
+        Calculate the CI for the teacher and schedule specified during the init
+        """
         schedule = self.schedule
         teacher = self.teacher
 
@@ -123,7 +130,7 @@ class CICalc():
             debug(f"CI bonus prep: {self.prep_hours * PREP_BONUS_FACTOR}")
 
         # more bonus if over the limit
-        elif (self.num_preps > PREP_BONUS_LIMIT):
+        elif self.num_preps > PREP_BONUS_LIMIT:
             CI_preps += self.prep_hours * PREP_CRAZY_BONUS_FACTOR
             debug(f"CI bonus bonus prep: {self.prep_hours * PREP_CRAZY_BONUS_FACTOR}")
 

@@ -555,26 +555,3 @@ class EditCourses:
         :return:
         """
         self.assign_selected_to_parent(destination, resource,tree_id)
-
-
-"""
-
-=head1 AUTHOR
-
-Sandy Bultena, Ian Clement, Jack Burns
-
-=head1 COPYRIGHT
-
-Copyright (c) 2020, Jack Burns, Sandy Bultena, Ian Clement. 
-
-All Rights Reserved.
-
-This module is free software. It may be used, redistributed
-and/or modified under the terms of the Perl Artistic License
-
-     (see http://www.perl.com/perl/misc/Artistic.html)
-
-=cut
-
-1;
-"""

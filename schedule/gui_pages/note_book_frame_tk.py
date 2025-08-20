@@ -87,9 +87,9 @@ class NoteBookFrameTk:
         if tabs_info is None:
             return
 
+        # Create notebook if required
         if self.notebooks is None:
             self.notebooks: list[ttk.Notebook] = []
-        # Create notebook if required
         notebook = ttk.Notebook(notebook_frame)
         self.notebooks.append(notebook)
         notebook.pack(expand=1, fill='both')
@@ -98,6 +98,7 @@ class NoteBookFrameTk:
             self.main_notebook_frame = notebook
 
         for info in tabs_info:
+
             # create a frame and add to the notebook
             frame = tk.Frame(self.mw, **info.frame_args)
             notebook.add(frame, text=info.label)
@@ -121,6 +122,9 @@ class NoteBookFrameTk:
         # add the binding for changing of events, and include a list of events for each tab change
         notebook.bind("<<NotebookTabChanged>>", partial(self.tab_changed, notebook))
 
+    # ===================================================================================
+    # tab has changed
+    # ===================================================================================
     def tab_changed(self, notebook: ttk.Notebook, *_):
         """
         calls the tab changed callback when the tab has changed
@@ -131,8 +135,13 @@ class NoteBookFrameTk:
             index = notebook.index(notebook.select())
             tab_name, frame = self.tab_frames.get((notebook, index), None)
             self.tab_changed_handler(tab_name, frame)
+
+            # have to delay to get this to work properly,
+            # maybe using 'after_idle' works, but haven't tired it
             notebook.after(10, lambda *_:_expose_widgets(frame))
             notebook.after(20,lambda *_: notebook.event_generate("<Leave>"))
+
         except tk.TclError:
+            """just in case tk has a problem with this as the notebook is being created"""
             pass
 

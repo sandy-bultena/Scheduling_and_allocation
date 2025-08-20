@@ -27,14 +27,14 @@ property_conversions_from_str = {
 }
 
 
-# ============================================================================
+# =====================================================================================================================
 # Class Edit Resources
-# ============================================================================
+# =====================================================================================================================
 class EditResources:
 
-    # =================================================================
+    # -----------------------------------------------------------------------------------------------------------------
     # constructor
-    # =================================================================
+    # -----------------------------------------------------------------------------------------------------------------
     def __init__(self,
                  dirty_flag_method: Callable[[Optional[bool]], bool],
                  frame,
@@ -50,9 +50,7 @@ class EditResources:
         :gui: the gui object that shows data (optional)
         """
 
-        # ----------------------------------------------------------------------------
         # Resource type specifics
-        # ----------------------------------------------------------------------------
         match view_type:
             case ResourceType.teacher:
                 self.column_descriptions: list[DEColumnDescription] = [
@@ -95,9 +93,7 @@ class EditResources:
                 self._delete_resource = lambda x: None
                 self._update_resource = lambda *args, **kwargs: None
 
-        # ----------------------------------------------------------------------------
         # other initializations
-        # ----------------------------------------------------------------------------
         if not gui:
             self.gui = EditResourcesTk(
                 parent=frame,
@@ -115,9 +111,9 @@ class EditResources:
         self.schedule: Optional[Schedule] = schedule
         self.gui.initialize_columns(self.column_descriptions, disabled_columns)
 
-    # =================================================================
+    # -----------------------------------------------------------------------------------------------------------------
     # refresh the tables
-    # =================================================================
+    # -----------------------------------------------------------------------------------------------------------------
     def refresh(self):
         """update the table to represent the 'new' data"""
 
@@ -133,9 +129,9 @@ class EditResources:
         # purge the delete queue
         self.delete_queue.clear()
 
-    # ------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------------------------------------
     # Save updated data
-    # ------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------------------------------------
     def save(self, all_data: list[list[str]]):
         """
         Save any changes that the user entered in the GUI_Pages form.
@@ -161,9 +157,9 @@ class EditResources:
         self.dirty_flag_method(changes)
         self.refresh()
 
-    # =================================================================
+    # -----------------------------------------------------------------------------------------------------------------
     # delete object
-    # =================================================================
+    # -----------------------------------------------------------------------------------------------------------------
     def delete_obj(self, data: list[str], *_):
         """Save delete requests, to be processed later. Note that all data is given in string representation"""
         obj = None
@@ -175,9 +171,9 @@ class EditResources:
         if obj:
             self.delete_queue.append(obj)
 
-    # ------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------------------------------------
     # Check if any of the resources have been modified
-    # ------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------------------------------------
     def _check_for_changed_resources(self, all_data) -> list[dict]:
         """Go through data that is in gui, and compare to existing objects
         :return dictionary: key/value pairs required for this resource type's constructor
@@ -210,9 +206,9 @@ class EditResources:
 
         return changed_objects
 
-    # ------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------------------------------------
     # does an object need to be updated?
-    # ------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------------------------------------
     def _object_changed(self, obj, data) -> bool:
         """compares each column data with the attribute for the object and returns true if any of them are different"""
 
@@ -221,18 +217,3 @@ class EditResources:
                 if str(getattr(obj, column.property, None)) != data[col]:
                     return True
         return False
-
-
-'''
-=head1 AUTHOR
-Sandy Bultena
-
-=head1 COPYRIGHT
-Copyright (c) 2025, Sandy Bultena
-Copyright (c) 2020, Jack Burns, Sandy Bultena, Ian Clement. 
-
-All Rights Reserved.
-This module is free software. It may be used, redistributed
-and/or modified under the terms of the Perl Artistic License
-     (see http://www.perl.com/perl/misc/Artistic.html)
-'''

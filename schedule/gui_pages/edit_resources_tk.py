@@ -153,26 +153,3 @@ class EditResourcesTk:
         # reset currently saving
         self.Currently_saving -= 1
 
-
-
-
-"""
-=head1 AUTHORS
-
-Sandy Bultena, Ian Clement, Jack Burns
-
-=head1 COPYRIGHT
-
-Copyright (c) 2025, Sandy Bultena
-
-Copyright (c) 2021, Jack Burns, Sandy Bultena, Ian Clement. 
-
-All Rights Reserved.
-
-This module is free software. It may be used, redistributed
-and/or modified under the terms of the Perl Artistic License
-
-     (see http://www.perl.com/perl/misc/Artistic.html)
-
-=cut
-"""

@@ -1,21 +1,5 @@
-""" SYNOPSIS:
-
-from Schedule.Course import Course
-from Schedule.Block import Block
-from Schedule.Teacher import Teacher
-from Schedule.Lab import Lab
-
-block = Block(day = "Wed", time_start = "9:30", duration = 1.5)
-teacher = Teacher("Jane", "Doe")
-lab = Lab("P327")
-
-block.add_teacher(teacher)
-block.remove_teacher(teacher)
-block.teachers()
-
-block.add_lab(lab)
-block.remove_lab(lab)
-block.labs()
+"""
+Define a class time for teaching
 """
 
 from __future__ import annotations
@@ -39,24 +23,20 @@ DEFAULT_DAY = WeekDay.Monday
 DEFAULT_START = 8.0
 DEFAULT_DURATION = 1.5
 
-# -----------------------------------------------------------------------------------------------------------
-# Design Note: Keeping time slot a separate thing, so that we can sync blocks more easily
-#              but... hiding the interface to make the block API easier to use
-# -----------------------------------------------------------------------------------------------------------
+# =====================================================================================================================
+# Block - Class time
+# =====================================================================================================================
 class Block:
     """
     Describes a block which is a specific time slot for teaching part of a section of a course.
     """
 
-    # =================================================================
     # Class Variables
-    # =================================================================
     block_ids = IdGenerator()
 
-    # =================================================================
+    # -----------------------------------------------------------------------------------------------------------------
     # Constructor
-    # =================================================================
-
+    # -----------------------------------------------------------------------------------------------------------------
     def __init__(self, section: Section,
                  day: WeekDay | float = DEFAULT_DAY,
                  start: float = DEFAULT_START,
@@ -65,11 +45,11 @@ class Block:
                  block_id: OptionalId = None) -> None:
         """
         Creates a new block object (class time)
-        :param section:
+        :param section: a block must be part of a course/section
         :param day:
-        :param start:
-        :param duration:
-        :param movable:
+        :param start: when does the class start (float)
+        :param duration: how long does the class last
+        :param movable: can the time/day of this class be moved
         :param block_id:
         """
         self._sync: list[Block] = []
@@ -81,6 +61,9 @@ class Block:
         self.conflict = ConflictType.NONE
         self._block_id = Block.block_ids.get_new_id(block_id)
 
+    # -----------------------------------------------------------------------------------------------------------------
+    # generic properites
+    # -----------------------------------------------------------------------------------------------------------------
     @property
     def id(self):
         """block id"""
@@ -95,9 +78,9 @@ class Block:
         """Returns text string that describes this Block."""
         return str(self._time_slot)
 
-    # ------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------------------------------------
     # time slot properties and functions
-    # ------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------------------------------------
     @property
     def start(self) -> float:
         return self._time_slot.start
@@ -150,9 +133,9 @@ class Block:
         """
         return self._time_slot.conflicts_time(other._time_slot)
 
-    # ------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------------------------------------
     # Conflicts
-    # ------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------------------------------------
     def add_conflict(self, conflict: ConflictType):
         """add a conflict to any pre-existing conflict"""
         self.conflict |= conflict
@@ -161,16 +144,16 @@ class Block:
         """remove any and all conflicts"""
         self.conflict = ConflictType.NONE
 
-    # ------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------------------------------------
     # All about streams
-    # ------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------------------------------------
     def streams(self) -> tuple[Stream, ...]:
         """Returns an immutable list of the assigned to the section that this block is part of."""
         return self.section.streams()
 
-    # ------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------------------------------------
     # All about labs
-    # ------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------------------------------------
     def labs(self) -> tuple[Lab, ...]:
         """Returns an immutable list of the labs assigned to this block."""
         return tuple(sorted(self._labs))
@@ -191,9 +174,9 @@ class Block:
         """Returns true if the Block has the specified Lab."""
         return lab in self._labs
 
-    # ------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------------------------------------
     # All about Teachers
-    # ------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------------------------------------
     def teachers(self) -> tuple[Teacher, ...]:
         """Returns an immutable list of the teachers assigned to this block."""
         return tuple(sorted(self._teachers))
@@ -214,9 +197,9 @@ class Block:
         """Returns true if the Block has the specified Lab."""
         return teacher in self._teachers
 
-    # ------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------------------------------------
     # All about syncing
-    # ------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------------------------------------
     def synced_blocks(self) -> tuple[Block, ...]:
         """Returns a tuple of the Blocks which are synced_blocks to this Block."""
         return tuple(self._sync)
@@ -240,9 +223,9 @@ class Block:
             self._sync.remove(block)
             block._time_slot = copy.copy(block._time_slot)
 
-    # ------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------------------------------------
     # string representation of object
-    # ------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------------------------------------
     def __str__(self) -> str:
         """Returns a text string that describes the Block."""
         text = ""
@@ -255,6 +238,9 @@ class Block:
     def __repr__(self) -> str:
         return f"{self.id} - {self.description()}"
 
+    # -----------------------------------------------------------------------------------------------------------------
+    # sorting properties
+    # -----------------------------------------------------------------------------------------------------------------
     def __lt__(self,other):
         return self._time_slot < other._time_slot
 
@@ -265,24 +251,3 @@ class Block:
         return hash(self._block_id)
 
 
-# =================================================================
-# footer
-# =================================================================
-__copyright__ = '''
-
-=head1 AUTHOR
-
-Sandy Bultena
-
-=head1 COPYRIGHT
-
-Copyright (c) 2016, Jack Burns, Sandy Bultena, Ian Clement. 
-Copyright (c) 2025, Sandy Bultena
-
-All Rights Reserved.
-
-This module is free software. It may be used, redistributed
-and/or modified under the terms of the Perl Artistic License
-
-     (see http://www.perl.com/perl/misc/Artistic.html)
-'''

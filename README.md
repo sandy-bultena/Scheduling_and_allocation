@@ -115,3 +115,9 @@ To exit your virtual environment once you are done, type `deactivate`.
 To install all necessary Python packages, type this command in the terminal:
 
 `pip install -r requirements.txt`
+
+# COPYRIGHT
+
+Copyright (c) 2016, Jack Burns, Sandy Bultena, Ian Clement. 
+Copyright (c) 2025, Sandy Bultena
+

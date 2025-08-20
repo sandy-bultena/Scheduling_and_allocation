@@ -2,16 +2,12 @@
 # ============================================================================
 # Create dynamic menus (dependent on the state of the Schedule object)
 #
-# METHODS:
-#   create_tree_menus       # right-click popup menus for tree items
-#   show_scheduable_menu    # right-click popup menu for teacher/stream/labs lists
-#
 # NOTE: this module is dependent on functions in EditCourses
 #       edit_block_dialog(selected_object, tree_id)
 #       add_blocks_dialog(selected_object, tree_id)
 #       edit_section_dialog(selected_object, tree_id)
 #       edit_course_dialog(selected_object, tree_id)
-#       remove_selected_from_parent(parent_object, selected_object, tree_parent_id))
+#       remove_selected_from_parent(parent_object, selected_object, tree_parent_id)
 #       modify_course_needs_allocation(selected_object, true_false, tree_id)
 #       add_section_dialog(selected_object, tree_id)
 #       assign_selected_to_parent(selected_object, resource, tree_id)
@@ -82,9 +78,9 @@ class CreateTreePopupMenuActions:
             menu_list.append(MenuItem(menu_type=MenuType.Separator))
 
             self._add_section( menu_list)
-            self.sub_menu_add_items(menu_list, ResourceType.teacher)
-            self.sub_menu_add_items(menu_list, ResourceType.lab)
-            self.sub_menu_add_items(menu_list, ResourceType.stream)
+            self._sub_menu_add_items(menu_list, ResourceType.teacher)
+            self._sub_menu_add_items(menu_list, ResourceType.lab)
+            self._sub_menu_add_items(menu_list, ResourceType.stream)
 
             menu_list.append(MenuItem(menu_type=MenuType.Separator))
 
@@ -100,14 +96,14 @@ class CreateTreePopupMenuActions:
             menu_list.append(MenuItem(menu_type=MenuType.Separator))
 
             self._add_blocks(menu_list)
-            self.sub_menu_add_items(menu_list, ResourceType.teacher)
-            self.sub_menu_add_items(menu_list, ResourceType.lab)
-            self.sub_menu_add_items(menu_list, ResourceType.stream)
+            self._sub_menu_add_items(menu_list, ResourceType.teacher)
+            self._sub_menu_add_items(menu_list, ResourceType.lab)
+            self._sub_menu_add_items(menu_list, ResourceType.stream)
 
             menu_list.append(MenuItem(menu_type=MenuType.Separator))
-            self.sub_menu_remove_items(menu_list, ResourceType.teacher)
-            self.sub_menu_remove_items(menu_list, ResourceType.lab)
-            self.sub_menu_remove_items(menu_list, ResourceType.stream)
+            self._sub_menu_remove_items(menu_list, ResourceType.teacher)
+            self._sub_menu_remove_items(menu_list, ResourceType.lab)
+            self._sub_menu_remove_items(menu_list, ResourceType.stream)
             self._remove_all_items(menu_list, "section")
 
         # ------------------------------------------------------------------------------------------------------------
@@ -119,12 +115,12 @@ class CreateTreePopupMenuActions:
 
             menu_list.append(MenuItem(menu_type=MenuType.Separator))
 
-            self.sub_menu_add_items(menu_list, ResourceType.teacher)
-            self.sub_menu_add_items(menu_list, ResourceType.lab)
+            self._sub_menu_add_items(menu_list, ResourceType.teacher)
+            self._sub_menu_add_items(menu_list, ResourceType.lab)
 
             menu_list.append(MenuItem(menu_type=MenuType.Separator))
-            self.sub_menu_remove_items(menu_list, ResourceType.teacher)
-            self.sub_menu_remove_items(menu_list, ResourceType.lab)
+            self._sub_menu_remove_items(menu_list, ResourceType.teacher)
+            self._sub_menu_remove_items(menu_list, ResourceType.lab)
             self._remove_all_items(menu_list, "block")
 
         # ------------------------------------------------------------------------------------------------------------
@@ -200,7 +196,7 @@ class CreateTreePopupMenuActions:
         )
 
     # ------------------------------------------------------------------------------------------------------------
-    def sub_menu_add_items(self, menu_list: list[MenuItem], view: ResourceType):
+    def _sub_menu_add_items(self, menu_list: list[MenuItem], view: ResourceType):
         match view:
             case ResourceType.lab:
                 items = [o for o in self.presenter.schedule.labs() if not self.selected_object.has_lab(o)]
@@ -228,7 +224,7 @@ class CreateTreePopupMenuActions:
         menu_list.append(sub_menu)
 
     # ------------------------------------------------------------------------------------------------------------
-    def sub_menu_remove_items(self, menu_list: list[MenuItem], view: ResourceType):
+    def _sub_menu_remove_items(self, menu_list: list[MenuItem], view: ResourceType):
         match view:
             case ResourceType.lab:
                 items = [o for o in self.presenter.schedule.labs() if self.selected_object.has_lab(o)]
@@ -246,6 +242,7 @@ class CreateTreePopupMenuActions:
         sub_menu = MenuItem(menu_type=MenuType.Cascade, tear_off=False, label=text)
 
         # ... do NOT use lambda's in a loop, we need to bind the individual 'item' in loop rather than its last value
+        # ... or use partials
         # ... https://stackoverflow.com/questions/54288926/python-loops-and-closures
         for item in items:
             def f(item_closure=item):

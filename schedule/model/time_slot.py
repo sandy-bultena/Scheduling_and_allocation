@@ -25,14 +25,18 @@ def get_clock_string_from_hours(hours: float)->str:
     hour,minute = get_hour_minutes_from_hours(hours)
     return f"{hour}:{minute:02d}"
 
-
-
+# ============================================================================
+# TimeSlot
+# ============================================================================
 class TimeSlot:
     """
     A time slot is specified by a day of the week, time_start time, length (in hours), and whether
         it is allowed to move.
     """
 
+    # ------------------------------------------------------------------------
+    # constructor
+    # ------------------------------------------------------------------------
     def __init__(self, day: WeekDay | float = DEFAULT_DAY ,
                  start: float = DEFAULT_START,
                  duration: float = DEFAULT_DURATION,
@@ -50,13 +54,16 @@ class TimeSlot:
         self.duration: float = min(max(duration, MINIMUM_DURATION), MAXIMUM_DURATION)
         self.movable: bool = movable
 
+    # ------------------------------------------------------------------------
+    # properties
+    # ------------------------------------------------------------------------
     @property
     def end(self) -> float:
         return self.start + self.duration
 
-    # ====================================
+    # ------------------------------------------------------------------------
     # snap_to_time
-    # ====================================
+    # ------------------------------------------------------------------------
     def snap_to_time(self):
 
         # it's not movable!
@@ -80,9 +87,9 @@ class TimeSlot:
         self.start = hour + minute/60
 
 
-    # =================================================================
+    # ------------------------------------------------------------------------
     # snap_to_day
-    # =================================================================
+    # ------------------------------------------------------------------------
     def snap_to_day(self, fractional_day: float,
                     min_day: WeekDay = WeekDay.Monday,
                     max_day: WeekDay = WeekDay.Friday) -> bool:
@@ -99,9 +106,9 @@ class TimeSlot:
         self.day = WeekDay(day)
         return True
 
-    # =================================================================
+    # ------------------------------------------------------------------------
     # conflicts
-    # =================================================================
+    # ------------------------------------------------------------------------
     def conflicts_time(self, other: TimeSlot, delta: float = 0.05) -> bool:
         """
         Tests if the current Time_Slot conflicts with another TimeSlot.
@@ -124,6 +131,9 @@ class TimeSlot:
         conflict3 = other_start >= self_start and other_end <= self_end
         return conflict1 or conflict2 or conflict3
 
+    # ------------------------------------------------------------------------
+    # sorting, string representation, etc
+    # ------------------------------------------------------------------------
     def __eq__(self, other):
         return (self.day == other.day
                 and self.start == other.start
@@ -142,22 +152,3 @@ class TimeSlot:
 
     def __hash__(self):
         return hash(str(self))
-
-
-# =================================================================
-# footer
-# =================================================================
-__copyright__ = '''
-Sandy Bultena, Ian Clement, Jack Burns
-Copyright (c) 2016, Jack Burns, Sandy Bultena, Ian Clement. 
-Copyright (c) 2020, Sandy Bultena
-
-All Rights Reserved.
-
-This module is free software. It may be used, redistributed
-and/or modified under the terms of the Perl Artistic License
-
-     (see http://www.perl.com/perl/misc/Artistic.html)
-
-=cut
-'''

@@ -18,9 +18,10 @@ LUNCH_START: float = 11
 LUNCH_END: float = 14
 MAX_HOURS_PER_WEEK = 32.5
 
-# --------------------------------------------------------
+
+# -----------------------------------------------------------------------------------------------------------------
 # set lunch break conflicts on a per day basis
-# --------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------------------
 def set_lunch_break_conflicts(blocks: tuple[Block, ...]):
     """
     Is there a lunch break for a teacher on each day
@@ -50,9 +51,9 @@ def set_lunch_break_conflicts(blocks: tuple[Block, ...]):
                     _mark_block_conflict(ConflictType.LUNCH, (b,))
 
 
-# --------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------------------
 # are there any days within the given blocks where there is no lunch break
-# --------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------------------
 def has_lunch_break_conflict(blocks: tuple[Block, ...]) -> bool:
     """
     For this teacher, are there ANY days which do not have a lunch break?
@@ -80,6 +81,7 @@ def has_lunch_break_conflict(blocks: tuple[Block, ...]) -> bool:
 
         # look for a 1/2 window in-between blocks
         for b1, b2 in itertools.pairwise(blocks):
+
             # break between block
             start_break = max(b1.end, LUNCH_START)
             end_break = min(b2.start, LUNCH_END)
@@ -93,9 +95,9 @@ def has_lunch_break_conflict(blocks: tuple[Block, ...]) -> bool:
     return not all_days_lunch
 
 
-# --------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------------------
 # are blocks overlapping in time/stream/lab/teacher
-# --------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------------------
 def set_block_conflicts(blocks_for_week: tuple[Block, ...],
                         conflict_type: ConflictType):
     """
@@ -114,9 +116,10 @@ def set_block_conflicts(blocks_for_week: tuple[Block, ...],
                 _mark_block_conflict(ConflictType.TIME, (b1, b2))
                 _mark_block_conflict(conflict_type, (b1, b2))
 
-# --------------------------------------------------------
+
+# -----------------------------------------------------------------------------------------------------------------
 # are blocks overlapping in time/stream/lab/teacher
-# --------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------------------
 def block_conflicts_time(blocks_for_week: tuple[Block, ...]) -> ConflictType:
     """
     calculate if any two blocks overlap each other in time
@@ -134,10 +137,9 @@ def block_conflicts_time(blocks_for_week: tuple[Block, ...]) -> ConflictType:
                 conflict = conflict.TIME
     return conflict
 
-
-# --------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------------------
 # not enough days per week for a teacher
-# --------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------------------
 def set_number_of_days_conflict(blocks: tuple[Block, ...]):
     if has_number_of_days_conflict(blocks):
         _mark_block_conflict(ConflictType.MINIMUM_DAYS, blocks)
@@ -152,9 +154,10 @@ def has_number_of_days_conflict(blocks: tuple[Block, ...]) -> bool:
         return True
     return False
 
-# --------------------------------------------------------
+
+# -----------------------------------------------------------------------------------------------------------------
 # too many hours for a week availability for a teacher
-# --------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------------------
 def set_availability_hours_conflict(blocks_for_teacher: tuple[Block, ...]):
     if has_availability_hours_conflict(blocks_for_teacher):
         _mark_block_conflict(ConflictType.AVAILABILITY, tuple(blocks_for_teacher))
@@ -186,9 +189,9 @@ def _mark_block_conflict(conflict_type: ConflictType, conflict_blocks: tuple[Blo
         cb.conflict = cb.conflict | conflict_type
 
 
-# --------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------------------
 # colors
-# --------------------------------------------------------
+# -----------------------------------------------------------------------------------------------------------------
 def colours() -> dict[ConflictType, str]:
     """ Returns the colors used by each conflict resource_type """
     return ConflictType.colours()

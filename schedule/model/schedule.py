@@ -1,3 +1,6 @@
+"""
+The over-arching class that contains ALL the information for scheduler and allocation programs
+"""
 from __future__ import annotations
 
 from os import path
@@ -20,8 +23,6 @@ from .serializor import CSVSerializor as Serializor
 
 DEFAULT_COURSE_HOURS = 3
 
-""" SYNOPSIS/EXAMPLE:
-"""
 
 
 def get_resource_type(obj: Teacher | Lab | Stream) -> ResourceType | None:
@@ -32,7 +33,9 @@ def get_resource_type(obj: Teacher | Lab | Stream) -> ResourceType | None:
             return v_type
     return None
 
-
+# ============================================================================
+# Schedule
+# ============================================================================
 class Schedule:
     """ Provides the top level class for all schedule objects. """
 
@@ -50,6 +53,9 @@ class Schedule:
         if file is not None:
             self.read_file(file)
 
+    # ------------------------------------------------------------------------
+    # read file
+    # ------------------------------------------------------------------------
     def read_file(self, file):
         """read a csv file containing the schedule info"""
         try:
@@ -61,6 +67,9 @@ class Schedule:
             raise errors.CouldNotReadFileError(msg)
         self.filename = path.basename(file)
 
+    # ------------------------------------------------------------------------
+    # write file
+    # ------------------------------------------------------------------------
     def write_file(self, file):
         """write to a csv file all the info about the schedule"""
         try:
@@ -70,9 +79,7 @@ class Schedule:
         self.filename = path.basename(file)
 
     # ------------------------------------------------------------------------
-    # adding an object to collection
-    # ... if the unique identifier already exists, then update existing object,
-    #     rather than creating a new one
+    # add/update course
     # ------------------------------------------------------------------------
     def add_update_course(self, number: str, name: str = "new Course",
                           semester: SemesterType = SemesterType.any, hours:float = DEFAULT_COURSE_HOURS,
@@ -95,6 +102,9 @@ class Schedule:
             original_course.needs_allocation = needs_allocation
             return original_course
 
+    # ------------------------------------------------------------------------
+    # add/update stream
+    # ------------------------------------------------------------------------
     def add_update_stream(self, number: str, description: str = "") -> Stream:
         """Creates or updates a Stream object with the unique identifier 'teacher_id'
         :param number: Unique identifier for the stream
@@ -109,6 +119,9 @@ class Schedule:
             original_stream.description = description
             return original_stream
 
+    # ------------------------------------------------------------------------
+    # add/update lab
+    # ------------------------------------------------------------------------
     def add_update_lab(self, number: str, description: str = '') -> Lab:
         """Creates or updates a Lab object with the unique identifier 'teacher_id'
         :param number: Unique identifier for the lab
@@ -123,6 +136,9 @@ class Schedule:
             original_lab.description = description
             return original_lab
 
+    # ------------------------------------------------------------------------
+    # add/update teacher
+    # ------------------------------------------------------------------------
     def add_update_teacher(self, firstname: str, lastname: str, department: str = "", release:float = 0,
                            teacher_id: str = None) -> Teacher:
         """Creates or updates a teacher object with the unique identifier 'teacher_id'
