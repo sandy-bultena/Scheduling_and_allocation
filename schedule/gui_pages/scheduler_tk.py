@@ -21,7 +21,6 @@ from ..Utilities.Preferences import Preferences
 
 from .main_pages_tk import MainPageBaseTk
 import tkinter as tk
-from tkinter import ttk
 
 from ..gui_generics.read_only_text_tk import ReadOnlyTextTk
 
@@ -130,7 +129,7 @@ class SchedulerTk(MainPageBaseTk):
         super()._exit_schedule()
 
     # ========================================================================
-    # create front page
+    # create Welcome page
     # ========================================================================
     def create_welcome_page(self, semester):
         """Creates the very first page that is shown to the user."""

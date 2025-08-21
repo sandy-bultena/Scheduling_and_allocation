@@ -11,8 +11,8 @@ from .main_pages_tk import MainPageBaseTk
 import tkinter as tk
 from schedule.model.enums import SemesterType
 
-BUTTON_WIDTH = 25
-MAX_LEN_OF_DISPLAYED_FILENAME = 45
+BUTTON_WIDTH = 50
+MAX_LEN_OF_DISPLAYED_FILENAME = 60
 
 # ============================================================================
 # event handlers
@@ -121,7 +121,7 @@ class AllocationManagerTk(MainPageBaseTk):
         option_frames: dict[SemesterType, tk.LabelFrame] = {}
         for row,semester in enumerate(valid_semesters):
             option_frames[semester] = tk.LabelFrame(option_frame,text=semester.name,font=self.fonts.big)
-            option_frames[semester].grid(row=row, column=0, padx=10,pady=10)
+            option_frames[semester].pack(expand=1, fill='y', side='top')
 
         for semester in valid_semesters:
 
@@ -168,7 +168,7 @@ class AllocationManagerTk(MainPageBaseTk):
 
         # go
         tk.Button(option_frame, text="Go", font=self.fonts.big, padx=20,pady=5,
-                  command=self.go).grid(row=len(valid_semesters), sticky='ew')
+                  command=self.go).pack(expand=1, fill='y', side='top')
 
     def select_file(self, semester):
         file = self.select_file_to_open(f"Open Schedule for {semester}")
