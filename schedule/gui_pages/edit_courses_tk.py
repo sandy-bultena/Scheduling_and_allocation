@@ -423,6 +423,7 @@ class EditCoursesTk:
         tv.bind('<Key-Return>', self._cmd_edit_selection)
         tv.tag_configure("bold", font=self.Fonts.big)
         tv.tag_configure("normal", font=self.Fonts.normal)
+
         # mac vs windows methods for getting pop up menus
         if self.frame.winfo_toplevel().tk.call('tk','windowingsystem') == 'aqua':
             tv.bind('<2>', self._cmd_show_tree_menu)

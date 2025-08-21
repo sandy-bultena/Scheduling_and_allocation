@@ -105,8 +105,15 @@ def generate_menu(mw, menu_details: Optional[list[MenuItem]], parent: tk.Menu):
 
     if menu_details is None:
         return
-    
+
     for menu_item in menu_details:
+
+        # accelerator depends on window type
+        if menu_item.accelerator:
+            menu_item.accelerator = menu_item.accelerator.replace("Ctrl", "Control")
+            if mw.tk.call('tk', 'windowingsystem') == 'aqua':
+                if menu_item.accelerator:
+                    menu_item.accelerator = menu_item.accelerator.replace("Control", "Command")
 
         # Cascading menu
         if menu_item.menu_type == MenuType.Cascade:
@@ -131,16 +138,16 @@ def generate_menu(mw, menu_details: Optional[list[MenuItem]], parent: tk.Menu):
 
         # bind accelerators
         if menu_item.accelerator:
-            x = re.match(r'ctrl-(.)', menu_item.accelerator, re.RegexFlag.IGNORECASE)
+            x = re.match(r'Control-(.)', menu_item.accelerator, re.RegexFlag.IGNORECASE)
             if x:
-                pass
-                # binding = f"<Control-{x.group(1).lower()}>"
-                # print(binding)
-                # mw.bind(binding, menu_item.command)
-                #
-                # # if darwin, also bind the 'command' key for MAC users
-                # binding = f"<Command-{x.group(1).lower()}>"
-                # mw.bind(binding, menu_item.command)
+                binding = f"<Control-{x.group(1).lower()}>"
+                mw.bind(binding, menu_item.command)
+
+            x = re.match(r'Command-(.)', menu_item.accelerator, re.RegexFlag.IGNORECASE)
+            if x:
+                binding = f"<Command-{x.group(1).lower()}>"
+                print(f"{binding=}")
+                mw.bind(binding, menu_item.command)
 
 
 # =====================================================================================================================

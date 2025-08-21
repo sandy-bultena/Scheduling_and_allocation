@@ -74,7 +74,7 @@ def refresh_gui_blocks(self,):
 
         row_frame = tk.Frame(self.block_frames)
         if row_frame.winfo_toplevel().tk.call('tk', 'windowingsystem') == 'aqua':
-            padx=0
+            padx = 0
             pady = 0
         else:
             padx = 2

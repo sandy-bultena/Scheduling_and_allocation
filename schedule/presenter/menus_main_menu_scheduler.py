@@ -64,12 +64,12 @@ def main_menu() -> tuple[list[str], dict[str, ToolbarItem], list[MenuItem]]:
     # -----------------------------------------------------------------------------------------
     file_menu = MenuItem(name='file', menu_type=MenuType.Cascade, label='File')
     file_menu.add_child(MenuItem(name='new', menu_type=MenuType.Command,
-                                 label='New', accelerator='Ctrl-n',
+                                 label='New', accelerator='Control-n',
                                  command=lambda *_: MAIN_MENU_EVENT_HANDLERS["file_new"]()
                                  )
                         )
     file_menu.add_child(MenuItem(name='open', menu_type=MenuType.Command,
-                                 label='Open', accelerator='Ctrl-o',
+                                 label='Open', accelerator='Control-o',
                                  command=lambda *_: MAIN_MENU_EVENT_HANDLERS["file_open"]()
                                  )
                         )
@@ -78,7 +78,7 @@ def main_menu() -> tuple[list[str], dict[str, ToolbarItem], list[MenuItem]]:
 
     file_menu.add_child(MenuItem(name='save', menu_type=MenuType.Command,
                                  label='Save',
-                                 accelerator='Ctrl-s',
+                                 accelerator='Control-s',
                                  underline=False,
                                  command=lambda *_: MAIN_MENU_EVENT_HANDLERS["file_save"]()
                                  )
@@ -98,7 +98,7 @@ def main_menu() -> tuple[list[str], dict[str, ToolbarItem], list[MenuItem]]:
                         )
     file_menu.add_child(MenuItem(menu_type=MenuType.Command,
                                  label='Exit',
-                                 accelerator='Ctrl-e',
+                                 accelerator='Control-e',
                                  command=lambda *_: MAIN_MENU_EVENT_HANDLERS["file_exit"]()
                                  )
                         )

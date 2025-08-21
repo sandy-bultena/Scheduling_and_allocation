@@ -117,27 +117,29 @@ class ViewDynamicTk:
         # ------------------------------------------------------------------------------------------------------------
         # create scale menu and redo/undo menu
         # ------------------------------------------------------------------------------------------------------------
-        main_menu = tk.Menu(self.mw)
+        main_menu = tk.Menu(tl)
         tl.configure(menu=main_menu)
 
-        view_menu = tk.Menu(main_menu, tearoff=0)
-        main_menu.add_cascade(menu=view_menu, label="View", underline=0)
-        view_menu.add_command(label="50%", underline=0, command=partial(self.draw, 0.50))
-        view_menu.add_command(label="75%", underline=0, command=partial(self.draw, 0.75))
-        view_menu.add_command(label="100%", underline=0, command=partial(self.draw, 1.00))
+        scale_menu = MenuItem(name='view', menu_type=MenuType.Cascade, label='View')
+        scale_menu.add_child(MenuItem(menu_type=MenuType.Command,
+                                      label='50%', command=partial(self.draw, 0.50) )
+                             )
+        scale_menu.add_child(MenuItem( menu_type=MenuType.Command,
+                                      label='75%', command=partial(self.draw, 0.75))
+                             )
+        scale_menu.add_child(MenuItem(menu_type=MenuType.Command,
+                                      label='100%', command=partial(self.draw, 1.0))
+                             )
+        undo_menu = MenuItem(name='undo_redo', menu_type=MenuType.Cascade, label='Undo/Redo')
+        undo_menu.add_child(MenuItem( menu_type=MenuType.Command, label='Undo',
+                                     accelerator="Control-z", command=self._undo )
+                            )
+        undo_menu.add_child(MenuItem( menu_type=MenuType.Command, label='Redo',
+                                     accelerator="Control-y", command=self._redo )
+                            )
 
-        undo_menu = tk.Menu(main_menu, tearoff=0)
-        main_menu.add_cascade(menu=undo_menu, label="Undo/Redo")
-        undo_menu.add_command(label="Undo", accelerator="ctrl-z", command=self._undo)
-        undo_menu.add_cascade(label="Redo", accelerator="ctrl-y", command=self._redo)
-
-        # ------------------------------------------------------------------------------------------------------------
-        # bind keys (for mac and windows)
-        # ------------------------------------------------------------------------------------------------------------
-        self.toplevel.bind("<Control-z>", self._undo)
-        self.toplevel.bind('<Command-z>', self._undo)
-        self.toplevel.bind('<Control-y>', self._redo)
-        self.toplevel.bind('<Command-y>', self._redo)
+        # return list of top level menu items
+        generate_menu(tl, [scale_menu, undo_menu], main_menu)
 
     # =================================================================================================================
     # draw the view canvas (the static drawing of the view)

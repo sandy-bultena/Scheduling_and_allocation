@@ -1,12 +1,10 @@
 
 ============ Bugs ================
 * Maybe Mac menu stuff (a nice to have)
-* Windows, binding to ctrl-s isn't working properly - its because of the binding to the mac Command key, so if I put that in an if block it should be ok
 * make printing of schedules optional so you don't have to install reportlab
 * make changing font size as an option... but will have to add scrollbars to the dialog boxes so that they can be moved if required
 * Autosave suddenly not working for allocation - wasn't but now is... must check on windows
 * Update README and installation instructions
-* Either remove or update "Synopsis" in code comments
 * Add 'enter' binding for moving resource from/to
 * Add 'install Pillow' to README
 
@@ -59,3 +57,5 @@
 * Clean up tests
 * When creating pdfs or tex schedules, put them in the same directory where the schedule file was located
 * remove underscore in descriptions of conflicts
+* Either remove or update "Synopsis" in code comments
+* Windows, binding to ctrl-s isn't working properly - its because of the binding to the mac Command key, so if I put that in an if block it should be ok

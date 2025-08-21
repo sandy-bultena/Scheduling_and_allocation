@@ -448,8 +448,9 @@ class Scheduler:
 
         # loop over each resource and create file
         save_dir = self.preferences.current_dir() or self.preferences.home_directory()
-
         for resource in resources:
+
+            # pdf or latex
             if canvas_type == CanvasType.pdf:
                 cn = PDFCanvas(title=str(resource), schedule_name=self.schedule.filename,
                                directory=save_dir)
@@ -459,6 +460,7 @@ class Scheduler:
                                directory=save_dir)
                 vc = cn
 
+            # get all the blocks
             blocks = ()
             match resource_type:
                 case ResourceType.teacher:
@@ -468,6 +470,7 @@ class Scheduler:
                 case ResourceType.stream:
                     blocks = self.schedule.get_blocks_for_stream(resource)
 
+            # draw the blocks
             for block in blocks:
                 text = View.get_block_text(block, scale=1, resource_type=ResourceType.teacher)
 
@@ -479,8 +482,8 @@ class Scheduler:
                               gui_tag="",
                               movable=True,
                               )
+            # write to file
             cn.save()
-
 
     # ==================================================================
     # validate
