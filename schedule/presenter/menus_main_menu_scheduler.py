@@ -26,17 +26,7 @@ MAIN_MENU_EVENT_HANDLER_NAMES = Literal[
     "print_latex_lab",
     "print_latex_streams",
     "validate",
-    "auto_save",
-    "auto_save_set",
-    "auto_save_unset"
 ]
-
-
-def check_button_changed(var, *args, **kwargs):
-    if var.get():
-        MAIN_MENU_EVENT_HANDLERS["auto_save_set"]()
-    else:
-        MAIN_MENU_EVENT_HANDLERS["auto_save_unset"]()
 
 
 
@@ -47,12 +37,6 @@ for event_name in get_args(MAIN_MENU_EVENT_HANDLER_NAMES):
 
 def set_menu_event_handler(name: MAIN_MENU_EVENT_HANDLER_NAMES, handler: Callable[[], None]):
     MAIN_MENU_EVENT_HANDLERS[name] = handler
-
-
-AUTO_SAVE_BOOLEAN = True
-def set_auto_save_default_value(value: bool):
-    global AUTO_SAVE_BOOLEAN
-    AUTO_SAVE_BOOLEAN = value
 
 
 def main_menu() -> tuple[list[str], dict[str, ToolbarItem], list[MenuItem]]:
@@ -153,17 +137,8 @@ def main_menu() -> tuple[list[str], dict[str, ToolbarItem], list[MenuItem]]:
                                   )
                          )
     # -----------------------------------------------------------------------------------------
-    # Auto Save
+    # Auto Save - taken care of if main_tk
     # -----------------------------------------------------------------------------------------
-    auto_save_menu = MenuItem(name='auto_save', menu_type=MenuType.Cascade, label='Auto Save')
-
-    # auto-save sub menu
-    auto_save_menu.add_child(MenuItem(menu_type=MenuType.Checkbutton,
-                                      label='Auto Save On',
-                                      command=check_button_changed,
-                                      bool_variable = AUTO_SAVE_BOOLEAN,
-                                      )
-                             )
 
     # -----------------------------------------------------------------------------------------
     # _toolbar
@@ -182,6 +157,5 @@ def main_menu() -> tuple[list[str], dict[str, ToolbarItem], list[MenuItem]]:
     # return list of top level menu items
     menu.append(file_menu)
     menu.append(print_menu)
-    menu.append(auto_save_menu)
 
     return toolbar_order, toolbar_info, menu

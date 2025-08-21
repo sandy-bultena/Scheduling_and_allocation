@@ -10,8 +10,7 @@ from schedule.gui_pages.allocation_manager_tk import AllocationManagerTk, set_ma
 from schedule.presenter.allocation_editor import AllocationEditor
 from schedule.presenter.edit_courses import EditCourses
 from schedule.presenter.edit_resources import EditResources
-from schedule.presenter.menus_main_menu_allocation import set_menu_event_handler_allocation, main_menu_allocation, \
-    set_auto_save_default_value
+from schedule.presenter.menus_main_menu_allocation import set_menu_event_handler_allocation, main_menu_allocation
 from schedule.model import Schedule, SemesterType, ResourceType
 from schedule.presenter.notebook_tab_data import NBTabInfo
 from schedule.presenter.student_numbers import StudentNumbers
@@ -91,13 +90,13 @@ class AllocationManager:
         # --------------------------------------------------------------------
         # create the Menu and Toolbars
         # --------------------------------------------------------------------
-        set_auto_save_default_value(self.preferences.auto_save())
         set_menu_event_handler_allocation("file_new", self.new_menu_event)
         set_menu_event_handler_allocation("file_open", self.open_menu_event)
         set_menu_event_handler_allocation("file_save", self.save_schedule)
         set_menu_event_handler_allocation("file_exit", self.menu_exit_event)
-        set_menu_event_handler_allocation("auto_save_set", partial(self.auto_save_set, True))
-        set_menu_event_handler_allocation("auto_save_unset", partial(self.auto_save_set, False))
+
+        self.gui.toggle_auto_save = self.auto_save_set
+
         set_main_page_event_handler("go", self.go)
         set_main_page_event_handler("exit", self.exit_event)
 

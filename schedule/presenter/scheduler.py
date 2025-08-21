@@ -35,16 +35,15 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 from enum import Enum
 from functools import partial
-from typing import Optional, TYPE_CHECKING, Any, Callable
+from typing import Optional
 
 
 from schedule.presenter.edit_resources import EditResources
 from schedule.presenter.edit_courses import EditCourses
 
-from schedule.presenter.menus_main_menu_scheduler import set_menu_event_handler, main_menu, set_auto_save_default_value
+from schedule.presenter.menus_main_menu_scheduler import set_menu_event_handler, main_menu
 from schedule.Utilities import Preferences
 from schedule.gui_pages.scheduler_tk import SchedulerTk, set_main_page_event_handler
 from schedule.model import Schedule, ResourceType
@@ -120,7 +119,6 @@ class Scheduler:
         # --------------------------------------------------------------------
         # create the Menu and Toolbars
         # --------------------------------------------------------------------
-        set_auto_save_default_value(self.preferences.auto_save())
         set_menu_event_handler("file_new", self.new_menu_event)
         set_menu_event_handler("file_open", self.open_menu_event)
         set_menu_event_handler("file_save", self.save_menu_event)
@@ -138,8 +136,8 @@ class Scheduler:
         set_menu_event_handler("print_latex_teacher", partial(self.print_views, ResourceType.teacher, CanvasType.latex))
         set_menu_event_handler("print_latex_lab", partial(self.print_views, ResourceType.lab, CanvasType.latex))
         set_menu_event_handler("print_latex_streams", partial(self.print_views, ResourceType.stream, CanvasType.latex))
-        set_menu_event_handler("auto_save_set", partial(self.auto_save_set, True))
-        set_menu_event_handler("auto_save_unset", partial(self.auto_save_set, False))
+
+        self.gui.toggle_auto_save = self.auto_save_set
 
         # TODO
         set_menu_event_handler("print_text", self.menu_ignore)

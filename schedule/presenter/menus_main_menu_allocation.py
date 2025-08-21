@@ -20,21 +20,7 @@ MAIN_MENU_EVENT_HANDLER_NAMES_ALLOCATION = Literal[
     "file_save_as",
     "file_exit",
     "auto_save",
-    "auto_save_set",
-    "auto_save_unset",
 ]
-
-AUTO_SAVE_BOOLEAN = True
-def set_auto_save_default_value(value: bool):
-    global AUTO_SAVE_BOOLEAN
-    AUTO_SAVE_BOOLEAN = value
-
-
-def check_button_changed(var, *args, **kwargs):
-    if var.get():
-        MAIN_MENU_EVENT_HANDLERS_ALLOCATION["auto_save_set"](SemesterType.fall)
-    else:
-        MAIN_MENU_EVENT_HANDLERS_ALLOCATION["auto_save_unset"](SemesterType.fall)
 
 
 MAIN_MENU_EVENT_HANDLERS_ALLOCATION: dict[MAIN_MENU_EVENT_HANDLER_NAMES_ALLOCATION, Callable[[SemesterType], None]] = {}
@@ -82,17 +68,8 @@ def main_menu_allocation(semesters:list[SemesterType]) -> tuple[list[str], dict[
                                  )
                         )
     # -----------------------------------------------------------------------------------------
-    # Auto Save
+    # Auto Save - coding is in the main-tk
     # -----------------------------------------------------------------------------------------
-    auto_save_menu = MenuItem(name='auto_save', menu_type=MenuType.Cascade, label='Auto Save')
-
-    # auto-save sub menu
-    auto_save_menu.add_child(MenuItem(menu_type=MenuType.Checkbutton,
-                                      label='Auto Save On',
-                                      command=check_button_changed,
-                                      bool_variable = AUTO_SAVE_BOOLEAN,
-                                      )
-                             )
 
 
 
@@ -104,6 +81,5 @@ def main_menu_allocation(semesters:list[SemesterType]) -> tuple[list[str], dict[
 
     # return list of top level menu items
     menu.append(file_menu)
-    menu.append(auto_save_menu)
 
     return toolbar_order, toolbar_info, menu

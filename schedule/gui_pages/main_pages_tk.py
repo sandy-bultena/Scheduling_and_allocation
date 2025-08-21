@@ -60,6 +60,9 @@ class MainPageBaseTk:
         self.mw: Optional[tk.Tk] = None
         self.notebook_tab_changed_handler: Callable[[str,tk.Frame], None] = lambda a,b: None
 
+        # autosave handler
+        self.toggle_auto_save: Callable[ [bool], None] = lambda flag: print("Auto set has been set to", flag)
+
         # private properties
         self._preferences = preferences
         self._notebook_frame: Optional[NoteBookFrameTk] = None
@@ -125,10 +128,21 @@ class MainPageBaseTk:
         :param menu_details: all the details required for the menu
         """
 
-        # create menu
         menu_bar = tk.Menu(self.mw)
+
+        # create application specific menu
         generate_menu(self.mw, menu_details, menu_bar)
         self.mw.configure(menu=menu_bar)
+
+        # create the auto-save part of menu
+        auto_menu = tk.Menu(menu_bar, tearoff=False)
+        menu_bar.add_cascade(label="Auto Save", menu=auto_menu)
+
+        tk_auto_save = tk.BooleanVar(value=bool(self._preferences.auto_save()))
+        auto_menu.add_radiobutton(label="Auto Save ON", value=True, variable=tk_auto_save,
+                                  command=partial(self.toggle_auto_save, True))
+        auto_menu.add_radiobutton(label="Auto Save OFF", value=False, variable=tk_auto_save,
+                                  command=partial(self.toggle_auto_save, False))
 
         # create _toolbar
         self._toolbar = make_toolbar(self.mw, buttons, toolbar_info)
