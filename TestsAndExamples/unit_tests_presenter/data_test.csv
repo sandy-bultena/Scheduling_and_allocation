@@ -14,20 +14,20 @@ stream,3A,
 stream,3B,
 
 ,number,first name,last name,department,release
-teacher,Bultena_Sandy,Sandy,Bultena,CompSci,0.0
-teacher,Buschinelli_Mauricio,Mauricio,Buschinelli,CompSci,0.0
-teacher,Chadillon_Chris,Chris,Chadillon,CompSci,1.0
-teacher,Clement_Ian,Ian,Clement,CompSci,0.25
-teacher,Fagen_Larry,Larry,Fagen,CompSci,0.0
-teacher,Haaf_Michael,Michael,Haaf,CompSci,0.6
-teacher,Katalifo_Helen,Helen,Katalifo,CompSci,0.3
-teacher,Larco_Gabriel,Gabriel,Larco,CompSci,0.1666
-teacher,Miloslavov_Ivan,Ivan,Miloslavov,CompSci,1.0
-teacher,Mourtada_Aref,Aref,Mourtada,CompSci,0.3
-teacher,Rinfret_Denis,Denis,Rinfret,CompSci,0.0
-teacher,Scotnotis_Claudiu,Claudiu,Scotnotis,CompSci,0.25
-teacher,Singh_Vik,Vik,Singh,CompSci,0.25
-teacher,Terziean_Meghrig,Meghrig,Terziean,CompSci,0.0
+teacher,Bear_BooBoo,BooBoo,Bear,CompSci,1.0
+teacher,Bunny_Bugs,Bugs,Bunny,CompSci,0.3
+teacher,Dinkley_Velma,Velma,Dinkley,CompSci,0.0
+teacher,Duck_Daffy,Daffy,Duck,CompSci,0.25
+teacher,Flinstone_Betty,Betty,Flinstone,CompSci,0.0
+teacher,Flinstone_Fred,Fred,Flinstone,CompSci,0.25
+teacher,Fry_Philip,Philip,Fry,CompSci,0.25
+teacher,Jetson_Elroy,Elroy,Jetson,CompSci,0.1666
+teacher,Katalifo_Daphne,Daphne,Katalifo,CompSci,0.3
+teacher,McGraw_QuickDraw,QuickDraw,McGraw,CompSci,0.6
+teacher,Moose_Bullwinkle,Bullwinkle,Moose,CompSci,0.0
+teacher,Panther_Pink,Pink,Panther,CompSci,1.0
+teacher,Squirrel_Rocky,Rocky,Squirrel,CompSci,0.0
+teacher,Turanga_Leela,Leela,Turanga,CompSci,0.0
 teacher,Voldemort_Voldemort,Voldemort,Voldemort,CompSci,1.0
 
 

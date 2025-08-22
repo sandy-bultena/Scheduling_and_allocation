@@ -14,17 +14,17 @@ stream,3A,
 stream,3B,
 
 ,number,first name,last name,department,release
-teacher,Bultena_Sandy,Sandy,Bultena,CompSci,0.0
-teacher,Buschinelli_Mauricio,Mauricio,Buschinelli,CompSci,0.0
-teacher,Fagen_Larry,Larry,Fagen,CompSci,0.0
-teacher,Haaf_Michael,Michael,Haaf,CompSci,0.6
-teacher,Katalifos_Helen,Helen,Katalifos,CompSci,0.3
-teacher,Larco_Gabriel,Gabriel,Larco,CompSci,0.1666
-teacher,Miloslavov_Ivan,Ivan,Miloslavov,CompSci,1.0
-teacher,Mourtada_Aref,Aref,Mourtada,CompSci,0.3
-teacher,Rinfret_Denis,Denis,Rinfret,CompSci,0.0
-teacher,Scotnotis_Claudiu,Claudiu,Scotnotis,CompSci,0.25
-teacher,Singh_Vik,Vik,Singh,CompSci,0.25
+teacher,Moose_Bullwinkle,Bullwinkle,Moose,CompSci,0.0
+teacher,Squirrel_Rocky,Rocky,Squirrel,CompSci,0.0
+teacher,Flinstone_Betty,Betty,Flinstone,CompSci,0.0
+teacher,McGraw_QuickDraw,QuickDraw,McGraw,CompSci,0.6
+teacher,Blake_Daphne,Daphne,Blake,CompSci,0.3
+teacher,Jetson_Elroy,Elroy,Jetson,CompSci,0.1666
+teacher,Bear_BooBoo,BooBoo,Bear,CompSci,1.0
+teacher,Bunny_Bugs,Bugs,Bunny,CompSci,0.3
+teacher,Turanga_Leela,Leela,Turanga,CompSci,0.0
+teacher,Duck_Daffy,Daffy,Duck,CompSci,0.25
+teacher,Fry_Philip,Philip,Fry,CompSci,0.25
 
 
 ,,DESCRIPTION,OF,FIELDS
@@ -36,18 +36,18 @@ course,420-1B4,Computerized Systems,1,1,4.0
 
 section,,1,Section 1,17
 add_block,,Tuesday,15.0,2.0,0
-add_block_teacher,Bultena_Sandy
-add_block_teacher,Buschinelli_Mauricio
+add_block_teacher,Moose_Bullwinkle
+add_block_teacher,Squirrel_Rocky
 add_lab,P325
 add_block,,Thursday,15.0,2.0,0
-add_block_teacher,Bultena_Sandy
-add_block_teacher,Buschinelli_Mauricio
+add_block_teacher,Moose_Bullwinkle
+add_block_teacher,Squirrel_Rocky
 add_lab,P325
 
 ,,,adds teacher to all defined blocks
 ,id,allocation
-add_section_teacher,Bultena_Sandy,2.0
-add_section_teacher,Buschinelli_Mauricio,2.0
+add_section_teacher,Moose_Bullwinkle,2.0
+add_section_teacher,Squirrel_Rocky,2.0
 
 course,420-1N6,Tech Support,1,1,6.0
 
@@ -78,74 +78,74 @@ course,420-1P6,Programming I,1,1,6.0
 section,,1,Section 1,19
 add_stream,1A
 add_block,,Monday,8.5,1.5,1
-add_block_teacher,Fagen_Larry
+add_block_teacher,Flinstone_Betty
 add_lab,P107
 add_lab,P325
 add_block,,Wednesday,8.5,1.5,1
-add_block_teacher,Fagen_Larry
+add_block_teacher,Flinstone_Betty
 add_lab,P107
 add_lab,P325
 add_block,,Thursday,8.5,3.0,1
-add_block_teacher,Fagen_Larry
+add_block_teacher,Flinstone_Betty
 add_lab,P325
 
 ,,,adds teacher to all defined blocks
 ,id,allocation
-add_section_teacher,Fagen_Larry,6.0
+add_section_teacher,Flinstone_Betty,6.0
 
 section,,2,Section 2,30
 add_stream,1B
 add_block,,Monday,11.5,1.5,1
-add_block_teacher,Fagen_Larry
+add_block_teacher,Flinstone_Betty
 add_lab,P327
 add_block,,Wednesday,11.5,1.5,1
-add_block_teacher,Fagen_Larry
+add_block_teacher,Flinstone_Betty
 add_lab,P107
 add_lab,P327
 add_block,,Friday,8.5,3.0,1
-add_block_teacher,Fagen_Larry
+add_block_teacher,Flinstone_Betty
 add_lab,P325
 
 ,,,adds teacher to all defined blocks
 ,id,allocation
-add_section_teacher,Fagen_Larry,6.0
+add_section_teacher,Flinstone_Betty,6.0
 
 course,420-1T5,Productivity Tools,1,1,6.0
 
 section,,1,Section 1,28
 add_stream,1A
 add_block,,Monday,14.5,1.5,1
-add_block_teacher,Buschinelli_Mauricio
+add_block_teacher,Squirrel_Rocky
 add_lab,P325
 add_block,,Wednesday,14.5,1.5,1
-add_block_teacher,Buschinelli_Mauricio
+add_block_teacher,Squirrel_Rocky
 add_lab,P325
 add_block,,Thursday,11.5,1.5,1
-add_block_teacher,Buschinelli_Mauricio
+add_block_teacher,Squirrel_Rocky
 add_lab,P327
 add_block,,Thursday,13.0,1.5,1
-add_block_teacher,Buschinelli_Mauricio
+add_block_teacher,Squirrel_Rocky
 add_lab,P322
 
 ,,,adds teacher to all defined blocks
 ,id,allocation
-add_section_teacher,Buschinelli_Mauricio,6.0
+add_section_teacher,Squirrel_Rocky,6.0
 
 section,,2,Section 2,30
 add_stream,1B
 add_block,,Monday,10.0,1.5,1
-add_block_teacher,Buschinelli_Mauricio
+add_block_teacher,Squirrel_Rocky
 add_lab,P325
 add_block,,Tuesday,11.5,3.0,1
-add_block_teacher,Buschinelli_Mauricio
+add_block_teacher,Squirrel_Rocky
 add_lab,P325
 add_block,,Wednesday,10.0,1.5,1
-add_block_teacher,Buschinelli_Mauricio
+add_block_teacher,Squirrel_Rocky
 add_lab,P325
 
 ,,,adds teacher to all defined blocks
 ,id,allocation
-add_section_teacher,Buschinelli_Mauricio,6.0
+add_section_teacher,Squirrel_Rocky,6.0
 
 course,420-3D6,Database,1,1,6.0
 

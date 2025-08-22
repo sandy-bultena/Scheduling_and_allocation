@@ -14,24 +14,24 @@ stream,3A,
 stream,3B,
 
 ,number,first name,last name,department,release
-teacher,1,Helen,Katalifo,CompSci,0.3
-teacher,2,Sandy,Bultena,CompSci,0.0
-teacher,3,Chris,Chadillon,CompSci,1.0
-teacher,4,Ian,Clement,CompSci,0.25
-teacher,5,Gabriel,Larco,CompSci,0.1666
+teacher,1,Daphne,Katalifo,CompSci,0.3
+teacher,2,Bullwinkle,Moose,CompSci,0.0
+teacher,3,Pink,Panther,CompSci,1.0
+teacher,4,Fred,Flinstone,CompSci,0.25
+teacher,5,Elroy,Jetson,CompSci,0.1666
 teacher,6,Voldemort,Voldemort,CompSci,1.0
-teacher,7,Larry,Fagen,CompSci,0.0
-teacher,8,Vik,Singh,CompSci,0.25
-teacher,9,Claudiu,Scotnotis,CompSci,0.25
-teacher,10,Aref,Mourtada,CompSci,0.3
-teacher,11,Mauricio,Buschinelli,CompSci,0.0
-teacher,12,Mauricio,Buschinelli2,CompSci,0.0
-teacher,13,Michael,Haaf,CompSci,0.6
-teacher,14,Ivan,Miloslavov,CompSci,1.0
-teacher,15,Meghrig,Terziean,CompSci,0.0
-teacher,16,Denis,Rinfret,CompSci,0.0
-teacher,17,Denis,Rinfret2,CompSci,0.0
-teacher,18,Denis,Rinfret3,CompSci,0.0
+teacher,7,Betty,Flinstone,CompSci,0.0
+teacher,8,Philip,Fry,CompSci,0.25
+teacher,9,Daffy,Duck,CompSci,0.25
+teacher,10,Bugs,Bunny,CompSci,0.3
+teacher,11,Rocky,Squirrel,CompSci,0.0
+teacher,12,Rocky,Squirrel2,CompSci,0.0
+teacher,13,QuickDraw,McGraw,CompSci,0.6
+teacher,14,BooBoo,Bear,CompSci,1.0
+teacher,15,Velma,Dinkley,CompSci,0.0
+teacher,16,Leela,Turanga,CompSci,0.0
+teacher,17,Leela,Turanga2,CompSci,0.0
+teacher,18,Leela,Turanga3,CompSci,0.0
 
 
 ,,DESCRIPTION,OF,FIELDS

@@ -302,6 +302,7 @@ def test_open_previous(gui):
     obj.dirty_flag = True
 
     # execute
+    print(PREVIOUS_FILE)
     obj.preferences.previous_file(PREVIOUS_FILE)
     obj.preferences.save()
     MAIN_PAGE_EVENT_HANDLERS["file_open_previous"]()
