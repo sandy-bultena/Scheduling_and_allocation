@@ -2,7 +2,7 @@
 ============ Bugs ================
 * Maybe Mac menu stuff (a nice to have)
 * make printing of schedules optional so you don't have to install reportlab
-* make changing font size as an option... but will have to add scrollbars to the dialog boxes so that they can be moved if required
+* make changing font size as an option... but will have to add scrollbars to the dialog boxes so that they can be moved if required - turns out this is necessary (sigh... just when I thought I was finished)
 * Update README and installation instructions
 * Add 'enter' binding for moving resource from/to
 * Add 'install Pillow' to README
