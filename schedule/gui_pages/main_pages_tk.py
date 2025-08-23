@@ -22,6 +22,7 @@ from tkinter.messagebox import showerror, showinfo, askyesno
 
 from schedule.Tk import FindImages
 from schedule.Tk import set_default_fonts_and_colours, TkColours, TkFonts
+from schedule.gui_dialogs.change_font_tk import ChangeFont
 from schedule.gui_pages.note_book_frame_tk import NoteBookFrameTk, TabInfoProtocol
 from schedule.gui_generics.menu_and_toolbars import MenuItem, ToolbarItem, generate_menu, make_toolbar
 from schedule.Utilities.Preferences import Preferences
@@ -145,6 +146,12 @@ class MainPageBaseTk:
                                   command=partial(self.toggle_auto_save, True))
         auto_menu.add_radiobutton(label="Auto Save OFF", value=False, variable=tk_auto_save,
                                   command=partial(self.toggle_auto_save, False))
+
+        # create preferences menu
+        preference_menu = tk.Menu(menu_bar, tearoff=False)
+        menu_bar.add_cascade(label="Preferences", menu=preference_menu)
+        preference_menu.add_command(label="Font Size",
+                                    command=lambda: ChangeFont(self.mw, self._preferences))
 
         # create _toolbar
         self._toolbar = make_toolbar(self.mw, buttons, toolbar_info)

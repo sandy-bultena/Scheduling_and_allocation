@@ -40,7 +40,6 @@ from typing import Callable, Any, TYPE_CHECKING
 import re
 
 from schedule.Tk import Scrolled
-from schedule.Tk import InitGuiFontsAndColours as fac
 from schedule.Tk import AdvancedTreeview
 from schedule.Tk import DragNDropManager
 from schedule.Tk.InitGuiFontsAndColours import get_fonts_and_colours
@@ -78,8 +77,6 @@ class EditCoursesTk:
     :param frame: the frame to hold all the gui elements
 
     """
-    colours: fac.TkColours = fac.colours
-    Text_style_defn: dict[str, str] = {'bg': colours.WorkspaceColour, 'fg': colours.SelectedForeground}
 
     # -----------------------------------------------------------------------------------------------------------------
     # constructor
