@@ -72,7 +72,7 @@ class AllocationEditor:
         teachers = self.teachers
         courses = self.courses
 
-        teachers_text = list(map(lambda a: a.firstname, teachers))
+        teachers_text = list(map(lambda a: f"{a.firstname} {a.lastname[0:1]}.", teachers))
         courses_text = list(map(lambda a: str(re.sub(r'\s*\d\d\d-', '', a.number)), courses))
         courses_balloon = list(map(lambda a: f" {a.name} ({a.hours_per_week})" , courses))
 

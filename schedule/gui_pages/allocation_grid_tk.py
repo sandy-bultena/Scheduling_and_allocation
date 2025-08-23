@@ -353,8 +353,9 @@ class AllocationGridTk:
         """
         prop = ENTRY_PROPS.copy()
         prop['width'] = TITLE_WIDTH
+        prop['justify'] = 'left'
         for _ in range(rows):
-            re = tk.Entry(self.titles_frame, **prop, state='disabled')
+            re = tk.Entry(self.titles_frame, **prop, state='disabled', )
             re.pack(side='top', padx=ENTRY_PADDING,pady=ENTRY_PADDING)
 
             self.title_widgets.append(re)

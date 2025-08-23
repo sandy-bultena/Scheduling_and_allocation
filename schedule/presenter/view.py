@@ -359,11 +359,9 @@ class View:
         # course & section & streams
         course_number = ""
         section_number = ""
-        stream_numbers = ""
         if block.section:
             course_number = block.section.course.number if scale > 0.5 else re.split("[-*]", block.section.course.number)
             section_number = block.section.title
-            stream_numbers = ",".join((stream.number for stream in block.section.streams()))
 
         # labs
         lab_numbers = ", ".join(l.number for l in block.labs())
@@ -385,7 +383,7 @@ class View:
         if len(block.teachers()) <= 2:
             for t in block.teachers():
                 if len(str(t)) > 12:
-                    teachers_name = teachers_name + f"{t.firstname[0:1]} {t.lastname}\n"
+                    teachers_name = teachers_name + f"{t.firstname} {t.lastname[0:1]}.\n"
                 else:
                     teachers_name = teachers_name + f"{str(t)}\n"
         teachers_name = teachers_name.rstrip()
