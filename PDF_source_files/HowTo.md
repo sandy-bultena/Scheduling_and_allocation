@@ -6,36 +6,54 @@ This document provides simple 'how-to' instructions.  It is assumed that the use
 This package contains **two** individual programs that work in concert to allow the chairs of your department to create schedules and workloads from the same datasets.
 
 ### Scheduler
-Creates schedules by dragging and dropping individual course blocks (time in the classroom) around a grid, assigning teachers and labs and streams to said blocks.
+Creates schedules by dragging and dropping individual course class times around a grid, assigning teachers and labs and streams to said blocks.
 Colour schemes indicate if there are any conflicts.
-_launch_: From the command line, navigate to where you installed the package, and type
-```sh
-perl Scheduler.pl
-```
+
 ### AllocationManager
+
 Assign teachers to courses and sections.  Manually enter student numbers.  CI calculations are done on the fly.
-_launch_: From the command line, navigate to where you installed the package, and type
-```sh
-perl AllocationManager.pl
+
+## _Launching Program_
+
+### MAC
+
+Use the search tool (Command-spacebar) open a terminal window
+
+Navigate to the correct directory
+
+```bash
+cd Desktop
+cd Scheduling_and_allocation
+```
+
+Run either the scheduler or allocation program
+
+```bash
+python3 SchedulerProgram.py
+```
+
+```bash
+python3 AllocationManager.py
 ```
 
 ## _Data_
 ### Storage
-The data for all of the schedule information is stored, per semester, in a ```YAML``` file.
-YAML (https://en.wikipedia.org/wiki/YAML) files are human readable and editable files, although editing the files manually is not recommended.
-* The ```Scheduler``` requires only one ```YAML``` file, encapsulating all the information for a given semester.
-* The ```AllocationManager``` requires two ```YAML``` files, one file for each semester, comprising a complete academic year.
->The ```YAML``` files in question are the same files for both application.  A file used for allocation can be used for scheduling, and vice-versa.
+The data for all of the schedule information is stored, per semester, in a CSV file.
+The ```Scheduler``` requires only one ```CSV``` file, encapsulating all the information for a given semester.
+
+* The ```AllocationManager``` requires two ```CSV``` files, one file for each semester, comprising a complete academic year.
+>The ```CSV``` files in question are the same files for both application.  A file used for allocation can be used for scheduling, and vice-versa.
 
 ### Data definitions
 * Course:
     * *needs_allocation*: Do we need to assign a teacher to this course
     * *Sections*: The sections that are being taught for this course
+    * _hours per week_:  How many hours per week is required for this course
 * Section:
     * *hours*: the number of hours per week that is assigned to the section.  If blocks are defined, then the number of hours is the sum total of all of the hours in the blocks for each section
-    * *blocks*: An individual time block where teachers are in the classroom.  Some courses do not have blocks (such as stage courses), in which case, the number of hours per section is entered separately.
+    * *class time*: An individual time block where teachers are in the classroom.  Some courses do not have blocks (such as stage courses)
     * can assign: *teachers*, *labs*, *streams* to an individual section
-* Block:
+* Class time:
     * *duration*: how long the block lasts
     * *start time*: when does the block start
     * *day of week*: what day is this block on
@@ -57,21 +75,20 @@ It is recommended that the user creates the information in the order listed belo
 Both ```Scheduler``` and ```AlocationManager``` have tabs that allow the user to create new teachers, labs, and streams.
 > In the teachers tab, there is a column RT, which is short for 'release time'.  It is important to enter release time for a teacher to avoid scheduling errors such as 'too few days'.
 
-### Creating Courses, Sections, Blocks
-Look for the ```Courses``` tab.  In the ```AllocationManager``` it is located in a sub tab for each semester.
+### Creating Courses, Sections, Class Times
+Look for the ```Courses``` tab.  
 
-On the left pane, there will be a tree like structure that displays all of the courses, the sections that belong to a course, blocks in sections.  In addition, andy teacher or lab or stream that is assigned to a section or block will also be indicated.
+On the left pane, there will be a tree like structure that displays all of the courses, the sections that belong to a course, blocks in sections.  In addition, any teacher or lab or stream that is assigned to a section or block will also be indicated.
 
 Teachers, Labs and Streams that have already been defined are shown in the right three panes.
 
 #### New Course
 To create a new course, press the ```New Course``` button.
 1. A new course will be created that has an empty course number
-2. You must set a valid course number (a number that is not already been used).  You cannot close the dialog box until a valid course number has been defined.
-3. To remove this course, press the ```Delete``` button
-4. From this dialog box, the user can create sections, blocks, etc, and assign teachers, labs and streams to individual courses, sections and blocks
+2. You must set a valid course number (a number that is not already been used).  
+3. From this dialog box, the user can create sections, class times, etc, and assign teachers, labs and streams to all sections/class times for this course
 
->NOTE: The sections and blocks and assigned teachers,labs, etc will be assigned as the user is entering the information into the various dialog boxes.  The user should be able to view the changes to the information on the left panel as the changes are being made.
+.
 
 ## _Modifying Existing Information_
 ### Teachers, Labs, Streams
@@ -79,19 +96,21 @@ Go to the appropriate tabs, and edit the information directly
 
 ### Courses, Sections, Blocks
 #### Drag 'n' Drop
-Drag a teacher, or lab, or stream from any of the right panels onto the appropriate Course, Section or Block in the left panel, and it will be assigned acccordingly.
+Drag a teacher, or lab, or stream from any of the right panels onto the appropriate Course, Section or Class Time in the left panel, and it will be assigned acccordingly.
+
+If you hover over a course or section for approximately 1/2 second, the tree will _open_ and expose its constituents (courses will show sections, sections will show class times)
 
 #### Right-click
 Right click any object on the tree, and a pop-up menu will appear, allowing the user to add, remove teachers, labs, streams, delete the object, edit the object, etc.
 
 #### Double-click
-Double click any Course, Section, Block object on the tree, and an appropriate dialog box will open, allowing the user to edit the object.
+Double click any Course, Section, Class Time object on the tree, and an appropriate dialog box will open, allowing the user to edit the object.
 
 #### Keyboard
 Navigate to any Course, Section, Block object on the tree, hit ```return```, and an appropriate dialog box will open, allowing the user to edit the object.
 
 ## _Creating Schedules_
-Once all the lab information, streams, courses, teachers, etc have been created (and hopefully saved in a YAML file), the user can now create schedules for moving blocks around on the views.
+Once all the lab information, streams, courses, teachers, etc have been created (and hopefully saved in a CSV file), the user can now create schedules for moving blocks around on the views.
 * Go to the ```Schedules``` tab
     * There you will see a list of all possible 'Views', where each 'View' will be a schedule for that object.
     * Click on a button to see the 'View' associated with that object.
@@ -103,7 +122,7 @@ Once all the lab information, streams, courses, teachers, etc have been created 
 * Move the blocks around by selecting a block and then drag it with the mouse.  The block will be moved in all views in which it is assigned (teacher, lab, stream).
 * If there is a conflict, the block will change colour to indicate what type of conflict is present.  The colour coding for the blocks is described at the top of the view.
 * An _indirect_ conflict occurs when there is a time overlap for this block occurs in a different view.  For example, there may not be a conflict for the teacher in question, but there could be a conflict in the lab where the block has been assigned.
->NOTE: There is an unlimited number of undo and redo (although don't push it, this is a memory intensive program)
+>NOTE: There is an unlimited number of undo and redo when moving blocks
 
 #### Moving blocks between teachers and labs and streams
 * Right click the block that you wish to modify.
@@ -117,9 +136,11 @@ Once all the lab information, streams, courses, teachers, etc have been created 
 * If the user is on a lab view, and a block has an _indirect_ conflict, double clicking the block will open the teacher view that contains this block.
 
 ## _Allocating Teachers To Courses_
-Once all the lab information, streams, courses, teachers, etc have been created (and hopefully saved in a YAML file, one per semester), the user can now assign to teachers to courses, and ensure that the workload distribution meets the college's requirements.
+Once all the lab information, streams, courses, teachers, etc have been created (and hopefully saved in a CSV file, one per semester), the user can now assign to teachers to courses, and ensure that the workload distribution meets the college's requirements.
 
 > NOTE: The CI calculation depends on the number of students in each course/section.  Update the student numbers to reflect the most accurate information you can obtain, to ensure that the CI calculations are reasonably accurate.
+>
+> NOTE: If your course has classes and labs, where the student numbers are not the same for all scheduled class times, the CI calculations will be WRONG!
 
 There are two grids presented on the ```Allocation``` tab.  One for each semester.
 Teachers are listed in the rows, and courses/sections define the columns.  Course names are displayed if the mouse hovers over the course number.
