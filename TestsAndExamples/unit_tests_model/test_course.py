@@ -6,8 +6,7 @@ import pytest
 
 from schedule.model import Course
 from schedule.model import SemesterType
-from schedule.model import TimeSlot
-from schedule.model import InvalidSectionNumberForCourseError
+from schedule.model.exceptions import InvalidSectionNumberForCourseError
 
 sys.path.append(path.dirname(path.dirname(__file__)))
 

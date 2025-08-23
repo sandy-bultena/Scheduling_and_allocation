@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 
-from .model_exceptions import InvalidSectionNumberForCourseError
+from .exceptions import InvalidSectionNumberForCourseError
 from .enums import SemesterType
 from .section import Section
 
