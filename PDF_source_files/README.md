@@ -47,50 +47,28 @@ Validate again.
 
 Download zip file to your machine (it will be located in your downloads folder)
 
-<img src="./mac_app_download.png" alt="image-20250823104546043" style="zoom:25%;" />
+<img src="./app_download_windows.png" style="zoom:50%;" />
 
 Copy this file to your Desktop (drag'n'drop, or cut'n'paste)
 
-<img src="./app_zip_on_desktop.png" alt="image-20250823105546647" style="zoom:33%;" />
+<img src=".\app_zip_on_desktop_windows.png" style="zoom:50%;" />
 
-Double click the icon, and you will have a new icon on your desktop.  
+Extract the files from the zip files by right clicking the zipped folder and selecting "Extract All"
 
-<img src="./app_folder_on_desktop.png" alt="image-20250823105734689" style="zoom:33%;" />
+<img src="./app_extract_files.png" style="zoom:50%;" />
+
+Which will result in a new folder on your desktop
+
+<img src="./app_unzipped_windows.png" style="zoom:50%;" />
 
 At this point you can remove the zip file
 
 ## Running the program(s)
 
-Use the search tool (Command-spacebar) open a terminal window
+Open the Scheduling Folder and double click whichever program (Scheduler or Allocation) that you wish to run
 
-<img src="./search_terminal.png" alt="image-20250823110447048" style="zoom:33%;" />
+![](./app_windows.png)
 
-Navigate to the correct directory
-
-```bash
-cd Desktop
-cd Scheduling_and_allocation
-```
-
-<img src="./changing_dirs.png" alt="image-20250823110633980" style="zoom:33%;" />
-
-Run either the scheduler or allocation program
-
-```bash
-python3 SchedulerProgram.py
-```
-
-<img src="./image-20250823111129921.png" alt="image-20250823111129921" style="zoom:33%;" />
-
-```bash
-python3 AllocationManager.py
-```
-
-<img src="./run_allocation_cmd_line.png" alt="image-20250823110943947" style="zoom:33%;" />
-
-
-
-# 
 
 
 ## MAC OS X
