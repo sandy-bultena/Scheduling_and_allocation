@@ -146,7 +146,6 @@ def generate_menu(mw, menu_details: Optional[list[MenuItem]], parent: tk.Menu):
             x = re.match(r'Command-(.)', menu_item.accelerator, re.RegexFlag.IGNORECASE)
             if x:
                 binding = f"<Command-{x.group(1).lower()}>"
-                print(f"{binding=}")
                 mw.bind(binding, menu_item.command)
 
 

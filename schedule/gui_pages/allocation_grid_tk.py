@@ -5,6 +5,7 @@ from typing import Optional, Literal, Callable, Any
 import tkinter as tk
 import tkinter.ttk as ttk
 
+from schedule.Tk.InitGuiFontsAndColours import get_fonts_and_colours
 from schedule.Tk.Pane import Pane
 from idlelib.tooltip import Hovertip
 
@@ -127,7 +128,8 @@ class AllocationGridTk:
         self.bottom_cell_valid = bottom_cell_valid
 
         # set up the font for the entry widgets
-        self.fonts = fac.TkFonts(frame.winfo_toplevel())
+        _, self.fonts = get_fonts_and_colours()
+
         ENTRY_PROPS['font'] = self.fonts.normal
 
         # make the frames

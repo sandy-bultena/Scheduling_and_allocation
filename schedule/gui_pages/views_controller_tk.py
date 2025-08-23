@@ -22,15 +22,12 @@ import tkinter as tk
 from typing import Callable
 
 from schedule.Tk import Scrolled
+from schedule.Tk.InitGuiFontsAndColours import get_fonts_and_colours
 from schedule.Utilities import Colour
 from schedule.gui_generics.block_colours import RESOURCE_COLOURS
 from schedule.model.enums import ConflictType, ResourceType
-from schedule.Tk import InitGuiFontsAndColours as fac
-
 
 class ViewsControllerTk:
-    colours: fac.TkColours = fac.colours
-    Fonts: fac.TkFonts = fac.fonts
 
     # ============================================================================
     # constructor
@@ -48,13 +45,12 @@ class ViewsControllerTk:
             widget.destroy()
 
         # set fonts
-        if self.Fonts is None:
-            self.Fonts = fac.TkFonts(parent.winfo_toplevel())
+        self.colours, self.fonts = get_fonts_and_colours()
         scrolled_frame = Scrolled(parent, "Frame").widget
 
         self._button_refs: dict[str, tk.Button] = {}
 
-        tk.Label(scrolled_frame,text="Edit Class Times for ...", font=self.Fonts.big, anchor='center').pack(expand=1,fill='both', pady=5)
+        tk.Label(scrolled_frame,text="Edit Class Times for ...", font=self.fonts.big, anchor='center').pack(expand=1,fill='both', pady=5)
 
         # for each resource, create a bunch of buttons that can launch views
         for resource_type in (ResourceType.teacher, ResourceType.lab, ResourceType.stream):

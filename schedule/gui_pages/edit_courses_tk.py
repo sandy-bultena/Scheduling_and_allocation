@@ -43,6 +43,7 @@ from schedule.Tk import Scrolled
 from schedule.Tk import InitGuiFontsAndColours as fac
 from schedule.Tk import AdvancedTreeview
 from schedule.Tk import DragNDropManager
+from schedule.Tk.InitGuiFontsAndColours import get_fonts_and_colours
 from schedule.gui_generics.menu_and_toolbars import MenuItem, MenuType, generate_menu
 from schedule.model import ResourceType
 
@@ -78,7 +79,6 @@ class EditCoursesTk:
 
     """
     colours: fac.TkColours = fac.colours
-    Fonts: fac.TkFonts = fac.fonts
     Text_style_defn: dict[str, str] = {'bg': colours.WorkspaceColour, 'fg': colours.SelectedForeground}
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -91,8 +91,7 @@ class EditCoursesTk:
         self.frame = frame
 
         # setup fonts if they have not already been set up
-        if self.Fonts is None:
-            self.Fonts = fac.TkFonts(frame.winfo_toplevel())
+        _, self.fonts = get_fonts_and_colours()
 
         # call backs (should be defined by presenter)
         self.handler_tree_edit: Callable[[TREE_OBJECT, TREE_OBJECT, str, str], None] \
@@ -421,8 +420,8 @@ class EditCoursesTk:
         tv: AdvancedTreeview = self.tree_scrolled.widget
         tv.bind('<Double-1>', self._cmd_edit_selection)
         tv.bind('<Key-Return>', self._cmd_edit_selection)
-        tv.tag_configure("bold", font=self.Fonts.big)
-        tv.tag_configure("normal", font=self.Fonts.normal)
+        tv.tag_configure("bold", font=self.fonts.big)
+        tv.tag_configure("normal", font=self.fonts.normal)
 
         # mac vs windows methods for getting pop up menus
         if self.frame.winfo_toplevel().tk.call('tk','windowingsystem') == 'aqua':
@@ -439,7 +438,7 @@ class EditCoursesTk:
         # the scrolled method requires an empty frame, or else, it messes up.
         f = tk.Frame(panel)
         f.grid(column=0, stick='nsew', row=0)
-        tk.Label(f, text="Teachers", font=self.Fonts.bold).pack()
+        tk.Label(f, text="Teachers", font=self.fonts.bold).pack()
         sf = tk.Frame(f)
         sf.pack(fill='both', expand=1)
         s: Scrolled = Scrolled(sf, 'Listbox', scrollbars='e')
@@ -448,7 +447,7 @@ class EditCoursesTk:
 
         f = tk.Frame(panel)
         f.grid(column=0, stick='nsew', row=1)
-        tk.Label(f, text="Labs", font=self.Fonts.bold).pack()
+        tk.Label(f, text="Labs", font=self.fonts.bold).pack()
         sf = tk.Frame(f)
         sf.pack(fill='both', expand=1)
         s: Scrolled = Scrolled(sf, 'Listbox', scrollbars='e')
@@ -456,7 +455,7 @@ class EditCoursesTk:
 
         f = tk.Frame(panel)
         f.grid(column=0, stick='nsew', row=2)
-        tk.Label(f, text="Streams", font=self.Fonts.bold).pack()
+        tk.Label(f, text="Streams", font=self.fonts.bold).pack()
         sf = tk.Frame(f)
         sf.pack(fill='both', expand=1)
         s: Scrolled = Scrolled(sf, 'Listbox', scrollbars='e')

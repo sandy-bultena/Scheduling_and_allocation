@@ -30,16 +30,23 @@ class Preferences:
         return None
 
     def dark_mode(self, dark_mode: bool = None) -> bool:
+        if 'COLOURS' not in self._config:
+            self._config['COLOURS'] = {'dark_mode':'0'}
         if dark_mode is not None:
             self._config['COLOURS']['dark_mode'] = str(dark_mode)
         return self._config['COLOURS'].getboolean('dark_mode')
 
     def semester(self, semester: VALID_SEMESTER = None) -> VALID_SEMESTER:
+        if 'MOST_RECENT' not in self._config:
+            self._config['MOST_RECENT'] = {'semester':'fall'}
         if semester is not None:
             self._config['MOST_RECENT']['semester'] = semester
         return self._config['MOST_RECENT'].get('semester', "fall")
 
     def previous_file(self, file: Optional[str] = None) -> Optional[str]    :
+        if 'MOST_RECENT' not in self._config:
+            self._config['MOST_RECENT'] = {}
+
         directory = None
         filename = None
 
@@ -80,6 +87,9 @@ class Preferences:
         return None
 
     def current_dir(self, new_dir: Optional[str] = None) -> Optional[str]:
+        if 'MOST_RECENT' not in self._config:
+            self._config['MOST_RECENT'] = {}
+
         directory = None
 
         if new_dir is not None and os.path.isdir(new_dir):
@@ -118,6 +128,22 @@ class Preferences:
         else:
             return False
 
+    def font_size(self, value: Optional[int] = None) -> int:
+        operating_system = platform.system().lower()
+        if 'FONT_SIZE' not in self._config:
+            self._config['FONT_SIZE'] = {'windows':'13', 'darwin':'10'}
+
+
+        if re.match(r'win', operating_system):
+            if value is not None:
+                self._config['FONT_SIZE']['windows'] = str(value)
+            return int(self._config['FONT_SIZE'].get("windows", '10'))
+
+        else:
+            if value is not None:
+                self._config['FONT_SIZE']['darwin'] = str(value)
+            return int(self._config['FONT_SIZE'].get("darwin", '13'))
+
     def save(self):
         _write_ini(self._config)
 
@@ -146,6 +172,9 @@ def _read_ini() -> cp.ConfigParser:
     config['COLOURS']['dark_mode'] = "yes"
     config['AUTO_SAVE'] = {}
     config['AUTO_SAVE']['set'] = '1'
+    config['FONT_SIZE'] = {}
+    config['FONT_SIZE']['windows'] = '13'
+    config['FONT_SIZE']['darwin'] = '10'
     return config
 
 

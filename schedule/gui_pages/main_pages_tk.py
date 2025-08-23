@@ -78,7 +78,9 @@ class MainPageBaseTk:
         self.mw = self._create_toplevel(title)
 
         # colors and fonts
-        self.colours, self.fonts = set_default_fonts_and_colours(self.mw, invert=self.dark_mode)
+        self.colours, self.fonts = set_default_fonts_and_colours(self.mw,
+                                                                 font_size=self._preferences.font_size(),
+                                                                invert=self.dark_mode)
 
         # set the filename so that it can be bound later
         self._status_bar_fall_file_info: tk.StringVar = tk.StringVar(value="None")
