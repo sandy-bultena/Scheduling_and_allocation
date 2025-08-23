@@ -1,11 +1,10 @@
-# SchedProg
+# Scheduling and Allocation Programs
 
-A package of tools used for scheduling and allocating
-teachers and labs etc.
-
+A package of tools used for scheduling and allocating teachers and labs etc.
 
 
-Uses Perl/Tk GUI
+
+Uses Python
 
 Takes into account the following contraints
 1. Teachers
@@ -13,41 +12,108 @@ Takes into account the following contraints
 3. Streams
 4. Limits schedules based on current Collective Agreement Rules
 
-Files are saved in YAML format, so they can be edited manually
-if  you are brave enough.
+Files are saved in CSV format, so they can be edited manually if  you are careful enough.
 
 ## MAC OS X
 
-### Install perl (this version used 5.30.3)
-[perl](https://www.perl.org/get.html#osx)
-(build from source, don't use ActivePerl)
+## Python Installation
 
-### Install required Perl Packages
+Go to [python site](https://www.python.org/) and navigate to the `Downloads` page
 
-Assuming that you installed perl into /usr/local/bin...
+<img src="./python_download_mac.png" alt="image-20250823111349808" style="zoom:33%;" />
+
+Download python.
+
+You should see an installation program icon in your task bar <img src="./python_app_image_icon.png" alt="image-20250823111819678" style="zoom:25%;" />
+
+Double click this icon, and choose all the defaults.
+
+Once installation is complete, you should see the following 'finder' window pop-up
+
+<img src="./python_app_folder.png" alt="image-20250823112048447" style="zoom: 25%;" />
+
+Double click the "update Shell" icon
+
+### Validation
+
+Use the search tool (Command-spacebar) open a terminal window
+
+<img src="./search_terminal.png" alt="image-20250823110447048" style="zoom:33%;" />
+
+Type the following in the terminal window
 
 ```bash
-sudo /usr/local/bin/cpan install YAML
-sudo /usr/local/bin/cpan -fi Tk         # must force install Tk
-sudo /usr/local/bin/cpan install Text::CSV
-sudo /usr/local/bin/cpan install PDF::API2
+python3 --version
 ```
 
-### Install Scheduler and AllocationManager
-Download zip file and unzip
+The version number should be the same python that you installed
 
-From a terminal window (bash)
+<img src="./python_version_mac.png" alt="image-20250823112346490" style="zoom:33%;" />
+
+### Install Dependencies
+
+Use the search tool (Command-spacebar) open a terminal window
+
+<img src="./search_terminal.png" alt="image-20250823110447048" style="zoom:33%;" />
+
+Type the following in the terminal window
 
 ```bash
-cd ../SchedProg/schedule/
-/usr/local/bin/perl SchedulerManager.pl &
+python3 -m pip install reportlab
 ```
 
-### Third Party Software
+```bash
+python3 -m pip install pillow
+```
 
-A X-windows emulator must be installed on your system.
 
-Recommended: XQuartz
+
+## Application Installation
+
+Download zip file to your Mac (it will be located in your downloads folder)
+
+<img src=""./mac_app_download.png" alt="image-20250823104546043" style="zoom:25%;" />
+
+Copy this file to your Desktop (drag'n'drop, or cut'n'paste)
+
+<img src="./app_zip_on_desktop.png" alt="image-20250823105546647" style="zoom:33%;" />
+
+Double click the icon, and you will have a new icon on your desktop.  
+
+<img src="./app_folder_on_desktop.png" alt="image-20250823105734689" style="zoom:33%;" />
+
+At this point you can remove the zip file
+
+## Running the program(s)
+
+Use the search tool (Command-spacebar) open a terminal window
+
+<img src="./search_terminal.png" alt="image-20250823110447048" style="zoom:33%;" />
+
+Navigate to the correct directory
+
+```bash
+cd Desktop
+cd Scheduling_and_allocation
+```
+
+<img src="./changing_dirs.png" alt="image-20250823110633980" style="zoom:33%;" />
+
+Run either the scheduler or allocation program
+
+```bash
+python3 SchedulerProgram.py
+```
+
+<img src="./image-20250823111129921.png" alt="image-20250823111129921" style="zoom:33%;" />
+
+```bash
+python3 AllocationManager.py
+```
+
+<img src="./run_allocation_cmd_line.png" alt="image-20250823110943947" style="zoom:33%;" />
+
+
 
 ## MS Windows (Tested on Windows 10)
 
@@ -118,6 +184,6 @@ To install all necessary Python packages, type this command in the terminal:
 
 # COPYRIGHT
 
-Copyright (c) 2016, Jack Burns, Sandy Bultena, Ian Clement. 
 Copyright (c) 2025, Sandy Bultena
 
+Copyright (c) 2016, Jack Burns, Sandy Bultena, Ian Clement. 
