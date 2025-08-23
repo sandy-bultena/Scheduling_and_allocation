@@ -6,7 +6,7 @@ from __future__ import annotations
 from os import path
 from typing import Optional
 
-import schedule.exceptions as errors
+import schedule.model.exceptions as errors
 
 from .teacher import Teacher
 from .block import Block

@@ -8,4 +8,4 @@ from .section import Section
 from .stream import Stream
 from .course import Course
 from .schedule import Schedule
-from .model_exceptions import InvalidSectionNumberForCourseError, InvalidHoursForSectionError
+from .exceptions import InvalidSectionNumberForCourseError, InvalidHoursForSectionError

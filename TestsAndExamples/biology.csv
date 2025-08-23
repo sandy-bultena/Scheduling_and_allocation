@@ -12,21 +12,21 @@ lab,overflow,Classroom
 ,number,description
 
 ,number,first name,last name,department,release
-teacher,Oyl_Olive,Olive,Oyl,,0.75
-teacher,Sailor_Popeye,Popeye,Sailor,,0.0
 teacher,Ant_Atom,Atom,Ant,,0.0
-teacher,Sweet_Granny,Granny,Sweet,,0.4
 teacher,Bear_Brother,Brother,Bear,,0.0
-teacher,Gramps_Grizzly,Grizzly,Gramps,,0.0
 teacher,Bear_Mama,Mama,Bear,,0.0
-teacher,Honeypot_Mayor,Mayor,Honeypot,,0.0
+teacher,Bear_Yogi,Yogi,Bear,,0.0
 teacher,Caveman_Captain,Captain,Caveman,,0.125
-teacher,Malone_Wendal,Wendal,Malone,,0.0
+teacher,Flinstone_Barney,Barney,Flinstone,,0.25
 teacher,Flinstone_Fred,Fred,Flinstone,,0.25
 teacher,Flinstone_Wilma,Wilma,Flinstone,,0.0
-teacher,Flinstone_Barney,Barney,Flinstone,,0.25
-teacher,Bear_Yogi,Yogi,Bear,,0.0
+teacher,Gramps_Grizzly,Grizzly,Gramps,,0.0
+teacher,Honeypot_Mayor,Mayor,Honeypot,,0.0
+teacher,Malone_Wendal,Wendal,Malone,,0.0
+teacher,Oyl_Olive,Olive,Oyl,,0.75
+teacher,Sailor_Popeye,Popeye,Sailor,,0.0
 teacher,Smith_Ranger,Ranger,Smith,,0.0
+teacher,Sweet_Granny,Granny,Sweet,,0.4
 
 
 ,,DESCRIPTION,OF,FIELDS
@@ -317,37 +317,28 @@ add_lab,AME-301
 
 section,,3,Section 3,0
 add_block,,Tuesday,10.5,2.0,1
-add_block_teacher,Smith_Ranger_
 add_lab,AME-352
 add_block,,Wednesday,10.0,1.0,1
-add_block_teacher,Smith_Ranger_
 add_lab,AME-302
 add_block,,Wednesday,11.0,1.0,1
-add_block_teacher,Smith_Ranger_
 add_lab,AME-302
 
 section,,4,Section 4,0
 add_block,,Tuesday,8.5,2.0,1
-add_block_teacher,Smith_Ranger_
 add_lab,AME-352
 add_block,,Friday,10.0,1.0,1
-add_block_teacher,Smith_Ranger_
 add_lab,AME-302
 add_block,,Friday,11.0,1.0,1
-add_block_teacher,Smith_Ranger_
 add_lab,AME-302
 
 course,101-SN1,Grape,4,1,6.0
 
 section,,1,Section 1,0
 add_block,,Thursday,8.5,2.0,1
-add_block_teacher,Smith_Ranger_
 add_lab,AME-334
 add_block,,Thursday,10.5,2.0,1
-add_block_teacher,Smith_Ranger_
 add_lab,AME-334
 add_block,,Friday,13.0,2.0,1
-add_block_teacher,Smith_Ranger_
 add_lab,AME-301
 
 section,,2,,0

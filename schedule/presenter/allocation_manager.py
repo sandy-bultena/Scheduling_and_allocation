@@ -5,7 +5,7 @@ from functools import partial
 from typing import Any, Callable, Optional
 
 from schedule.Utilities import Preferences
-from schedule.exceptions import CouldNotReadFileError
+from schedule.model.exceptions import CouldNotReadFileError
 from schedule.gui_pages.allocation_manager_tk import AllocationManagerTk, set_main_page_event_handler
 from schedule.presenter.allocation_editor import AllocationEditor
 from schedule.presenter.edit_courses import EditCourses

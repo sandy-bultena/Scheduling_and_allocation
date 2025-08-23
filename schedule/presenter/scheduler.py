@@ -47,7 +47,7 @@ from schedule.presenter.menus_main_menu_scheduler import set_menu_event_handler,
 from schedule.Utilities import Preferences
 from schedule.gui_pages.scheduler_tk import SchedulerTk, set_main_page_event_handler
 from schedule.model import Schedule, ResourceType
-from schedule.exceptions import CouldNotReadFileError
+from schedule.model.exceptions import CouldNotReadFileError
 from schedule.gui_generics.read_only_text_tk import ReadOnlyTextTk
 from schedule.presenter.view import View
 from schedule.presenter.views_controller import ViewsController
