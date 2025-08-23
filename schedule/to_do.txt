@@ -2,11 +2,9 @@
 ============ Bugs ================
 * Maybe Mac menu stuff (a nice to have)
 * make printing of schedules optional so you don't have to install reportlab
-* make changing font size as an option... but will have to add scrollbars to the dialog boxes so that they can be moved if required - turns out this is necessary (sigh... just when I thought I was finished)
 * Update README and installation instructions
 * Add 'enter' binding for moving resource from/to
 * Add 'install Pillow' to README
-* Add AutoSave menu and logic to main gui, adjust so that label is always up to date
 
 ============ Done ================
 * Switching between view tabs and back disconnects view from view controller (and the buttons I thing in the view choices)
@@ -60,3 +58,5 @@
 * Either remove or update "Synopsis" in code comments
 * Windows, binding to ctrl-s isn't working properly - its because of the binding to the mac Command key, so if I put that in an if block it should be ok
 * Autosave suddenly not working for allocation - wasn't but now is... must check on windows - was an issue with not being up to date with the preferences during start-up
+* Add AutoSave menu and logic to main gui, adjust so that label is always up to date
+* make changing font size as an option... but will have to add scrollbars to the dialog boxes so that they can be moved if required - turns out this is necessary (sigh... just when I thought I was finished)
