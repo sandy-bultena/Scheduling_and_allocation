@@ -7,7 +7,7 @@ from tkinter.simpledialog import Dialog
 
 bin_dir: str = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(bin_dir, "../../"))
-import schedule.Tk.InitGuiFontsAndColours as fac
+import src.scheduling_and_allocation.modified_tk.InitGuiFontsAndColours as fac
 
 mw = tk.Tk()
 mw.geometry("400x400")

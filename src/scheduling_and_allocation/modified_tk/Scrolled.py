@@ -1,11 +1,10 @@
 from __future__ import annotations
 import tkinter as tk
 from tkinter import ttk
-#from functools import partial
-import schedule.Tk as new_tk
 
 import sys
 import traceback
+import importlib
 from typing import Any, Literal
 
 
@@ -156,6 +155,10 @@ example::
         self._horizontal_scrollbar = None
         self._widget = None
 
+        scrolled_module = Scrolled.__module__
+        parts = scrolled_module.split('.')
+        modified_tk_module = importlib.import_module('.'.join(parts[:-1]))
+
         # ----------------------------------------------------------------------------------------
         # get the Tk object that needs to be created
         # ----------------------------------------------------------------------------------------
@@ -173,7 +176,7 @@ example::
 
                 # looking for a personalized widget in schedule.Tk
                 try:
-                    _tk_widget_type = getattr(new_tk, widget_type)
+                    _tk_widget_type = getattr(modified_tk_module, widget_type)
                 except AttributeError as e:
                     eprint(e)
 

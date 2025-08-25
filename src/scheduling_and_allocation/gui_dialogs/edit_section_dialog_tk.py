@@ -8,12 +8,12 @@ from tkinter import ttk
 from tkinter.simpledialog import Dialog
 from typing import Callable, TYPE_CHECKING
 
-from schedule.gui_dialogs.dialog_utilities import validate_class_times_equals_course_time, \
+from .dialog_utilities import validate_class_times_equals_course_time, \
     get_block_info_from_tk_widgets, refresh_gui_blocks
-from schedule.gui_generics.add_remove_tk import AddRemoveTk
+from ..gui_generics.add_remove_tk import AddRemoveTk
 
 if TYPE_CHECKING:
-    from schedule.model import Stream, Lab, Teacher
+    from ..model import Stream, Lab, Teacher
 
 # =====================================================================================================================
 # Edit Section - add blocks, teachers, labs, streams

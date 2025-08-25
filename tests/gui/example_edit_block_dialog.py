@@ -2,12 +2,8 @@ from tkinter import *
 import os
 import sys
 
-bin_dir: str = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(os.path.join(bin_dir, "../../"))
-
-from schedule.model import SemesterType, TimeSlot, WeekDay
-from schedule.model.schedule import Schedule
-from schedule.gui_dialogs.add_edit_block_dialog_tk import AddEditBlockDialogTk
+from src.scheduling_and_allocation.gui_dialogs.add_edit_block_dialog_tk import AddEditBlockDialogTk
+from src.scheduling_and_allocation.model import Schedule
 
 mw=Tk()
 frame = Frame(mw)

@@ -3,9 +3,9 @@ from typing import Callable, Optional
 import pytest
 from _pytest.fixtures import fixture
 
-from schedule.gui_generics.menu_and_toolbars import MenuItem, MenuType
-from schedule.model import ResourceType, ConflictType, SemesterType, WeekDay, Schedule, Block
-from schedule.presenter.view import View
+from src.scheduling_and_allocation.gui_generics.menu_and_toolbars import MenuItem, MenuType
+from src.scheduling_and_allocation.model import ResourceType, ConflictType, Block, Schedule, WeekDay, SemesterType
+from src.scheduling_and_allocation.presenter.view import View
 
 
 def _default_menu(*_) -> list[MenuItem]:

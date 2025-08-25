@@ -21,11 +21,11 @@ from functools import partial
 import tkinter as tk
 from typing import Callable
 
-from schedule.Tk import Scrolled
-from schedule.Tk.InitGuiFontsAndColours import get_fonts_and_colours
-from schedule.Utilities import Colour
-from schedule.gui_generics.block_colours import RESOURCE_COLOURS
-from schedule.model.enums import ConflictType, ResourceType
+from ..modified_tk import Scrolled, set_default_fonts_and_colours
+from ..modified_tk import get_fonts_and_colours
+from ..Utilities import Colour
+from ..gui_generics.block_colours import RESOURCE_COLOURS
+from ..model import ConflictType, ResourceType
 
 class ViewsControllerTk:
 
@@ -46,6 +46,8 @@ class ViewsControllerTk:
 
         # set fonts
         self.colours, self.fonts = get_fonts_and_colours()
+        if self.fonts is None:
+            self.colours, self.fonts = set_default_fonts_and_colours(self.parent.winfo_toplevel())
         scrolled_frame = Scrolled(parent, "Frame").widget
 
         self._button_refs: dict[str, tk.Button] = {}

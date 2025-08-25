@@ -31,14 +31,14 @@
 from functools import partial
 from typing import Optional, Callable, Any, TYPE_CHECKING, Literal
 
-from schedule.gui_generics.menu_and_toolbars import MenuItem
-from schedule.gui_dialogs.add_edit_block_dialog_tk import AddEditBlockDialogTk
-from schedule.gui_dialogs.add_section_dialog_tk import AddSectionDialogTk
-from schedule.gui_dialogs.edit_course_dialog_tk import EditCourseDialogTk
-from schedule.gui_dialogs.edit_section_dialog_tk import EditSectionDialogTk
-from schedule.model import Schedule, ResourceType, Section, Block, Teacher, Lab, Stream, Course, WeekDay
-from schedule.gui_pages import EditCoursesTk
-from schedule.presenter.edit_courses_popup_menus import CreateTreePopupMenuActions, CreateResourcePopupMenuActions
+from ..gui_generics.menu_and_toolbars import MenuItem
+from ..gui_dialogs.add_edit_block_dialog_tk import AddEditBlockDialogTk
+from ..gui_dialogs.add_section_dialog_tk import AddSectionDialogTk
+from ..gui_dialogs.edit_course_dialog_tk import EditCourseDialogTk
+from ..gui_dialogs.edit_section_dialog_tk import EditSectionDialogTk
+from ..model import Schedule, ResourceType, Section, Block, Teacher, Lab, Stream, Course, WeekDay
+from ..gui_pages import EditCoursesTk
+from ..presenter.edit_courses_popup_menus import CreateTreePopupMenuActions, CreateResourcePopupMenuActions
 
 RESOURCE_OBJECT = Teacher | Lab | Stream
 TREE_OBJECT = Any

@@ -1,15 +1,10 @@
 from tkinter import *
 from tkinter import messagebox
 from typing import Any
-import os
-import sys
 
-bin_dir: str = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(os.path.join(bin_dir, "../../"))
-
-from schedule.gui_generics.menu_and_toolbars import MenuItem, MenuType
-from schedule.gui_pages import EditCoursesTk
-from schedule.model import ResourceType
+from src.scheduling_and_allocation.gui_generics.menu_and_toolbars import MenuItem, MenuType
+from src.scheduling_and_allocation.gui_pages import EditCoursesTk
+from src.scheduling_and_allocation.model import ResourceType
 
 
 # ----------------------------------------------------------------------------

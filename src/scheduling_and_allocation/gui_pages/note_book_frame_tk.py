@@ -15,7 +15,7 @@ import tkinter.ttk as ttk
 import tkinter as tk
 from typing import Optional, Callable, Protocol, Any
 
-from schedule.Tk.InitGuiFontsAndColours import get_fonts_and_colours
+from ..modified_tk.InitGuiFontsAndColours import get_fonts_and_colours
 
 
 @dataclass

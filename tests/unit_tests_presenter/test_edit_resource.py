@@ -1,14 +1,11 @@
-import inspect
-import os
-import tkinter
 from os import path
 from typing import Callable, Any, Optional
 
 import pytest
 
-from schedule.model import ResourceType, Schedule
-from schedule.presenter.edit_resources import EditResources
-from schedule.gui_pages import EditResourcesTk, DEColumnDescription
+from src.scheduling_and_allocation.gui_pages import EditResourcesTk, DEColumnDescription
+from src.scheduling_and_allocation.model import Schedule, ResourceType
+from src.scheduling_and_allocation.presenter.edit_resources import EditResources
 
 SCHEDULE_FILE = path.dirname(__file__) + "/test.csv"
 BIN_DIR = path.dirname(__file__) + "/../../schedule"

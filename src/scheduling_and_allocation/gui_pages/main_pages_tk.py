@@ -20,12 +20,12 @@ from typing import Optional, TYPE_CHECKING, Callable
 
 from tkinter.messagebox import showerror, showinfo, askyesno
 
-from schedule.Tk import FindImages
-from schedule.Tk import set_default_fonts_and_colours, TkColours, TkFonts
-from schedule.gui_dialogs.change_font_tk import ChangeFont
-from schedule.gui_pages.note_book_frame_tk import NoteBookFrameTk, TabInfoProtocol
-from schedule.gui_generics.menu_and_toolbars import MenuItem, ToolbarItem, generate_menu, make_toolbar
-from schedule.Utilities.Preferences import Preferences
+from ..modified_tk import FindImages
+from ..modified_tk import set_default_fonts_and_colours, TkColours, TkFonts
+from ..gui_dialogs.change_font_tk import ChangeFont
+from ..gui_pages.note_book_frame_tk import NoteBookFrameTk, TabInfoProtocol
+from ..gui_generics.menu_and_toolbars import MenuItem, ToolbarItem, generate_menu, make_toolbar
+from ..Utilities.Preferences import Preferences
 
 if TYPE_CHECKING:
     pass
@@ -79,8 +79,11 @@ class MainPageBaseTk:
         self.mw = self._create_toplevel(title)
 
         # colors and fonts
+        font_size = None
+        if self._preferences is not None:
+            font_size = self._preferences.font_size()
         self.colours, self.fonts = set_default_fonts_and_colours(self.mw,
-                                                                 font_size=self._preferences.font_size(),
+                                                                 font_size=font_size,
                                                                 invert=self.dark_mode)
 
         # set the filename so that it can be bound later

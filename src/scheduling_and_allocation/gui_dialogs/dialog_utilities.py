@@ -3,8 +3,8 @@ from functools import partial
 from tkinter import ttk
 import tkinter.messagebox as message_box
 
-from schedule.gui_generics.number_validations import entry_float
-from schedule.model import WeekDay
+from ..gui_generics.number_validations import entry_float
+from ..model import WeekDay
 
 
 # ================================================================================================================

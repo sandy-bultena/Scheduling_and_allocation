@@ -27,9 +27,9 @@
 
 from typing import Callable, Optional, Literal
 
-from schedule.gui_pages.views_controller_tk import ViewsControllerTk
-from schedule.model import ResourceType, Schedule, Stream, Teacher, Lab, Block
-from schedule.presenter.view import View
+from ..gui_pages.views_controller_tk import ViewsControllerTk
+from ..model import ResourceType, Schedule, Stream, Teacher, Lab, Block
+from .view import View
 
 RESOURCE = Teacher | Lab | Stream
 

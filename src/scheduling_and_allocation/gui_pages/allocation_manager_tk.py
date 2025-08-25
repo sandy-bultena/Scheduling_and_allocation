@@ -9,7 +9,7 @@ from ..Utilities.Preferences import Preferences
 
 from .main_pages_tk import MainPageBaseTk
 import tkinter as tk
-from schedule.model.enums import SemesterType
+from ..model.enums import SemesterType
 
 BUTTON_WIDTH = 50
 MAX_LEN_OF_DISPLAYED_FILENAME = 60

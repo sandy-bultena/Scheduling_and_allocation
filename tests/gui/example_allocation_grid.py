@@ -1,19 +1,16 @@
 import os
-import re
-import sys
 import tkinter as tk
 
+from src.scheduling_and_allocation.model import Schedule
+from src.scheduling_and_allocation.modified_tk import set_default_fonts_and_colours
+from src.scheduling_and_allocation.presenter.allocation_editor import AllocationEditor
+
 bin_dir: str = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(os.path.join(bin_dir, "../../"))
-
-from schedule.model import Schedule
-from schedule.presenter.allocation_editor import AllocationEditor
-
-
-
 mw = tk.Tk()
 mw.geometry("800x400")
-file = "/tests/unit_tests_presenter/data_fall.csv"
+
+_ = set_default_fonts_and_colours(mw)
+file = f"{bin_dir}/../unit_tests_presenter/data_fall.csv"
 s = Schedule(file)
 
 f = tk.Frame(mw, background="pink")

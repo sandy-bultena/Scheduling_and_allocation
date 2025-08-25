@@ -4,15 +4,14 @@ from typing import Optional, Literal, Callable, Any
 
 import tkinter as tk
 import tkinter.ttk as ttk
-
-from schedule.Tk.InitGuiFontsAndColours import get_fonts_and_colours
-from schedule.Tk.Pane import Pane
-from idlelib.tooltip import Hovertip
-
-from schedule.Utilities import Colour
-from schedule.gui_generics.number_validations import entry_float
-from schedule.Tk.idlelib_tooltip import Hovertip
 from tkinter.messagebox import showerror
+
+from ..modified_tk import get_fonts_and_colours
+from ..modified_tk import Pane
+
+from ..Utilities import Colour
+from ..gui_generics.number_validations import entry_float
+from ..modified_tk import Hovertip
 
 
 # =====================================================================================================================

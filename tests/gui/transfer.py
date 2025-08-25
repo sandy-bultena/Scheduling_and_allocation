@@ -1,7 +1,7 @@
 from functools import partial
 from tkinter import *
-import pprint
-from schedule.Tk import Scrolled
+
+from src.scheduling_and_allocation.modified_tk import Scrolled
 
 
 class AddRemove:

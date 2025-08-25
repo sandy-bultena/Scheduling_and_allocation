@@ -5,9 +5,9 @@ from typing import Any, Callable
 from functools import partial
 import os
 
-from ..Tk.Scrolled import Scrolled
-from ..Tk.FindImages import get_image_dir
-from ..Tk.InitGuiFontsAndColours import TkColours
+from ..modified_tk.Scrolled import Scrolled
+from ..modified_tk.FindImages import get_image_dir
+from ..modified_tk.InitGuiFontsAndColours import TkColours
 
 # TODO:  Maybe refactor the method for config_specs, etc.
 #        Check DynamicTree methods (if was coded after this was)

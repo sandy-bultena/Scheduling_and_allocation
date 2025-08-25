@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from functools import partial
 
-from schedule.gui_pages.student_numbers_tk import StudentNumbersTk, SectionData
-from schedule.model import Section
-from schedule.model.schedule import Schedule
+from ..gui_pages.student_numbers_tk import StudentNumbersTk, SectionData
+from ..model import Section
+from ..model.schedule import Schedule
 
 
 # =======================================================================================================

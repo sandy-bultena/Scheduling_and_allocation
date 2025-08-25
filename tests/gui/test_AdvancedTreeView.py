@@ -1,6 +1,7 @@
 from __future__ import annotations
 from tkinter import *
-from schedule.Tk import AdvancedTreeview
+
+from src.scheduling_and_allocation.modified_tk import AdvancedTreeview
 
 mw = Tk()
 mw.geometry("500x300")

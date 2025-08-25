@@ -28,13 +28,13 @@ import re
 from functools import partial
 from typing import TYPE_CHECKING, Optional, Callable
 
-from schedule.gui_generics.menu_and_toolbars import MenuItem, MenuType
-from schedule.Utilities.id_generator import IdGenerator
-from schedule.gui_pages.view_dynamic_tk import ViewDynamicTk
-from schedule.model import Block, Teacher, Stream, Lab, Schedule
-from schedule.model.enums import ResourceType
+from ..gui_generics.menu_and_toolbars import MenuItem, MenuType
+from ..Utilities.id_generator import IdGenerator
+from ..gui_pages.view_dynamic_tk import ViewDynamicTk
+from ..model import Block, Teacher, Stream, Lab, Schedule
+from ..model.enums import ResourceType
 if TYPE_CHECKING:
-    from schedule.presenter.views_controller import ViewsController
+    from ..presenter.views_controller import ViewsController
 
 RESOURCE = Lab | Stream | Teacher
 

@@ -1,12 +1,7 @@
-import os
-import sys
-
-bin_dir: str = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(os.path.join(bin_dir, "../../"))
-
-from schedule.Tk import DragNDropManager
 import tkinter as tk
 from tkinter import ttk, messagebox
+
+from src.scheduling_and_allocation.modified_tk import DragNDropManager
 
 
 def lb_on_start(e: tk.Event, info_data: dict) -> str:

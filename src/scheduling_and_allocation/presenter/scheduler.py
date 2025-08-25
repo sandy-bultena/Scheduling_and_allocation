@@ -39,21 +39,20 @@ from enum import Enum
 from functools import partial
 from typing import Optional
 
+from .edit_resources import EditResources
+from .edit_courses import EditCourses
+from .menus_main_menu_scheduler import set_menu_event_handler, main_menu
+from .view import View
+from .views_controller import ViewsController
+from .notebook_tab_data import NBTabInfo
 
-from schedule.presenter.edit_resources import EditResources
-from schedule.presenter.edit_courses import EditCourses
-
-from schedule.presenter.menus_main_menu_scheduler import set_menu_event_handler, main_menu
-from schedule.Utilities import Preferences
-from schedule.gui_pages.scheduler_tk import SchedulerTk, set_main_page_event_handler
-from schedule.model import Schedule, ResourceType
-from schedule.model.exceptions import CouldNotReadFileError
-from schedule.gui_generics.read_only_text_tk import ReadOnlyTextTk
-from schedule.presenter.view import View
-from schedule.presenter.views_controller import ViewsController
-from schedule.export.view_export_canvases import PDFCanvas, LatexCanvas
-from schedule.gui_pages.view_canvas_tk import ViewCanvasTk
-from schedule.presenter.notebook_tab_data import NBTabInfo
+from ..Utilities import Preferences
+from ..gui_pages.scheduler_tk import SchedulerTk, set_main_page_event_handler
+from ..model import Schedule, ResourceType
+from ..model.exceptions import CouldNotReadFileError
+from ..gui_generics.read_only_text_tk import ReadOnlyTextTk
+from ..export.view_export_canvases import PDFCanvas, LatexCanvas
+from ..gui_pages.view_canvas_tk import ViewCanvasTk
 
 class CanvasType(Enum):
     latex = 1

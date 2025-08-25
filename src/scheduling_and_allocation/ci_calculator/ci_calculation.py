@@ -4,9 +4,9 @@ from .ci_constants import *
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from schedule.model.schedule import Schedule
-    from schedule.model.course import Course
-    from schedule.model.teacher import Teacher
+    from ..model.schedule import Schedule
+    from ..model.course import Course
+    from ..model.teacher import Teacher
 
 # for debugging
 print_flag = False

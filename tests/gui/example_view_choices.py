@@ -1,15 +1,7 @@
 from tkinter import *
 
-import os
-import sys
-
-bin_dir: str = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(os.path.join(bin_dir, "../../"))
-
-from schedule.Tk import set_default_fonts_and_colours
-from schedule.gui_pages.views_controller_tk import ViewsControllerTk
-from schedule.model import Schedule
-from schedule.model.enums import ConflictType, ResourceType
+from src.scheduling_and_allocation.gui_pages.views_controller_tk import ViewsControllerTk
+from src.scheduling_and_allocation.model import Schedule, ResourceType, ConflictType
 
 schedule = Schedule()
 

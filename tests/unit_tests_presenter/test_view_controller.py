@@ -3,16 +3,16 @@ from typing import Callable
 
 import pytest
 
-from schedule.model import WeekDay, SemesterType, ResourceType, ConflictType
-from schedule.presenter.views_controller import ViewsController
+from src.scheduling_and_allocation.Utilities.id_generator import IdGenerator
+from src.scheduling_and_allocation.model import Lab, Stream, Teacher, Block, ResourceType, ConflictType, Schedule, \
+    SemesterType, WeekDay
+from src.scheduling_and_allocation.presenter.views_controller import ViewsController
 
 # =====================================================================================================================
 # Dummy classes
 # =====================================================================================================================
 """Provides code to deal with user modifying the gui view.  Most actions are passed onto the View Controller"""
 
-from schedule.Utilities.id_generator import IdGenerator
-from schedule.model import Block, Teacher, Stream, Lab, Schedule
 
 RESOURCE = Lab | Stream | Teacher
 
@@ -155,7 +155,7 @@ def test_create_view_only_once(schedule_obj, gui, monkeypatch):
     """create multiple views, but only end up with single view for each resource"""
 
     # prepare
-    monkeypatch.setattr("schedule.presenter.views_controller.View", ViewTest)
+    monkeypatch.setattr("src.scheduling_and_allocation.presenter.views_controller.View", ViewTest)
     vc = ViewsController(dirty_flag_method, "", schedule_obj, gui)
     teacher1: Teacher = schedule_obj.get_teacher_by_name("Jane","Doe")
     teacher2: Teacher = schedule_obj.get_teacher_by_name("John","Doe")
@@ -210,7 +210,7 @@ def test_block_moved(schedule_obj, gui, monkeypatch):
     4. views are told to update their gui_block positions (not tested)
     """
     # prepare
-    monkeypatch.setattr("schedule.presenter.views_controller.View", ViewTest)
+    monkeypatch.setattr("src.scheduling_and_allocation.presenter.views_controller.View", ViewTest)
     vc = ViewsController(dirty_flag_method, "", schedule_obj, gui)
     teacher: Teacher = schedule_obj.get_teacher_by_name("Jane","Doe")
     teacher1: Teacher = schedule_obj.get_teacher_by_name("Jane","Doe")
@@ -241,7 +241,7 @@ def test_block_moved_view_updated(schedule_obj, gui, monkeypatch):
     """
 
     # prepare
-    monkeypatch.setattr("schedule.presenter.views_controller.View", ViewTest)
+    monkeypatch.setattr("src.scheduling_and_allocation.presenter.views_controller.View", ViewTest)
     vc = ViewsController(dirty_flag_method, "", schedule_obj, gui)
 
     # both teacher and stream share the same blocks
@@ -270,7 +270,7 @@ def test_block_movable_changed(schedule_obj, gui, monkeypatch):
     REFRESH_COLOURS_CALLED = 0
 
     # prepare
-    monkeypatch.setattr("schedule.presenter.views_controller.View", ViewTest)
+    monkeypatch.setattr("src.scheduling_and_allocation.presenter.views_controller.View", ViewTest)
     vc = ViewsController(dirty_flag_method, "", schedule_obj, gui)
     teacher: Teacher = schedule_obj.get_teacher_by_name("Jane","Doe")
     stream: Stream = schedule_obj.get_stream_by_number("1A")
@@ -305,10 +305,10 @@ def test_block_moved_to_different_resource1(schedule_obj, gui, monkeypatch):
     4. conflicts are updated
     5. conflicts are recalculated
     """
-    monkeypatch.setattr("schedule.presenter.views_controller.View", ViewTest)
+    monkeypatch.setattr("src.scheduling_and_allocation.presenter.views_controller.View", ViewTest)
 
     # prepare
-    monkeypatch.setattr("schedule.presenter.views_controller.View", ViewTest)
+    monkeypatch.setattr("src.scheduling_and_allocation.presenter.views_controller.View", ViewTest)
     vc = ViewsController(dirty_flag_method, "", schedule_obj, gui)
     teacher: Teacher = schedule_obj.get_teacher_by_name("Jane","Doe")
     teacher2: Teacher = schedule_obj.get_teacher_by_name("John", "Doe")
@@ -331,10 +331,10 @@ def test_block_moved_to_different_resource2(schedule_obj, gui, monkeypatch):
     1. both views are redrawn
     """
     global VIEW_DRAW_CALLED
-    monkeypatch.setattr("schedule.presenter.views_controller.View", ViewTest)
+    monkeypatch.setattr("src.scheduling_and_allocation.presenter.views_controller.View", ViewTest)
 
     # prepare
-    monkeypatch.setattr("schedule.presenter.views_controller.View", ViewTest)
+    monkeypatch.setattr("src.scheduling_and_allocation.presenter.views_controller.View", ViewTest)
     vc = ViewsController(dirty_flag_method, "", schedule_obj, gui)
     teacher: Teacher = schedule_obj.get_teacher_by_name("Jane","Doe")
     teacher2: Teacher = schedule_obj.get_teacher_by_name("John", "Doe")
@@ -357,10 +357,10 @@ def test_block_moved_to_different_resource3(schedule_obj, gui, monkeypatch):
     """
     global VIEW_DRAW_CALLED
     global VIEW_TEST_CALLED
-    monkeypatch.setattr("schedule.presenter.views_controller.View", ViewTest)
+    monkeypatch.setattr("src.scheduling_and_allocation.presenter.views_controller.View", ViewTest)
 
     # prepare
-    monkeypatch.setattr("schedule.presenter.views_controller.View", ViewTest)
+    monkeypatch.setattr("src.scheduling_and_allocation.presenter.views_controller.View", ViewTest)
     vc = ViewsController(dirty_flag_method, "", schedule_obj, gui)
     teacher: Teacher = schedule_obj.get_teacher_by_name("Jane", "Doe")
     teacher2: Teacher = schedule_obj.get_teacher_by_name("John", "Doe")
@@ -382,7 +382,7 @@ def test_undos_from_saved_actions(schedule_obj, gui, monkeypatch):
     1. undo list should have three actions saved
     2. redo list should have no actions saved
     """
-    monkeypatch.setattr("schedule.presenter.views_controller.View", ViewTest)
+    monkeypatch.setattr("src.scheduling_and_allocation.presenter.views_controller.View", ViewTest)
     vc = ViewsController(dirty_flag_method, "", schedule_obj, gui)
     teacher: Teacher = schedule_obj.get_teacher_by_name("Jane", "Doe")
     teacher2: Teacher = schedule_obj.get_teacher_by_name("John", "Doe")
@@ -418,7 +418,7 @@ def test_undos_actual_undo(schedule_obj, gui, monkeypatch):
     1. undo action is done
     2. undo action is saved in redo
     """
-    monkeypatch.setattr("schedule.presenter.views_controller.View", ViewTest)
+    monkeypatch.setattr("src.scheduling_and_allocation.presenter.views_controller.View", ViewTest)
     vc = ViewsController(dirty_flag_method, "", schedule_obj, gui)
     teacher: Teacher = schedule_obj.get_teacher_by_name("Jane", "Doe")
     teacher2: Teacher = schedule_obj.get_teacher_by_name("John", "Doe")
@@ -463,7 +463,7 @@ def test_redos(schedule_obj, gui, monkeypatch):
     1. after, everything is back to the original
     2. redo action is saved in 'undo'
     """
-    monkeypatch.setattr("schedule.presenter.views_controller.View", ViewTest)
+    monkeypatch.setattr("src.scheduling_and_allocation.presenter.views_controller.View", ViewTest)
     vc = ViewsController(dirty_flag_method, "", schedule_obj, gui)
     teacher: Teacher = schedule_obj.get_teacher_by_name("Jane", "Doe")
     teacher2: Teacher = schedule_obj.get_teacher_by_name("John", "Doe")
@@ -498,7 +498,7 @@ def test_undo_redo_no_action_required(schedule_obj, gui, monkeypatch):
     """no pending actions,
     1. redo/undo do not crash the program
     """
-    monkeypatch.setattr("schedule.presenter.views_controller.View", ViewTest)
+    monkeypatch.setattr("src.scheduling_and_allocation.presenter.views_controller.View", ViewTest)
     vc = ViewsController(dirty_flag_method, "", schedule_obj, gui)
 
     # execute

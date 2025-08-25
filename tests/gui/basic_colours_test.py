@@ -1,5 +1,5 @@
 from tkinter import *
-from schedule.Tk import set_default_fonts_and_colours
+from src.scheduling_and_allocation.modified_tk import set_default_fonts_and_colours
 
 
 # TODO: background button Colour changes don't work on mac, not yet tested on windows

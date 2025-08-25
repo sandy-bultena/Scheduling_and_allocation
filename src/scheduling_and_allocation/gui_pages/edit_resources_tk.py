@@ -18,10 +18,10 @@
 """
 from asyncio import sleep
 from typing import *
-from ..Tk.TableEntry import TableEntry
+from ..modified_tk.TableEntry import TableEntry
 from dataclasses import dataclass
 import tkinter as tk
-from ..Tk.InitGuiFontsAndColours import TkColours
+from ..modified_tk.InitGuiFontsAndColours import TkColours
 
 
 # ============================================================================

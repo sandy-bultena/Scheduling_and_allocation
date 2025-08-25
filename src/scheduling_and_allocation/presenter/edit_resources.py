@@ -14,8 +14,8 @@
 
 from typing import Optional, Callable
 
-from schedule.model import Schedule, ResourceType
-from schedule.gui_pages import EditResourcesTk, DEColumnDescription
+from ..model import Schedule, ResourceType
+from ..gui_pages import EditResourcesTk, DEColumnDescription
 
 property_conversions_from_str = {
     "firstname": lambda x: x,

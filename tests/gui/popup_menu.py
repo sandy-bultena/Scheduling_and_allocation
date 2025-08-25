@@ -3,7 +3,7 @@ import tkinter
 import os
 import sys
 
-from schedule.gui_generics.menu_and_toolbars import MenuItem, MenuType, generate_menu
+from src.scheduling_and_allocation.gui_generics.menu_and_toolbars import MenuItem, MenuType, generate_menu
 
 bin_dir: str = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(bin_dir, "../../"))

@@ -2,9 +2,9 @@ from typing import Any, Optional
 
 import pytest
 
-from schedule.model import Schedule, SemesterType, TimeSlot, WeekDay
-from schedule.gui_pages.edit_courses_tk import EditCoursesTk
-from schedule.presenter.edit_courses import EditCourses
+from src.scheduling_and_allocation.gui_pages import EditCoursesTk
+from src.scheduling_and_allocation.model import Schedule, SemesterType, WeekDay
+from src.scheduling_and_allocation.presenter.edit_courses import EditCourses
 
 
 class EditCoursesTkTest(EditCoursesTk):

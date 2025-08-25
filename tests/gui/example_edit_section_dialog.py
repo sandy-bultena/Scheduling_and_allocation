@@ -1,15 +1,9 @@
 from functools import partial
 from tkinter import *
-import os
-import sys
 
-bin_dir: str = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(os.path.join(bin_dir, "../../"))
-
-from schedule.gui_dialogs.edit_section_dialog_tk import EditSectionDialogTk
-from schedule.gui_dialogs.add_section_dialog_tk import AddSectionDialogTk
-from schedule.model import SemesterType, TimeSlot, WeekDay
-from schedule.model.schedule import Schedule, Course, Section
+from src.scheduling_and_allocation.gui_dialogs.add_section_dialog_tk import AddSectionDialogTk
+from src.scheduling_and_allocation.gui_dialogs.edit_section_dialog_tk import EditSectionDialogTk
+from src.scheduling_and_allocation.model import Schedule, Course, Section, WeekDay, SemesterType
 
 mw=Tk()
 frame = Frame(mw)

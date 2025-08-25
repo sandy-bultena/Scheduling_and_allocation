@@ -6,7 +6,7 @@ Creates two list boxes where you can transfer items from one list to another, ju
 """
 import tkinter as tk
 
-from schedule.Tk import Scrolled
+from ..modified_tk import Scrolled
 from functools import partial
 
 # ====================================================================================================================

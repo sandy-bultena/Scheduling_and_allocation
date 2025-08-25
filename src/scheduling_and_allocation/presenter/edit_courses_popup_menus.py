@@ -21,11 +21,11 @@ from __future__ import annotations
 from functools import partial
 from typing import TYPE_CHECKING
 
-from schedule.gui_generics.menu_and_toolbars import MenuItem, MenuType
-from schedule.model import Course, Teacher, ResourceType, Section, Block, Lab, Stream, Schedule
+from ..gui_generics.menu_and_toolbars import MenuItem, MenuType
+from ..model import Course, Teacher, ResourceType, Section, Block, Lab, Stream, Schedule
 
 if TYPE_CHECKING:
-    from schedule.presenter.edit_courses import EditCourses
+    from .edit_courses import EditCourses
 
 
 # ====================================================================================================================

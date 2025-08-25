@@ -5,10 +5,10 @@ from os import path
 
 import pytest
 
-from schedule.gui_pages.scheduler_tk import SchedulerTk, MAIN_PAGE_EVENT_HANDLERS
-from schedule.presenter.scheduler import Scheduler
-from schedule.Utilities import Preferences
-from schedule.presenter.menus_main_menu_scheduler import MAIN_MENU_EVENT_HANDLERS
+from src.scheduling_and_allocation.Utilities import Preferences
+from src.scheduling_and_allocation.gui_pages.scheduler_tk import SchedulerTk, MAIN_PAGE_EVENT_HANDLERS
+from src.scheduling_and_allocation.presenter.menus_main_menu_scheduler import MAIN_MENU_EVENT_HANDLERS
+from src.scheduling_and_allocation.presenter.scheduler import Scheduler
 
 SCHEDULE_FILE = path.dirname(__file__) + "/data_test.csv"
 PREVIOUS_FILE = path.dirname(__file__) + "/data_test_prev.csv"

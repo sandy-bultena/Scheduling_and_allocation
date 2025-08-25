@@ -1,13 +1,8 @@
 from dataclasses import dataclass
 from tkinter import *
-import os
-import sys
 
-bin_dir: str = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(os.path.join(bin_dir, "../../"))
-
-from schedule.gui_pages.view_canvas_tk import ViewCanvasTk
-from schedule.model import ResourceType
+from src.scheduling_and_allocation.gui_pages.view_canvas_tk import ViewCanvasTk
+from src.scheduling_and_allocation.model import ResourceType
 
 mw = Tk()
 cn = Canvas(mw, height=700, width=700, background="white")

@@ -2,8 +2,8 @@ from __future__ import annotations
 import tkinter as tk
 from functools import partial
 
-from schedule.Tk.Scrolled import Scrolled
-from schedule.gui_generics.number_validations import validate_int, entry_int
+from ..modified_tk import Scrolled
+from ..gui_generics.number_validations import validate_int, entry_int
 
 # =======================================================================================================
 # data class for holding info about sections

@@ -1,9 +1,7 @@
-from functools import partial
 from tkinter import *
 
-from schedule.Tk import set_default_fonts_and_colours
-from schedule.gui_pages import EditResourcesTk
-from schedule.gui_pages import DEColumnDescription
+from src.scheduling_and_allocation.gui_pages import DEColumnDescription, EditResourcesTk
+from src.scheduling_and_allocation.modified_tk import set_default_fonts_and_colours
 
 
 # TODO: button Colour changes don't work on mac, not yet tested on windows
@@ -16,9 +14,9 @@ def main():
     frame = Frame(mw)
     frame.pack(expand=1, fill='both')
 
-    col_descr = DEColumnDescription("Column 1", 30, "")
-    col2_descr = DEColumnDescription("Column 2", 20, "")
-    col3_descr = DEColumnDescription("Column 3", 15, "")
+    col_descr = DEColumnDescription("Column 1", 30, "", False)
+    col2_descr = DEColumnDescription("Column 2", 20, "", False)
+    col3_descr = DEColumnDescription("Column 3", 15, "", False)
 
     columns = [col_descr, col2_descr, col3_descr]
     data = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
@@ -40,8 +38,8 @@ def main():
     Button(mw, text="refresh", command=lambda *_: de.refresh(data2)).pack()
     Button(mw, text="get data", command=lambda *_: print(de.get_all_data())).pack()
 
-    print ("testing delete callback", de.delete_callback())
-    print ("testing save callback", de.save_callback())
+    print ("testing delete callback", de.delete_handler())
+    print ("testing save callback", de.save_handler())
     mw.mainloop()
 
 

@@ -1,5 +1,5 @@
-from schedule.Utilities import Colour
-from schedule.model import ResourceType, ConflictType
+from ..Utilities import Colour
+from ..model import ResourceType, ConflictType
 
 # ==============================================================================================================
 # some colours

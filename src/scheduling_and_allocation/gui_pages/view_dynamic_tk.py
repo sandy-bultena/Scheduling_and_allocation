@@ -22,12 +22,12 @@ from functools import partial
 import tkinter as tk
 from typing import Callable
 
-from schedule.gui_generics.menu_and_toolbars import generate_menu, MenuItem, MenuType
-from schedule.Utilities import Colour
-from schedule.Utilities.id_generator import IdGenerator
-from schedule.gui_generics.block_colours import get_conflict_colour_info, IMMOVABLE_COLOUR, RESOURCE_COLOURS
-from schedule.gui_pages.view_canvas_tk import ViewCanvasTk
-from schedule.model import ResourceType, ConflictType
+from ..gui_generics.menu_and_toolbars import generate_menu, MenuItem, MenuType
+from ..Utilities import Colour
+from ..Utilities.id_generator import IdGenerator
+from ..gui_generics.block_colours import get_conflict_colour_info, IMMOVABLE_COLOUR, RESOURCE_COLOURS
+from ..gui_pages.view_canvas_tk import ViewCanvasTk
+from ..model import ResourceType, ConflictType
 
 DEFAULT_CANVAS_WIDTH = 700
 DEFAULT_CANVAS_HEIGHT = 700

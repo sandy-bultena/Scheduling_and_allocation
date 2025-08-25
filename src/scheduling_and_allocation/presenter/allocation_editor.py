@@ -1,9 +1,9 @@
 import re
 from dataclasses import dataclass
 
-from schedule.gui_pages.allocation_grid_tk import AllocationGridTk
-from schedule.model import Schedule, Course, Section, Teacher
-from schedule.ci_calculator.ci_calculation import calculate_ci
+from ..gui_pages.allocation_grid_tk import AllocationGridTk
+from ..model import Schedule, Course, Section, Teacher
+from ..ci_calculator.ci_calculation import calculate_ci
 
 # =====================================================================================================================
 # InnerData and SummaryRow data classes

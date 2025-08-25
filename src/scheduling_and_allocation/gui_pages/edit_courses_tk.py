@@ -39,15 +39,15 @@ from tkinter.messagebox import showinfo
 from typing import Callable, Any, TYPE_CHECKING
 import re
 
-from schedule.Tk import Scrolled
-from schedule.Tk import AdvancedTreeview
-from schedule.Tk import DragNDropManager
-from schedule.Tk.InitGuiFontsAndColours import get_fonts_and_colours
-from schedule.gui_generics.menu_and_toolbars import MenuItem, MenuType, generate_menu
-from schedule.model import ResourceType
+from ..modified_tk import Scrolled, set_default_fonts_and_colours
+from ..modified_tk import AdvancedTreeview
+from ..modified_tk import DragNDropManager
+from ..modified_tk.InitGuiFontsAndColours import get_fonts_and_colours
+from ..gui_generics.menu_and_toolbars import MenuItem, MenuType, generate_menu
+from ..model import ResourceType
 
 if TYPE_CHECKING:
-    from schedule.model import Teacher, Lab, Stream
+    from ..model import Teacher, Lab, Stream
 
     RESOURCE_OBJECT = [Teacher | Lab | Stream]
     TREE_OBJECT = Any
@@ -89,6 +89,8 @@ class EditCoursesTk:
 
         # setup fonts if they have not already been set up
         _, self.fonts = get_fonts_and_colours()
+        if self.fonts is None:
+            _, self.fonts = set_default_fonts_and_colours(self.frame.winfo_toplevel())
 
         # call backs (should be defined by presenter)
         self.handler_tree_edit: Callable[[TREE_OBJECT, TREE_OBJECT, str, str], None] \

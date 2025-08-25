@@ -5,8 +5,8 @@ from __future__ import annotations
 
 import tkinter as tk
 from tkinter.simpledialog import Dialog
-import schedule.Tk.InitGuiFontsAndColours as fac
 from ..Utilities.Preferences import Preferences
+from ..modified_tk import TkFonts
 
 
 class ChangeFont(Dialog):
@@ -17,7 +17,7 @@ class ChangeFont(Dialog):
         self.label_small = None
         self.preferences = preferences
         self.font_size_tk = tk.StringVar(value=str(self.preferences.font_size()))
-        self.fonts = fac.TkFonts(mw, self.preferences.font_size())
+        self.fonts = TkFonts(mw, self.preferences.font_size())
 
         super().__init__(mw, title)
 
@@ -64,7 +64,7 @@ class ChangeFont(Dialog):
             return True
         try:
             int(number)
-            self.fonts = fac.TkFonts(self.frame.winfo_toplevel(), int(number))
+            self.fonts = TkFonts(self.frame.winfo_toplevel(), int(number))
             self.warning_label.config(font=self.fonts.bigbold)
             self.label_big.config(font=self.fonts.big)
             self.label_small.config(font=self.fonts.small)

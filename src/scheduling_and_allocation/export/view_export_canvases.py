@@ -3,11 +3,10 @@ Provides canvases for drawing views, other than the Tk canvas
 """
 from reportlab.lib.pagesizes import LETTER
 from reportlab.pdfgen.canvas import Canvas
-
-
-from schedule.model import ResourceType
-import schedule.Utilities.Colour as colour
 from datetime import datetime
+
+from ..Utilities import Colour
+from ..model import ResourceType
 
 import pathlib
 CODE_PATH = pathlib.Path(__file__).parent.resolve()
@@ -118,7 +117,7 @@ class PDFCanvas:
             self.cn.setDash([6,3])
         elif dash == ".":
             self.cn.setDash([1,2])
-        r,g,b = colour.rgb(fill)
+        r,g,b = Colour.rgb(fill)
         self.cn.setFillColorRGB(r,g,b)
         self.cn.line(x1,y1,x2,y2)
 
@@ -135,7 +134,7 @@ class PDFCanvas:
         :param fill:
         :param tags: not used
         """
-        r,g,b = colour.rgb("black")
+        r,g,b = Colour.rgb("black")
         self.cn.setFillColorRGB(r,g,b)
         lines = text.split("\n")
         baseline = 10
@@ -155,9 +154,9 @@ class PDFCanvas:
         :param tags: (not used)
         """
 
-        r,g,b = colour.rgb(outline)
+        r,g,b = Colour.rgb(outline)
         self.cn.setStrokeColorRGB(r,g,b)
-        r,g,b = colour.rgb(fill)
+        r,g,b = Colour.rgb(fill)
         self.cn.setFillColorRGB(r,g,b)
         x1,y1,x2,y2 = coords
         self.cn.rect(min(x1,x2),min(y1,y2),abs(x2-x1), abs(y2-y1), fill=1)

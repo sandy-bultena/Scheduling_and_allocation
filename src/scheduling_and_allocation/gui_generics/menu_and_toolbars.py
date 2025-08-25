@@ -8,9 +8,10 @@ from enum import Enum
 
 import re
 from os import path
-from schedule.Tk import FindImages
-from schedule.Tk.ToolBar import ToolBar
-from schedule.Tk.InitGuiFontsAndColours import TkColours
+try:
+    from ..modified_tk import FindImages, ToolBar, TkColours
+except ImportError:
+    from src.scheduling_and_allocation.modified_tk import FindImages, ToolBar, TkColours
 
 # =====================================================================================================================
 # Valid Menu type items

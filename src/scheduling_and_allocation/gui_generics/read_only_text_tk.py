@@ -1,6 +1,6 @@
 from typing import Literal
 import tkinter as tk
-from schedule.Tk import Scrolled
+from ..modified_tk import Scrolled
 
 SCROLLBAR_DIR = Literal["s", "w", "e", "n", "se", "sw", "ne", "nw"]
 

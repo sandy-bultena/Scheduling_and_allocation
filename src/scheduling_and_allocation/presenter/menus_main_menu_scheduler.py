@@ -8,9 +8,8 @@
 """
 from __future__ import annotations
 
-import tkinter as tk
-from typing import Callable, Literal, get_args, Any
-from schedule.gui_generics.menu_and_toolbars import MenuItem, MenuType, ToolbarItem
+from typing import Callable, Literal, get_args
+from ..gui_generics.menu_and_toolbars import MenuItem, MenuType, ToolbarItem
 
 MAIN_MENU_EVENT_HANDLER_NAMES = Literal[
     "file_new",

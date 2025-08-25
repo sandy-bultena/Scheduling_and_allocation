@@ -1,12 +1,9 @@
 from tkinter import *
-import os
-import sys
 
-bin_dir: str = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(os.path.join(bin_dir, "../../"))
+from src.scheduling_and_allocation.gui_generics.menu_and_toolbars import generate_menu, make_toolbar, ToolbarItem, \
+    MenuItem, MenuType
+from src.scheduling_and_allocation.modified_tk import set_default_fonts_and_colours
 
-from schedule.Tk import set_default_fonts_and_colours
-from schedule.gui_generics.menu_and_toolbars import generate_menu, make_toolbar, ToolbarItem, MenuItem, MenuType
 
 # =================================================================================================
 # Test the GUI_Pages menu and _toolbar creation work as required

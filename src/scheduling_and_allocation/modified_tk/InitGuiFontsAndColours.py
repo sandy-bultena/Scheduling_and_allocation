@@ -3,15 +3,17 @@
 from __future__ import annotations
 
 import os
-import tkinter
 from tkinter import Tk, TclError
 from tkinter.font import Font
 import platform
 import re
 from typing import Literal, Optional
 
-import schedule.Utilities.Colour as Colour
 import tkinter.font as tkFont
+
+from ..Utilities.Colour import get_colour_string_from_rgb, darken, is_light, lighten, add, \
+    hsl, get_colour_string_from_hsl
+
 operating_system = platform.system().lower()
 
 DEFAULT_FONT_SIZE = 10
@@ -38,38 +40,38 @@ class TkColours:
         if tk_root:
             try:
                 (r, g, b) = tk_root.winfo_rgb('systemWindowBackgroundColor')
-                window_background_color = Colour.get_colour_string_from_rgb(r / 65536.0, g / 65536.0, b / 65536.0)
+                window_background_color = get_colour_string_from_rgb(r / 65536.0, g / 65536.0, b / 65536.0)
             except TclError:
                 pass
 
             try:
                 (r, g, b) = tk_root.winfo_rgb('systemPressedButtonTextColor')
-                pressed_button_text_color = Colour.get_colour_string_from_rgb(r / 65536.0, g / 65536.0, b / 65536.0)
+                pressed_button_text_color = get_colour_string_from_rgb(r / 65536.0, g / 65536.0, b / 65536.0)
             except TclError:
                 pass
 
             try:
                 (r, g, b) = tk_root.winfo_rgb('systemTextColor')
-                text_color = Colour.get_colour_string_from_rgb(r / 65536.0, g / 65536.0, b / 65536.0)
+                text_color = get_colour_string_from_rgb(r / 65536.0, g / 65536.0, b / 65536.0)
             except TclError:
                 pass
 
             try:
                 (r, g, b) = tk_root.winfo_rgb('systemTextBackgroundColor')
-                text_background_color = Colour.get_colour_string_from_rgb(r / 65536.0, g / 65536.0, b / 65536.0)
+                text_background_color = get_colour_string_from_rgb(r / 65536.0, g / 65536.0, b / 65536.0)
             except TclError:
                 pass
 
             try:
                 (r, g, b) = tk_root.winfo_rgb('systemSelectedTextBackgroundColor')
-                selected_text_background_color = Colour.get_colour_string_from_rgb(r / 65536.0, g / 65536.0,
+                selected_text_background_color = get_colour_string_from_rgb(r / 65536.0, g / 65536.0,
                                                                                    b / 65536.0)
             except TclError:
                 pass
 
             try:
                 (r, g, b) = tk_root.winfo_rgb('systemSelectedTextColor')
-                selected_text_color = Colour.get_colour_string_from_rgb(r / 65536.0, g / 65536.0, b / 65536.0)
+                selected_text_color = get_colour_string_from_rgb(r / 65536.0, g / 65536.0, b / 65536.0)
             except TclError:
                 pass
 
@@ -86,32 +88,32 @@ class TkColours:
         self.ButtonBackground: str = self.WorkspaceColour
         self.ActiveBackground: str = self.WorkspaceColour
         self.HighlightBackground: str = self.WorkspaceColour
-        self.DarkBackground: str = Colour.darken(self.WorkspaceColour, 20)
+        self.DarkBackground: str = darken(self.WorkspaceColour, 20)
         self.DisabledBackground: str = "#a3a3a3"
         self.DirtyColour: str = "#ff8888"
         self.DisabledBackground = "#a3a3a3"
         self.DisabledForeground = "#000000"
         self.DragNDropForeground = self.WindowForeground
 
-        if Colour.is_light(self.WorkspaceColour):
-            self.DragNDropBackground = Colour.darken(self.WorkspaceColour, 25)
-            self.DragNDropAllowedBackground = Colour.darken(self.WorkspaceColour, 5)
+        if is_light(self.WorkspaceColour):
+            self.DragNDropBackground = darken(self.WorkspaceColour, 25)
+            self.DragNDropAllowedBackground = darken(self.WorkspaceColour, 5)
         else:
-            self.DragNDropBackground = Colour.lighten(self.WorkspaceColour, 25)
-            self.DragNDropAllowedBackground = Colour.lighten(self.WorkspaceColour, 5)
+            self.DragNDropBackground = lighten(self.WorkspaceColour, 25)
+            self.DragNDropAllowedBackground = lighten(self.WorkspaceColour, 5)
 
         self.ButtonHighlight = self.ButtonBackground
-        if Colour.is_light(self.ButtonHighlight):
-            self.ButtonHoverHighlight = Colour.darken(self.WorkspaceColour, 25)
+        if is_light(self.ButtonHighlight):
+            self.ButtonHoverHighlight = darken(self.WorkspaceColour, 25)
             self.ButtonForeground = "#000000"
         else:
-            self.ButtonHoverHighlight = Colour.lighten(self.WorkspaceColour, 25)
+            self.ButtonHoverHighlight = lighten(self.WorkspaceColour, 25)
             self.ButtonForeground = "#FFFFFF"
 
-        if Colour.is_light(self.WorkspaceColour):
-            self.DirtyColour = Colour.add("red","#444444")
+        if is_light(self.WorkspaceColour):
+            self.DirtyColour = add("red","#444444")
         else:
-            self.DirtyColour = Colour.add("red","white")
+            self.DirtyColour = add("red","white")
         # ============================================================================
         # if invert mode, just invert all the colours
         # ============================================================================
@@ -123,9 +125,9 @@ class TkColours:
                     if re.match('darwin', operating_system):
                         continue
 
-                h, s, l = Colour.hsl(getattr(self, col))
+                h, s, l = hsl(getattr(self, col))
                 l = abs(0.9 * l - 1)
-                setattr(self, col, Colour.get_colour_string_from_hsl(h, s, l))
+                setattr(self, col, get_colour_string_from_hsl(h, s, l))
 
         if os.name == 'darwin' or os.name == "posix":
             # MAC does not allow you to change the background colour of buttons
@@ -167,13 +169,15 @@ def get_fonts_and_colours():
     return colours, fonts
 
 
-def set_default_fonts_and_colours(mw: Tk, font_size: int = DEFAULT_FONT_SIZE, invert: bool = False):
+def set_default_fonts_and_colours(mw: Tk, font_size: Optional[int] = DEFAULT_FONT_SIZE, invert: bool = False):
     global fonts
     global colours
     colours = TkColours(mw, invert=invert)
     set_system_colours(mw, colours)
     mw.configure(background=colours.WorkspaceColour)
 
+    if font_size is None:
+        font_size = DEFAULT_FONT_SIZE
     fonts = TkFonts(mw, font_size)
     mw.option_add("*Font", fonts.normal, )
     return colours, fonts

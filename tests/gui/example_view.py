@@ -1,17 +1,11 @@
 from dataclasses import dataclass
 from tkinter import *
-import os
-import sys
-
-bin_dir: str = os.path.dirname(os.path.realpath(__file__))
-sys.path.append(os.path.join(bin_dir, "../../"))
-
 from typing import Optional
-from schedule.gui_generics.menu_and_toolbars import MenuItem, MenuType
-from schedule.Utilities.id_generator import IdGenerator
-from schedule.model import Block, Teacher, Stream, Lab, Schedule
-from schedule.gui_pages.view_dynamic_tk import ViewDynamicTk
-from schedule.model import ResourceType
+
+from src.scheduling_and_allocation.Utilities.id_generator import IdGenerator
+from src.scheduling_and_allocation.gui_generics.menu_and_toolbars import MenuItem, MenuType
+from src.scheduling_and_allocation.gui_pages.view_dynamic_tk import ViewDynamicTk
+from src.scheduling_and_allocation.model import Lab, Stream, Teacher, ResourceType, Schedule, Block
 
 mw = Tk()
 frame = Frame(mw)

@@ -9,9 +9,9 @@
 from __future__ import annotations
 
 from functools import partial
-from typing import Callable, Literal, get_args, Any
-from schedule.gui_generics.menu_and_toolbars import MenuItem, MenuType, ToolbarItem
-from schedule.model import SemesterType
+from typing import Callable, Literal, get_args
+from ..gui_generics.menu_and_toolbars import MenuItem, MenuType, ToolbarItem
+from ..model import SemesterType
 
 MAIN_MENU_EVENT_HANDLER_NAMES_ALLOCATION = Literal[
     "file_new",

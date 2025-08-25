@@ -12,11 +12,11 @@
 import tkinter as tk
 from typing import Protocol, Optional
 
-import schedule.Utilities.Colour as Colour
-from schedule.gui_generics.block_colours import RESOURCE_COLOURS
-from schedule.model import ResourceType
-from schedule.gui_generics.drawing_scale import DrawingScale
-import schedule.Tk.InitGuiFontsAndColours as fac
+from ..Utilities import Colour
+from ..gui_generics.block_colours import RESOURCE_COLOURS
+from ..model import ResourceType
+from ..gui_generics.drawing_scale import DrawingScale
+from ..modified_tk.InitGuiFontsAndColours import get_fonts_and_colours
 
 DAYS = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
 Times: dict[int, str] = {
@@ -73,7 +73,7 @@ class ViewCanvasTk:
             :param scale_factor: scaling factors
             :param bg_colour: the colour used to draw the objects
         """
-        self.colours, self.fonts = fac.get_fonts_and_colours()
+        self.colours, self.fonts = get_fonts_and_colours()
 
         self.canvas = canvas
         self.scale = DrawingScale(scale_factor)
