@@ -2,8 +2,7 @@ import pytest
 import sys
 from os import path
 
-from schedule.model import Lab, WeekDay
-from schedule.model.time_slot import TimeSlot
+from src.scheduling_and_allocation.model import Lab, TimeSlot, WeekDay
 
 
 # ============================================================================

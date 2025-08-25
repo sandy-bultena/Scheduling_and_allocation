@@ -5,14 +5,15 @@ from os import path
 
 import pytest
 
-from schedule.model import schedule as s
+from src.scheduling_and_allocation.model import Schedule
+
 
 def test_read():
     """stupidest simplest test whatsoever"""
 
     # reading doesn't crash
     # TODO: not a good test
-    schedule = s.Schedule(path.dirname(__file__) + "/data_test_good_input.csv")
+    schedule = Schedule(path.dirname(__file__) + "/data_test_good_input.csv")
 
 
 
@@ -23,7 +24,7 @@ def test_read_write():
     # same info to the output file
 
     # TODO: not a good test
-    schedule = s.Schedule(path.dirname(__file__) + "/data_test_good_input.csv")
+    schedule = Schedule(path.dirname(__file__) + "/data_test_good_input.csv")
     teachers_text = list()
     for t in schedule.teachers():
         teachers_text.append(schedule.teacher_details(t))
@@ -38,14 +39,14 @@ def test_read_write():
 #schedule = s.Schedule(path.dirname(__file__) + "/test.csv")
 def test_schedule_actually_has_stuff_in_it():
     """smoke test to see if schedule is actually populated with data - not validating data though"""
-    schedule = s.Schedule(path.dirname(__file__) + "/data_test_good_input.csv")
+    schedule = Schedule(path.dirname(__file__) + "/data_test_good_input.csv")
     assert len(schedule._teachers) != 0
     assert len(schedule.courses()) != 0
     assert len(schedule.labs()) != 0
     assert len(schedule._streams) != 0
 
 def test_blocks_movable_is_correct():
-    schedule = s.Schedule(path.dirname(__file__) + "/data_test_good_input.csv")
+    schedule = Schedule(path.dirname(__file__) + "/data_test_good_input.csv")
     teacher = schedule.get_teacher_by_number("Bultena_Sandy")
     blocks = schedule.get_blocks_for_teacher(teacher)
     for b in blocks:

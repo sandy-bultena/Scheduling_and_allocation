@@ -1,8 +1,9 @@
 from __future__ import annotations
 import pytest
+import sys
 
-from schedule.model import Block, Lab, Teacher, Stream, Section, Course, TimeSlot
-from schedule.model.enums import ConflictType
+from src.scheduling_and_allocation.model import TimeSlot, Course, Section, Block, Lab, Teacher, ConflictType
+
 course = Course("123")
 dummy_Section = Section(course)
 

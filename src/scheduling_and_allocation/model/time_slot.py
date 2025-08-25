@@ -3,7 +3,7 @@
 """
 
 from __future__ import annotations
-from schedule.model.enums import WeekDay
+from .enums import WeekDay
 
 MINUTE_BLOCK_SIZE = 30
 MINIMUM_DURATION = 0.5

@@ -1,5 +1,6 @@
 import pytest
-from schedule.model import Stream
+
+from src.scheduling_and_allocation.model import Stream
 
 
 @pytest.fixture(scope="module", autouse=True)

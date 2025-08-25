@@ -2,7 +2,7 @@
 from __future__ import annotations
 import re
 from typing import TYPE_CHECKING, Optional
-from schedule.Utilities.id_generator import IdGenerator
+from ..Utilities.id_generator import IdGenerator
 from . import WeekDay
 from .block import Block, DEFAULT_DURATION, DEFAULT_START, DEFAULT_DAY
 from .model_exceptions import InvalidHoursForSectionError

@@ -2,9 +2,7 @@ from __future__ import annotations
 import re
 import pytest
 
-from schedule.model.section import Section
-from schedule.model import Block, WeekDay, Course
-from schedule.model import ConflictType
+from src.scheduling_and_allocation.model import Course, Section, WeekDay, ConflictType, Block
 
 
 @pytest.fixture(scope="module", autouse=True)

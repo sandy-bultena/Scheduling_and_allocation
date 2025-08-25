@@ -1,6 +1,6 @@
 import pytest
 
-from schedule.model import Teacher
+from src.scheduling_and_allocation.model import Teacher
 
 
 # ============================================================================

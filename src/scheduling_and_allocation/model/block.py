@@ -6,10 +6,9 @@ from __future__ import annotations
 
 import copy
 from typing import TYPE_CHECKING, Optional
-from schedule.Utilities.id_generator import IdGenerator
-from schedule.model.enums import WeekDay
-from schedule.model.time_slot import TimeSlot
-from .enums import ConflictType
+from ..Utilities.id_generator import IdGenerator
+from .enums import WeekDay, ConflictType
+from .time_slot import TimeSlot
 OptionalId = Optional[int]
 
 # stuff that we need just for type checking, not for actual functionality

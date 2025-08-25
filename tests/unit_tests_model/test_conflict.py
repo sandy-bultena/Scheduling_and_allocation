@@ -1,8 +1,8 @@
 import pytest
-from schedule.model import enums as enums
-from schedule.model import conflicts as con
-from schedule.model import Block,  WeekDay
-from schedule.model import ResourceType, ConflictType
+
+from src.scheduling_and_allocation.model import ConflictType, enums, ResourceType, Block, WeekDay, \
+                set_block_conflicts, set_lunch_break_conflicts, \
+                set_number_of_days_conflict, MAX_HOURS_PER_WEEK, set_availability_hours_conflict
 
 
 class ParentContainer:
@@ -148,7 +148,7 @@ def test_block_time_conflicts_is_overlap():
     block2 = Block(parent, WeekDay.Monday,12, 2)
     block3 = Block(parent, WeekDay.Monday, 10, 2)
 
-    con.set_block_conflicts((block1, block2, block3), ConflictType.TIME_LAB)
+    set_block_conflicts((block1, block2, block3), ConflictType.TIME_LAB)
     assert block1.conflict.is_time_lab()
     assert block3.conflict.is_time_lab()
     assert block1.conflict.is_time()
@@ -162,7 +162,7 @@ def test_block_time_with_overlap_on_different_day():
     block2 = Block(parent, WeekDay.Monday, 12, 2)
     block3 = Block(parent, WeekDay.Tuesday,10, 2)
 
-    con.set_block_conflicts((block1, block2, block3), ConflictType.TIME_LAB)
+    set_block_conflicts((block1, block2, block3), ConflictType.TIME_LAB)
     assert not block1.conflict.is_conflicted()
     assert not block2.conflict.is_conflicted()
     assert not block3.conflict.is_conflicted()
@@ -176,12 +176,12 @@ def test_lunch_breaks_single_block():
 
     # single block spans entire lunch break
     block1 = Block(parent, WeekDay.Monday, 10.5, 5)
-    con.set_lunch_break_conflicts((block1,))
+    set_lunch_break_conflicts((block1,))
     assert block1.conflict.is_time_lunch()
 
     # single block that still gives lunch break
     block1 = Block(parent, WeekDay.Monday, 11.5, 5)
-    con.set_lunch_break_conflicts((block1,))
+    set_lunch_break_conflicts((block1,))
     assert not block1.conflict.is_conflicted()
 
 
@@ -190,7 +190,7 @@ def test_lunch_breaks_two_blocks_with_break_inbetween():
     block1 = Block(parent, WeekDay.Monday, 10.5, 2)
     block2 = Block(parent, WeekDay.Monday, 13, 5)
     block3 = Block(parent, WeekDay.Tuesday, 12.5, 1.5)
-    con.set_lunch_break_conflicts((block1, block2, block3))
+    set_lunch_break_conflicts((block1, block2, block3))
     assert not block1.conflict.is_conflicted()
     assert not block2.conflict.is_conflicted()
     assert not block3.conflict.is_conflicted()
@@ -201,7 +201,7 @@ def test_lunch_three_blocks_with_no_breaks():
     block1 = Block(parent, WeekDay.Monday, 10.5, 2)
     block2 = Block(parent, WeekDay.Monday, 13, 5)
     block3 = Block(parent, WeekDay.Monday, 12.5, 1.5)
-    con.set_lunch_break_conflicts((block1, block2, block3))
+    set_lunch_break_conflicts((block1, block2, block3))
     assert block1.conflict.is_time_lunch()
     assert block2.conflict.is_time_lunch()
     assert block3.conflict.is_time_lunch()
@@ -212,7 +212,7 @@ def test_lunch_three_blocks_with_break_at_beginning():
     block1 = Block(parent, WeekDay.Monday, 11.5, 1)
     block2 = Block(parent, WeekDay.Monday, 13, 5)
     block3 = Block(parent, WeekDay.Monday, 12.5, 1.5)
-    con.set_lunch_break_conflicts((block1, block2, block3))
+    set_lunch_break_conflicts((block1, block2, block3))
     assert not block1.conflict.is_conflicted()
     assert not block2.conflict.is_conflicted()
     assert not block3.conflict.is_conflicted()
@@ -223,7 +223,7 @@ def test_lunch_three_blocks_with_break_at_end():
     block1 = Block(parent, WeekDay.Monday, 10.5, 2)
     block2 = Block(parent, WeekDay.Monday, 13, 0.5)
     block3 = Block(parent, WeekDay.Monday, 12.5, 1.5)
-    con.set_lunch_break_conflicts((block1, block2, block3))
+    set_lunch_break_conflicts((block1, block2, block3))
     assert not block1.conflict.is_conflicted()
     assert not block2.conflict.is_conflicted()
     assert not block3.conflict.is_conflicted()
@@ -237,7 +237,7 @@ def test_number_of_days_too_little():
     block2 = Block(parent, WeekDay.Tuesday, 13, 0.5)
     block3 = Block(parent, WeekDay.Wednesday, 12.5, 1.5)
     block4 = Block(parent, WeekDay.Monday, 12.5, 1.5)
-    con.set_number_of_days_conflict((block1, block2, block3, block4))
+    set_number_of_days_conflict((block1, block2, block3, block4))
     assert block1.conflict.is_minimum_days()
     assert block2.conflict.is_minimum_days()
     assert block3.conflict.is_minimum_days()
@@ -249,7 +249,7 @@ def test_number_of_days_ok():
     block2 = Block(parent, WeekDay.Tuesday, 13.0, 0.5)
     block3 = Block(parent, WeekDay.Wednesday, 12.5, 1.5)
     block4 = Block(parent, WeekDay.Thursday, 12.5, 1.5)
-    con.set_number_of_days_conflict((block1, block2, block3, block4))
+    set_number_of_days_conflict((block1, block2, block3, block4))
     assert not block1.conflict.is_conflicted()
     assert not block2.conflict.is_conflicted()
     assert not block3.conflict.is_conflicted()
@@ -274,8 +274,8 @@ def test_too_many_hours_per_week():
                    + (block6.end - block5.start)
                    + (block8.end - block7.start))
 
-    assert total_hours > con.MAX_HOURS_PER_WEEK
-    con.set_availability_hours_conflict((block1, block2, block3, block4, block5, block6, block7, block8))
+    assert total_hours > MAX_HOURS_PER_WEEK
+    set_availability_hours_conflict((block1, block2, block3, block4, block5, block6, block7, block8))
     assert block1.conflict.is_availability()
     assert block2.conflict.is_availability()
     assert block3.conflict.is_availability()
@@ -302,8 +302,8 @@ def test_ok_many_hours_per_week():
                    + (block6.end - block5.start)
                    + (block8.end - block7.start))
 
-    assert total_hours < con.MAX_HOURS_PER_WEEK
-    con.set_availability_hours_conflict((block1, block2, block3, block4, block5, block6, block7, block8))
+    assert total_hours < MAX_HOURS_PER_WEEK
+    set_availability_hours_conflict((block1, block2, block3, block4, block5, block6, block7, block8))
     assert not block1.conflict.is_conflicted()
     assert not block2.conflict.is_conflicted()
     assert not block3.conflict.is_conflicted()

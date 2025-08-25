@@ -3,12 +3,7 @@ import sys
 from os import path
 import pytest
 
-
-from schedule.model import Course
-from schedule.model import SemesterType
-from schedule.model.exceptions import InvalidSectionNumberForCourseError
-
-sys.path.append(path.dirname(path.dirname(__file__)))
+from src.scheduling_and_allocation.model import SemesterType, Course, InvalidSectionNumberForCourseError
 
 
 class Lab:

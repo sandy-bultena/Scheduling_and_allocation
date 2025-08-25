@@ -1,14 +1,12 @@
-
-from schedule.model import TimeSlot
-from schedule.model import WeekDay
-from schedule.model import time_slot as ts
+from src.scheduling_and_allocation.model import TimeSlot, WeekDay, \
+    MINIMUM_DURATION, DEFAULT_DAY, DEFAULT_START, DEFAULT_DURATION, MINUTE_BLOCK_SIZE, MAXIMUM_DURATION, MAX_END_TIME
 
 
 def test_defaults():
     slot = TimeSlot()
-    assert slot.day == ts.DEFAULT_DAY
-    assert slot.start == ts.DEFAULT_START
-    assert slot.duration == ts.DEFAULT_DURATION
+    assert slot.day == DEFAULT_DAY
+    assert slot.start == DEFAULT_START
+    assert slot.duration == DEFAULT_DURATION
     assert slot.movable
 
 
@@ -44,17 +42,17 @@ def test_sortable():
 
 def test_duration_not_allowed_less_than_zero():
     slot = TimeSlot(WeekDay.Tuesday, start=13.25, duration=-3)
-    assert abs(slot.duration - ts.MINUTE_BLOCK_SIZE / 60) < 0.001
+    assert abs(slot.duration - MINUTE_BLOCK_SIZE / 60) < 0.001
 
 
 def test_duration_not_allowed_greater_than_eight():
-    slot = TimeSlot(WeekDay.Tuesday, start=13.5, duration=ts.MAXIMUM_DURATION + .5)
-    assert slot.duration == ts.MAXIMUM_DURATION
+    slot = TimeSlot(WeekDay.Tuesday, start=13.5, duration=MAXIMUM_DURATION + .5)
+    assert slot.duration == MAXIMUM_DURATION
 
 
 def test_duration_rounded_up_to_minimum_half_hour():
     slot = TimeSlot(WeekDay.Tuesday, 13.5, duration=0.1)
-    assert slot.duration == ts.MINIMUM_DURATION
+    assert slot.duration == MINIMUM_DURATION
 
 
 def test_duration_setter_changes_end():
@@ -94,7 +92,7 @@ def test_snap_to_time_bad_value_to_minimum():
 def test_snap_to_time_bad_value_to_maximum():
     slot = TimeSlot(start=19)
     slot.snap_to_time()
-    assert slot.start + slot.duration <= ts.MAX_END_TIME
+    assert slot.start + slot.duration <= MAX_END_TIME
 
 
 def test_snap_to_day_with_args():

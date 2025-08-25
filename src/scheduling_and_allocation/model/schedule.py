@@ -6,7 +6,7 @@ from __future__ import annotations
 from os import path
 from typing import Optional
 
-import schedule.model.exceptions as errors
+from .exceptions import CouldNotWriteFileError, CouldNotReadFileError
 
 from .teacher import Teacher
 from .block import Block
@@ -64,7 +64,7 @@ class Schedule:
             msg = (f"Could not read\n {file}\n\n"
                    f"Line {Serializor.last_line_number_read}: {Serializor.last_line_read}\n\n"
                    f"Error Message: {e}")
-            raise errors.CouldNotReadFileError(msg)
+            raise CouldNotReadFileError(msg)
         self.filename = path.basename(file)
 
     # ------------------------------------------------------------------------
@@ -75,7 +75,7 @@ class Schedule:
         try:
             Serializor.write(self, file)
         except Exception as e:
-            raise errors.CouldNotWriteFileError(f"Could not read {file}, {e}")
+            raise CouldNotWriteFileError(f"Could not read {file}, {e}")
         self.filename = path.basename(file)
 
     # ------------------------------------------------------------------------

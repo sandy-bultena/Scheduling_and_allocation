@@ -1,11 +1,6 @@
 import pytest
 
-from schedule.model import WeekDay
-from schedule.model.schedule import Schedule
-from schedule.model.course import Course
-from schedule.model.teacher import Teacher
-from schedule.model.lab import Lab
-from schedule.model.stream import Stream
+from src.scheduling_and_allocation.model import Schedule, Course, Stream, Lab, Teacher, WeekDay
 
 
 # ============================================================================

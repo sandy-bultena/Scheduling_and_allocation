@@ -14,7 +14,7 @@ build-backend = "hatchling.build"
 # ================================================================================================
 [project]
 
-name = "Scheduling and Allocation"
+name = "scheduling_and_allocation"
 version = "2025.0.1"
 description = "A visual tool to make scheduling courses with teachers, labs, etc easier"
 readme = "README.md"
@@ -23,8 +23,8 @@ license = "GPL-3.0-or-later"
 license-files = ["LICEN[CS]E*"]
 
 authors = [
-  { name="Sandy Bultena", email="sandy.bultena@gmail.com" },
-    {name="Ian Clement"}
+    {name="Ian Clement"},
+    { name="Sandy Bultena", email="sandy.bultena@gmail.com" },
 ]
 
 classifiers = [
@@ -35,7 +35,7 @@ classifiers = [
   "Development Status :: 4 - Beta",
 
   # Indicate who your project is intended for
-  "Intended Audience :: Cegep Teachers",
+  "Intended Audience :: End Users/Desktop",
 
   # Specify the Python versions you support here.
   "Programming Language :: Python :: 3.12",
