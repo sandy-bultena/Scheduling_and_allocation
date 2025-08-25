@@ -1,14 +1,21 @@
+"""
+    Scheduler and Allocation - create teacher/lab/course schedules
+    Copyright (C) 2025  Sandy Bultena
+
+    This program comes with ABSOLUTELY NO WARRANTY.
+    This is free software, and licensed under the GNU General Public License.
+    (see <https://www.gnu.org/licenses/>)
+"""
 import os
 import sys
 
 bin_dir: str = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(bin_dir, "../"))
 
-
 def main():
     try:
-        from presenter.allocation_manager import AllocationManager
-        AllocationManager(bin_dir=bin_dir)
+        from presenter.scheduler import Scheduler
+        Scheduler(bin_dir=bin_dir)
     except Exception as e:
         print()
         print("==================================================================")
@@ -26,7 +33,6 @@ def main():
         _=input("press enter to continue")
 
 
+
 if __name__ == "__main__":
     main()
-
-

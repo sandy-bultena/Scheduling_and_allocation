@@ -13,7 +13,7 @@ from schedule.presenter.allocation_editor import AllocationEditor
 
 mw = tk.Tk()
 mw.geometry("800x400")
-file = "/Users/sandy/PycharmProjects/Scheduling_and_allocation/TestsAndExamples/unit_tests_presenter/data_fall.csv"
+file = "/tests/unit_tests_presenter/data_fall.csv"
 s = Schedule(file)
 
 f = tk.Frame(mw, background="pink")
