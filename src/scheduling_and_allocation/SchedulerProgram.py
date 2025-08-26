@@ -8,13 +8,14 @@
 """
 import os
 import sys
+import traceback
 
 bin_dir: str = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(bin_dir, "../"))
 
 def main():
     try:
-        from presenter.scheduler import Scheduler
+        from scheduling_and_allocation.presenter.scheduler import Scheduler
         Scheduler(bin_dir=bin_dir)
     except Exception as e:
         print()
@@ -22,6 +23,11 @@ def main():
         print("ERROR:")
         print("==================================================================")
         print(e)
+        print()
+        print("==================================================================")
+        print("Trace")
+        print("==================================================================")
+        traceback.print_exc()
         print()
         print("==================================================================")
         print("System info")

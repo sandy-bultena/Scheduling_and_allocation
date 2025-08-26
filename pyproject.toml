@@ -15,7 +15,7 @@ build-backend = "hatchling.build"
 [project]
 
 name = "scheduling_and_allocation"
-version = "2025.0.1"
+version = "2025.0.3"
 description = "A visual tool to make scheduling courses with teachers, labs, etc easier"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -59,9 +59,9 @@ Repository = "https://github.com/sandy-bultena/Scheduling_and_allocation.git"
 # Scripts to run the application
 # ================================================================================================
 [project.scripts]
-Scheduler = "schedule:SchedulerProgram:main"
-Allocation = "schedule:AllocationManager:main"
+Scheduler = "schedule:SchedulerProgram"
+Allocation = "schedule:AllocationManager"
 
 [project.gui-scripts]
-SchedulerGui = "schedule:SchedulerProgram:main"
-AllocationGui = "schedule:AllocationManager:main"
+SchedulerGui = "schedule:SchedulerProgram"
+AllocationGui = "schedule:AllocationManager"

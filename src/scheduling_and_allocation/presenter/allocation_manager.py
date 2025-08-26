@@ -4,17 +4,15 @@ from dataclasses import dataclass, field
 from functools import partial
 from typing import Any, Callable, Optional
 
-from schedule.Utilities import Preferences
-from schedule.model.exceptions import CouldNotReadFileError
-from schedule.gui_pages.allocation_manager_tk import AllocationManagerTk, set_main_page_event_handler
-from schedule.presenter.allocation_editor import AllocationEditor
-from schedule.presenter.edit_courses import EditCourses
-from schedule.presenter.edit_resources import EditResources
-from schedule.presenter.menus_main_menu_allocation import set_menu_event_handler_allocation, main_menu_allocation
-from schedule.model import Schedule, SemesterType, ResourceType
-from schedule.presenter.notebook_tab_data import NBTabInfo
-from schedule.presenter.student_numbers import StudentNumbers
+from .allocation_editor import AllocationEditor
+from .edit_courses import EditCourses
+from .edit_resources import EditResources
+from .menus_main_menu_allocation import set_menu_event_handler_allocation, main_menu_allocation
+from .student_numbers import StudentNumbers
 
+from ..Utilities import Preferences
+from ..gui_pages.allocation_manager_tk import AllocationManagerTk, set_main_page_event_handler
+from ..model import SemesterType, Schedule, ResourceType, CouldNotReadFileError
 
 # =====================================================================================
 # Notebook book-keeping

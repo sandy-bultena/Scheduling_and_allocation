@@ -14,20 +14,21 @@ stream,3A,
 stream,3B,
 
 ,number,first name,last name,department,release
-teacher,Moose_Bullwinkle,Bullwinkle,Moose,CompSci,0.0
-teacher,Squirrel_Rocky,Rocky,Squirrel,CompSci,0.0
-teacher,Panther_Pink,Pink,Panther,CompSci,1.0
-teacher,Flinstone_Fred,Fred,Flinstone,CompSci,0.25
-teacher,Flinstone_Betty,Betty,Flinstone,CompSci,0.0
-teacher,McGraw_QuickDraw,QuickDraw,McGraw,CompSci,0.6
-teacher,Blake_Daphne,Daphne,Blake,CompSci,0.3
-teacher,Jetson_Elroy,Elroy,Jetson,CompSci,0.1666
+teacher,Apple_Bad,Bad,Apple,,1.0
 teacher,Bear_BooBoo,BooBoo,Bear,CompSci,1.0
+teacher,Blake_Daphne,Daphne,Blake,CompSci,0.3
 teacher,Bunny_Bugs,Bugs,Bunny,CompSci,0.3
-teacher,Turanga_Leela,Leela,Turanga,CompSci,0.0
-teacher,Duck_Daffy,Daffy,Duck,CompSci,0.25
-teacher,Fry_Philip,Philip,Fry,CompSci,0.25
 teacher,Dinkley_Velma,Velma,Dinkley,CompSci,0.0
+teacher,Duck_Daffy,Daffy,Duck,CompSci,0.25
+teacher,Flinstone_Betty,Betty,Flinstone,CompSci,0.0
+teacher,Flinstone_Fred,Fred,Flinstone,CompSci,0.25
+teacher,Fry_Philip,Philip,Fry,CompSci,0.25
+teacher,Jetson_Elroy,Elroy,Jetson,CompSci,0.1666
+teacher,McGraw_QuickDraw,QuickDraw,McGraw,CompSci,0.6
+teacher,Moose_Bullwinkle,Bullwinkle,Moose,CompSci,0.0
+teacher,Panther_Pink,Pink,Panther,CompSci,1.0
+teacher,Squirrel_Rocky,Rocky,Squirrel,CompSci,0.0
+teacher,Turanga_Leela,Leela,Turanga,CompSci,0.0
 teacher,Voldemort_Voldemort,Voldemort,Voldemort,CompSci,1.0
 
 
@@ -143,15 +144,19 @@ course,420-3D6,Database,1,1,6.0
 section,,1,Section 1,26
 add_stream,2A
 add_block,,Monday,14.5,3.0,1
+add_block_teacher,Flinstone_Fred
 add_lab,P326
 add_block,,Wednesday,14.5,3.0,1
+add_block_teacher,Flinstone_Fred
 add_lab,P326
 
 section,,2,Section 2,26
 add_stream,2B
 add_block,,Tuesday,14.5,3.0,1
+add_block_teacher,Flinstone_Fred
 add_lab,P326
 add_block,,Friday,14.5,3.0,1
+add_block_teacher,Flinstone_Fred
 add_lab,P326
 
 course,420-3N5,Operating Systems,1,1,5.0
@@ -159,19 +164,25 @@ course,420-3N5,Operating Systems,1,1,5.0
 section,,1,Section 1,26
 add_stream,2A
 add_block,,Monday,8.5,2.0,1
+add_block_teacher,Dinkley_Velma
 add_lab,P326
 add_block,,Monday,11.5,1.5,1
+add_block_teacher,Dinkley_Velma
 add_lab,P326
 add_block,,Friday,10.0,1.5,1
+add_block_teacher,Dinkley_Velma
 add_lab,P326
 
 section,,2,Section 2,26
 add_stream,2B
 add_block,,Monday,8.5,1.5,1
+add_block_teacher,Dinkley_Velma
 add_lab,P326
 add_block,,Thursday,12.5,2.0,1
+add_block_teacher,Dinkley_Velma
 add_lab,P326
 add_block,,Friday,8.5,1.5,1
+add_block_teacher,Dinkley_Velma
 add_lab,P326
 
 course,420-3P5,Programming III,1,1,5.0
