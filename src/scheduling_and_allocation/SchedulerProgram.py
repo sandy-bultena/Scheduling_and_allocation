@@ -41,4 +41,4 @@ def SchedulerProgram():
 
 
 if __name__ == "__main__":
-    main()
+    SchedulerProgram()
