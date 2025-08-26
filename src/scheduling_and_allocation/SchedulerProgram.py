@@ -13,7 +13,7 @@ import traceback
 bin_dir: str = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(bin_dir, "../"))
 
-def main():
+def SchedulerProgram():
     try:
         from scheduling_and_allocation.presenter.scheduler import Scheduler
         Scheduler(bin_dir=bin_dir)

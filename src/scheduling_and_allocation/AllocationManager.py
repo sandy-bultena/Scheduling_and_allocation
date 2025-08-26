@@ -13,7 +13,7 @@ import traceback
 bin_dir: str = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(bin_dir, "../"))
 
-def main():
+def AllocationManager():
     try:
         from scheduling_and_allocation.presenter.allocation_manager import AllocationManager
         AllocationManager(bin_dir=bin_dir)
@@ -41,5 +41,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
