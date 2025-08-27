@@ -1,2 +1,0 @@
-#from schedule.presenter.scheduler import Scheduler
-# from schedule.presenter.edit_resources import EditResources
