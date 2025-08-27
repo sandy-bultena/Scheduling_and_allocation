@@ -88,6 +88,7 @@ To create a new course, press the ```New Course``` button.
 2. You must set a valid course number (a number that is not already been used).  
 3. From this dialog box, the user can create sections, class times, etc, and assign teachers, labs and streams to all sections/class times for this course
 
+.
 
 ## _Modifying Existing Information_
 ### Teachers, Labs, Streams
