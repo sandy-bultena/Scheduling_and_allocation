@@ -123,7 +123,10 @@ class EditCoursesTk:
         left_panel.grid(row=0, column=0, sticky='nsew')
 
         # calculate min_width of left panel based on screen size
-        width, height, _ = re.match(r"^=?(\d+)x(\d+)?([+-]\d+[+-]\d+)?$", frame.winfo_toplevel().geometry()).groups()
+        width = 975
+        height = 800
+        if match:= re.match(r"^=?(\d+)x(\d+)?([+-]\d+[+-]\d+)?$", frame.winfo_toplevel().geometry()):
+            width, height, _ = match.groups()
 
         # relative weights etc. to widths
         frame.grid_columnconfigure(0, minsize=int(0.5 * int(width)), weight=1)

@@ -31,7 +31,10 @@ The first version of python should be the one you just installed.
 If the above does not show the version of python that you installed, modify the path by...
 
 * Open a `cmd` window
-* Type `setx "c:\Users\SandyLocal\AppData\Local\Programs\Python\Python313\python.exe;%PATH%"` **but** use the location where *you* saved the the `python.exe` file.
+
+* Type `setx PATH "c:\Users\SandyLocal\AppData\Local\Programs\Python\Python313\python.exe;%PATH%"` 
+
+  **but** use the location where *you* saved the the `python.exe` file.
 
 Validate again.
 
@@ -44,7 +47,7 @@ Open a `cmd` window (got to windows search bar and type `cmd`)
 Type the following in the command window
 
 ```bash
-python3 -m pip install scheduling_and_allocation
+python -m pip install scheduling_and_allocation
 ```
 
 ## Running the program(s)
