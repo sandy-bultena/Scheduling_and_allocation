@@ -3,13 +3,15 @@
 from __future__ import annotations
 
 import os
-from tkinter import Tk, TclError
+from tkinter import Tk, TclError, ttk
 from tkinter.font import Font
 import platform
 import re
 from typing import Literal, Optional
 
 import tkinter.font as tkFont
+
+from PIL import Image, ImageDraw, ImageTk
 
 from ..Utilities.Colour import get_colour_string_from_rgb, darken, is_light, lighten, add, \
     hsl, get_colour_string_from_hsl
@@ -20,12 +22,13 @@ DEFAULT_FONT_SIZE = 10
 if "darwin" in operating_system:
     DEFAULT_FONT_SIZE = 13
 
+global img_open, img_close, img_empty
 
 
 class TkColours:
     """Defines colour scheme """
 
-    def __init__(self, tk_root: Optional[Tk] = None, theme='mac', invert=False):
+    def __init__(self, tk_root: Optional[Tk] = None, invert=False, theme='mac'):
         # Defaults to MAC Colours
         window_background_color: Optional[str] = None
         pressed_button_text_color: Optional[str] = None
@@ -169,11 +172,20 @@ def get_fonts_and_colours():
     return colours, fonts
 
 
+def set_default_fonts(mw: Tk, font_size: Optional[int] = DEFAULT_FONT_SIZE):
+    global fonts
+    mw.configure(background=colours.WorkspaceColour)
+
+    if font_size is None:
+        font_size = DEFAULT_FONT_SIZE
+    fonts = TkFonts(mw, font_size)
+    mw.option_add("*Font", fonts.normal, )
+    return fonts
+
 def set_default_fonts_and_colours(mw: Tk, font_size: Optional[int] = DEFAULT_FONT_SIZE, invert: bool = False):
     global fonts
     global colours
     colours = TkColours(mw, invert=invert)
-    set_system_colours(mw, colours)
     mw.configure(background=colours.WorkspaceColour)
 
     if font_size is None:
@@ -270,6 +282,57 @@ def set_system_colours(mw: Tk, colors: TkColours):
 
     # other
     _option_add(mw, '*Scrollbar.troughColor', colors.DarkBackground)
+
+    style = ttk.Style(mw)
+    style.theme_use("classic")
+    set_treeview_style(mw, style)
+
+
+def set_treeview_style(root: Tk, style):
+    """style the Treeview"""
+    # https://stackoverflow.com/questions/61280744/tkinter-how-to-adjust-treeview-indentation-size-and-indicator-arrow-image
+    global img_open, img_close, img_empty
+
+
+    size = 15
+    if fonts is not None:
+        size = 2 + fonts.normal.actual("size")
+
+
+    # custom indicator images
+    im_open = Image.new('RGBA', (size, size), colours.DataBackground)
+    im_empty = Image.new('RGBA', (size, size), colours.DataBackground)
+    draw = ImageDraw.Draw(im_open)
+    draw.polygon([(0, 4), ((size - 1), 4), (int(size / 2), size - 4)],
+                 fill=colours.DataForeground, outline=colours.DataForeground)
+    im_close = im_open.rotate(90)
+
+    img_open = ImageTk.PhotoImage(im_open, name='img_open', master=root)
+    img_close = ImageTk.PhotoImage(im_close, name='img_close', master=root)
+    img_empty = ImageTk.PhotoImage(im_empty, name='img_empty', master=root)
+
+    # colours
+    style.map("Treeview",
+              background=[("selected", colours.SelectedBackground),("!selected", colours.DataBackground)],
+              foreground=[("selected", colours.SelectedForeground),("!selected", colours.DataForeground)],
+              fieldbackground="pink")
+
+    # custom indicator
+    style.element_create('Treeitem.myindicator',
+                         'image', 'img_close', ('user1', '!user2', 'img_open'), ('user2', 'img_empty'),
+                         sticky='w', width=15)
+
+    # replace Treeitem.indicator by custom one
+    style.layout('Treeview.Item',
+                 [('Treeitem.padding',
+                   {'sticky': 'nswe',
+                    'children': [('Treeitem.myindicator', {'side': 'left', 'sticky': ''}),
+                                 ('Treeitem.image', {'side': 'left', 'sticky': ''}),
+                                 ('Treeitem.focus',
+                                  {'side': 'left',
+                                   'sticky': '',
+                                   'children': [('Treeitem.text', {'side': 'left', 'sticky': ''})]})]})]
+                 )
 
 
 def _option_add(mw: Tk, option: str, new_value):

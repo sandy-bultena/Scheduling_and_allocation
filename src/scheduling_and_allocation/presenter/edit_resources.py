@@ -14,6 +14,7 @@
 
 from typing import Optional, Callable
 
+from ..Utilities import Preferences
 from ..model import Schedule, ResourceType
 from ..gui_pages import EditResourcesTk, DEColumnDescription
 
@@ -40,6 +41,7 @@ class EditResources:
                  frame,
                  view_type: ResourceType,
                  schedule: Optional[Schedule],
+                 preferences: Preferences = None,
                  gui=None):
         """
         Creates the basic EditResources (a simple matrix)
@@ -50,6 +52,7 @@ class EditResources:
         :gui: the gui object that shows data (optional)
         """
 
+        self.preferences = preferences
         # Resource type specifics
         match view_type:
             case ResourceType.teacher:
@@ -98,7 +101,8 @@ class EditResources:
             self.gui = EditResourcesTk(
                 parent=frame,
                 event_delete_handler=self.delete_obj,
-                event_save_handler=self.save
+                event_save_handler=self.save,
+                preferences=self.preferences,
             )
         else:
             self.gui = gui

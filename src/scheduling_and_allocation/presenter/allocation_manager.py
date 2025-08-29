@@ -308,7 +308,7 @@ class AllocationManager:
     def update_edit_teachers(self, frame, semester):
         """A page where teacher can be added/modified or deleted"""
         data_entry = EditResources(self.set_dirty_method, frame, ResourceType.teacher,
-                                   self.schedules[semester])
+                                   self.schedules[semester], self.preferences)
         data_entry.schedule = self.schedules[semester]
         data_entry.refresh()
 

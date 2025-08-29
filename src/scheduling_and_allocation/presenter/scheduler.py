@@ -377,7 +377,7 @@ class Scheduler:
     # ==================================================================
     def update_edit_teachers(self, frame):
         """A page where teacher can be added/modified or deleted"""
-        data_entry = EditResources(self.set_dirty_method, frame, ResourceType.teacher, self.schedule)
+        data_entry = EditResources(self.set_dirty_method, frame, ResourceType.teacher, self.schedule, self.preferences)
         data_entry.schedule = self.schedule
         data_entry.refresh()
 
@@ -386,7 +386,7 @@ class Scheduler:
     # ==================================================================
     def update_edit_streams(self, frame):
         """A page where stream_ids can be added/modified or deleted"""
-        data_entry = EditResources(self.set_dirty_method, frame, ResourceType.stream, self.schedule)
+        data_entry = EditResources(self.set_dirty_method, frame, ResourceType.stream, self.schedule, self.preferences)
         data_entry.schedule = self.schedule
         data_entry.refresh()
 
@@ -395,7 +395,7 @@ class Scheduler:
     # ==================================================================
     def update_edit_labs(self, frame):
         """A page where lab_ids can be added/modified or deleted"""
-        data_entry = EditResources(self.set_dirty_method, frame, ResourceType.lab, self.schedule)
+        data_entry = EditResources(self.set_dirty_method, frame, ResourceType.lab, self.schedule, self.preferences)
         data_entry.schedule = self.schedule
         data_entry.refresh()
 

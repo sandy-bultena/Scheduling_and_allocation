@@ -2,6 +2,8 @@ from __future__ import annotations
 from tkinter import *
 from tkinter import ttk
 from typing import *
+global img_open, img_close, img_empty
+
 
 
 class AdvancedTreeview(ttk.Treeview):
