@@ -33,16 +33,15 @@ from __future__ import annotations
 
 import time
 import tkinter as tk
-from tkinter import ttk
 from functools import partial
 from tkinter.messagebox import showinfo
 from typing import Callable, Any, TYPE_CHECKING
 import re
 
-from ..modified_tk import Scrolled, set_default_fonts_and_colours
+from ..modified_tk import Scrolled
 from ..modified_tk import AdvancedTreeview
 from ..modified_tk import DragNDropManager
-from ..modified_tk.InitGuiFontsAndColours import get_fonts_and_colours
+from ..modified_tk.InitGuiFontsAndColours import get_fonts_and_colours, set_default_fonts
 from ..gui_generics.menu_and_toolbars import MenuItem, MenuType, generate_menu
 from ..model import ResourceType
 
@@ -88,9 +87,9 @@ class EditCoursesTk:
         self.frame = frame
 
         # setup fonts if they have not already been set up
-        _, self.fonts = get_fonts_and_colours()
+        self.colours, self.fonts = get_fonts_and_colours()
         if self.fonts is None:
-            _, self.fonts = set_default_fonts_and_colours(self.frame.winfo_toplevel())
+            self.colours, self.fonts = set_default_fonts(self.frame.winfo_toplevel())
 
         # call backs (should be defined by presenter)
         self.handler_tree_edit: Callable[[TREE_OBJECT, TREE_OBJECT, str, str], None] \
@@ -415,8 +414,6 @@ class EditCoursesTk:
         make tree representing all courses, sections, blocks, resource
         :param left_panel: where to put stuff
         """
-        style = ttk.Style()
-        style.configure('Treeview', rowheight=25)  # Adjust '30' to your desired height
         self.tree_scrolled: Scrolled = Scrolled(left_panel, 'AdvancedTreeview', scrollbars='se')
         self.tree_scrolled.pack(expand=1, fill='both', side='left')
         tv: AdvancedTreeview = self.tree_scrolled.widget

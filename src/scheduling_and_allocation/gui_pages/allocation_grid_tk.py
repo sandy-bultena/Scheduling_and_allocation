@@ -620,14 +620,14 @@ class AllocationGridTk:
         else:
             w.selection_clear()
 
-        # set_default_fonts_and_colours data Colour and totals Colour
+        # set Colour and totals Colour
         dcolour = colour or BG_COLOUR
         tcolour = colour
 
         # get the widget
         r, c = self.widgets_row_col.get(w, (0,0))
 
-        # set_default_fonts_and_colours colors for rows (data)
+        # set colors for rows (data)
         col_colour = Colour.add(dcolour, self.column_colours.get(c))
         for row in range(self.num_rows):
             wid = self.entry_widgets.get((row,c), None)
@@ -635,7 +635,7 @@ class AllocationGridTk:
                 wid.configure(bg=col_colour)
                 wid.configure(highlightbackground=col_colour)
 
-        # set_default_fonts_and_colours colors for cols (data)
+        # set colors for cols (data)
         for col in range(self.num_cols):
             wid = self.entry_widgets.get((r,col), None)
             if wid is not None:
@@ -643,12 +643,12 @@ class AllocationGridTk:
                 wid.configure(bg=col_colour)
                 wid.configure(highlightbackground=col_colour)
 
-        # set_default_fonts_and_colours Colour for row header
+        # set Colour for row header
         widget = self.title_widgets[r]
         widget.configure(disabledbackground=dcolour)
         widget.configure(highlightbackground=dcolour)
 
-        # set_default_fonts_and_colours colors for summary row
+        # set colors for summary row
         if tcolour:
             tcolour = Colour.add(tcolour, SUMMARY_COLOUR)
         else:

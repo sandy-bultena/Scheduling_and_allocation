@@ -13,19 +13,19 @@ from __future__ import annotations
 import platform
 from functools import partial
 
-from tkinter.ttk import Notebook
 import tkinter as tk
+import tkinter.ttk as ttk
 from tkinter import filedialog as tk_fd
 from typing import Optional, TYPE_CHECKING, Callable
 
 from tkinter.messagebox import showerror, showinfo, askyesno
 
-from ..modified_tk import FindImages
 from ..modified_tk import set_default_fonts_and_colours, TkColours, TkFonts
 from ..gui_dialogs.change_font_tk import ChangeFont
 from ..gui_pages.note_book_frame_tk import NoteBookFrameTk, TabInfoProtocol
 from ..gui_generics.menu_and_toolbars import MenuItem, ToolbarItem, generate_menu, make_toolbar
 from ..Utilities.Preferences import Preferences
+from ..modified_tk.InitGuiFontsAndColours import set_system_colours
 
 if TYPE_CHECKING:
     pass
@@ -53,7 +53,7 @@ class MainPageBaseTk:
         """
 
         # public properties
-        self.dark_mode = False
+        self.dark_mode = preferences.dark_mode()
         self.colours: Optional[TkColours] = None
         self.fonts: Optional[TkFonts] = None
         self.dict_of_frames: dict[str, tk.Frame] = dict()
@@ -72,7 +72,7 @@ class MainPageBaseTk:
         self._front_page_frame: Optional[tk.Frame] = None
         self._toolbar = None
         self._default_notebook_page: int = 0
-        self._top_level_notebook: Optional[Notebook] = None
+        self._top_level_notebook: Optional[ttk.Notebook] = None
         self._main_page_frame: Optional[tk.Frame] = None
 
         # Create the Tk main window
@@ -85,6 +85,7 @@ class MainPageBaseTk:
         self.colours, self.fonts = set_default_fonts_and_colours(self.mw,
                                                                  font_size=font_size,
                                                                 invert=self.dark_mode)
+        set_system_colours(self.mw, self.colours)
 
         # set the filename so that it can be bound later
         self._status_bar_fall_file_info: tk.StringVar = tk.StringVar(value="None")

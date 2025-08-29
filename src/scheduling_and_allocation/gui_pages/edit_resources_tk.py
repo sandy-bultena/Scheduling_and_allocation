@@ -18,6 +18,8 @@
 """
 from asyncio import sleep
 from typing import *
+
+from ..Utilities import Preferences
 from ..modified_tk.TableEntry import TableEntry
 from dataclasses import dataclass
 import tkinter as tk
@@ -48,6 +50,7 @@ class EditResourcesTk:
                  parent: tk.Frame,
                  event_delete_handler: Callable[[list[str], ...], None] = lambda x, *_: None,
                  event_save_handler: Callable[[list[list[str]]], None] = lambda *_: None,
+                 preferences: Optional[Preferences] = None,
                  colours: Optional[TkColours] = None,
                  ):
         """
@@ -61,7 +64,7 @@ class EditResourcesTk:
             widget.destroy()
 
         if colours is None:
-            colours = TkColours(parent.winfo_toplevel())
+            colours = TkColours(parent.winfo_toplevel(), preferences.dark_mode())
         self.colours = colours
         self.frame = parent
         self.data_entry: Optional[TableEntry] = None
