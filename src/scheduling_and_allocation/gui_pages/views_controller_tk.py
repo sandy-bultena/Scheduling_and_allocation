@@ -21,6 +21,7 @@ from functools import partial
 import tkinter as tk
 from typing import Callable
 
+from ..Utilities.Colour import is_light
 from ..modified_tk import Scrolled, set_default_fonts_and_colours
 from ..modified_tk import get_fonts_and_colours
 from ..Utilities import Colour
@@ -93,6 +94,14 @@ class ViewsControllerTk:
 
         if platform.system() == "Darwin":
             colour_highlight = colour
+        else:
+            if is_light(colour):
+                btn.configure(foreground="black")
+            else:
+                btn.configure(foreground="white")
+
         btn.configure(background=colour, activebackground=active_colour,
                       highlightbackground=colour_highlight)
+
+
 

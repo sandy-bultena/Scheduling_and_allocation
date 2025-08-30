@@ -19,8 +19,10 @@ from ..Utilities.Colour import get_colour_string_from_rgb, darken, is_light, lig
 operating_system = platform.system().lower()
 
 DEFAULT_FONT_SIZE = 10
+system="win"
 if "darwin" in operating_system:
     DEFAULT_FONT_SIZE = 13
+    system="mac"
 
 global img_open, img_close, img_empty
 
@@ -40,40 +42,50 @@ class TkColours:
         # ============================================================================
         # get system colours (mac) ... not sure about if this works on windows
         # ============================================================================
+        mac = "mac"
+        win = "win"
+        default_colour_names = {
+            "window_background_color": {mac:'systemWindowBackgroundColor', win:'SystemButtonFace'},
+            "pressed_button_text_color":{mac:'systemPressedButtonTextColor', win:'SystemButtonFace'},
+            "text_color":{mac:'systemTextColor', win:'SystemButtonText'},
+            "text_background_color":{mac:'systemTextBackgroundColor', win:'SystemButtonFace'},
+            "selected_text_background_color":{mac:'systemSelectedTextBackgroundColor', win:'SystemHighlight'},
+            "selected_text_color":{mac:'systemSelectedTextColor', win:'SystemHighlightText'},
+        }
         if tk_root:
             try:
-                (r, g, b) = tk_root.winfo_rgb('systemWindowBackgroundColor')
+                (r, g, b) = tk_root.winfo_rgb(default_colour_names['window_background_color'][system])
                 window_background_color = get_colour_string_from_rgb(r / 65536.0, g / 65536.0, b / 65536.0)
             except TclError:
                 pass
 
             try:
-                (r, g, b) = tk_root.winfo_rgb('systemPressedButtonTextColor')
+                (r, g, b) = tk_root.winfo_rgb(default_colour_names['pressed_button_text_color'][system])
                 pressed_button_text_color = get_colour_string_from_rgb(r / 65536.0, g / 65536.0, b / 65536.0)
             except TclError:
                 pass
 
             try:
-                (r, g, b) = tk_root.winfo_rgb('systemTextColor')
+                (r, g, b) = tk_root.winfo_rgb(default_colour_names['text_color'][system])
                 text_color = get_colour_string_from_rgb(r / 65536.0, g / 65536.0, b / 65536.0)
             except TclError:
                 pass
 
             try:
-                (r, g, b) = tk_root.winfo_rgb('systemTextBackgroundColor')
+                (r, g, b) = tk_root.winfo_rgb(default_colour_names['text_background_color'][system])
                 text_background_color = get_colour_string_from_rgb(r / 65536.0, g / 65536.0, b / 65536.0)
             except TclError:
                 pass
 
             try:
-                (r, g, b) = tk_root.winfo_rgb('systemSelectedTextBackgroundColor')
+                (r, g, b) = tk_root.winfo_rgb(default_colour_names['selected_text_background_color'][system])
                 selected_text_background_color = get_colour_string_from_rgb(r / 65536.0, g / 65536.0,
                                                                                    b / 65536.0)
             except TclError:
                 pass
 
             try:
-                (r, g, b) = tk_root.winfo_rgb('systemSelectedTextColor')
+                (r, g, b) = tk_root.winfo_rgb(default_colour_names['selected_text_color'][system])
                 selected_text_color = get_colour_string_from_rgb(r / 65536.0, g / 65536.0, b / 65536.0)
             except TclError:
                 pass

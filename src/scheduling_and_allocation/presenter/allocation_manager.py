@@ -137,7 +137,7 @@ class AllocationManager:
             self._previous_filenames[semester] = value
             self.preferences.save()
 
-        return self._previous_filenames[semester]
+        return self._previous_filenames.get(semester,"")
 
     # ============================================================================================
     # Properties - is data changed (dirty)
