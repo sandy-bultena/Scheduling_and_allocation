@@ -499,6 +499,7 @@ class Scheduler:
     # ==================================================================
     def set_dirty_method(self, value: Optional[bool] = None) -> bool:
 
+        print("setting dirty flat to ", value)
         # if value is true, update all the open views
         if value and self.current_tab != self.NB_schedule and self.view_controller is not None:
             self.view_controller.redraw_all()
@@ -510,5 +511,7 @@ class Scheduler:
 
         if value is not None:
             self._dirty_flag = value
+
+        self.set_dirty_indicator()
         return self.dirty_flag
 
