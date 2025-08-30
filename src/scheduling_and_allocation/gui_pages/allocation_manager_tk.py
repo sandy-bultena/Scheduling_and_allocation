@@ -168,7 +168,7 @@ class AllocationManagerTk(MainPageBaseTk):
 
         # go
         tk.Button(option_frame, text="Go", font=self.fonts.big, padx=20,pady=5,
-                  command=self.go).pack(expand=1, fill='y', side='top')
+                  command=self.go).pack(expand=1, fill='x', side='top', pady=20)
 
     def select_file(self, semester):
         file = self.select_file_to_open(f"Open Schedule for {semester}")

@@ -28,8 +28,8 @@ global img_open, img_close, img_empty
 class TkColours:
     """Defines colour scheme """
 
-    def __init__(self, tk_root: Optional[Tk] = None, invert=False, theme='mac'):
-        # Defaults to MAC Colours
+    def __init__(self, tk_root: Optional[Tk] = None, dark_mode=False):
+
         window_background_color: Optional[str] = None
         pressed_button_text_color: Optional[str] = None
         text_color: Optional[str] = None
@@ -117,12 +117,14 @@ class TkColours:
             self.DirtyColour = add("red","#444444")
         else:
             self.DirtyColour = add("red","white")
+
         # ============================================================================
         # if invert mode, just invert all the colours
         # ============================================================================
-        if invert:
-            for col in vars(self):
+        if ((dark_mode and is_light(self.WorkspaceColour)) or
+                (not dark_mode and not is_light(self.WorkspaceColour))):
 
+            for col in vars(self):
                 # Note: button colors don't work on MAC, so skip
                 if re.search("button", col.lower()):
                     if re.match('darwin', operating_system):
@@ -185,7 +187,7 @@ def set_default_fonts(mw: Tk, font_size: Optional[int] = DEFAULT_FONT_SIZE):
 def set_default_fonts_and_colours(mw: Tk, font_size: Optional[int] = DEFAULT_FONT_SIZE, invert: bool = False):
     global fonts
     global colours
-    colours = TkColours(mw, invert=invert)
+    colours = TkColours(mw, dark_mode=invert)
     mw.configure(background=colours.WorkspaceColour)
 
     if font_size is None:
@@ -198,7 +200,7 @@ def set_default_fonts_and_colours(mw: Tk, font_size: Optional[int] = DEFAULT_FON
 # =================================================================
 # set_system_colours
 # =================================================================
-def set_system_colours(mw: Tk, colors: TkColours):
+def set_system_colours(mw: Tk, colors: TkColours, theme: str):
     """Using Colour array and main window, set_default_fonts_and_colours up
     some standard defaults for Tk widgets"""
 
@@ -222,6 +224,8 @@ def set_system_colours(mw: Tk, colors: TkColours):
     _option_add(mw, '*selectBackground', colors.SelectedBackground)
     _option_add(mw, '*selectForeground', colors.SelectedForeground)
     _option_add(mw, '*troughColor', colors.DarkBackground)
+    _option_add(mw, '*readonlybackground', colours.WorkspaceColour)
+
 
     # buttons
     _option_add(mw, "*Button.background", colors.ButtonBackground)
@@ -258,6 +262,7 @@ def set_system_colours(mw: Tk, colors: TkColours):
     _option_add(mw, '*Listbox.background', colors.DataBackground)
     _option_add(mw, '*BrowseEntry.foreground', colors.DataForeground)
     _option_add(mw, '*BrowseEntry.background', colors.DataBackground)
+    _option_add(mw, '*Entry.readonlybackground', colours.WorkspaceColour)
 
     # menu
     _option_add(mw, '*Menu.activeBackground', colors.DarkBackground)
@@ -284,11 +289,29 @@ def set_system_colours(mw: Tk, colors: TkColours):
     _option_add(mw, '*Scrollbar.troughColor', colors.DarkBackground)
 
     style = ttk.Style(mw)
-    style.theme_use("classic")
+    if theme is None or theme not in style.theme_names():
+        if mw.tk.call('tk', 'windowingsystem') == "aqua":
+            style.theme_use("aqua")
+        elif mw.tk.call('tk','windowingsystem') == "win32":
+            style.theme_use("winnative")
+        else:
+            style.theme_use("classic")
+    else:
+        style.theme_use(theme)
+
     set_treeview_style(mw, style)
+    set_notebook_style(mw, style)
+
+def set_notebook_style(root: Tk, style: ttk.Style):
+    if fonts is None:
+        set_default_fonts_and_colours(root)
+    style.configure('TNotebook.Tab', font=fonts.big, background=colours.WorkspaceColour,
+                    foreground=colours.WindowForeground)
+    style.configure('TNotebook', background=colours.WorkspaceColour,
+                    foreground=colours.WindowForeground)
 
 
-def set_treeview_style(root: Tk, style):
+def set_treeview_style(root: Tk, style: ttk.Style):
     """style the Treeview"""
     # https://stackoverflow.com/questions/61280744/tkinter-how-to-adjust-treeview-indentation-size-and-indicator-arrow-image
     global img_open, img_close, img_empty
@@ -311,11 +334,14 @@ def set_treeview_style(root: Tk, style):
     img_close = ImageTk.PhotoImage(im_close, name='img_close', master=root)
     img_empty = ImageTk.PhotoImage(im_empty, name='img_empty', master=root)
 
+    # spacing between elements
+    style.configure("Treeview", rowheight=2*size)
+
     # colours
     style.map("Treeview",
-              background=[("selected", colours.SelectedBackground),("!selected", colours.DataBackground)],
+              background=[("selected", colours.SelectedBackground),("!selected", colours.WorkspaceColour)],
               foreground=[("selected", colours.SelectedForeground),("!selected", colours.DataForeground)],
-              fieldbackground="pink")
+              fieldbackground=colours.DataBackground)
 
     # custom indicator
     style.element_create('Treeitem.myindicator',

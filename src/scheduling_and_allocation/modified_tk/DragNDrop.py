@@ -91,8 +91,8 @@ class DragNDropManager:
 
         # create a popup window for dragging
         if not self._drag_indicator:
-            tl = tk.Toplevel()
-            self._label = tk.Label(tl, text=self._drag_indicator_text)
+            tl = tk.Toplevel(background = self.colours.DataBackground)
+            self._label = tk.Label(tl, text=self._drag_indicator_text, foreground=self.colours.DataForeground)
             self._label.pack(expand=1, fill="both")
             tl.update_idletasks()
             tl.overrideredirect(True)

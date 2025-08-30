@@ -54,6 +54,7 @@ class MainPageBaseTk:
 
         # public properties
         self.dark_mode = preferences.dark_mode()
+        self.theme = preferences.theme()
         self.colours: Optional[TkColours] = None
         self.fonts: Optional[TkFonts] = None
         self.dict_of_frames: dict[str, tk.Frame] = dict()
@@ -85,7 +86,7 @@ class MainPageBaseTk:
         self.colours, self.fonts = set_default_fonts_and_colours(self.mw,
                                                                  font_size=font_size,
                                                                 invert=self.dark_mode)
-        set_system_colours(self.mw, self.colours)
+        set_system_colours(self.mw, self.colours, self.theme)
 
         # set the filename so that it can be bound later
         self._status_bar_fall_file_info: tk.StringVar = tk.StringVar(value="None")
@@ -157,9 +158,31 @@ class MainPageBaseTk:
         preference_menu.add_command(label="Font Size",
                                     command=lambda: ChangeFont(self.mw, self._preferences))
 
+        theme_menu = tk.Menu(preference_menu, tearoff=False)
+        s = ttk.Style(self.mw)
+        dark = 'dark' if self._preferences.dark_mode() else 'light'
+        preference_menu.add_cascade(label=f"Themes ({s.theme_use()} {dark})", menu=theme_menu)
+        themes = list(set(self._preferences.available_themes()).intersection(set(s.theme_names())))
+        themes.sort()
+        for theme in themes:
+            for dark in ("light","dark"):
+                theme_menu.add_command(label=f"{theme} {dark}",
+                                        command=partial(self.change_theme, theme, dark))
+
         # create _toolbar
         self._toolbar = make_toolbar(self.mw, buttons, toolbar_info)
         self._toolbar.pack(side='top', expand=0, fill='x')
+
+    # ===================================================================================
+    # Change Theme
+    # ===================================================================================
+    def change_theme(self, theme, dark):
+        """change the theme of the Tk"""
+        self._preferences.theme(theme)
+        self._preferences.dark_mode(True if dark == "dark" else False)
+        self.show_message("Changing themes", msg="Changing themes will not take affect until "
+                                                 "you close and re-open application")
+        self._preferences.save()
 
     # ===================================================================================
     # status bar

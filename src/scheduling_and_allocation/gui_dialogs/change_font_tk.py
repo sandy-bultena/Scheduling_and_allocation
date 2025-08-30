@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import tkinter as tk
 from tkinter.simpledialog import Dialog
+from tkinter.messagebox import showinfo
 from ..Utilities.Preferences import Preferences
 from ..modified_tk import TkFonts
 
@@ -92,5 +93,8 @@ class ChangeFont(Dialog):
             font_size = int(self.font_size_tk.get())
             self.preferences.font_size(font_size)
             self.preferences.save()
+            showinfo("Changing themes", "Changing fonts will not take affect until "
+                                                     "you close and re-open application")
+
         except ValueError:
             pass

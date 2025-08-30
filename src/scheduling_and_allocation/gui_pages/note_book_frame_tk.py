@@ -15,8 +15,6 @@ import tkinter.ttk as ttk
 import tkinter as tk
 from typing import Optional, Callable, Protocol, Any
 
-from ..modified_tk.InitGuiFontsAndColours import get_fonts_and_colours
-
 
 @dataclass
 class TabInfoProtocol(Protocol):
@@ -52,11 +50,6 @@ class NoteBookFrameTk:
         :param tabs_info: what tabs do you need
         :param tab_changed_handler: who you gonna call?... ghost busters!
         """
-
-        style = ttk.Style()
-        colours, fonts = get_fonts_and_colours()
-        print(colours, fonts)
-        style.configure('TNotebook.Tab', font=fonts.big)
 
         self._default_notebook_page = None
         self.tabs_info = tabs_info

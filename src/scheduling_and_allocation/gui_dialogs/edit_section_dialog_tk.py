@@ -65,12 +65,6 @@ class EditSectionDialogTk(Dialog):
         self.description = tk.StringVar(value=section_description)
 
         self.style = ttk.Style(frame.winfo_toplevel())
-        self.style.configure("MyCustom.TCombobox",
-                             fieldbackground='black',  # Background of the input field
-                             background='black',  # Overall widget background
-                             foreground='white',  # Text color in the input field
-                             arrowcolor='white',  # Dropdown arrow color
-                             )
 
         dialog_title = "Edit Section"
         super().__init__(frame.winfo_toplevel(), dialog_title)

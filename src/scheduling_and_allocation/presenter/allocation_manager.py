@@ -45,6 +45,7 @@ class AllocationManager:
 
         self.preferences: Preferences = Preferences()
         self.schedules: dict[SemesterType, Optional[Schedule]] = {s:None for s in VALID_SEMESTERS}
+        self._previous_filenames: dict[SemesterType, str] = {s:"" for s in VALID_SEMESTERS}
         self._dirty_flag = False
         self.current_tab: Optional[str] = None
         self.standard_page = None

@@ -90,6 +90,7 @@ class EditCourseDialogTk(simpledialog.Dialog):
         en_course_number.grid(row=0, column=1, sticky='nsew')
         if self.edit_or_add == 'edit':
             en_course_number.config(state='readonly')
+            en_course_number.config(readonlybackground="#bbbbbb", foreground="#555555")
 
         tk.Label(course_info_frame, text="Course name", anchor='e', width=15).grid(row=1, column=0, sticky='nsew')
         en_course_name = tk.Entry(course_info_frame, textvariable=self.course_name_tk,)

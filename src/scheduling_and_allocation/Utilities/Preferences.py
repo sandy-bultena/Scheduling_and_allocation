@@ -15,7 +15,14 @@ class Preferences:
         self._config: cp.ConfigParser = _read_ini()
         pass
 
+    # ---------------------------------------------------------------------------------------------
+    # directories
+    # ---------------------------------------------------------------------------------------------
     def home_directory(self):
+        """the users home directory, used to find the default place to save documents
+        MAC:        $HOME
+        WINDOWS:    %CSIDL_MYDOCUMENTS% or "~/Documents"
+        """
         operating_system = platform.system().lower()
 
         user_base_dir = None
@@ -29,26 +36,10 @@ class Preferences:
             return user_base_dir
         return None
 
-    def dark_mode(self, dark_mode: bool = None) -> bool:
-        if 'COLOURS' not in self._config:
-            self._config['COLOURS'] = {'dark_mode':'0'}
-        if dark_mode is not None:
-            self._config['COLOURS']['dark_mode'] = str(dark_mode)
-        return self._config['COLOURS'].getboolean('dark_mode')
-
-    def semester(self, semester: VALID_SEMESTER = None) -> VALID_SEMESTER:
-        if 'MOST_RECENT' not in self._config:
-            self._config['MOST_RECENT'] = {'semester':'fall'}
-        if semester is not None:
-            self._config['MOST_RECENT']['semester'] = semester
-        return self._config['MOST_RECENT'].get('semester', "fall")
-
-    def previous_file(self, file: Optional[str] = None) -> Optional[str]    :
+    def previous_file(self, file: Optional[str] = None) -> Optional[str]:
+        """saves the filename last used for the specified semester"""
         if 'MOST_RECENT' not in self._config:
             self._config['MOST_RECENT'] = {}
-
-        directory = None
-        filename = None
 
         if file is not None and os.path.isfile(file):
             directory = os.path.dirname(os.path.realpath(file))
@@ -87,6 +78,7 @@ class Preferences:
         return None
 
     def current_dir(self, new_dir: Optional[str] = None) -> Optional[str]:
+        """what was the last directory used to save or read a file?"""
         if 'MOST_RECENT' not in self._config:
             self._config['MOST_RECENT'] = {}
 
@@ -114,21 +106,62 @@ class Preferences:
                 return os.path.realpath(directory)
         return None
 
-    def auto_save(self, value: Optional[bool] = None) -> bool:
-        if 'AUTO_SAVE' not in self._config:
-            self._config['AUTO_SAVE'] = {'set':'1'}
-        if value is not None:
-            if value:
-                self._config['AUTO_SAVE']['set'] = '1'
-            else:
-                self._config['AUTO_SAVE']['set'] = '0'
 
-        if self._config['AUTO_SAVE']['set'] == '1':
-            return True
+    # ---------------------------------------------------------------------------------------------
+    # look and feel
+    # ---------------------------------------------------------------------------------------------
+    def _set_default_theme(self):
+        """set up default themes based on OS
+        MAC:        'aqua', no dark mode (tk picks up on dark mode settings)
+        WINDOWS:    'winnative', no dark mode (unfortunately, tk does NOT pick up on dark mode settings)
+        """
+        operating_system = platform.system().lower()
+        if re.match(r'win', operating_system):
+            self._config['COLOURS']['theme'] = "winnative"
+        elif re.match(r'darwin|posix', operating_system):
+            self._config['COLOURS']['theme'] = "aqua"
         else:
-            return False
+            self._config['COLOURS']['theme'] = "classic"
+
+    def available_themes(self) -> tuple[str,...]:
+        return 'aqua', 'clam', 'alt', 'default', 'classic', 'winnative'
+
+    def theme(self, theme: str = None) -> str:
+        """set the theme"""
+        if 'COLOURS' not in self._config or 'theme' not in self._config['COLOURS']:
+            self._set_default_theme()
+
+        operating_system = platform.system().lower()
+
+        # theme was specified
+        if theme is not None:
+
+            # ignore if not in list
+            if theme in self.available_themes():
+
+                # don't set themes that don't go with the operating system
+                if re.match(r'win', operating_system) and theme != "aqua":
+                    self._config['COLOURS']['theme'] = theme
+                elif re.match(r'darwin|posix', operating_system) and theme != "winnative":
+                    self._config['COLOURS']['theme'] = theme
+                elif theme != "aqua" and theme != 'winnative':
+                    self._config['COLOURS']['theme'] = theme
+
+        return self._config['COLOURS']['theme']
+
+    def dark_mode(self, dark_mode: bool = None) -> bool:
+        """dark mode is ignored if theme is either aqua or winnative"""
+
+        if 'COLOURS' not in self._config or 'dark_mode' not in self._config['COLOURS']:
+            self._config['COLOURS'] = {'dark_mode': '0'}
+
+        if dark_mode is not None:
+            self._config['COLOURS']['dark_mode'] = str(dark_mode)
+        return self._config['COLOURS'].getboolean('dark_mode')
 
     def font_size(self, value: Optional[int] = None) -> int:
+        """Specify the _normal_ font size"""
+
         operating_system = platform.system().lower()
         if 'FONT_SIZE' not in self._config:
             self._config['FONT_SIZE'] = {'windows':'13', 'darwin':'10'}
@@ -144,6 +177,38 @@ class Preferences:
                 self._config['FONT_SIZE']['darwin'] = str(value)
             return int(self._config['FONT_SIZE'].get("darwin", '13'))
 
+    # ---------------------------------------------------------------------------------------------
+    # semester
+    # ---------------------------------------------------------------------------------------------
+    def semester(self, semester: VALID_SEMESTER = None) -> VALID_SEMESTER:
+        if 'MOST_RECENT' not in self._config:
+            self._config['MOST_RECENT'] = {'semester':'fall'}
+        if semester is not None:
+            self._config['MOST_RECENT']['semester'] = semester
+        return self._config['MOST_RECENT'].get('semester', "fall")
+
+
+    # ---------------------------------------------------------------------------------------------
+    # auto save
+    # ---------------------------------------------------------------------------------------------
+    def auto_save(self, value: Optional[bool] = None) -> bool:
+        if 'AUTO_SAVE' not in self._config:
+            self._config['AUTO_SAVE'] = {'set':'1'}
+        if value is not None:
+            if value:
+                self._config['AUTO_SAVE']['set'] = '1'
+            else:
+                self._config['AUTO_SAVE']['set'] = '0'
+
+        if self._config['AUTO_SAVE']['set'] == '1':
+            return True
+        else:
+            return False
+
+
+    # ---------------------------------------------------------------------------------------------
+    # save the current preferences
+    # ---------------------------------------------------------------------------------------------
     def save(self):
         _write_ini(self._config)
 
