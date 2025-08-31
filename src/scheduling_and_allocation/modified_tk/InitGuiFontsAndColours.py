@@ -315,12 +315,20 @@ def set_system_colours(mw: Tk, colors: TkColours, theme: str):
     set_notebook_style(mw, style)
 
 def set_notebook_style(root: Tk, style: ttk.Style):
+    """style the notebook"""
+    # https://stackoverflow.com/questions/23038356/change-color-of-tab-header-in-ttk-notebook
     if fonts is None:
         set_default_fonts_and_colours(root)
-    style.configure('TNotebook.Tab', font=fonts.big, background=colours.WorkspaceColour,
+    if is_light(colours.WorkspaceColour):
+        selected = darken(colours.WorkspaceColour, 20)
+    else:
+        selected = darken(colours.WorkspaceColour, 20)
+
+    style.configure("TNotebook", tabmargins= [2, 5, 2, 0])
+    style.configure("TNotebook.Tab", padding=[5,1], background=colours.WorkspaceColour,
                     foreground=colours.WindowForeground)
-    style.configure('TNotebook', background=colours.WorkspaceColour,
-                    foreground=colours.WindowForeground)
+    style.map("TNotebook.Tab", background=[("selected", selected)],
+              expand=[("selected", [1, 1, 1, 1])])
 
 
 def set_treeview_style(root: Tk, style: ttk.Style):
@@ -335,8 +343,8 @@ def set_treeview_style(root: Tk, style: ttk.Style):
 
 
     # custom indicator images
-    im_open = Image.new('RGBA', (size, size), colours.DataBackground)
-    im_empty = Image.new('RGBA', (size, size), colours.DataBackground)
+    im_open = Image.new('RGBA', (size, size), colours.WorkspaceColour)
+    im_empty = Image.new('RGBA', (size, size), colours.WorkspaceColour)
     draw = ImageDraw.Draw(im_open)
     draw.polygon([(0, 4), ((size - 1), 4), (int(size / 2), size - 4)],
                  fill=colours.DataForeground, outline=colours.DataForeground)
