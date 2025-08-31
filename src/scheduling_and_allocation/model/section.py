@@ -211,7 +211,7 @@ class Section:
             return
 
         # add to all blocks
-        if hours == self.hours:
+        if hours == self.hours and len(self.blocks()) != 0:
             self.add_teacher(teacher)
             return
 
