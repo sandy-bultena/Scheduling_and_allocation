@@ -24,6 +24,7 @@ MAIN_MENU_EVENT_HANDLER_NAMES = Literal[
     "print_latex_teacher",
     "print_latex_lab",
     "print_latex_streams",
+    "print_registrar",
     "validate",
 ]
 
@@ -92,6 +93,13 @@ def main_menu() -> tuple[list[str], dict[str, ToolbarItem], list[MenuItem]]:
     print_menu = MenuItem(name='print', menu_type=MenuType.Cascade, label='Print')
     pdf_menu = MenuItem(menu_type=MenuType.Cascade, label='PDF')
     latex_menu = MenuItem(menu_type=MenuType.Cascade, label='Latex')
+
+    print_menu.add_child(MenuItem(menu_type=MenuType.Command,
+                                  label="Registrar's Output",
+                                  command = lambda *_: MAIN_MENU_EVENT_HANDLERS["print_registrar"]()
+                                  )
+                         )
+
     print_menu.add_child(pdf_menu)
     print_menu.add_child(latex_menu)
 
@@ -136,7 +144,7 @@ def main_menu() -> tuple[list[str], dict[str, ToolbarItem], list[MenuItem]]:
                                   )
                          )
     # -----------------------------------------------------------------------------------------
-    # Auto Save - taken care of if main_tk
+    # Auto Save & Preferences - taken care of if main_tk
     # -----------------------------------------------------------------------------------------
 
     # -----------------------------------------------------------------------------------------

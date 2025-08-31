@@ -10,6 +10,7 @@
 #       validate()
 #       exit_event()
 #       print_views(resource_type, canvas)
+#       print_registrar()
 #       auto_save_set(bool)
 #
 # Events triggered from the welcome page
@@ -47,6 +48,7 @@ from .views_controller import ViewsController
 from .notebook_tab_data import NBTabInfo
 
 from ..Utilities import Preferences
+from ..export.registrars_office import registrars_output
 from ..gui_pages.scheduler_tk import SchedulerTk, set_main_page_event_handler
 from ..model import Schedule, ResourceType
 from ..model.exceptions import CouldNotReadFileError
@@ -135,6 +137,7 @@ class Scheduler:
         set_menu_event_handler("print_latex_teacher", partial(self.print_views, ResourceType.teacher, CanvasType.latex))
         set_menu_event_handler("print_latex_lab", partial(self.print_views, ResourceType.lab, CanvasType.latex))
         set_menu_event_handler("print_latex_streams", partial(self.print_views, ResourceType.stream, CanvasType.latex))
+        set_menu_event_handler("print_registrar", self.print_registrar)
 
         self.gui.toggle_auto_save = self.auto_save_set
 
@@ -481,6 +484,21 @@ class Scheduler:
                               )
             # write to file
             cn.save()
+
+    # ==================================================================
+    # print the output needed for the registrar
+    # ==================================================================
+    def print_registrar(self):
+        if self.schedule is None:
+            self.gui.show_error("Save Schedule", "There is no schedule to write!")
+            return
+        filename = self.gui.select_file_to_save()
+        try:
+            registrars_output(self.schedule, filename)
+        except Exception as e:
+            self.gui.show_message(title="Registrar's Output", msg="Could not save file",
+                                  detail=f"Error: {e}")
+
 
     # ==================================================================
     # validate
