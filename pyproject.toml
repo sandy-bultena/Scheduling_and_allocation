@@ -13,7 +13,7 @@ build-backend = "hatchling.build"
 # Project specific info
 # ================================================================================================
 [project]
-version = "2025.0.9"
+version = "2025.0.10"
 
 name = "scheduling_and_allocation"
 description = "A visual tool to make scheduling courses with teachers, labs, etc easier"
