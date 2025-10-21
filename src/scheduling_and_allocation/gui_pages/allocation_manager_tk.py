@@ -81,9 +81,9 @@ class AllocationManagerTk(MainPageBaseTk):
         # trim file name if necessary
         if value is not None and value != "":
             value = os.path.abspath(value)
+            self.selected_files[semester].set(value)
             if len(value) > MAX_LEN_OF_DISPLAYED_FILENAME:
                 value = "... " + value[len(value) - MAX_LEN_OF_DISPLAYED_FILENAME:]
-            self.selected_files[semester].set(value)
         else:
             self.selected_files[semester].set(value="Create New")
 
@@ -95,6 +95,12 @@ class AllocationManagerTk(MainPageBaseTk):
 
         # return the value
         return self.selected_files[semester].get()
+
+    def show_filename(self, semester: SemesterType = SemesterType.fall):
+        try:
+            self.show_message(f"{semester} File Name", self.selected_files[semester].get())
+        except Exception:
+            pass
 
     # ----------------------------------------------------------------------------------------------------------------
     # override exit event

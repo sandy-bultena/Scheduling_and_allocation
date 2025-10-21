@@ -20,6 +20,7 @@ from typing import Optional, TYPE_CHECKING, Callable
 
 from tkinter.messagebox import showerror, showinfo, askyesno
 
+from ..model import SemesterType
 from ..modified_tk import set_default_fonts_and_colours, TkColours, TkFonts
 from ..gui_dialogs.change_font_tk import ChangeFont
 from ..gui_dialogs.set_days_end_tk import ChangeDaysEnd
@@ -199,16 +200,25 @@ class MainPageBaseTk:
         status_frame = tk.Frame(mw, borderwidth=0, relief='flat')
         status_frame.pack(side='bottom', expand=0, fill='x')
 
-        tk.Label(status_frame, textvariable=self._status_bar_fall_file_info, borderwidth=1, relief='ridge',
+        label1 = tk.Label(status_frame, textvariable=self._status_bar_fall_file_info, borderwidth=1, relief='ridge',
               anchor='w',
-              ).pack(side='left', expand=1, fill='x')
+              )
+        label1.pack(side='left', expand=1, fill='x')
 
-        tk.Label(status_frame, textvariable=self._status_bar_winter_file_info, borderwidth=1, relief='ridge',
+        label2 = tk.Label(status_frame, textvariable=self._status_bar_winter_file_info, borderwidth=1, relief='ridge',
               anchor='w',
-              ).pack(side='left', expand=1, fill='x')
+              )
+        label2.pack(side='left', expand=1, fill='x')
 
         tk.Label(status_frame, textvariable=self._status_bar_dirty, borderwidth=1, relief='ridge', width=15,
               foreground=self.colours.DirtyColour).pack(side='right', fill='x')
+
+        label1.bind("<Button>",lambda x: self.show_filename(SemesterType.fall))
+        label2.bind("<Button>",lambda x: self.show_filename(SemesterType.winter))
+
+    def show_filename(self, semester: SemesterType = SemesterType.fall):
+        pass
+
 
     # ===================================================================================
     # welcome page

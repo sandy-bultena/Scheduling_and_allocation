@@ -23,6 +23,7 @@ from .main_pages_tk import MainPageBaseTk
 import tkinter as tk
 
 from ..gui_generics.read_only_text_tk import ReadOnlyTextTk
+from ..model import SemesterType
 
 BUTTON_WIDTH = 50
 MAX_LEN_OF_DISPLAYED_FILENAME = 60
@@ -117,6 +118,10 @@ class SchedulerTk(MainPageBaseTk):
             self.status_bar_winter_file_info = value
         else:
             self.status_bar_fall_file_info = value
+
+    def show_filename(self, semester: SemesterType = SemesterType.fall):
+        self.show_message(f"File Name", self.schedule_filename)
+
 
     # ========================================================================
     # override exit event
