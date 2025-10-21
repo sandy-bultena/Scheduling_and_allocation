@@ -2,6 +2,7 @@
 # to create scripts that can be downloaded via pip install - requires a python installation
 # =================================================================================================================
 # NOTE: if you don't already have the password, ask the maintainer of this code for it
+# ~/Documents/pypi_test_token.txt
 #
 # Change the version number in pyproject.toml
 # install 'build' and twine if you don't already have them

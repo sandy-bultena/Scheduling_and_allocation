@@ -22,6 +22,7 @@ from tkinter.messagebox import showerror, showinfo, askyesno
 
 from ..modified_tk import set_default_fonts_and_colours, TkColours, TkFonts
 from ..gui_dialogs.change_font_tk import ChangeFont
+from ..gui_dialogs.set_days_end_tk import ChangeDaysEnd
 from ..gui_pages.note_book_frame_tk import NoteBookFrameTk, TabInfoProtocol
 from ..gui_generics.menu_and_toolbars import MenuItem, ToolbarItem, generate_menu, make_toolbar
 from ..Utilities.Preferences import Preferences
@@ -157,6 +158,8 @@ class MainPageBaseTk:
         menu_bar.add_cascade(label="Preferences", menu=preference_menu)
         preference_menu.add_command(label="Font Size",
                                     command=lambda: ChangeFont(self.mw, self._preferences))
+        preference_menu.add_command(label="Set Latest Hour for Class Time ",
+                                    command=lambda: ChangeDaysEnd(self.mw, self._preferences))
 
         theme_menu = tk.Menu(preference_menu, tearoff=False)
         s = ttk.Style(self.mw)

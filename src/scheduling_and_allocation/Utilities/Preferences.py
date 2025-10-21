@@ -189,6 +189,20 @@ class Preferences:
 
 
     # ---------------------------------------------------------------------------------------------
+    # end of day
+    # ---------------------------------------------------------------------------------------------
+    def end_of_day(self, value: Optional[float] = None) -> float:
+        if 'DAY' not in self._config:
+            self._config['DAY'] = {'end_hour':'18', 'begin_hour': '8'}
+        if value is not None:
+            self._config['DAY']['end_hour'] = f"{value:.1f}"
+
+        try:
+            return float(self._config['DAY']['end_hour'])
+        except ValueError:
+            return 18
+
+    # ---------------------------------------------------------------------------------------------
     # auto save
     # ---------------------------------------------------------------------------------------------
     def auto_save(self, value: Optional[bool] = None) -> bool:
@@ -240,6 +254,7 @@ def _read_ini() -> cp.ConfigParser:
     config['FONT_SIZE'] = {}
     config['FONT_SIZE']['windows'] = '13'
     config['FONT_SIZE']['darwin'] = '10'
+    config['DAY']['end_hour'] = '18'
     return config
 
 

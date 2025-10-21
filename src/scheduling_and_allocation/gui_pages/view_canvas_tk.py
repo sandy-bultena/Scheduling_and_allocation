@@ -12,33 +12,36 @@
 import tkinter as tk
 from typing import Protocol, Optional
 
-from ..Utilities import Colour
+from ..Utilities import Colour, Preferences
 from ..gui_generics.block_colours import RESOURCE_COLOURS
 from ..model import ResourceType
 from ..gui_generics.drawing_scale import DrawingScale
 from ..modified_tk.InitGuiFontsAndColours import get_fonts_and_colours
 
 DAYS = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
-Times: dict[int, str] = {
-    8: "8am",
-    9: "9am",
-    10: "10am",
-    11: "11am",
-    12: "12pm",
-    13: "1pm",
-    14: "2pm",
-    15: "3pm",
-    16: "4pm",
-    17: "5pm",
-    18: "6pm"
-}
 RECTANGLE_X1_OFFSET = 3
 RECTANGLE_Y1_OFFSET = 2
 RECTANGLE_X2_OFFSET = -2
 RECTANGLE_Y2_OFFSET = -3
 
-EARLIEST_TIME = min(Times.keys())
-LATEST_TIME = max(Times.keys())
+Times: dict[int, str] = {}
+EARLIEST_TIME: str
+LATEST_TIME: str
+
+def set_day_parameters(last_hour:float = 18):
+    global Times, EARLIEST_TIME, LATEST_TIME
+
+    Times.clear()
+    for hour in range(8,round(last_hour+0.1)+1):
+        if hour < 12:
+            Times[hour] = f"{hour}am"
+        elif hour == 12:
+            Times[12] ="12pm"
+        else:
+            Times[hour] = f"{hour%12}pm"
+
+    EARLIEST_TIME = min(Times.keys())
+    LATEST_TIME = max(Times.keys())
 
 # =====================================================================================================================
 # what is the minimal requirements for the canvas object to have if we want to draw
@@ -73,11 +76,14 @@ class ViewCanvasTk:
             :param scale_factor: scaling factors
             :param bg_colour: the colour used to draw the objects
         """
+        self.preferences: Preferences = Preferences()
+        set_day_parameters(self.preferences.end_of_day())
+
         self.colours, self.fonts = get_fonts_and_colours()
 
         self.canvas = canvas
-        self.scale = DrawingScale(scale_factor)
-        self.scale_factor = DrawingScale(scale_factor)
+        self.scale = DrawingScale(scale_factor, LATEST_TIME)
+        self.scale_factor = DrawingScale(scale_factor, LATEST_TIME)
         scale = self.scale
         self.bg_colour = self.colours.DataBackground if bg_colour is None else bg_colour
         self.fg_colour = self.colours.WindowForeground if fg_colour is None else fg_colour
@@ -339,5 +345,5 @@ class ViewCanvasTk:
     # ==================================================================
     def adjust_scale(self, factor):
         """change the scale information based on the scaling factor"""
-        self.scale = DrawingScale(factor)
+        self.scale = DrawingScale(factor, LATEST_TIME)
 

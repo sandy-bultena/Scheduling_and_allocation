@@ -12,7 +12,7 @@ DEFAULT_START = 8.0
 DEFAULT_HOURS = 8
 DEFAULT_DURATION = 1.5
 MIN_START_TIME = 8
-MAX_END_TIME = 18
+MAX_END_TIME = 24
 MAXIMUM_DURATION = 8
 
 def get_hour_minutes_from_hours(hours: float) -> (int, int):

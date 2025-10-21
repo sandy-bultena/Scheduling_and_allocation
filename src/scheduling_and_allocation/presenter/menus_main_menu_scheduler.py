@@ -144,7 +144,7 @@ def main_menu() -> tuple[list[str], dict[str, ToolbarItem], list[MenuItem]]:
                                   )
                          )
     # -----------------------------------------------------------------------------------------
-    # Auto Save & Preferences - taken care of if main_tk
+    # Auto Save & Preferences - taken care of in file gui_pages/main_pages_tk
     # -----------------------------------------------------------------------------------------
 
     # -----------------------------------------------------------------------------------------
